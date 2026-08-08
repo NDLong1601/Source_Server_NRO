@@ -1,0 +1,1807 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta charset="utf-8">
+  <title>NRO Admin Data</title>
+  <hta:application
+    id="NroAdminData"
+    applicationname="NRO Admin Data"
+    border="thin"
+    caption="yes"
+    maximizebutton="yes"
+    minimizebutton="yes"
+    scroll="no"
+    singleinstance="yes"
+    sysmenu="yes"
+    windowstate="normal" />
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: #eef2f7;
+      color: #172033;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-width: 980px;
+      min-height: 720px;
+    }
+
+    #sidebar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 250px;
+      background: #162033;
+      color: #f8fafc;
+      border-right: 1px solid #0f172a;
+      box-sizing: border-box;
+      padding: 18px 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 650;
+      line-height: 28px;
+    }
+
+    .sub {
+      margin: 3px 0 18px;
+      color: #bac7d9;
+      font-size: 12px;
+    }
+
+    .nav-button {
+      display: block;
+      width: 100%;
+      height: 40px;
+      margin: 0 0 8px;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      background: #22304a;
+      color: #eef2ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      text-align: left;
+      padding: 0 12px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      background: #0f766e;
+      border-color: #14b8a6;
+    }
+
+    .status-card {
+      margin-top: 18px;
+      padding: 11px;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      background: #0f172a;
+      color: #dbeafe;
+      line-height: 18px;
+      white-space: pre-line;
+      min-height: 88px;
+    }
+
+    #main {
+      position: absolute;
+      left: 250px;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      box-sizing: border-box;
+      padding: 18px 20px 16px;
+    }
+
+    .topbar {
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      right: 20px;
+      height: 54px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    .top-title {
+      font-size: 19px;
+      font-weight: 650;
+      line-height: 26px;
+    }
+
+    .top-sub {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .top-actions {
+      position: absolute;
+      right: 0;
+      top: 4px;
+      white-space: nowrap;
+    }
+
+    .panel {
+      position: absolute;
+      left: 20px;
+      top: 92px;
+      right: 20px;
+      bottom: 16px;
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .columns {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .left-pane {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 58%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .right-pane {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: auto;
+      box-sizing: border-box;
+      padding: 14px;
+    }
+
+    .toolbar {
+      min-height: 56px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      padding: 10px 8px;
+      box-sizing: border-box;
+      white-space: normal;
+      overflow: visible;
+    }
+
+    .table-wrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 56px;
+      bottom: 0;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #edf2f7;
+      color: #475569;
+      font-size: 11px;
+      text-transform: uppercase;
+      height: 32px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    td {
+      height: 31px;
+      border-bottom: 1px solid #eef2f7;
+      padding: 0 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #1f2937;
+    }
+
+    tr:hover td {
+      background: #ecfeff;
+      cursor: pointer;
+    }
+
+    .section-title {
+      margin: 2px 0 10px;
+      color: #0f172a;
+      font-size: 15px;
+      font-weight: 650;
+    }
+
+    label {
+      display: block;
+      margin: 9px 0 4px;
+      color: #475569;
+      font-size: 12px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      height: 34px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      padding: 0 9px;
+    }
+
+    input.hidden-value {
+      display: none;
+    }
+
+    .combo {
+      position: relative;
+      width: 100%;
+      height: 34px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .combo.toolbar-combo {
+      display: inline-block;
+      width: 250px;
+      margin-right: 6px;
+      vertical-align: top;
+    }
+
+    .toolbar input,
+    .toolbar button {
+      vertical-align: top;
+    }
+
+    .combo:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .combo-text {
+      position: absolute;
+      left: 9px;
+      top: 0;
+      right: 36px;
+      height: 32px;
+      line-height: 32px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #0f172a;
+    }
+
+    .combo-button {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 32px;
+      height: 32px;
+      border-left: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .combo-caret {
+      position: absolute;
+      left: 10px;
+      top: 13px;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #334155;
+    }
+
+    .combo.open {
+      border-color: #0f766e;
+      box-shadow: 0 0 0 2px #ccfbf1;
+    }
+
+    .combo-menu {
+      display: none;
+      position: absolute;
+      left: -1px;
+      top: 35px;
+      z-index: 40;
+      width: 100%;
+      max-height: 210px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      border: 1px solid #94a3b8;
+      border-radius: 7px;
+      background: #ffffff;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    }
+
+    .combo.open .combo-menu {
+      display: block;
+    }
+
+    .combo-option {
+      height: 30px;
+      line-height: 30px;
+      padding: 0 9px;
+      box-sizing: border-box;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #172033;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .combo-option:hover,
+    .combo-option.active {
+      background: #ccfbf1;
+      color: #0f766e;
+    }
+
+    textarea {
+      height: 62px;
+      padding-top: 7px;
+      resize: vertical;
+    }
+
+    .row {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .cell {
+      display: table-cell;
+      padding-right: 8px;
+      vertical-align: top;
+    }
+
+    .cell:last-child {
+      padding-right: 0;
+    }
+
+    button {
+      height: 34px;
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #172033;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      padding: 0 11px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    button:hover {
+      background: #f1f5f9;
+    }
+
+    button.primary {
+      border-color: #0f766e;
+      background: #0f766e;
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      background: #0d9488;
+    }
+
+    button.danger {
+      border-color: #b91c1c;
+      background: #b91c1c;
+      color: #ffffff;
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    button.compact {
+      min-width: 92px;
+      margin-left: 7px;
+    }
+
+    .actions {
+      margin-top: 14px;
+      white-space: normal;
+    }
+
+    .actions button {
+      margin-bottom: 5px;
+    }
+
+    .segmented {
+      display: inline-block;
+      margin-right: 6px;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .seg-button {
+      min-width: 74px;
+      margin-right: 3px;
+    }
+
+    .seg-button.active {
+      border-color: #0f766e;
+      background: #0f766e;
+      color: #ffffff;
+    }
+
+    .message {
+      margin-top: 12px;
+      min-height: 18px;
+      color: #0f766e;
+      line-height: 18px;
+      white-space: pre-line;
+    }
+
+    .split-small {
+      margin-top: 14px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+
+    .mini-table {
+      max-height: 170px;
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .mini-table th {
+      height: 28px;
+    }
+
+    .mini-table td {
+      height: 28px;
+      font-size: 12px;
+    }
+
+    .single-pane {
+      left: 0 !important;
+      right: 0 !important;
+      width: auto !important;
+    }
+
+    @media screen and (max-width: 1100px) {
+      #app {
+        min-width: 760px;
+        min-height: 980px;
+      }
+
+      #sidebar {
+        right: 0;
+        bottom: auto;
+        width: auto;
+        height: 156px;
+        border-right: 0;
+        border-bottom: 1px solid #0f172a;
+        padding: 14px;
+      }
+
+      h1 {
+        display: inline-block;
+        margin-right: 16px;
+        vertical-align: top;
+      }
+
+      .sub {
+        display: inline-block;
+        margin: 7px 0 0;
+        vertical-align: top;
+      }
+
+      .nav-button {
+        display: inline-block;
+        width: 23.5%;
+        margin: 10px 1% 0 0;
+        text-align: center;
+      }
+
+      .status-card {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 10px;
+        min-height: 34px;
+        margin: 0;
+        padding: 7px 10px;
+        line-height: 16px;
+      }
+
+      #main {
+        left: 0;
+        top: 156px;
+      }
+
+      .topbar {
+        height: 62px;
+      }
+
+      .top-actions {
+        top: 0;
+      }
+
+      .panel {
+        top: 100px;
+      }
+
+      .left-pane {
+        right: 0;
+        bottom: auto;
+        width: auto;
+        height: 43%;
+      }
+
+      .right-pane {
+        left: 0;
+        top: 46%;
+        width: auto;
+      }
+
+      .single-pane {
+        top: 0 !important;
+      }
+
+      .combo.toolbar-combo {
+        width: 230px;
+      }
+
+      #itemSearch {
+        width: 220px !important;
+      }
+    }
+
+    @media screen and (max-width: 820px) {
+      #app {
+        min-width: 620px;
+      }
+
+      #sidebar {
+        height: 178px;
+      }
+
+      #main {
+        top: 178px;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .topbar {
+        left: 12px;
+        right: 12px;
+        height: 86px;
+      }
+
+      .top-actions {
+        left: 0;
+        right: auto;
+        top: 48px;
+      }
+
+      .panel {
+        left: 12px;
+        right: 12px;
+        top: 124px;
+      }
+
+      .combo.toolbar-combo,
+      #itemSearch,
+      #equipSearch {
+        width: 100% !important;
+        margin: 0 0 6px;
+      }
+
+      .item-toolbar {
+        height: 132px;
+        min-height: 132px;
+      }
+
+      .item-toolbar + .table-wrap {
+        top: 132px;
+      }
+
+      .equip-toolbar {
+        height: 178px;
+        min-height: 178px;
+      }
+
+      .equip-toolbar + .table-wrap {
+        top: 178px;
+      }
+
+      .segmented {
+        display: block;
+        margin: 0 0 6px;
+        white-space: normal;
+      }
+
+      .toolbar button {
+        margin-bottom: 5px;
+      }
+
+      .row {
+        display: block;
+      }
+
+      .cell {
+        display: block;
+        padding-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h1>NRO Admin Data</h1>
+      <div class="sub">Menu quản trị dữ liệu riêng</div>
+      <button id="navItems" class="nav-button active" onclick="ShowTab('items')">Vật phẩm</button>
+      <button id="navEvents" class="nav-button" onclick="ShowTab('events')">Sự kiện</button>
+      <button id="navEquip" class="nav-button" onclick="ShowTab('equip')">Chỉ số TB</button>
+      <button id="navNpc" class="nav-button" onclick="ShowTab('npc')">NPC & Shop</button>
+      <div class="status-card" id="statusBox">Đang tải cấu hình...</div>
+    </div>
+
+    <div id="main">
+      <div class="topbar">
+        <div class="top-title" id="pageTitle">Vật phẩm</div>
+        <div class="top-sub" id="pageSub">Lọc theo type, xem và sửa item template</div>
+        <div class="top-actions">
+          <button class="compact" onclick="RefreshCurrent()">Làm mới</button>
+          <button class="compact primary" onclick="RestartServer()">Restart</button>
+        </div>
+      </div>
+
+      <div id="panelItems" class="panel active">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar item-toolbar">
+              <input id="itemTypeFilter" class="hidden-value" value="27">
+              <div id="combo_itemTypeFilter" class="combo toolbar-combo" onclick="ToggleCombo('itemTypeFilter'); event.cancelBubble = true;">
+                <span id="combo_itemTypeFilter_text" class="combo-text">27 - Pet đeo lưng / follow</span>
+                <span class="combo-button"><span class="combo-caret"></span></span>
+                <div id="combo_itemTypeFilter_menu" class="combo-menu"></div>
+              </div>
+              <input id="itemSearch" style="width:260px" placeholder="Tìm theo ID hoặc tên">
+              <button onclick="LoadItems()">Tìm</button>
+              <button onclick="NewItem()">Thêm mới</button>
+            </div>
+            <div class="table-wrap">
+              <table id="itemsTable"></table>
+            </div>
+          </div>
+
+          <div class="right-pane">
+            <div class="section-title">Chi tiết vật phẩm</div>
+            <div class="row">
+              <div class="cell"><label>ID</label><input id="itemId"></div>
+              <div class="cell">
+                <label>Type / group</label>
+                <input id="itemType" class="hidden-value" value="27">
+                <div id="combo_itemType" class="combo" onclick="ToggleCombo('itemType'); event.cancelBubble = true;">
+                  <span id="combo_itemType_text" class="combo-text">27 - Pet đeo lưng / follow</span>
+                  <span class="combo-button"><span class="combo-caret"></span></span>
+                  <div id="combo_itemType_menu" class="combo-menu"></div>
+                </div>
+              </div>
+              <div class="cell">
+                <label>Gender</label>
+                <input id="itemGender" class="hidden-value" value="3">
+                <div id="combo_itemGender" class="combo" onclick="ToggleCombo('itemGender'); event.cancelBubble = true;">
+                  <span id="combo_itemGender_text" class="combo-text">Dùng chung</span>
+                  <span class="combo-button"><span class="combo-caret"></span></span>
+                  <div id="combo_itemGender_menu" class="combo-menu"></div>
+                </div>
+              </div>
+            </div>
+            <label>Tên</label><input id="itemName">
+            <label>Mô tả</label><textarea id="itemDesc"></textarea>
+            <div class="row">
+              <div class="cell"><label>Level</label><input id="itemLevel"></div>
+              <div class="cell"><label>Icon</label><input id="itemIcon"></div>
+              <div class="cell"><label>Part</label><input id="itemPart"></div>
+            </div>
+            <div class="row">
+              <div class="cell">
+                <label>Up to up</label>
+                <input id="itemUp" class="hidden-value" value="0">
+                <div id="combo_itemUp" class="combo" onclick="ToggleCombo('itemUp'); event.cancelBubble = true;">
+                  <span id="combo_itemUp_text" class="combo-text">Không cho nâng cấp</span>
+                  <span class="combo-button"><span class="combo-caret"></span></span>
+                  <div id="combo_itemUp_menu" class="combo-menu"></div>
+                </div>
+              </div>
+              <div class="cell"><label>Power</label><input id="itemPower"></div>
+            </div>
+            <div class="row">
+              <div class="cell"><label>Gold</label><input id="itemGold"></div>
+              <div class="cell"><label>Gem</label><input id="itemGem"></div>
+            </div>
+            <div class="row">
+              <div class="cell"><label>Head</label><input id="itemHead"></div>
+              <div class="cell"><label>Body</label><input id="itemBody"></div>
+              <div class="cell"><label>Leg</label><input id="itemLeg"></div>
+            </div>
+            <div class="actions">
+              <button class="primary" onclick="SaveItem()">Lưu vật phẩm</button>
+            </div>
+            <div class="split-small">
+              <div class="section-title">Mẫu option</div>
+              <input id="optionSearch" placeholder="Lọc nhanh trên bảng option" onkeyup="FilterOptionRows()">
+              <div class="mini-table"><table id="optionsTable"></table></div>
+            </div>
+            <div id="itemMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelEvents" class="panel">
+        <div class="right-pane single-pane">
+          <div class="section-title">Cấu hình sự kiện</div>
+          <div class="row">
+            <div class="cell">
+              <label>Sự kiện đang bật</label>
+              <select id="eventValue">
+                <option value="none">Không sự kiện</option>
+                <option value="topup">TopUp</option>
+                <option value="hungvuong,topup">Hùng Vương + TopUp</option>
+                <option value="trungthu,topup">Trung Thu + TopUp</option>
+                <option value="halloween,topup">Halloween + TopUp</option>
+                <option value="christmas,topup">Noel + TopUp</option>
+                <option value="lunar_new_year,topup">Tết + TopUp</option>
+                <option value="womens_day,topup">8/3 + TopUp</option>
+                <option value="all">Tất cả sự kiện</option>
+              </select>
+            </div>
+            <div class="cell">
+              <label>TNSM</label>
+              <select id="expRate">
+                <option value="1">x1</option>
+                <option value="2">x2</option>
+                <option value="3">x3</option>
+                <option value="5">x5</option>
+                <option value="10">x10</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="SaveEvent()">Lưu sự kiện</button>
+            <button onclick="RestartServer()">Restart server</button>
+          </div>
+          <div id="eventMessage" class="message"></div>
+        </div>
+      </div>
+
+      <div id="panelEquip" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar equip-toolbar">
+              <div class="segmented">
+                <button id="equipGenderAll" class="seg-button active" onclick="SetEquipGender('')">Tất cả</button>
+                <button id="equipGender0" class="seg-button" onclick="SetEquipGender('0')">Trái Đất</button>
+                <button id="equipGender1" class="seg-button" onclick="SetEquipGender('1')">Namek</button>
+                <button id="equipGender2" class="seg-button" onclick="SetEquipGender('2')">Xayda</button>
+                <button id="equipGender3" class="seg-button" onclick="SetEquipGender('3')">Chung</button>
+              </div>
+              <input id="equipTypeFilter" class="hidden-value" value="">
+              <div id="combo_equipTypeFilter" class="combo toolbar-combo" onclick="ToggleCombo('equipTypeFilter'); event.cancelBubble = true;">
+                <span id="combo_equipTypeFilter_text" class="combo-text">Tất cả group</span>
+                <span class="combo-button"><span class="combo-caret"></span></span>
+                <div id="combo_equipTypeFilter_menu" class="combo-menu"></div>
+              </div>
+              <input id="equipSearch" style="width:220px" placeholder="Tìm ID hoặc tên trang bị">
+              <button onclick="LoadEquipItems()">Tìm</button>
+            </div>
+            <div class="table-wrap">
+              <table id="equipItemsTable"></table>
+            </div>
+          </div>
+
+          <div class="right-pane">
+            <div class="section-title">Option trang bị bán trong shop</div>
+            <div class="row">
+              <div class="cell"><label>Item shop ID</label><input id="equipShopItemId"></div>
+              <div class="cell"><label>Item ID</label><input id="equipTempId"></div>
+            </div>
+            <label>Tên trang bị</label><input id="equipItemName">
+            <div class="row">
+              <div class="cell"><label>Type</label><input id="equipTypeLabel"></div>
+              <div class="cell"><label>Gender</label><input id="equipGenderLabel"></div>
+            </div>
+            <label>Shop/NPC</label><input id="equipShopLabel">
+
+            <div class="split-small">
+              <div class="section-title">Thêm / sửa option</div>
+              <div class="row">
+                <div class="cell"><label>Option row</label><input id="equipOptionRowId"></div>
+                <div class="cell">
+                  <label>Option ID</label>
+                  <input id="equipOptionId" class="hidden-value" value="">
+                  <div id="combo_equipOptionId" class="combo" onclick="ToggleCombo('equipOptionId'); event.cancelBubble = true;">
+                    <span id="combo_equipOptionId_text" class="combo-text">Chọn option</span>
+                    <span class="combo-button"><span class="combo-caret"></span></span>
+                    <div id="combo_equipOptionId_menu" class="combo-menu"></div>
+                  </div>
+                </div>
+                <div class="cell"><label>Param</label><input id="equipOptionParam"></div>
+              </div>
+              <div class="actions">
+                <button onclick="NewEquipOption()">Option mới</button>
+                <button class="primary" onclick="SaveEquipOption()">Lưu option</button>
+                <button class="danger" onclick="DeleteEquipOption()">Xóa option</button>
+                <button onclick="LoadEquipOptions()">Tải lại</button>
+              </div>
+              <div class="mini-table"><table id="equipOptionsTable"></table></div>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Option thường dùng</div>
+              <div class="mini-table"><table id="equipPresetTable"></table></div>
+            </div>
+            <div id="equipMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelNpc" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <button onclick="LoadShops()">Danh sách shop</button>
+              <button onclick="LoadNpcs()">Danh sách NPC</button>
+              <button onclick="NewShop()">Thêm shop</button>
+            </div>
+            <div class="table-wrap">
+              <table id="shopsTable"></table>
+            </div>
+          </div>
+
+          <div class="right-pane">
+            <div class="section-title">Shop NPC</div>
+            <div class="row">
+              <div class="cell"><label>Shop ID</label><input id="shopId"></div>
+              <div class="cell"><label>NPC ID</label><input id="shopNpcId"></div>
+              <div class="cell"><label>Type shop</label><input id="shopType"></div>
+            </div>
+            <label>Tag name</label><input id="shopTag">
+            <div class="actions">
+              <button class="primary" onclick="SaveShop()">Lưu shop</button>
+              <button onclick="LoadTabs()">Tải tab</button>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Tab shop</div>
+              <div class="row">
+                <div class="cell"><label>Tab ID</label><input id="tabId"></div>
+                <div class="cell"><label>Tên tab</label><input id="tabName"></div>
+              </div>
+              <div class="actions">
+                <button onclick="NewTab()">Tab mới</button>
+                <button class="primary" onclick="SaveTab()">Lưu tab</button>
+                <button class="danger" onclick="DeleteTab()">Xóa tab</button>
+                <button onclick="LoadShopItems()">Tải item</button>
+              </div>
+              <div class="mini-table"><table id="tabsTable"></table></div>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Vật phẩm bán</div>
+              <div class="row">
+                <div class="cell"><label>ID dòng</label><input id="shopItemId"></div>
+                <div class="cell"><label>Item ID</label><input id="shopTempId"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Giá</label><input id="shopCost"></div>
+                <div class="cell">
+                  <label>Loại tiền</label>
+                  <input id="shopTypeSell" class="hidden-value" value="0">
+                  <div id="combo_shopTypeSell" class="combo" onclick="ToggleCombo('shopTypeSell'); event.cancelBubble = true;">
+                    <span id="combo_shopTypeSell_text" class="combo-text">Vàng</span>
+                    <span class="combo-button"><span class="combo-caret"></span></span>
+                    <div id="combo_shopTypeSell_menu" class="combo-menu"></div>
+                  </div>
+                </div>
+                <div class="cell">
+                  <label>New</label>
+                  <input id="shopIsNew" class="hidden-value" value="1">
+                  <div id="combo_shopIsNew" class="combo" onclick="ToggleCombo('shopIsNew'); event.cancelBubble = true;">
+                    <span id="combo_shopIsNew_text" class="combo-text">Bật</span>
+                    <span class="combo-button"><span class="combo-caret"></span></span>
+                    <div id="combo_shopIsNew_menu" class="combo-menu"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="cell">
+                  <label>Đang bán</label>
+                  <input id="shopIsSell" class="hidden-value" value="1">
+                  <div id="combo_shopIsSell" class="combo" onclick="ToggleCombo('shopIsSell'); event.cancelBubble = true;">
+                    <span id="combo_shopIsSell_text" class="combo-text">Bật</span>
+                    <span class="combo-button"><span class="combo-caret"></span></span>
+                    <div id="combo_shopIsSell_menu" class="combo-menu"></div>
+                  </div>
+                </div>
+                <div class="cell"><label>Icon spec</label><input id="shopIconSpec"></div>
+              </div>
+              <div class="actions">
+                <button onclick="NewShopItem()">Item mới</button>
+                <button class="primary" onclick="SaveShopItem()">Lưu item</button>
+                <button class="danger" onclick="DeleteShopItem()">Xóa item</button>
+                <button onclick="LoadShopOptions()">Options</button>
+              </div>
+              <div class="mini-table"><table id="shopItemsTable"></table></div>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Option item shop</div>
+              <div class="row">
+                <div class="cell"><label>Option row</label><input id="shopOptionRowId"></div>
+                <div class="cell">
+                  <label>Option ID</label>
+                  <input id="shopOptionId" class="hidden-value" value="">
+                  <div id="combo_shopOptionId" class="combo" onclick="ToggleCombo('shopOptionId'); event.cancelBubble = true;">
+                    <span id="combo_shopOptionId_text" class="combo-text">Chọn option</span>
+                    <span class="combo-button"><span class="combo-caret"></span></span>
+                    <div id="combo_shopOptionId_menu" class="combo-menu"></div>
+                  </div>
+                </div>
+                <div class="cell"><label>Param</label><input id="shopOptionParam"></div>
+              </div>
+              <div class="actions">
+                <button onclick="NewShopOption()">Option mới</button>
+                <button class="primary" onclick="SaveShopOption()">Lưu option</button>
+                <button class="danger" onclick="DeleteShopOption()">Xóa option</button>
+              </div>
+              <div class="mini-table"><table id="shopOptionsTable"></table></div>
+            </div>
+            <div id="npcMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script language="JScript">
+    var shell = new ActiveXObject("WScript.Shell");
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var rootDir = GetRootDir();
+    var resultPath = rootDir + "\\logs\\admin_data_result.txt";
+    var currentTab = "items";
+    var comboData = {};
+    var currentEquipGender = "";
+
+    window.onload = function () {
+      FitWindowToScreen();
+      InitCombos();
+      LoadItemTypes();
+      LoadStatus();
+      LoadItems();
+      LoadOptions();
+      AdjustTableOffsets();
+    };
+
+    window.onresize = function () {
+      CloseCombos("");
+      AdjustTableOffsets();
+    };
+
+    document.onclick = function () {
+      CloseCombos("");
+    };
+
+    function GetRootDir() {
+      var path = unescape(document.location.pathname).replace(/\//g, "\\");
+      if (path.charAt(0) == "\\" && path.charAt(2) == ":") path = path.substring(1);
+      return fso.GetParentFolderName(path);
+    }
+
+    function FitWindowToScreen() {
+      try {
+        var sw = screen.availWidth || 1320;
+        var sh = screen.availHeight || 800;
+        var w = Math.min(1320, Math.max(760, sw - 80));
+        var h = Math.min(820, Math.max(620, sh - 80));
+        window.resizeTo(w, h);
+        window.moveTo(Math.max(0, (sw - w) / 2), Math.max(0, (sh - h) / 2));
+      } catch (e) {
+      }
+    }
+
+    function AdjustTableOffsets() {
+      try {
+        var nodes = document.getElementsByTagName("div");
+        for (var i = 0; i < nodes.length; i++) {
+          var tb = nodes[i];
+          if ((" " + tb.className + " ").indexOf(" toolbar ") < 0) continue;
+          var next = tb.nextSibling;
+          while (next && next.nodeType != 1) next = next.nextSibling;
+          if (!next || (" " + next.className + " ").indexOf(" table-wrap ") < 0) continue;
+          var h = tb.scrollHeight > tb.offsetHeight ? tb.scrollHeight : tb.offsetHeight;
+          if (h < 56) h = 56;
+          next.style.top = h + "px";
+        }
+      } catch (e) {
+      }
+    }
+
+    function ShowTab(tab) {
+      currentTab = tab;
+      document.getElementById("panelItems").className = tab == "items" ? "panel active" : "panel";
+      document.getElementById("panelEvents").className = tab == "events" ? "panel active" : "panel";
+      document.getElementById("panelEquip").className = tab == "equip" ? "panel active" : "panel";
+      document.getElementById("panelNpc").className = tab == "npc" ? "panel active" : "panel";
+      document.getElementById("navItems").className = tab == "items" ? "nav-button active" : "nav-button";
+      document.getElementById("navEvents").className = tab == "events" ? "nav-button active" : "nav-button";
+      document.getElementById("navEquip").className = tab == "equip" ? "nav-button active" : "nav-button";
+      document.getElementById("navNpc").className = tab == "npc" ? "nav-button active" : "nav-button";
+      if (tab == "items") {
+        document.getElementById("pageTitle").innerText = "Vật phẩm";
+        document.getElementById("pageSub").innerText = "Lọc theo type, xem và sửa item template";
+        LoadItems();
+      } else if (tab == "events") {
+        document.getElementById("pageTitle").innerText = "Sự kiện";
+        document.getElementById("pageSub").innerText = "Bật/tắt event và chỉnh tỉ lệ TNSM";
+        LoadStatus();
+      } else if (tab == "equip") {
+        document.getElementById("pageTitle").innerText = "Chỉ số trang bị";
+        document.getElementById("pageSub").innerText = "Quản lý option của trang bị bán trong shop theo gender";
+        LoadEquipItems();
+      } else {
+        document.getElementById("pageTitle").innerText = "NPC & Shop";
+        document.getElementById("pageSub").innerText = "Gán shop, tab, item và option cho NPC";
+        LoadShops();
+      }
+      AdjustTableOffsets();
+    }
+
+    function RefreshCurrent() {
+      LoadStatus();
+      if (currentTab == "items") LoadItems();
+      if (currentTab == "events") LoadStatus();
+      if (currentTab == "equip") LoadEquipItems();
+      if (currentTab == "npc") LoadShops();
+    }
+
+    function RunAdmin(action, params) {
+      var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + resultPath + '"';
+      for (var key in params) {
+        cmd += " -" + key + ' "' + SafeArg(params[key]) + '"';
+      }
+      shell.Run(cmd, 0, true);
+      return ReadFile(resultPath);
+    }
+
+    function RunBat(action) {
+      shell.Run('cmd /c ""' + rootDir + '\\run.bat" ' + action + '"', 0, false);
+    }
+
+    function RestartServer() {
+      if (window.confirm("Khởi động lại server để áp dụng dữ liệu mới?")) {
+        RunBat("restart");
+      }
+    }
+
+    function SafeArg(value) {
+      if (value == null) return "";
+      return ("" + value).replace(/"/g, "'");
+    }
+
+    function ReadFile(path) {
+      try {
+        if (!fso.FileExists(path)) return "";
+        var stream = new ActiveXObject("ADODB.Stream");
+        stream.Type = 2;
+        stream.Charset = "utf-8";
+        stream.Open();
+        stream.LoadFromFile(path);
+        var text = stream.ReadText();
+        stream.Close();
+        return text;
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function ParseTsv(text) {
+      text = RepairMojibake(text);
+      text = text.replace(/^\uFEFF/, "");
+      var lines = text.split(/\r?\n/);
+      var rows = [];
+      for (var i = 0; i < lines.length; i++) {
+        if (Trim(lines[i]).length > 0) rows.push(lines[i].split("\t"));
+      }
+      return rows;
+    }
+
+    function RepairMojibake(text) {
+      if (!/[\u2500-\u257F]/.test(text)) {
+        return text;
+      }
+
+      var cp437 = "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
+      var bytes = [];
+      for (var i = 0; i < text.length; i++) {
+        var code = text.charCodeAt(i);
+        if (code < 128) {
+          bytes.push(code);
+          continue;
+        }
+        var idx = cp437.indexOf(text.charAt(i));
+        if (idx >= 0) {
+          bytes.push(idx + 128);
+        } else {
+          return text;
+        }
+      }
+      return Utf8BytesToString(bytes);
+    }
+
+    function Utf8BytesToString(bytes) {
+      var out = "";
+      for (var i = 0; i < bytes.length;) {
+        var b = bytes[i++];
+        if (b < 128) {
+          out += String.fromCharCode(b);
+        } else if ((b & 224) == 192 && i < bytes.length) {
+          out += String.fromCharCode(((b & 31) << 6) | (bytes[i++] & 63));
+        } else if ((b & 240) == 224 && i + 1 < bytes.length) {
+          out += String.fromCharCode(((b & 15) << 12) | ((bytes[i++] & 63) << 6) | (bytes[i++] & 63));
+        } else if ((b & 248) == 240 && i + 2 < bytes.length) {
+          var cp = ((b & 7) << 18) | ((bytes[i++] & 63) << 12) | ((bytes[i++] & 63) << 6) | (bytes[i++] & 63);
+          cp -= 65536;
+          out += String.fromCharCode(55296 + (cp >> 10), 56320 + (cp & 1023));
+        }
+      }
+      return out;
+    }
+
+    function RenderTable(tableId, rows, cols, clickFn) {
+      var html = "<thead><tr>";
+      for (var i = 0; i < cols.length; i++) html += "<th>" + cols[i] + "</th>";
+      html += "</tr></thead><tbody>";
+      for (var r = 1; r < rows.length; r++) {
+        html += '<tr onclick="' + clickFn + '(' + r + ')">';
+        for (var c = 0; c < cols.length; c++) {
+          html += "<td>" + Html(rows[r][c] || "") + "</td>";
+        }
+        html += "</tr>";
+      }
+      html += "</tbody>";
+      document.getElementById(tableId).innerHTML = html;
+    }
+
+    function RenderTableMapped(tableId, rows, cols, clickFn, mapper) {
+      var html = "<thead><tr>";
+      for (var i = 0; i < cols.length; i++) html += "<th>" + cols[i] + "</th>";
+      html += "</tr></thead><tbody>";
+      for (var r = 1; r < rows.length; r++) {
+        html += '<tr onclick="' + clickFn + '(' + r + ')">';
+        for (var c = 0; c < cols.length; c++) {
+          var value = rows[r][c] || "";
+          if (mapper) value = mapper(c, value, rows[r]);
+          html += "<td>" + Html(value) + "</td>";
+        }
+        html += "</tr>";
+      }
+      html += "</tbody>";
+      document.getElementById(tableId).innerHTML = html;
+    }
+
+    function MoneyLabel(value) {
+      var labels = {
+        "0": "Vàng",
+        "1": "Ngọc",
+        "2": "Ngọc khóa (chưa hỗ trợ)",
+        "3": "Ruby",
+        "4": "Coupon"
+      };
+      return labels[value] ? labels[value] : value;
+    }
+
+    function ToggleLabel(value) {
+      return value == "1" ? "Bật" : "Tắt";
+    }
+
+    function ItemTypeBaseItems() {
+      return [
+        ["0", "0 - Áo"],
+        ["1", "1 - Quần"],
+        ["2", "2 - Găng"],
+        ["3", "3 - Giày"],
+        ["4", "4 - Rada"],
+        ["5", "5 - Cải trang / PET hiển thị"],
+        ["6", "6 - Đậu / tiêu hao"],
+        ["7", "7 - Sách / vật phẩm"],
+        ["8", "8 - Nhóm item 8"],
+        ["9", "9 - Nhóm item 9"],
+        ["10", "10 - Nhóm item 10"],
+        ["11", "11 - Cờ / túi / phụ kiện"],
+        ["12", "12 - Nhóm item 12"],
+        ["13", "13 - Nhóm item 13"],
+        ["14", "14 - Nhóm item 14"],
+        ["15", "15 - Nhóm item 15"],
+        ["16", "16 - Nhóm item 16"],
+        ["17", "17 - Nhóm item 17"],
+        ["22", "22 - Nhóm item 22"],
+        ["23", "23 - Thú cưỡi"],
+        ["24", "24 - Linh thú"],
+        ["25", "25 - Đệ tử / phụ kiện"],
+        ["27", "27 - Pet đeo lưng / follow"],
+        ["28", "28 - Nhóm item 28"],
+        ["29", "29 - Nhóm item 29"],
+        ["30", "30 - Nhóm item 30"],
+        ["31", "31 - Nhóm item 31"],
+        ["32", "32 - Giáp tập luyện"],
+        ["33", "33 - Nhóm item 33"],
+        ["34", "34 - Nhóm item 34"],
+        ["36", "36 - Nhóm item 36"],
+        ["37", "37 - Nhóm item 37"],
+        ["75", "75 - Nhóm item 75"]
+      ];
+    }
+
+    function ItemTypeBaseLabel(value) {
+      var items = ItemTypeBaseItems();
+      for (var i = 0; i < items.length; i++) {
+        if (items[i][0] == value) return items[i][1];
+      }
+      return value == "" ? "Tất cả group" : value + " - Nhóm item " + value;
+    }
+
+    function ComboLabel(id, value, fallback) {
+      var items = comboData[id] || [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i][0] == value) return items[i][1];
+      }
+      return fallback;
+    }
+
+    function ItemTypeLabel(value) {
+      return ComboLabel("itemType", value, ItemTypeBaseLabel(value));
+    }
+
+    function GenderLabel(value) {
+      return ComboLabel("itemGender", value, value);
+    }
+
+    function UpToUpLabel(value) {
+      return ComboLabel("itemUp", value, value);
+    }
+
+    function InitCombos() {
+      var baseTypes = ItemTypeBaseItems();
+      var filterTypes = [["", "Tất cả group"]];
+      for (var i = 0; i < baseTypes.length; i++) filterTypes.push(baseTypes[i]);
+      SetComboItems("itemTypeFilter", filterTypes);
+      SetComboItems("itemType", baseTypes);
+      SetComboItems("equipTypeFilter", filterTypes);
+      SetComboItems("itemGender", [
+        ["0", "0 - Trái Đất"],
+        ["1", "1 - Namek"],
+        ["2", "2 - Xayda"],
+        ["3", "3 - Dùng chung"]
+      ]);
+      SetComboItems("itemUp", [
+        ["0", "0 - Không cho nâng cấp"],
+        ["1", "1 - Cho nâng cấp"]
+      ]);
+      SetComboItems("shopTypeSell", [
+        ["0", "Vàng"],
+        ["1", "Ngọc"],
+        ["2", "Ngọc khóa (chưa hỗ trợ)"],
+        ["3", "Ruby"],
+        ["4", "Coupon"]
+      ]);
+      SetComboItems("shopIsNew", [["1", "Bật"], ["0", "Tắt"]]);
+      SetComboItems("shopIsSell", [["1", "Bật"], ["0", "Tắt"]]);
+      SetComboItems("shopOptionId", [["", "Chọn option"]]);
+      SetComboItems("equipOptionId", [["", "Chọn option"]]);
+      RenderEquipPresets();
+    }
+
+    function LoadItemTypes() {
+      var rows = ParseTsv(RunAdmin("listitemtypes", {}));
+      if (rows.length <= 1) return;
+
+      var filterTypes = [["", "Tất cả group"]];
+      var detailTypes = [];
+      for (var i = 1; i < rows.length; i++) {
+        var id = rows[i][0] || "";
+        if (id == "") continue;
+        var count = rows[i][1] || "0";
+        var label = ItemTypeBaseLabel(id);
+        filterTypes.push([id, label + " (" + count + ")"]);
+        detailTypes.push([id, label]);
+      }
+      SetComboItems("itemTypeFilter", filterTypes);
+      SetComboItems("itemType", detailTypes);
+      SetComboItems("equipTypeFilter", filterTypes);
+    }
+
+    function SetComboItems(id, items) {
+      comboData[id] = items;
+      var menu = document.getElementById("combo_" + id + "_menu");
+      if (!menu) return;
+      var html = "";
+      var current = V(id);
+      for (var i = 0; i < items.length; i++) {
+        var active = items[i][0] == current ? " active" : "";
+        html += '<div class="combo-option' + active + '" onclick="ChooseCombo(\'' + id + '\', \'' + EscapeJs(items[i][0]) + '\'); event.cancelBubble = true;">' + Html(items[i][1]) + "</div>";
+      }
+      menu.innerHTML = html;
+      SyncComboDisplay(id);
+    }
+
+    function ToggleCombo(id) {
+      var combo = document.getElementById("combo_" + id);
+      if (!combo) return;
+      var isOpen = combo.className.indexOf("open") >= 0;
+      CloseCombos(id);
+      combo.className = isOpen ? "combo" : "combo open";
+    }
+
+    function ChooseCombo(id, value) {
+      Set(id, value);
+      CloseCombos("");
+      OnComboChanged(id);
+    }
+
+    function OnComboChanged(id) {
+      if (id == "itemTypeFilter") LoadItems();
+      if (id == "equipTypeFilter") LoadEquipItems();
+    }
+
+    function CloseCombos(exceptId) {
+      var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "equipOptionId", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionId"];
+      for (var i = 0; i < ids.length; i++) {
+        if (ids[i] == exceptId) continue;
+        var combo = document.getElementById("combo_" + ids[i]);
+        if (combo) combo.className = "combo";
+      }
+    }
+
+    function SyncComboDisplay(id) {
+      var text = document.getElementById("combo_" + id + "_text");
+      if (!text) return;
+      var value = V(id);
+      var items = comboData[id] || [];
+      var label = value;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i][0] == value) {
+          label = items[i][1];
+          break;
+        }
+      }
+      if (label == "") label = "Chọn option";
+      text.innerText = label;
+    }
+
+    function EscapeJs(value) {
+      return ("" + value).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    var itemRows = [];
+    function LoadItems() {
+      var text = RunAdmin("listitems", { Type: V("itemTypeFilter"), Search: V("itemSearch") });
+      itemRows = ParseTsv(text);
+      RenderTableMapped("itemsTable", itemRows, ["ID", "Type", "Gender", "Tên", "Mô tả", "Level", "Icon", "Part"], "PickItem", function (col, value) {
+        if (col == 1) return ItemTypeLabel(value);
+        if (col == 2) return GenderLabel(value);
+        return value;
+      });
+      Msg("itemMessage", itemRows.length > 1 ? "Đã tải " + (itemRows.length - 1) + " vật phẩm." : text);
+      AdjustTableOffsets();
+    }
+
+    function PickItem(index) {
+      var r = itemRows[index];
+      Set("itemId", r[0]); Set("itemType", r[1]); Set("itemGender", r[2]); Set("itemName", r[3]);
+      Set("itemDesc", r[4]); Set("itemLevel", r[5]); Set("itemIcon", r[6]); Set("itemPart", r[7]);
+      Set("itemUp", r[8]); Set("itemPower", r[9]); Set("itemGold", r[10]); Set("itemGem", r[11]);
+      Set("itemHead", r[12]); Set("itemBody", r[13]); Set("itemLeg", r[14]);
+      AdjustTableOffsets();
+    }
+
+    function NewItem() {
+      Set("itemId", ""); Set("itemType", V("itemTypeFilter") || "27"); Set("itemGender", "3"); Set("itemName", "");
+      Set("itemDesc", ""); Set("itemLevel", "0"); Set("itemIcon", "0"); Set("itemPart", "-1");
+      Set("itemUp", "1"); Set("itemPower", "0"); Set("itemGold", "0"); Set("itemGem", "0");
+      Set("itemHead", "-1"); Set("itemBody", "-1"); Set("itemLeg", "-1");
+    }
+
+    function SaveItem() {
+      if (!V("itemId")) { Msg("itemMessage", "Cần nhập ID vật phẩm."); return; }
+      var text = RunAdmin("saveitem", {
+        Id: V("itemId"), Type: V("itemType"), Gender: V("itemGender"), Name: V("itemName"),
+        Description: V("itemDesc"), Level: V("itemLevel"), IconId: V("itemIcon"), Part: V("itemPart"),
+        IsUpToUp: V("itemUp"), PowerRequire: V("itemPower"), Gold: V("itemGold"), Gem: V("itemGem"),
+        Head: V("itemHead"), Body: V("itemBody"), Leg: V("itemLeg")
+      });
+      Msg("itemMessage", StatusText(text));
+      LoadItems();
+    }
+
+    var optionRows = [];
+    function LoadOptions() {
+      optionRows = ParseTsv(RunAdmin("listoptions", {}));
+      RenderOptionTable(optionRows);
+      FillOptionSelect();
+    }
+
+    function FillOptionSelect() {
+      var selected = V("shopOptionId");
+      var equipSelected = V("equipOptionId");
+      var items = [["", "Chọn option"]];
+      for (var i = 1; i < optionRows.length; i++) {
+        var id = optionRows[i][0] || "";
+        var name = optionRows[i][1] || "";
+        items.push([id, id + " - " + name]);
+      }
+      SetComboItems("shopOptionId", items);
+      if (selected) Set("shopOptionId", selected);
+      SetComboItems("equipOptionId", items);
+      if (equipSelected) Set("equipOptionId", equipSelected);
+    }
+
+    function FilterOptionRows() {
+      var q = V("optionSearch").toLowerCase();
+      var filtered = [optionRows[0]];
+      for (var i = 1; i < optionRows.length; i++) {
+        if ((optionRows[i].join(" ") || "").toLowerCase().indexOf(q) >= 0) filtered.push(optionRows[i]);
+      }
+      RenderOptionTable(filtered);
+    }
+
+    function RenderOptionTable(rows) {
+      RenderTable("optionsTable", rows, ["ID", "Tên option"], "Noop");
+    }
+
+    var equipRows = [];
+    var equipOptionRows = [];
+
+    function SetEquipGender(gender) {
+      currentEquipGender = gender;
+      var ids = ["All", "0", "1", "2", "3"];
+      for (var i = 0; i < ids.length; i++) {
+        var suffix = ids[i];
+        var el = document.getElementById("equipGender" + suffix);
+        if (!el) continue;
+        var active = (gender == "" && suffix == "All") || gender == suffix;
+        el.className = active ? "seg-button active" : "seg-button";
+      }
+      LoadEquipItems();
+    }
+
+    function LoadEquipItems() {
+      equipRows = ParseTsv(RunAdmin("listequipmentshopitems", {
+        Gender: currentEquipGender,
+        Type: V("equipTypeFilter"),
+        Search: V("equipSearch")
+      }));
+      RenderTableMapped("equipItemsTable", equipRows, ["Row", "Item", "Tên", "Type", "Gender", "Tab", "Tên tab", "Shop", "NPC", "Tiền", "Giá", "Opt"], "PickEquipItem", function (col, value, row) {
+        if (col == 3) return ItemTypeLabel(value);
+        if (col == 4) return GenderLabel(value);
+        if (col == 9) return MoneyLabel(value);
+        return value;
+      });
+      Msg("equipMessage", equipRows.length > 1 ? "Đã tải " + (equipRows.length - 1) + " trang bị shop." : "Không có trang bị phù hợp.");
+      AdjustTableOffsets();
+    }
+
+    function PickEquipItem(index) {
+      var r = equipRows[index];
+      Set("equipShopItemId", r[0]);
+      Set("equipTempId", r[1]);
+      Set("equipItemName", r[2]);
+      Set("equipTypeLabel", ItemTypeLabel(r[3]));
+      Set("equipGenderLabel", GenderLabel(r[4]));
+      Set("equipShopLabel", "Shop " + r[7] + " / Tab " + r[5] + " - " + (r[6] || "") + " / NPC " + (r[8] || ""));
+      NewEquipOption();
+      LoadEquipOptions();
+    }
+
+    function LoadEquipOptions() {
+      if (!V("equipShopItemId")) { Msg("equipMessage", "Chọn một trang bị shop trước."); return; }
+      equipOptionRows = ParseTsv(RunAdmin("listshopoptions", { Id: V("equipShopItemId") }));
+      RenderTableMapped("equipOptionsTable", equipOptionRows, ["ID", "Item shop", "Option", "Tên", "Param"], "PickEquipOption", function (col, value, row) {
+        if (col == 2) return value + " - " + (row[3] || "");
+        if (col == 3) return row[3] || "";
+        return value;
+      });
+    }
+
+    function PickEquipOption(index) {
+      Set("equipOptionRowId", equipOptionRows[index][0]);
+      Set("equipOptionId", equipOptionRows[index][2]);
+      Set("equipOptionParam", equipOptionRows[index][4]);
+    }
+
+    function NewEquipOption() {
+      Set("equipOptionRowId", "");
+      Set("equipOptionId", "");
+      Set("equipOptionParam", "0");
+    }
+
+    function SaveEquipOption() {
+      if (!V("equipShopItemId")) { Msg("equipMessage", "Chọn một trang bị shop trước."); return; }
+      if (!V("equipOptionId")) { Msg("equipMessage", "Chọn Option ID."); return; }
+      var text = RunAdmin("saveshopoption", {
+        Id: V("equipOptionRowId"),
+        TempId: V("equipShopItemId"),
+        OptionId: V("equipOptionId"),
+        Param: V("equipOptionParam")
+      });
+      Msg("equipMessage", StatusText(text));
+      LoadEquipOptions();
+      LoadEquipItems();
+    }
+
+    function DeleteEquipOption() {
+      if (!V("equipOptionRowId")) return;
+      if (!window.confirm("Xóa option ID " + V("equipOptionRowId") + "?")) return;
+      Msg("equipMessage", StatusText(RunAdmin("deleteshopoption", { Id: V("equipOptionRowId") })));
+      LoadEquipOptions();
+      LoadEquipItems();
+    }
+
+    function RenderEquipPresets() {
+      var rows = [
+        ["Option", "Tên", "Gợi ý param"],
+        ["0", "Tấn công +#", "1000"],
+        ["2", "HP, KI +#000", "20000 = 20 triệu"],
+        ["6", "HP +#", "20000000"],
+        ["7", "KI +#", "20000000"],
+        ["47", "Giáp +#", "100"],
+        ["48", "HP, KI +#", "20000000"],
+        ["50", "Sức đánh +#%", "20"],
+        ["77", "HP +#%", "20"],
+        ["94", "Giáp #%", "20"],
+        ["103", "KI +#%", "20"],
+        ["14", "Chí mạng +#%", "10"],
+        ["108", "Né đòn #%", "10"],
+        ["93", "Hạn sử dụng # ngày", "30"]
+      ];
+      RenderTable("equipPresetTable", rows, ["Option", "Tên", "Param"], "Noop");
+    }
+
+    function LoadStatus() {
+      var rows = ParseTsv(RunAdmin("status", {}));
+      var eventValue = "none";
+      var expRate = "1";
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][0] == "server.event") eventValue = rows[i][1] || "none";
+        if (rows[i][0] == "server.expserver") expRate = rows[i][1] || "1";
+      }
+      Set("eventValue", eventValue);
+      Set("expRate", expRate);
+      document.getElementById("statusBox").innerText = "server.event=" + eventValue + "\r\nserver.expserver=" + expRate + "\r\nDB: Config.properties";
+    }
+
+    function SaveEvent() {
+      var a = StatusText(RunAdmin("setevent", { EventValue: V("eventValue") }));
+      var b = StatusText(RunAdmin("setexp", { ExpRate: V("expRate") }));
+      Msg("eventMessage", a + "\r\n" + b);
+      LoadStatus();
+    }
+
+    var shopRows = [];
+    function LoadShops() {
+      shopRows = ParseTsv(RunAdmin("listshops", {}));
+      RenderTable("shopsTable", shopRows, ["ID", "NPC", "Tên NPC", "Tag", "Type"], "PickShop");
+      Msg("npcMessage", shopRows.length > 1 ? "Đã tải " + (shopRows.length - 1) + " shop." : "");
+    }
+
+    function LoadNpcs() {
+      shopRows = ParseTsv(RunAdmin("listnpcs", {}));
+      RenderTable("shopsTable", shopRows, ["NPC", "Tên", "Head", "Body", "Leg", "Avatar"], "PickNpc");
+      Msg("npcMessage", shopRows.length > 1 ? "Đã tải " + (shopRows.length - 1) + " NPC." : "");
+    }
+
+    function PickShop(index) {
+      var r = shopRows[index];
+      Set("shopId", r[0]); Set("shopNpcId", r[1]); Set("shopTag", r[3]); Set("shopType", r[4]);
+      LoadTabs();
+    }
+
+    function PickNpc(index) {
+      Set("shopNpcId", shopRows[index][0]);
+    }
+
+    function NewShop() {
+      Set("shopId", ""); Set("shopNpcId", ""); Set("shopTag", ""); Set("shopType", "0");
+      ClearShopChildren();
+    }
+
+    function SaveShop() {
+      var text = RunAdmin("saveshop", { ShopId: V("shopId"), NpcId: V("shopNpcId"), TagName: V("shopTag"), TypeShop: V("shopType") });
+      Msg("npcMessage", StatusText(text) + "\r\nRestart server để áp dụng shop cache.");
+      LoadShops();
+    }
+
+    var tabRows = [];
+    function LoadTabs() {
+      if (!V("shopId")) { Msg("npcMessage", "Chọn shop trước."); return; }
+      tabRows = ParseTsv(RunAdmin("listtabs", { ShopId: V("shopId") }));
+      RenderTable("tabsTable", tabRows, ["ID", "Shop", "Tên tab"], "PickTab");
+    }
+
+    function PickTab(index) {
+      Set("tabId", tabRows[index][0]); Set("tabName", tabRows[index][2]);
+      LoadShopItems();
+    }
+
+    function NewTab() {
+      Set("tabId", ""); Set("tabName", "");
+    }
+
+    function SaveTab() {
+      var text = RunAdmin("savetab", { TabId: V("tabId"), ShopId: V("shopId"), Name: V("tabName") });
+      Msg("npcMessage", StatusText(text));
+      LoadTabs();
+    }
+
+    function DeleteTab() {
+      if (!V("tabId")) {
+        Msg("npcMessage", "Chọn tab cần xóa trước.");
+        return;
+      }
+      if (!window.confirm("Xóa tab ID " + V("tabId") + "?\n\nToàn bộ item và option trong tab này cũng sẽ bị xóa.")) {
+        return;
+      }
+      Msg("npcMessage", StatusText(RunAdmin("deletetab", { TabId: V("tabId") })));
+      Set("tabId", "");
+      Set("tabName", "");
+      document.getElementById("shopItemsTable").innerHTML = "";
+      document.getElementById("shopOptionsTable").innerHTML = "";
+      LoadTabs();
+    }
+
+    var shopItemRows = [];
+    function LoadShopItems() {
+      if (!V("tabId")) { Msg("npcMessage", "Chọn tab trước."); return; }
+      shopItemRows = ParseTsv(RunAdmin("listshopitems", { TabId: V("tabId") }));
+      RenderTableMapped("shopItemsTable", shopItemRows, ["ID", "Tab", "Item", "Tên", "New", "Sell", "Tiền", "Giá"], "PickShopItem", function (col, value) {
+        if (col == 4 || col == 5) return ToggleLabel(value);
+        if (col == 6) return MoneyLabel(value);
+        return value;
+      });
+    }
+
+    function PickShopItem(index) {
+      var r = shopItemRows[index];
+      Set("shopItemId", r[0]); Set("shopTempId", r[2]); Set("shopIsNew", r[4]); Set("shopIsSell", r[5]);
+      Set("shopTypeSell", r[6]); Set("shopCost", r[7]); Set("shopIconSpec", r[8]);
+      LoadShopOptions();
+    }
+
+    function NewShopItem() {
+      Set("shopItemId", ""); Set("shopTempId", ""); Set("shopCost", "0"); Set("shopTypeSell", "0");
+      Set("shopIsNew", "0"); Set("shopIsSell", "1"); Set("shopIconSpec", "0");
+    }
+
+    function SaveShopItem() {
+      var text = RunAdmin("saveshopitem", {
+        Id: V("shopItemId"), TabId: V("tabId"), TempId: V("shopTempId"), Cost: V("shopCost"),
+        TypeSell: V("shopTypeSell"), IsNew: V("shopIsNew"), IsSell: V("shopIsSell"), IconSpec: V("shopIconSpec")
+      });
+      Msg("npcMessage", StatusText(text));
+      LoadShopItems();
+    }
+
+    function DeleteShopItem() {
+      if (!V("shopItemId")) return;
+      if (!window.confirm("Xóa vật phẩm shop ID " + V("shopItemId") + "?")) return;
+      Msg("npcMessage", StatusText(RunAdmin("deleteshopitem", { Id: V("shopItemId") })));
+      LoadShopItems();
+    }
+
+    var shopOptionRows = [];
+    function LoadShopOptions() {
+      if (!V("shopItemId")) { Msg("npcMessage", "Chọn item shop trước."); return; }
+      shopOptionRows = ParseTsv(RunAdmin("listshopoptions", { Id: V("shopItemId") }));
+      RenderTableMapped("shopOptionsTable", shopOptionRows, ["ID", "Item shop", "Option", "Tên", "Param"], "PickShopOption", function (col, value, row) {
+        if (col == 2) return value + " - " + (row[3] || "");
+        if (col == 3) return row[3] || "";
+        return value;
+      });
+    }
+
+    function PickShopOption(index) {
+      Set("shopOptionRowId", shopOptionRows[index][0]);
+      Set("shopOptionId", shopOptionRows[index][2]);
+      Set("shopOptionParam", shopOptionRows[index][4]);
+    }
+
+    function NewShopOption() {
+      Set("shopOptionRowId", ""); Set("shopOptionId", ""); Set("shopOptionParam", "0");
+    }
+
+    function SaveShopOption() {
+      if (!V("shopItemId")) { Msg("npcMessage", "Chọn item shop trước."); return; }
+      var text = RunAdmin("saveshopoption", {
+        Id: V("shopOptionRowId"), TempId: V("shopItemId"), OptionId: V("shopOptionId"), Param: V("shopOptionParam")
+      });
+      Msg("npcMessage", StatusText(text));
+      LoadShopOptions();
+    }
+
+    function DeleteShopOption() {
+      if (!V("shopOptionRowId")) return;
+      if (!window.confirm("Xóa option ID " + V("shopOptionRowId") + "?")) return;
+      Msg("npcMessage", StatusText(RunAdmin("deleteshopoption", { Id: V("shopOptionRowId") })));
+      LoadShopOptions();
+    }
+
+    function ClearShopChildren() {
+      document.getElementById("tabsTable").innerHTML = "";
+      document.getElementById("shopItemsTable").innerHTML = "";
+      document.getElementById("shopOptionsTable").innerHTML = "";
+    }
+
+    function StatusText(text) {
+      var rows = ParseTsv(text);
+      if (rows.length > 0 && (rows[0][0] == "OK" || rows[0][0] == "ERROR")) return rows[0].join(" ");
+      return text;
+    }
+
+    function Html(value) {
+      return ("" + value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function V(id) {
+      return document.getElementById(id).value;
+    }
+
+    function Set(id, value) {
+      document.getElementById(id).value = value == null ? "" : value;
+      SyncComboDisplay(id);
+    }
+
+    function Msg(id, text) {
+      document.getElementById(id).innerText = text;
+    }
+
+    function Trim(value) {
+      return ("" + value).replace(/^\s+|\s+$/g, "");
+    }
+
+    function Noop(index) {}
+  </script>
+</body>
+</html>

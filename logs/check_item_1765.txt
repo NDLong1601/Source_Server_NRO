@@ -1,0 +1,2 @@
+﻿id	TYPE	gender	NAME	description	level	icon_id	part	is_up_to_up	power_require	gold	gem	head	body	leg
+1765	27	3	Rổng 7 sao	Vật phẩm sự kiện	0	15077	1662	0	0	0	0	1662	1663	1664

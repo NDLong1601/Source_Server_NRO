@@ -1,0 +1,3 @@
+﻿id	tab_id	temp_id	item_name	is_new	is_sell	type_sell	cost	icon_spec	create_time
+100003	64	1708	CT Android 21 Thân Thiện	1	1	1	1500	0	2026-08-08 14:43:14
+100002	64	1765	Rổng 7 sao	1	1	1	2000	0	2026-08-08 14:25:53

@@ -1,0 +1,674 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta charset="utf-8">
+  <title>NRO Server Dashboard</title>
+  <hta:application
+    id="NroServerDashboard"
+    applicationname="NRO Server Dashboard"
+    border="thin"
+    caption="yes"
+    maximizebutton="yes"
+    minimizebutton="yes"
+    scroll="no"
+    singleinstance="yes"
+    sysmenu="yes"
+    windowstate="normal" />
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    #app {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      min-width: 900px;
+      min-height: 560px;
+      background: #0f172a;
+    }
+
+    #sidebar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 278px;
+      padding: 18px 16px;
+      box-sizing: border-box;
+      background: #111827;
+      border-right: 1px solid #263244;
+      overflow-y: auto;
+    }
+
+    #content {
+      position: absolute;
+      left: 311px;
+      top: 18px;
+      right: 18px;
+      bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 28px;
+      font-weight: 650;
+      color: #f9fafb;
+    }
+
+    .sub {
+      margin: 4px 0 16px;
+      color: #9ca3af;
+      font-size: 12px;
+    }
+
+    .status-card {
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #1f2937;
+    }
+
+    .status-title {
+      margin-bottom: 8px;
+      color: #9ca3af;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    #statusText {
+      min-height: 74px;
+      color: #d1d5db;
+      white-space: pre-line;
+      line-height: 18px;
+    }
+
+    .section-title {
+      margin: 16px 0 8px;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 650;
+      text-transform: uppercase;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      height: 36px;
+      margin: 0 0 8px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #334155;
+      color: #f8fafc;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      padding: 0 12px;
+      box-sizing: border-box;
+    }
+
+    button:hover {
+      background: #3f4f66;
+    }
+
+    button.primary {
+      border-color: #059669;
+      background: #047857;
+    }
+
+    button.primary:hover {
+      background: #059669;
+    }
+
+    button.danger {
+      border-color: #dc2626;
+      background: #991b1b;
+    }
+
+    button.danger:hover {
+      background: #b91c1c;
+    }
+
+    button.compact {
+      display: inline-block;
+      width: 112px;
+      height: 32px;
+      margin: 0 0 0 8px;
+      text-align: center;
+      padding: 0;
+    }
+
+    button.event-button {
+      height: 40px;
+      margin-bottom: 7px;
+      background: #1f2937;
+      border-color: #334155;
+      position: relative;
+    }
+
+    button.event-button.active {
+      background: #065f46;
+      border-color: #10b981;
+    }
+
+    button.rate-button {
+      display: inline-block;
+      width: 76px;
+      height: 38px;
+      margin-right: 5px;
+      text-align: center;
+      padding: 0;
+      background: #1f2937;
+      border-color: #334155;
+    }
+
+    button.rate-button.active {
+      background: #1d4ed8;
+      border-color: #60a5fa;
+    }
+
+    .event-name {
+      display: block;
+      font-weight: 650;
+      line-height: 16px;
+    }
+
+    .event-state {
+      display: block;
+      color: #cbd5e1;
+      font-size: 11px;
+      line-height: 14px;
+    }
+
+    select {
+      width: 100%;
+      height: 36px;
+      margin: 0 0 8px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      padding-left: 8px;
+      box-sizing: border-box;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 17px;
+    }
+
+    .topbar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 54px;
+      border-bottom: 1px solid #263244;
+    }
+
+    .topbar-title {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      font-size: 18px;
+      font-weight: 650;
+      color: #f9fafb;
+    }
+
+    .topbar-sub {
+      position: absolute;
+      left: 0;
+      top: 29px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .topbar-actions {
+      position: absolute;
+      right: 0;
+      top: 8px;
+      white-space: nowrap;
+    }
+
+    .log-panel {
+      position: absolute;
+      left: 0;
+      top: 72px;
+      right: 0;
+      bottom: 0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    .log-tabs {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 42px;
+      background: #111827;
+      border-bottom: 1px solid #263244;
+    }
+
+    .tab {
+      display: inline-block;
+      width: 130px;
+      height: 42px;
+      line-height: 42px;
+      text-align: center;
+      color: #cbd5e1;
+      cursor: pointer;
+      border-right: 1px solid #263244;
+    }
+
+    .tab.active {
+      background: #1f2937;
+      color: #f8fafc;
+      font-weight: 650;
+    }
+
+    #logBox {
+      position: absolute;
+      left: 0;
+      top: 42px;
+      width: 100%;
+      height: 400px;
+      box-sizing: border-box;
+      resize: none;
+      border: 0;
+      padding: 12px;
+      background: #020617;
+      color: #d1d5db;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 17px;
+      overflow: auto;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      padding-bottom: 12px;
+      color: #64748b;
+      font-size: 11px;
+      line-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h1>NRO Server</h1>
+      <div class="sub">Dashboard điều khiển server</div>
+
+      <div class="status-card">
+        <div class="status-title">Trạng thái</div>
+        <div id="statusText">Đang tải trạng thái...</div>
+      </div>
+
+      <div class="section-title">Máy chủ</div>
+      <button class="primary" onclick="RunAction('start')">Khởi chạy server</button>
+      <button onclick="RunAction('restart')">Khởi động lại server</button>
+      <button class="danger" onclick="RunAction('stop')">Dừng server</button>
+
+      <div class="section-title">Sự kiện</div>
+      <div id="eventButtons">
+        <button id="event_hungvuong_topup" class="event-button" onclick="ConfirmEvent('hungvuong,topup')"><span class="event-name">Hùng Vương</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_trungthu_topup" class="event-button" onclick="ConfirmEvent('trungthu,topup')"><span class="event-name">Trung Thu</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_halloween_topup" class="event-button" onclick="ConfirmEvent('halloween,topup')"><span class="event-name">Halloween</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_christmas_topup" class="event-button" onclick="ConfirmEvent('christmas,topup')"><span class="event-name">Noel</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_lunar_new_year_topup" class="event-button" onclick="ConfirmEvent('lunar_new_year,topup')"><span class="event-name">Tết</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_womens_day_topup" class="event-button" onclick="ConfirmEvent('womens_day,topup')"><span class="event-name">Quốc tế Phụ nữ 8/3</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_topup" class="event-button" onclick="ConfirmEvent('topup')"><span class="event-name">TopUp</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_all" class="event-button" onclick="ConfirmEvent('all')"><span class="event-name">Tất cả sự kiện</span><span class="event-state">Đang kiểm tra...</span></button>
+        <button id="event_none" class="event-button" onclick="ConfirmEvent('none')"><span class="event-name">Không sự kiện</span><span class="event-state">Đang kiểm tra...</span></button>
+      </div>
+
+      <div class="section-title">Tiềm năng / sức mạnh</div>
+      <button id="rate_1" class="rate-button" onclick="ConfirmExpRate('1')">x1</button>
+      <button id="rate_2" class="rate-button" onclick="ConfirmExpRate('2')">x2</button>
+      <button id="rate_3" class="rate-button" onclick="ConfirmExpRate('3')">x3</button>
+
+      <div class="section-title">Công cụ</div>
+      <button onclick="RunAction('build')">Biên dịch và cập nhật 20.jar</button>
+      <button onclick="RunAction('openlogs')">Mở thư mục log</button>
+
+      <div class="footer-note">
+        Đổi sự kiện cần restart server để áp dụng. Log được ghi vào thư mục logs.
+      </div>
+    </div>
+
+    <div id="content">
+      <div class="topbar">
+        <div class="topbar-title">Bảng log</div>
+        <div class="topbar-sub" id="lastUpdate">Đang cập nhật...</div>
+        <div class="topbar-actions">
+          <button class="compact" onclick="ClearView()">Xóa màn hình</button>
+          <button class="compact" onclick="RefreshAll()">Làm mới</button>
+        </div>
+      </div>
+
+      <div id="logPanel" class="log-panel">
+        <div class="log-tabs">
+          <span id="tabServer" class="tab active" onclick="SetLogTab('server')">Log server</span>
+          <span id="tabError" class="tab" onclick="SetLogTab('error')">Log lỗi</span>
+          <span id="tabControl" class="tab" onclick="SetLogTab('control')">Log điều khiển</span>
+        </div>
+        <textarea id="logBox" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script language="JScript">
+    var shell = new ActiveXObject("WScript.Shell");
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var rootDir = GetRootDir();
+    var currentLog = "server";
+    var viewCleared = false;
+
+    window.onload = function () {
+      window.resizeTo(1120, 680);
+      ResizeLogBox();
+      RefreshAll();
+      window.setInterval("AutoRefresh()", 2500);
+    };
+
+    window.onresize = function () {
+      ResizeLogBox();
+    };
+
+    function GetRootDir() {
+      var path = unescape(document.location.pathname);
+      path = path.replace(/\//g, "\\");
+      if (path.charAt(0) == "\\" && path.charAt(2) == ":") {
+        path = path.substring(1);
+      }
+      return fso.GetParentFolderName(path);
+    }
+
+    function RunAction(action) {
+      viewCleared = false;
+      RunBat(action, "", false);
+      window.setTimeout("RefreshAll()", 900);
+    }
+
+    function ConfirmEvent(value) {
+      viewCleared = false;
+      var label = EventLabel(value);
+      var verb = value == "none" ? "tắt toàn bộ sự kiện" : "bật sự kiện \"" + label + "\"";
+      var message = "Bạn có muốn " + verb + " không?\n\nDashboard sẽ tự khởi động lại server để áp dụng.";
+      if (!window.confirm(message)) {
+        return;
+      }
+
+      currentLog = "control";
+      SetLogTab("control");
+      document.getElementById("logBox").value = "Đang áp dụng " + label + " và khởi động lại server...\r\nVui lòng chờ.";
+      RunBat("eventrestart", value, true);
+      RefreshAll();
+    }
+
+    function ConfirmExpRate(rate) {
+      viewCleared = false;
+      var message = "Bạn có muốn bật x" + rate + " tiềm năng/sức mạnh toàn server không?\n\nDashboard sẽ tự khởi động lại server để áp dụng.";
+      if (!window.confirm(message)) {
+        return;
+      }
+
+      currentLog = "control";
+      SetLogTab("control");
+      document.getElementById("logBox").value = "Đang áp dụng x" + rate + " tiềm năng/sức mạnh và khởi động lại server...\r\nVui lòng chờ.";
+      RunBat("exprestart", rate, true);
+      RefreshAll();
+    }
+
+    function RunBat(action, value, wait) {
+      var command = 'cmd /c ""' + rootDir + '\\run.bat" ' + action;
+      if (value && value.length > 0) {
+        command += ' "' + value + '"';
+      }
+      command += '"';
+      shell.Run(command, 0, wait ? true : false);
+    }
+
+    function ResizeLogBox() {
+      var panel = document.getElementById("logPanel");
+      var box = document.getElementById("logBox");
+      if (!panel || !box) {
+        return;
+      }
+
+      var nextHeight = panel.clientHeight - 42;
+      if (nextHeight < 120) {
+        nextHeight = 120;
+      }
+      box.style.height = nextHeight + "px";
+    }
+
+    function RefreshAll() {
+      viewCleared = false;
+      DoRefresh();
+    }
+
+    function AutoRefresh() {
+      DoRefresh();
+    }
+
+    function DoRefresh() {
+      RunBat("status", "", true);
+      ReadStatus();
+      if (!viewCleared) {
+        ReadLogs();
+      }
+    }
+
+    function ReadStatus() {
+      var path = rootDir + "\\logs\\menu_status.txt";
+      if (!fso.FileExists(path)) {
+        document.getElementById("statusText").innerText = "Chưa có trạng thái.";
+        return;
+      }
+
+      var text = ReadFile(path);
+      document.getElementById("statusText").innerText = FormatStatus(text);
+      document.getElementById("lastUpdate").innerText = "Cập nhật: " + FormatTime(new Date());
+      UpdateEventButtons(GetStatusEventValue(text));
+      UpdateRateButtons(GetStatusRateValue(text));
+    }
+
+    function FormatStatus(text) {
+      var lines = text.split(/\r?\n/);
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf("Sự kiện:") == 0 || lines[i].indexOf("Su kien:") == 0) {
+          var value = Trim(lines[i].replace("Sự kiện:", "").replace("Su kien:", ""));
+          lines[i] = "Sự kiện: " + EventLabel(value);
+        }
+      }
+      return lines.join("\r\n");
+    }
+
+    function EventLabel(value) {
+      var labels = {
+        "hungvuong,topup": "Hùng Vương + TopUp",
+        "trungthu,topup": "Trung Thu + TopUp",
+        "halloween,topup": "Halloween + TopUp",
+        "christmas,topup": "Christmas + TopUp",
+        "lunar_new_year,topup": "Tết + TopUp",
+        "womens_day,topup": "8/3 + TopUp",
+        "topup": "Chỉ TopUp",
+        "none": "Không sự kiện",
+        "all": "Tất cả sự kiện"
+      };
+      return labels[value] ? labels[value] : value;
+    }
+
+    function GetStatusEventValue(text) {
+      var lines = text.split(/\r?\n/);
+      var value = "";
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf("Sự kiện:") == 0 || lines[i].indexOf("Su kien:") == 0) {
+          value = Trim(lines[i].replace("Sự kiện:", "").replace("Su kien:", ""));
+          break;
+        }
+      }
+      return value;
+    }
+
+    function GetStatusRateValue(text) {
+      var lines = text.split(/\r?\n/);
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf("TNSM:") == 0) {
+          return Trim(lines[i].replace("TNSM:", "").replace("x", ""));
+        }
+      }
+      return "1";
+    }
+
+    function UpdateEventButtons(activeValue) {
+      var values = [
+        "hungvuong,topup",
+        "trungthu,topup",
+        "halloween,topup",
+        "christmas,topup",
+        "lunar_new_year,topup",
+        "womens_day,topup",
+        "topup",
+        "all",
+        "none"
+      ];
+
+      for (var i = 0; i < values.length; i++) {
+        var button = document.getElementById(EventButtonId(values[i]));
+        if (!button) {
+          continue;
+        }
+
+        var active = values[i].toLowerCase() == activeValue.toLowerCase();
+        button.className = active ? "event-button active" : "event-button";
+        var spans = button.getElementsByTagName("span");
+        if (spans.length > 1) {
+          spans[1].innerText = active ? "Đang bật" : "Đang tắt";
+        }
+      }
+    }
+
+    function EventButtonId(value) {
+      return "event_" + value.replace(/,/g, "_");
+    }
+
+    function UpdateRateButtons(activeRate) {
+      var rates = ["1", "2", "3"];
+      for (var i = 0; i < rates.length; i++) {
+        var button = document.getElementById("rate_" + rates[i]);
+        if (!button) {
+          continue;
+        }
+        button.className = rates[i] == activeRate ? "rate-button active" : "rate-button";
+      }
+    }
+
+    function SetLogTab(tab) {
+      viewCleared = false;
+      currentLog = tab;
+      document.getElementById("tabServer").className = tab == "server" ? "tab active" : "tab";
+      document.getElementById("tabError").className = tab == "error" ? "tab active" : "tab";
+      document.getElementById("tabControl").className = tab == "control" ? "tab active" : "tab";
+      ReadLogs();
+    }
+
+    function ReadLogs() {
+      var path;
+      if (currentLog == "error") {
+        path = rootDir + "\\logs\\server-error.log";
+      } else if (currentLog == "control") {
+        path = rootDir + "\\logs\\control.log";
+      } else {
+        path = rootDir + "\\logs\\server.log";
+      }
+
+      var text = TailFile(path, 18000);
+      if (text.length == 0) {
+        text = "Chưa có log cho mục này.";
+      }
+
+      text = StripAnsi(text);
+      document.getElementById("logBox").value = text;
+      document.getElementById("logBox").scrollTop = document.getElementById("logBox").scrollHeight;
+    }
+
+    function ClearView() {
+      viewCleared = true;
+      document.getElementById("logBox").value = "";
+    }
+
+    function ReadFile(path) {
+      try {
+        if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) {
+          return "";
+        }
+
+        var stream = new ActiveXObject("ADODB.Stream");
+        stream.Type = 2;
+        stream.Charset = "utf-8";
+        stream.Open();
+        stream.LoadFromFile(path);
+        var text = stream.ReadText();
+        stream.Close();
+        return text;
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function TailFile(path, maxChars) {
+      try {
+        if (!fso.FileExists(path)) {
+          return "";
+        }
+
+        var text = ReadFile(path);
+        if (text.length > maxChars) {
+          text = text.substring(text.length - maxChars);
+        }
+        return text;
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function StripAnsi(value) {
+      return value.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
+    }
+
+    function Trim(value) {
+      return value.replace(/^\s+|\s+$/g, "");
+    }
+
+    function Pad(value) {
+      return value < 10 ? "0" + value : "" + value;
+    }
+
+    function FormatTime(date) {
+      return Pad(date.getHours()) + ":" + Pad(date.getMinutes()) + ":" + Pad(date.getSeconds());
+    }
+  </script>
+</body>
+</html>

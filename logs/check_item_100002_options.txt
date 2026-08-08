@@ -1,0 +1,4 @@
+﻿id	item_shop_id	option_id	option_name	param
+1803	100002	50	Sức đánh+#%	13
+1804	100002	236	+#% May mắn	10
+1805	100002	93	Hạn sử dụng # ngày	30
