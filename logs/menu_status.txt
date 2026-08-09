@@ -1,5 +1,5 @@
 ﻿Trạng thái: Đang chạy
-PID: 25528
+PID: 17812
 Sự kiện: none
 TNSM: x1
-Log cập nhật: 2026-08-08 15:11:22
+Log cập nhật: 2026-08-09 22:34:05

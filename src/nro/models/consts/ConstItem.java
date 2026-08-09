@@ -5,9 +5,6 @@
  */
 package nro.models.consts;
 
-/**
- * @Build by Arriety
- */
 public class ConstItem {
 
     public static final int AO_VAI_3_LO = 0;

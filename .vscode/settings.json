@@ -1,0 +1,20 @@
+{
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\HikariCP-5.1.0.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\mongodb-driver-sync-5.1.3.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\log4j-1.2.17.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\mysql-connector-java8-5.1.23.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\bson-5.1.3.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\java-json.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\apache-commons-lang.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\json-simple-1.1.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\lombok.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\mongodb-driver-core-5.1.3.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\slf4j-simple-2.0.0-alpha1.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\slf4j-api-2.0.0-alpha1.jar",
+        "c:\\Users\\PC\\Music\\Teamobi2026\\SRC\\lib\\gson-2.8.2.jar"
+    ]
+}

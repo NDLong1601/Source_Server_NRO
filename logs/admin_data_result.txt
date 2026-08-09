@@ -1,301 +1,46 @@
-﻿item_shop_id	temp_id	item_name	TYPE	gender	tab_id	tab_name	shop_id	npc_name	type_sell	cost	options_count
-49	12	Rada cấp 1	4	3	2	Phụ<>kiện	1	Bunma	0	600	1
-121	12	Rada cấp 1	4	3	5	Phụ<>kiện	2	Dende	0	600	1
-193	12	Rada cấp 1	4	3	8	Phụ<>kiện	3	Appule	0	600	1
-50	57	Rada cấp 2	4	3	2	Phụ<>kiện	1	Bunma	0	6000	1
-122	57	Rada cấp 2	4	3	5	Phụ<>kiện	2	Dende	0	6000	1
-194	57	Rada cấp 2	4	3	8	Phụ<>kiện	3	Appule	0	6000	1
-51	58	Rada cấp 3	4	3	2	Phụ<>kiện	1	Bunma	0	12000	1
-123	58	Rada cấp 3	4	3	5	Phụ<>kiện	2	Dende	0	12000	1
-195	58	Rada cấp 3	4	3	8	Phụ<>kiện	3	Appule	0	12000	1
-52	59	Rada cấp 4	4	3	2	Phụ<>kiện	1	Bunma	0	24000	1
-124	59	Rada cấp 4	4	3	5	Phụ<>kiện	2	Dende	0	24000	1
-196	59	Rada cấp 4	4	3	8	Phụ<>kiện	3	Appule	0	24000	1
-53	184	Rada cấp 5	4	3	2	Phụ<>kiện	1	Bunma	0	55000	1
-125	184	Rada cấp 5	4	3	5	Phụ<>kiện	2	Dende	0	55000	1
-197	184	Rada cấp 5	4	3	8	Phụ<>kiện	3	Appule	0	55000	1
-54	185	Rada cấp 6	4	3	2	Phụ<>kiện	1	Bunma	0	110000	1
-126	185	Rada cấp 6	4	3	5	Phụ<>kiện	2	Dende	0	110000	1
-198	185	Rada cấp 6	4	3	8	Phụ<>kiện	3	Appule	0	110000	1
-55	186	Rada cấp 7	4	3	2	Phụ<>kiện	1	Bunma	0	220000	1
-127	186	Rada cấp 7	4	3	5	Phụ<>kiện	2	Dende	0	220000	1
-199	186	Rada cấp 7	4	3	8	Phụ<>kiện	3	Appule	0	220000	1
-56	187	Rada cấp 8	4	3	2	Phụ<>kiện	1	Bunma	0	550000	1
-128	187	Rada cấp 8	4	3	5	Phụ<>kiện	2	Dende	0	550000	1
-200	187	Rada cấp 8	4	3	8	Phụ<>kiện	3	Appule	0	550000	1
-57	278	Rada cấp 9	4	3	2	Phụ<>kiện	1	Bunma	0	4200000	1
-129	278	Rada cấp 9	4	3	5	Phụ<>kiện	2	Dende	0	4200000	1
-201	278	Rada cấp 9	4	3	8	Phụ<>kiện	3	Appule	0	4200000	1
-58	279	Rada cấp 10	4	3	2	Phụ<>kiện	1	Bunma	0	20000000	1
-130	279	Rada cấp 10	4	3	5	Phụ<>kiện	2	Dende	0	20000000	1
-202	279	Rada cấp 10	4	3	8	Phụ<>kiện	3	Appule	0	20000000	1
-59	280	Rada cấp 11	4	3	2	Phụ<>kiện	1	Bunma	0	100000000	1
-131	280	Rada cấp 11	4	3	5	Phụ<>kiện	2	Dende	0	100000000	1
-203	280	Rada cấp 11	4	3	8	Phụ<>kiện	3	Appule	0	100000000	1
-60	281	Rada cấp 12	4	3	2	Phụ<>kiện	1	Bunma	0	150000000	1
-132	281	Rada cấp 12	4	3	5	Phụ<>kiện	2	Dende	0	150000000	1
-204	281	Rada cấp 12	4	3	8	Phụ<>kiện	3	Appule	0	150000000	1
-574	561	Nhẫn Thần Linh	4	3	26		0		0	100	2
-775	656	Nhẫn Hủy Diệt	4	3	21	Trái Đất	11	Bill	0	2000000000	1
-780	656	Nhẫn Hủy Diệt	4	3	22	Namếc	11	Bill	0	2000000000	1
-785	656	Nhẫn Hủy Diệt	4	3	23	Xay da	11	Bill	0	2000000000	1
-912	282	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	500	1
-417	284	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	500	1
-421	290	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	300	3
-423	292	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	300	3
-424	405	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1000	1
-425	406	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1100	1
-426	407	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1200	1
-427	423	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-947	423	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-428	424	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-946	424	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-429	425	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-945	425	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-430	426	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-944	426	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-431	427	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-943	427	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-432	428	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	2
-942	428	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-433	429	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	3
-941	429	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-434	430	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	3
-940	430	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-435	431	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	3
-939	431	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-436	432	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	3
-938	432	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-437	433	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	50	3
-937	433	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	10	2
-438	448	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	1
-936	448	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	2
-439	449	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	1
-935	449	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	2
-440	450	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	1
-934	450	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	2
-933	451	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	2
-932	452	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	2
-443	455	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	2
-931	455	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	3
-444	458	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	2
-930	458	Cải trang	5	3	50	Giảm giá<>80%	30	Santa	1	400	3
-445	461	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	3
-446	524	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1200	3
-447	525	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1500	3
-448	526	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1700	2
-449	527	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	1850	3
-450	528	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	4
-451	549	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	3000	4
-452	550	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	120	1
-453	551	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	110	1
-454	552	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	100	1
-455	575	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	4
-456	576	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	4
-457	577	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	4
-458	578	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	2000	4
-459	583	Cải trang Póc	5	3	18	Cải<>Trang	9	Santa	1	1600	4
-466	612	Cải trang Arale	5	3	18	Cải<>Trang	9	Santa	0	2000000000	4
-467	613	Cải trang Gatchan	5	3	18	Cải<>Trang	9	Santa	0	2000000000	4
-468	614	Cải trang Obotchaman	5	3	18	Cải<>Trang	9	Santa	0	2000000000	4
-469	615	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	300	4
-470	616	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	300	3
-471	617	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	400	3
-472	630	Cải trang Frost 1	5	3	18	Cải<>Trang	9	Santa	1	1100	2
-473	631	Cải trang Frost 2	5	3	18	Cải<>Trang	9	Santa	1	1200	2
-474	632	Cải trang Frost 3	5	3	18	Cải<>Trang	9	Santa	1	1300	2
-475	633	Cải trang Píc	5	3	18	Cải<>Trang	9	Santa	1	1700	4
-476	634	Cải trang King kong	5	3	18	Cải<>Trang	9	Santa	1	1800	4
-479	647	Cải trang Saibamen	5	3	18	Cải<>Trang	9	Santa	1	3500	4
-480	724	Cải trang	5	3	18	Cải<>Trang	9	Santa	1	5000	4
-672	765	Cải trang Gohan Bư	5	3	48	Vàng	23	Santa	0	200000000	7
-544	864	Cải trang Chaien	5	3	24		0		0	1	0
-915	878	Cải trang Cooler vàng	5	3	18	Cải<>Trang	9	Santa	1	299	6
-914	879	Cải trang Thống Chế Kilo	5	3	18	Cải<>Trang	9	Santa	1	299	6
-917	885	CT Lích Tên béo	5	3	18	Cải<>Trang	9	Santa	0	99000000	2
-646	937	Cải trang Mabư Noel	5	3	47	Ngọc	23	Santa	1	299	8
-645	974	Số 1 Mabư	5	3	47	Ngọc	23	Santa	1	299	7
-644	1041	Thỏ hồng Bun ma	5	3	47	Ngọc	23	Santa	1	299	7
-643	1042	Thỏ đỏ Chi Chi	5	3	47	Ngọc	23	Santa	1	299	7
-642	1043	Thỏ đen Android 18	5	3	47	Ngọc	23	Santa	1	299	7
-539	1087	Tanjiro	5	3	24		0		0	555	0
-540	1088	Inosuke Hashibira	5	3	24		0		0	555	0
-541	1089	Inosuke	5	3	24		0		0	555	0
-542	1090	Zenitsu	5	3	24		0		0	555	0
-543	1091	Nezuko	5	3	24		0		0	555	0
-641	1103	Marron	5	3	47	Ngọc	23	Santa	1	299	7
-913	1255	Cải trang Mabư Còm	5	3	18	Cải<>Trang	9	Santa	1	5000	5
-844	1476	Cải trang Bunma rực rỡ	5	3	52	Cải trang	31	Santa	1	300	5
-847	1503	CT Lý Tiểu Nương hầu gái xanh	5	3	52	Cải trang	31	Santa	1	300	5
-848	1504	CT Lý Tiểu Nương hầu gái hồng	5	3	52	Cải trang	31	Santa	1	300	5
-671	1553	CT Goku SSJ4	5	3	48	Vàng	23	Santa	0	129000000	7
-838	1553	CT Goku SSJ4	5	3	52	Cải trang	31	Santa	1	300	5
-875	1557	Hắc Mị Nương	5	3	52	Cải trang	31	Santa	1	300	5
-916	1566	CT Lích Tên béo	5	3	18	Cải<>Trang	9	Santa	1	99	2
-995	1567	CT Frieren	5	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	999	8
-803	1587	CT Goku SSJ3	5	3	49	Đổi Thưởng	29	Quy Lão Kame	1	199	0
-873	1587	CT Goku SSJ3	5	3	52	Cải trang	31	Santa	1	300	5
-804	1590	CT Goku SSJ Blue	5	3	49	Đổi Thưởng	29	Quy Lão Kame	1	199	0
-874	1590	CT Goku SSJ Blue	5	3	52	Cải trang	31	Santa	1	300	5
-802	1632	CT Himmel	5	3	49	Đổi Thưởng	29	Quy Lão Kame	1	199	0
-840	1632	CT Himmel	5	3	52	Cải trang	31	Santa	1	300	5
-845	1657	CT Gohan đi biển	5	3	52	Cải trang	31	Santa	1	300	5
-846	1667	CT Gohan kính mát	5	3	52	Cải trang	31	Santa	1	300	5
-839	1693	CT Cađíc SSJ4	5	3	52	Cải trang	31	Santa	1	300	5
-926	1698	CT Urôn Trư Bát Giới	5	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	499	8
-100003	1708	CT Android 21 Thân Thiện	5	3	64	Events	1	Bunma	1	1500	5
-805	1731	CT Black Goku Rose	5	3	49	Đổi Thưởng	29	Quy Lão Kame	1	299	0
-836	1731	CT Black Goku Rose	5	3	52	Cải trang	31	Santa	1	300	5
-923	1731	CT Black Goku Rose	5	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	999	6
-837	1732	CT Black Goku	5	3	52	Cải trang	31	Santa	1	300	5
-841	1741	CT Cađíc	5	3	52	Cải trang	31	Santa	1	300	5
-842	1742	CT Cađíc SSJ	5	3	52	Cải trang	31	Santa	1	300	5
-843	1743	CT Cađíc SSJ2	5	3	52	Cải trang	31	Santa	1	300	5
-870	1744	CT Cađíc SSJ2 M	5	3	52	Cải trang	31	Santa	1	300	5
-871	1745	CT Cađíc SSJ3	5	3	52	Cải trang	31	Santa	1	300	5
-872	1746	CT Cađíc SSJ Blue	5	3	52	Cải trang	31	Santa	1	300	5
-99999	1870	Goku cận vô cực	5	3	52	Cải trang	31	Santa	1	0	1
-734	744	Cột nhà	23	3	19	Phụ kiện	4	Uron	1	1000	3
-735	795	Ghế bay	23	3	19	Phụ kiện	4	Uron	1	1500	3
-700	849	Pháo Thăng Thiên	23	3	19	Phụ kiện	4	Uron	1	999	2
-812	1465	Máy bay trực thăng Noel	23	3	49	Đổi Thưởng	29	Quy Lão Kame	1	79	0
-813	1477	Thỏi vàng bay	23	3	49	Đổi Thưởng	29	Quy Lão Kame	1	199	0
-983	1541	Môtô Bun ma	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-984	1563	Ván bay té nước	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-876	1603	Tên lửa cá mập	23	3	54	Ván bay	31	Santa	1	50	3
-880	1711	Cân Đẩu Vân Thơ Mộng	23	3	54	Ván bay	31	Santa	1	50	3
-927	1711	Cân Đẩu Vân Thơ Mộng	23	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	750	8
-879	1724	Ván bay Sọ Dừa	23	3	54	Ván bay	31	Santa	1	50	3
-985	1724	Ván bay Sọ Dừa	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-877	1733	Thú cưỡi Thích Kim Quy	23	3	54	Ván bay	31	Santa	1	50	3
-986	1733	Thú cưỡi Thích Kim Quy	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-878	1734	Thú cưỡi Phong Xích Lan	23	3	54	Ván bay	31	Santa	1	50	3
-987	1734	Thú cưỡi Phong Xích Lan	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-988	1749	Thú cưỡi Cây thông	23	3	62	Cửa Hàng<>Ván Bay	35	Giu-ma Đầu Bò	1	50	3
-509	532	Quỷ Chim	24	3	19	Phụ kiện	4	Uron	1	1000	0
-737	532	Quỷ Chim	24	3	19	Phụ kiện	4	Uron	1	1000	1
-635	361	Gói 10 Rađa dò ngọc	25	3	3	Đặc<>biệt	1	Bunma	0	5000000	0
-636	361	Gói 10 Rađa dò ngọc	25	3	6	Đặc<>biệt	2	Dende	0	5000000	0
-637	361	Gói 10 Rađa dò ngọc	25	3	9	Đặc<>biệt	3	Appule	0	5000000	0
-140	194	Viên Capsule đặc biệt	27	3	6	Đặc<>biệt	2	Dende	1	1000	0
-212	194	Viên Capsule đặc biệt	27	3	9	Đặc<>biệt	3	Appule	1	1000	0
-592	194	Viên Capsule đặc biệt	27	3	3	Đặc<>biệt	1	Bunma	1	1000	0
-747	293	Gói 30 đậu thần cấp 1	27	3	19	Phụ kiện	4	Uron	1	10	1
-746	294	Gói 30 đậu thần cấp 2	27	3	19	Phụ kiện	4	Uron	1	10	1
-745	295	Gói 30 đậu thần cấp 3	27	3	19	Phụ kiện	4	Uron	1	10	1
-744	296	Gói 30 đậu thần cấp 4	27	3	19	Phụ kiện	4	Uron	1	10	1
-739	297	Gói 30 đậu thần cấp 5	27	3	19	Phụ kiện	4	Uron	1	10	1
-740	298	Gói 30 đậu thần cấp 6	27	3	19	Phụ kiện	4	Uron	1	10	1
-741	299	Gói 30 đậu thần cấp 7	27	3	19	Phụ kiện	4	Uron	1	10	1
-487	400	Đặt tên đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	20	1
-488	401	Đổi đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	100	1
-486	402	Nâng kỹ năng 1 đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	100	1
-485	403	Nâng kỹ năng 2 đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	150	1
-484	404	Nâng kỹ năng 3 đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	200	1
-513	453	Chiến thuyền Tennis	27	3	19	Phụ kiện	4	Uron	1	500	0
-748	453	Chiến thuyền Tennis	27	3	19	Phụ kiện	4	Uron	1	50	1
-514	454	Bông tai Porata	27	3	19	Phụ kiện	4	Uron	1	1000	0
-749	454	Bông tai Porata	27	3	19	Phụ kiện	4	Uron	1	1000	1
-738	460	Cục xương	27	3	19	Phụ kiện	4	Uron	1	1	1
-490	517	Mở rộng hành trang	27	3	46	Cửa <> Hàng	22	Santa	1	100	1
-491	518	Mở rộng rương đồ	27	3	46	Cửa <> Hàng	22	Santa	0	50000000	1
-72	521	Tự động luyện tập	27	3	3	Đặc<>biệt	1	Bunma	1	2	1
-144	521	Tự động luyện tập	27	3	6	Đặc<>biệt	2	Dende	1	2	1
-216	521	Tự động luyện tập	27	3	9	Đặc<>biệt	3	Appule	1	2	1
-492	521	Tự động luyện tập	27	3	34	Hỗ<>Trợ	9	Santa	1	2	1
-742	596	Gói 30 đậu thần cấp 8	27	3	19	Phụ kiện	4	Uron	1	10	1
-567	597	Gói 30 đậu thần cấp 9	27	3	20	Cửa<>Hàng	10	Bunma	1	100	0
-743	597	Gói 30 đậu thần cấp 9	27	3	19	Phụ kiện	4	Uron	1	10	1
-661	649	Tất,vớ giáng sinh	27	3	30	Cửa hàng<>EVENT	21	Bulma Tết Nguyên Đán	1	20	0
-818	722	Capsule hồng	27	3	51	Event	29	Quy Lão Kame	1	399	2
-483	759	Nâng kỹ năng 4 đệ tử	27	3	17	Cửa<>Hàng	9	Santa	1	500	1
-911	933	Mảnh vỡ bông tai	27	3	17	Cửa<>Hàng	9	Santa	1	50	0
-910	935	Đá xanh lam	27	3	17	Cửa<>Hàng	9	Santa	1	150	0
-603	962	Cap thời trang 5 ngày	27	3	17	Cửa<>Hàng	9	Santa	0	150000000	1
-604	963	Cap thời trang 7 ngày	27	3	17	Cửa<>Hàng	9	Santa	1	99	1
-966	987	Đá bảo vệ	27	3	60	Cừa Hàng<>Item	35	Giu-ma Đầu Bò	1	1	1
-545	1034	Nến	27	3	24		0		1	123	1
-820	1074	Đá nâng cấp cấp 1	27	3	37	Cửa<>hàng	20	Whis	1	1	1
-821	1075	Đá nâng cấp cấp 2	27	3	37	Cửa<>hàng	20	Whis	1	2	1
-822	1076	Đá nâng cấp cấp 3	27	3	37	Cửa<>hàng	20	Whis	1	3	1
-823	1077	Đá nâng cấp cấp 4	27	3	37	Cửa<>hàng	20	Whis	1	4	1
-824	1078	Đá nâng cấp cấp 5	27	3	37	Cửa<>hàng	20	Whis	1	5	1
-825	1079	Đá may mắn cấp 1	27	3	37	Cửa<>hàng	20	Whis	1	1	1
-826	1080	Đá may mắn cấp 2	27	3	37	Cửa<>hàng	20	Whis	1	2	1
-827	1081	Đá may mắn cấp 3	27	3	37	Cửa<>hàng	20	Whis	1	3	1
-828	1082	Đá may mắn cấp 4	27	3	37	Cửa<>hàng	20	Whis	1	4	1
-829	1083	Đá may mắn cấp 5	27	3	37	Cửa<>hàng	20	Whis	1	5	1
-811	1107	Pet Bí Ma Vương	27	3	49	Đổi Thưởng	29	Quy Lão Kame	1	99	0
-810	1114	Pet Ma vàng phù thủy	27	3	49	Đổi Thưởng	29	Quy Lão Kame	1	59	0
-668	1168	Kẹo đường	27	3	30	Cửa hàng<>EVENT	21	Bulma Tết Nguyên Đán	1	50	0
-660	1171	Túi 7 chú lùn	27	3	30	Cửa hàng<>EVENT	21	Bulma Tết Nguyên Đán	1	349	0
-605	1281	Trang sách cũ	27	3	17	Cửa<>Hàng	9	Santa	0	10000000	1
-607	1282	Bìa sách	27	3	17	Cửa<>Hàng	9	Santa	0	10000000	1
-609	1284	Bùa giám định	27	3	17	Cửa<>Hàng	9	Santa	0	5000000	1
-608	1285	Kìm bấm giấy	27	3	17	Cửa<>Hàng	9	Santa	0	5000000	1
-965	1423	Hematite	27	3	60	Cừa Hàng<>Item	35	Giu-ma Đầu Bò	1	1	1
-964	1438	Dùi đục	27	3	60	Cừa Hàng<>Item	35	Giu-ma Đầu Bò	1	1	1
-963	1439	Đá mài	27	3	60	Cừa Hàng<>Item	35	Giu-ma Đầu Bò	1	1	1
-885	1458	Pet Shiba đeo nơ	27	3	55	Pet	31	Santa	1	150	3
-819	1509	Nơ trang trí	27	3	51	Event	29	Quy Lão Kame	1	5	2
-817	1521	Thiệp mừng 8-3	27	3	51	Event	29	Quy Lão Kame	1	50	2
-814	1525	Túi hạt giống Hoa Hồng	27	3	51	Event	29	Quy Lão Kame	1	5	2
-815	1528	Chậu đất	27	3	51	Event	29	Quy Lão Kame	0	2000000	2
-816	1529	Thuốc tăng trưởng	27	3	51	Event	29	Quy Lão Kame	1	1	2
-881	1550	Pet Godzilla	27	3	55	Pet	31	Santa	1	150	3
-981	1550	Pet Godzilla	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-882	1551	Pet Kong	27	3	55	Pet	31	Santa	1	150	3
-982	1551	Pet Kong	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-990	1569	Kho báu hải tặc	27	3	63	Đổi<>Thưởng	36	Bill	1	9	1
-883	1573	Xe tăng Santa	27	3	55	Pet	31	Santa	1	150	3
-980	1573	Xe tăng Santa	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-996	1608	Hộp quà thiếu nhi	27	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	9	2
-896	1609	Kem trái cây	27	3	58	Shop<>sự kiện	33	Chi Chi	1	50	1
-897	1613	Nước đá	27	3	58	Shop<>sự kiện	33	Chi Chi	1	5	1
-968	1620	Pet Baby Shark	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-993	1620	Pet Baby Shark	27	3	63	Đổi<>Thưởng	36	Bill	1	19	2
-977	1629	Pet Capybara đeo ba lô	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-978	1630	Pet Capybara xì mũi	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-884	1631	Pet Zịt vàng bối rối	27	3	55	Pet	31	Santa	1	150	3
-918	1631	Pet Zịt vàng bối rối	27	3	58	Shop<>sự kiện	33	Chi Chi	0	1500000000	6
-979	1631	Pet Zịt vàng bối rối	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-962	1634	Cápsule Vỡ	27	3	60	Cừa Hàng<>Item	35	Giu-ma Đầu Bò	1	10	1
-908	1652	Loa to thế giới	27	3	34	Hỗ<>Trợ	9	Santa	1	5	0
-907	1653	Loa to liên vũ trụ	27	3	34	Hỗ<>Trợ	9	Santa	1	15	0
-976	1668	Pet Capybara hồng	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-925	1682	Pet Hải Ly	27	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	499	6
-974	1682	Pet Hải Ly	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-975	1683	Pet Hải Ly Ong Vàng	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-973	1714	Pet Giru	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-972	1727	Pet Ma cầu mưa	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-971	1729	Pet Rồng Xanh	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-969	1748	Pet tuần lộc	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-970	1750	Pet Khủng Long ngok	27	3	61	Của Hàng<>Pet	35	Giu-ma Đầu Bò	1	50	3
-929	1757	Hộp quà Cađíc VIP	27	3	59	Đổi<>thưởng	34	Quy Lão Kame	1	99	2
-100002	1765	Rổng 7 sao	27	3	64	Events	1	Bunma	1	2000	3
-61	529	Giáp tập luyện cấp 1	32	3	2	Phụ<>kiện	1	Bunma	1	30	1
-133	529	Giáp tập luyện cấp 1	32	3	5	Phụ<>kiện	2	Dende	1	30	1
-205	529	Giáp tập luyện cấp 1	32	3	8	Phụ<>kiện	3	Appule	1	30	1
-493	529	Giáp tập luyện cấp 1	32	3	34	Hỗ<>Trợ	9	Santa	1	30	1
-62	530	Giáp tập luyện cấp 2	32	3	2	Phụ<>kiện	1	Bunma	1	300	1
-134	530	Giáp tập luyện cấp 2	32	3	5	Phụ<>kiện	2	Dende	1	300	1
-206	530	Giáp tập luyện cấp 2	32	3	8	Phụ<>kiện	3	Appule	1	300	1
-494	530	Giáp tập luyện cấp 2	32	3	34	Hỗ<>Trợ	9	Santa	1	300	1
-63	531	Giáp tập luyện cấp 3	32	3	2	Phụ<>kiện	1	Bunma	1	3000	1
-135	531	Giáp tập luyện cấp 3	32	3	5	Phụ<>kiện	2	Dende	1	3000	1
-207	531	Giáp tập luyện cấp 3	32	3	8	Phụ<>kiện	3	Appule	1	3000	1
-495	531	Giáp tập luyện cấp 3	32	3	34	Hỗ<>Trợ	9	Santa	1	3000	1
-64	534	Giáp tập luyện cấp 1	32	3	2	Phụ<>kiện	1	Bunma	0	10000000	1
-136	534	Giáp tập luyện cấp 1	32	3	5	Phụ<>kiện	2	Dende	0	10000000	1
-208	534	Giáp tập luyện cấp 1	32	3	8	Phụ<>kiện	3	Appule	0	10000000	1
-496	534	Giáp tập luyện cấp 1	32	3	34	Hỗ<>Trợ	9	Santa	0	10000000	1
-65	535	Giáp tập luyện cấp 2	32	3	2	Phụ<>kiện	1	Bunma	0	100000000	1
-137	535	Giáp tập luyện cấp 2	32	3	5	Phụ<>kiện	2	Dende	0	100000000	1
-209	535	Giáp tập luyện cấp 2	32	3	8	Phụ<>kiện	3	Appule	0	100000000	1
-497	535	Giáp tập luyện cấp 2	32	3	34	Hỗ<>Trợ	9	Santa	0	100000000	1
-66	536	Giáp tập luyện cấp 3	32	3	2	Phụ<>kiện	1	Bunma	0	1000000000	1
-138	536	Giáp tập luyện cấp 3	32	3	5	Phụ<>kiện	2	Dende	0	1000000000	1
-210	536	Giáp tập luyện cấp 3	32	3	8	Phụ<>kiện	3	Appule	0	1000000000	1
-498	536	Giáp tập luyện cấp 3	32	3	34	Hỗ<>Trợ	9	Santa	0	1000000000	1
-886	1716	Giáp tập luyện cấp 4	32	3	56	glt	31	Santa	1	80	1
-909	1716	Giáp tập luyện cấp 4	32	3	34	Hỗ<>Trợ	9	Santa	1	9999	3
+﻿id	TYPE	gender	NAME	description	level	icon_id	part	is_up_to_up	power_require	gold	gem	head	body	leg
+1056	2	2	Găng Thiên Sứ	Giúp bạn tăng sức đánh	15	10178	-1	0	0	0	0	-1	-1	-1
+1055	2	1	Găng Thiên Sứ	Giúp bạn tăng sức đánh	15	10188	-1	0	0	0	0	-1	-1	-1
+1054	2	0	Găng Thiên Sứ	Giúp bạn tăng sức đánh	15	10168	-1	0	0	0	0	-1	-1	-1
+661	2	2	Găng Hủy Diệt	Giúp bạn tăng sức đánh	14	6318	-1	0	0	0	0	-1	-1	-1
+659	2	1	Găng Hủy Diệt	Giúp bạn tăng sức đánh	14	6318	-1	0	0	0	0	-1	-1	-1
+657	2	0	Găng Hủy Diệt	Giúp bạn tăng sức đánh	14	6318	-1	0	0	0	0	-1	-1	-1
+566	2	2	Găng Thần Xayda	Giúp bạn tăng sức đánh	13	4656	-1	0	0	500000000	0	-1	-1	-1
+564	2	1	Găng Thần Namếc	Giúp bạn tăng sức đánh	13	4659	-1	0	0	500000000	0	-1	-1	-1
+562	2	0	Găng Thần Linh	Giúp bạn tăng sức đánh	13	4650	-1	0	0	500000000	0	-1	-1	-1
+265	2	2	Găng lưỡng long	Giúp bạn tăng sức đánh	12	1709	-1	0	1500000000	150000000	0	-1	-1	-1
+264	2	2	Găng Kaio	Giúp bạn tăng sức đánh	11	1709	-1	0	600000000	60000000	0	-1	-1	-1
+263	2	2	Găng siêu Xayda	Giúp bạn tăng sức đánh	10	1708	-1	0	200000000	20000000	0	-1	-1	-1
+262	2	2	Găng lông đỏ	Giúp bạn tăng sức đánh	9	1708	-1	0	68000000	6800000	0	-1	-1	-1
+261	2	1	Găng vàng Zealot	Giúp bạn tăng sức đánh	12	1710	-1	0	1500000000	150000000	0	-1	-1	-1
+260	2	1	Găng bạc Zealot	Giúp bạn tăng sức đánh	11	1710	-1	0	600000000	60000000	0	-1	-1	-1
+259	2	1	Găng đồng Tron	Giúp bạn tăng sức đánh	10	1711	-1	0	200000000	20000000	0	-1	-1	-1
+258	2	1	Găng sắt Tron	Giúp bạn tăng sức đánh	9	1711	-1	0	68000000	6800000	0	-1	-1	-1
+257	2	0	Găng jean Calic	Giúp bạn tăng sức đánh	12	1706	-1	0	1500000000	150000000	0	-1	-1	-1
+256	2	0	Găng da Calic	Giúp bạn tăng sức đánh	11	1706	-1	0	600000000	60000000	0	-1	-1	-1
+255	2	0	Găng vàng Goku	Giúp bạn tăng sức đánh	10	1707	-1	0	200000000	20000000	0	-1	-1	-1
+254	2	0	Găng bạc Goku	Giúp bạn tăng sức đánh	9	1707	-1	0	68000000	6800000	0	-1	-1	-1
+179	2	2	Găng da Xayda	Giúp bạn tăng sức đánh	8	956	-1	0	20000000	600000	0	-1	-1	-1
+178	2	2	Găng lông Xayda	Giúp bạn tăng sức đánh	7	956	-1	0	10000000	240000	0	-1	-1	-1
+177	2	2	Găng vàng	Giúp bạn tăng sức đánh	6	946	-1	0	3200000	120000	0	-1	-1	-1
+176	2	2	Găng bạc	Giúp bạn tăng sức đánh	5	946	-1	0	800000	60000	0	-1	-1	-1
+163	2	1	Găng da Pico	Giúp bạn tăng sức đánh	8	961	-1	0	20000000	600000	0	-1	-1	-1
+162	2	1	Găng vải Pico	Giúp bạn tăng sức đánh	7	961	-1	0	10000000	240000	0	-1	-1	-1
+161	2	1	Găng thun cứng	Giúp bạn tăng sức đánh	6	948	-1	0	3200000	120000	0	-1	-1	-1
+160	2	1	Găng len cứng	Giúp bạn tăng sức đánh	5	948	-1	0	800000	60000	0	-1	-1	-1
+147	2	0	Găng võ goku	Giúp bạn tăng sức đánh	8	953	-1	0	20000000	600000	0	-1	-1	-1
+146	2	0	Găng võ Kame	Giúp bạn tăng sức đánh	7	953	-1	0	10000000	240000	0	-1	-1	-1
+145	2	0	Găng thun Kame	Giúp bạn tăng sức đánh	6	947	-1	0	3200000	120000	0	-1	-1	-1
+144	2	0	Găng vải Kame	Giúp bạn tăng sức đánh	5	947	-1	0	800000	60000	0	-1	-1	-1
+54	2	2	Găng đồng	Giúp tăng sức đánh	4	410	-1	0	200000	30000	0	-1	-1	-1
+53	2	2	Găng thun thô	Giúp tăng sức đánh	2	409	-1	0	15000	7000	0	-1	-1	-1
+46	2	1	Găng sợi gai	Giúp tăng sức đánh	2	411	-1	0	15000	7000	0	-1	-1	-1
+45	2	1	Găng thun Pico	Giúp tăng sức đánh	4	412	-1	0	200000	30000	0	-1	-1	-1
+38	2	0	Găng thun dày	Giúp tăng sức đánh	4	407	-1	0	200000	30000	0	-1	-1	-1
+37	2	0	Găng vải dày	Giúp tăng sức đánh	3	407	-1	0	50000	14000	0	-1	-1	-1
+26	2	2	Găng sắt	Giúp tăng sức đánh	3	410	-1	0	50000	14000	0	-1	-1	-1
+25	2	1	Găng len Pico	Giúp tăng sức đánh	3	412	-1	0	50000	14000	0	-1	-1	-1
+24	2	0	Găng thun đen	Giúp tăng sức đánh	2	408	-1	0	15000	7000	0	-1	-1	-1
+23	2	2	Găng vải thô	Giúp tăng sức đánh	1	409	-1	0	1500	700	0	-1	-1	-1
+22	2	1	Găng sợi len	Giúp tăng sức đánh	1	411	-1	0	1500	700	0	-1	-1	-1
+21	2	0	Găng vải đen	Giúp tăng sức đánh	1	408	-1	0	1500	700	0	-1	-1	-1
