@@ -218,8 +218,6 @@ function Set-ConfigValue {
 
 function Write-Status {
     $processIds = @(Get-ServerProcessIds)
-    $event = Get-ConfigValue -Key "server.event" -Default "none"
-    $expRate = Get-ConfigValue -Key "server.expserver" -Default "1"
     $port = [int](Get-ConfigValue -Key "server.port" -Default "14445")
     $listeningIds = @(Get-ListeningProcessIds -CandidateIds $processIds -Port $port)
     $displayIds = if ($listeningIds.Count -gt 0) { $listeningIds } else { $processIds }
@@ -236,8 +234,6 @@ function Write-Status {
     $text = @(
         "Trạng thái: $status",
         "PID: $pidText",
-        "Sự kiện: $event",
-        "TNSM: x$expRate",
         "Log cập nhật: $lastLog"
     ) -join [Environment]::NewLine
 

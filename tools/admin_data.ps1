@@ -992,6 +992,7 @@ function Delete-EventItem {
 
 function Search-EventPlayers {
     Ensure-EventConfigSchema
+    Ensure-PlayerOnlineSchema
     if ([string]::IsNullOrWhiteSpace($Search)) { throw "Nhập ID hoặc tên player cần tìm." }
     $safe = $Search.Trim().Replace("\", "\\").Replace("'", "''")
     $where = if ($Search.Trim() -match '^\d+$') {
@@ -999,7 +1000,7 @@ function Search-EventPlayers {
     } else {
         "p.name LIKE '%$safe%'"
     }
-    Invoke-MySql "SELECT p.id,p.name,COALESCE(a.username,''),p.event_point,CASE WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?' ELSE 'OFFLINE' END AS online_state FROM player p LEFT JOIN account a ON a.id=p.account_id WHERE $where ORDER BY CASE WHEN p.name=$(SqlString $Search.Trim()) THEN 0 ELSE 1 END,p.id DESC LIMIT 20;"
+    Invoke-MySql "SELECT p.id,p.name,COALESCE(a.username,''),p.event_point,CASE WHEN apo.last_seen >= DATE_SUB(NOW(), INTERVAL 20 SECOND) THEN 'ONLINE' WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?' ELSE 'OFFLINE' END AS online_state FROM player p LEFT JOIN account a ON a.id=p.account_id LEFT JOIN admin_player_online apo ON apo.player_id=p.id WHERE $where ORDER BY CASE WHEN p.name=$(SqlString $Search.Trim()) THEN 0 ELSE 1 END,p.id DESC LIMIT 20;"
 }
 
 function List-EventPointGrants {
@@ -1153,34 +1154,58 @@ function Get-PlayerDataVersion {
 function Get-PlayerRawRecord {
     param([int]$PlayerId)
     if ($PlayerId -le 0) { throw "Player ID không hợp lệ." }
+    Ensure-PlayerOnlineSchema
     $text = Invoke-MySql @"
 SELECT p.id,p.account_id,p.name,COALESCE(a.username,''),p.gender,p.head,p.clan_id,
        DATE_FORMAT(p.create_time,'%Y-%m-%d %H:%i:%s'),
        COALESCE(DATE_FORMAT(a.last_time_login,'%Y-%m-%d %H:%i:%s'),''),
        COALESCE(DATE_FORMAT(a.last_time_logout,'%Y-%m-%d %H:%i:%s'),''),
        COALESCE(a.ban,0),COALESCE(a.active,0),COALESCE(a.is_admin,0),
-       p.data_point,p.data_inventory,p.items_bag,p.items_box,p.data_location
-FROM player p LEFT JOIN account a ON a.id=p.account_id WHERE p.id=$PlayerId LIMIT 1;
+       p.data_point,p.data_inventory,p.items_bag,p.items_box,p.data_location,
+       CASE
+           WHEN apo.last_seen >= DATE_SUB(NOW(), INTERVAL 20 SECOND) THEN 'ONLINE'
+           WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?'
+           ELSE 'OFFLINE'
+       END AS online_state
+FROM player p LEFT JOIN account a ON a.id=p.account_id
+LEFT JOIN admin_player_online apo ON apo.player_id=p.id
+WHERE p.id=$PlayerId LIMIT 1;
 "@
     $lines = @($text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     if ($lines.Count -lt 2) { throw "Không tìm thấy player ID $PlayerId." }
-    $parts = @($lines[1] -split "`t", 18)
-    if ($parts.Count -lt 18) { throw "Không đọc được dữ liệu player ID $PlayerId." }
+    $parts = @($lines[1] -split "`t", 19)
+    if ($parts.Count -lt 19) { throw "Không đọc được dữ liệu player ID $PlayerId." }
     [pscustomobject]@{
         Id=$parts[0]; AccountId=$parts[1]; Name=$parts[2]; Username=$parts[3]; Gender=$parts[4];
         Head=$parts[5]; ClanId=$parts[6]; CreatedAt=$parts[7]; LastLogin=$parts[8]; LastLogout=$parts[9];
         Ban=$parts[10]; Active=$parts[11]; IsAdmin=$parts[12]; DataPoint=$parts[13];
-        DataInventory=$parts[14]; ItemsBag=$parts[15]; ItemsBox=$parts[16]; DataLocation=$parts[17]
+        DataInventory=$parts[14]; ItemsBag=$parts[15]; ItemsBox=$parts[16]; DataLocation=$parts[17];
+        OnlineState=$parts[18]
     }
 }
 
 function Test-PlayerPossiblyOnline {
     param($Record)
+    if ($Record.PSObject.Properties["OnlineState"] -and $Record.OnlineState -in @("ONLINE", "ONLINE?")) { return $true }
     if ([string]::IsNullOrWhiteSpace($Record.LastLogin) -or [string]::IsNullOrWhiteSpace($Record.LastLogout)) { return $false }
     ([datetime]::Parse($Record.LastLogin) -gt [datetime]::Parse($Record.LastLogout))
 }
 
+function Ensure-PlayerOnlineSchema {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS admin_player_online (
+  player_id BIGINT NOT NULL PRIMARY KEY,
+  account_id INT NOT NULL DEFAULT 0,
+  map_id INT NOT NULL DEFAULT -1,
+  zone_id INT NOT NULL DEFAULT -1,
+  last_seen DATETIME NOT NULL,
+  KEY idx_admin_player_online_seen (last_seen)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+"@ | Out-Null
+}
+
 function List-Players {
+    Ensure-PlayerOnlineSchema
     $where = ""
     if (-not [string]::IsNullOrWhiteSpace($Search)) {
         $safe = $Search.Replace("\", "\\").Replace("'", "''")
@@ -1196,9 +1221,14 @@ SELECT p.id,p.name,COALESCE(a.username,'') AS username,p.gender,
        COALESCE(JSON_LENGTH(p.items_bag),0) AS bag_slots,
        COALESCE(JSON_LENGTH(p.items_box),0) AS box_slots,
        COALESCE(a.ban,0) AS ban,COALESCE(a.active,0) AS active,
-       CASE WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?' ELSE 'OFFLINE' END AS online_state,
+       CASE
+           WHEN apo.last_seen >= DATE_SUB(NOW(), INTERVAL 20 SECOND) THEN 'ONLINE'
+           WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?'
+           ELSE 'OFFLINE'
+       END AS online_state,
        p.account_id
 FROM player p LEFT JOIN account a ON a.id=p.account_id
+LEFT JOIN admin_player_online apo ON apo.player_id=p.id
 $where ORDER BY p.id DESC LIMIT 300;
 "@
 }
@@ -1217,7 +1247,7 @@ function Get-PlayerDetail {
     $defenseLimits = @((Get-PlayerConfigCurrentValue "player.limit.defense") -split ',')
     $criticalLimits = @((Get-PlayerConfigCurrentValue "player.limit.critical") -split ',')
     $safeLevel = [Math]::Max(0, [Math]::Min(9, $level))
-    $online = if (Test-PlayerPossiblyOnline $record) { "ONLINE?" } else { "OFFLINE" }
+    $online = $record.OnlineState
     $version = Get-PlayerDataVersion $record
     $header = "id`taccountId`tname`tusername`tgender`thead`tclanId`tcreatedAt`tlastLogin`tlastLogout`tonline`tban`tactive`tisAdmin`tlimitPower`tpower`tpotential`tstamina`tmaxStamina`thpg`tmpg`tdamage`tdefense`tcritical`tcriticalDragon`thp`tmp`tgold`tgem`truby`tcoupon`tbagSlots`tbagUsed`tboxSlots`tboxUsed`tmapId`tx`ty`tversion`tpowerLimit`thpMpLimit`tdamageLimit`tdefenseLimit`tcriticalLimit`tmaxGold`tmaxGem`tmaxRuby`tmaxCoupon`tmaxBag`tmaxBox"
     $values = @(

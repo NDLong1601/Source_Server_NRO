@@ -981,16 +981,32 @@
       color: #334155;
       font-size: 11px;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     .player-state.online {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .player-state.suspect {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .player-state.offline {
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .player-state.locked {
       background: #fee2e2;
       color: #991b1b;
     }
 
-    .player-state.offline {
-      background: #dcfce7;
-      color: #166534;
+    .player-state.inactive {
+      background: #fef3c7;
+      color: #92400e;
     }
 
     .player-inline-check {
@@ -3518,9 +3534,11 @@
       var html = '<thead><tr><th>ID</th><th>Player</th><th>Tài khoản</th><th>Điểm</th><th>Trạng thái</th></tr></thead><tbody>';
       for (var i = 1; i < eventPlayerRows.length; i++) {
         var row = eventPlayerRows[i];
+        var statusClass = row[4] == "ONLINE" ? "active" : (row[4] == "ONLINE?" ? "warning" : "off");
+        var statusLabel = row[4] == "ONLINE" ? "Online" : (row[4] == "ONLINE?" ? "Có thể online" : "Offline");
         html += '<tr onclick="PickEventPointPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) +
           '</td><td>' + Html(row[2]) + '</td><td>' + Html(FormatNumber(row[3] || "0")) + '</td><td><span class="event-badge ' +
-          (row[4] == "ONLINE?" ? "active" : "off") + '">' + Html(row[4] == "ONLINE?" ? "Online" : "Offline") + '</span></td></tr>';
+          statusClass + '">' + Html(statusLabel) + '</span></td></tr>';
       }
       document.getElementById("eventPlayerTable").innerHTML = html + '</tbody>';
       Msg("eventConfigMessage", eventPlayerRows.length > 1 ? "Chọn đúng player trong kết quả rồi nhập số điểm." : "Không tìm thấy player.");
@@ -5132,14 +5150,34 @@
       if (e.keyCode == 13) LoadPlayers();
     }
 
+    function PlayerStateCode(onlineState, ban, active) {
+      if (ban == "1") return "locked";
+      if (active != "1") return "inactive";
+      if (onlineState == "ONLINE") return "online";
+      if (onlineState == "ONLINE?") return "suspect";
+      return "offline";
+    }
+
+    function PlayerStateLabel(code) {
+      if (code == "online") return "Online";
+      if (code == "suspect") return "Có thể online";
+      if (code == "locked") return "Bị khóa";
+      if (code == "inactive") return "Chưa active";
+      return "Offline";
+    }
+
+    function PlayerStateBadge(onlineState, ban, active) {
+      var code = PlayerStateCode(onlineState, ban, active);
+      return '<span class="player-state ' + code + '">' + Html(PlayerStateLabel(code)) + '</span>';
+    }
+
     function LoadPlayers() {
       EnsurePlayerConfigRows();
       playerRows = ParseTsv(RunAdmin("listplayers", { Search: V("playerSearch") }));
       var html = "<thead><tr><th>ID</th><th>Player</th><th>Tài khoản</th><th>Hành tinh</th><th>Sức mạnh</th><th>Hành trang</th><th>Rương</th><th>Trạng thái</th></tr></thead><tbody>";
       for (var i = 1; i < playerRows.length; i++) {
         var row = playerRows[i];
-        var state = row[9] == "ONLINE?" ? "ONLINE?" : (row[7] == "1" ? "BỊ KHÓA" : (row[8] == "1" ? "OFFLINE" : "CHƯA ACTIVE"));
-        html += '<tr onclick="PickPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(PlayerGenderLabel(row[3])) + '</td><td>' + Html(FormatNumber(row[4])) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td><td>' + Html(state) + '</td></tr>';
+        html += '<tr onclick="PickPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(PlayerGenderLabel(row[3])) + '</td><td>' + Html(FormatNumber(row[4])) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td><td>' + PlayerStateBadge(row[9], row[7], row[8]) + '</td></tr>';
       }
       document.getElementById("playersTable").innerHTML = html + "</tbody>";
       Msg("playerMessage", playerRows.length > 1 ? "Đã tải " + (playerRows.length - 1) + " player." : "Không tìm thấy player phù hợp.");
@@ -5169,7 +5207,8 @@
       Set("playerClanId", r[6]); Set("playerLocation", "Map " + r[35] + " / " + r[36] + ", " + r[37]);
       document.getElementById("playerLoginMeta").innerText = "Tạo: " + FormatDateTime(r[7]) + " | Login: " + FormatDateTime(r[8]) + " | Logout: " + FormatDateTime(r[9]) + (r[13] == "1" ? " | Tài khoản admin" : "");
       var badge = document.getElementById("playerOnlineBadge");
-      badge.innerText = r[10]; badge.className = "player-state " + (r[10] == "ONLINE?" ? "online" : "offline");
+      var badgeCode = PlayerStateCode(r[10], r[11], r[12]);
+      badge.innerText = PlayerStateLabel(badgeCode); badge.className = "player-state " + badgeCode;
       Set("playerLimitPower", r[14]); Set("playerPower", FormatNumber(r[15])); Set("playerPotential", FormatNumber(r[16]));
       Set("playerStamina", FormatNumber(r[17])); Set("playerMaxStamina", FormatNumber(r[18])); Set("playerHpG", FormatNumber(r[19])); Set("playerMpG", FormatNumber(r[20]));
       Set("playerDamageG", FormatNumber(r[21])); Set("playerDefenseG", FormatNumber(r[22])); Set("playerCriticalG", FormatNumber(r[23])); Set("playerCriticalDragon", FormatNumber(r[24]));

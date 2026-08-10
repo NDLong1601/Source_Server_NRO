@@ -32,12 +32,17 @@ import nro.models.services.shenron.SummonDragonNamek;
 public class Client implements Runnable {
 
     private static Client instance;
+    private static final long ADMIN_ONLINE_SYNC_INTERVAL_MS = 5000L;
+    private static final long ADMIN_ONLINE_ERROR_LOG_INTERVAL_MS = 60000L;
 
     private final Map<Long, Player> players_id = new HashMap<>();
     private final Map<Integer, Player> players_userId = new HashMap<>();
     private final Map<String, Player> players_name = new HashMap<>();
     @Getter
     private final List<Player> players = new ArrayList<>();
+    private boolean adminOnlineSchemaReady;
+    private long lastAdminOnlineSyncMillis;
+    private long lastAdminOnlineErrorLogMillis;
 
     private Client() {
         Executors.newSingleThreadExecutor().submit(this, "Update Client");
@@ -63,6 +68,7 @@ public class Client implements Runnable {
         if (!players.contains(player)) {
             this.players.add(player);
         }
+        syncAdminOnlinePlayer(player);
 
     }
 
@@ -87,6 +93,7 @@ public class Client implements Runnable {
         this.players_name.remove(player.name);
         this.players_userId.remove(player.getSession().userId);
         this.players.remove(player);
+        removeAdminOnlinePlayer(player);
         if (!player.beforeDispose) {
             player.beforeDispose = true;
             player.mapIdBeforeLogout = player.zone.map.mapId;
@@ -145,6 +152,10 @@ public class Client implements Runnable {
         return this.players_name.get(name);
     }
 
+    public List<Player> getPlayers() {
+        return this.players;
+    }
+
     public void close() {
         Logger.log(Logger.YELLOW, "BEGIN KICK OUT SESSION " + players.size() + "\n");
         while (!players.isEmpty()) {
@@ -170,6 +181,83 @@ public class Client implements Runnable {
                     kickSession(session);
                 }
             }
+        }
+        syncAdminOnlinePlayers();
+    }
+
+    private void ensureAdminOnlineSchema() throws Exception {
+        if (adminOnlineSchemaReady) {
+            return;
+        }
+        LocalManager.executeUpdate("CREATE TABLE IF NOT EXISTS admin_player_online ("
+                + "player_id BIGINT NOT NULL PRIMARY KEY,"
+                + "account_id INT NOT NULL DEFAULT 0,"
+                + "map_id INT NOT NULL DEFAULT -1,"
+                + "zone_id INT NOT NULL DEFAULT -1,"
+                + "last_seen DATETIME NOT NULL,"
+                + "KEY idx_admin_player_online_seen (last_seen)"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        adminOnlineSchemaReady = true;
+    }
+
+    private void syncAdminOnlinePlayer(Player player) {
+        if (player == null || player.getSession() == null) {
+            return;
+        }
+        try {
+            ensureAdminOnlineSchema();
+            int mapId = -1;
+            int zoneId = -1;
+            if (player.zone != null) {
+                if (player.zone.map != null) {
+                    mapId = player.zone.map.mapId;
+                }
+                zoneId = player.zone.zoneId;
+            }
+            LocalManager.executeUpdate("INSERT INTO admin_player_online (player_id,account_id,map_id,zone_id,last_seen) "
+                    + "VALUES (?,?,?,?,NOW()) ON DUPLICATE KEY UPDATE account_id=VALUES(account_id),"
+                    + "map_id=VALUES(map_id),zone_id=VALUES(zone_id),last_seen=NOW()",
+                    player.id, player.getSession().userId, mapId, zoneId);
+        } catch (Exception e) {
+            logAdminOnlineSyncError(e);
+        }
+    }
+
+    private void removeAdminOnlinePlayer(Player player) {
+        if (player == null) {
+            return;
+        }
+        try {
+            ensureAdminOnlineSchema();
+            LocalManager.executeUpdate("DELETE FROM admin_player_online WHERE player_id=?", player.id);
+        } catch (Exception e) {
+            logAdminOnlineSyncError(e);
+        }
+    }
+
+    private void syncAdminOnlinePlayers() {
+        long now = System.currentTimeMillis();
+        if (now - lastAdminOnlineSyncMillis < ADMIN_ONLINE_SYNC_INTERVAL_MS) {
+            return;
+        }
+        lastAdminOnlineSyncMillis = now;
+        try {
+            ensureAdminOnlineSchema();
+            List<Player> snapshot = new ArrayList<>(players);
+            for (Player player : snapshot) {
+                syncAdminOnlinePlayer(player);
+            }
+            LocalManager.executeUpdate("DELETE FROM admin_player_online WHERE last_seen < DATE_SUB(NOW(), INTERVAL 2 MINUTE)");
+        } catch (Exception e) {
+            logAdminOnlineSyncError(e);
+        }
+    }
+
+    private void logAdminOnlineSyncError(Exception e) {
+        long now = System.currentTimeMillis();
+        if (now - lastAdminOnlineErrorLogMillis >= ADMIN_ONLINE_ERROR_LOG_INTERVAL_MS) {
+            lastAdminOnlineErrorLogMillis = now;
+            Logger.logException(Client.class, e, "Không thể cập nhật trạng thái online cho admin");
         }
     }
 

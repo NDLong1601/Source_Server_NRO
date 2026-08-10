@@ -152,69 +152,6 @@
       padding: 0;
     }
 
-    button.event-button {
-      height: 40px;
-      margin-bottom: 7px;
-      background: #1f2937;
-      border-color: #334155;
-      position: relative;
-    }
-
-    button.event-button.active {
-      background: #065f46;
-      border-color: #10b981;
-    }
-
-    button.rate-button {
-      display: inline-block;
-      width: 76px;
-      height: 38px;
-      margin-right: 5px;
-      text-align: center;
-      padding: 0;
-      background: #1f2937;
-      border-color: #334155;
-    }
-
-    button.rate-button.active {
-      background: #1d4ed8;
-      border-color: #60a5fa;
-    }
-
-    .event-name {
-      display: block;
-      font-weight: 650;
-      line-height: 16px;
-    }
-
-    .event-state {
-      display: block;
-      color: #cbd5e1;
-      font-size: 11px;
-      line-height: 14px;
-    }
-
-    select {
-      width: 100%;
-      height: 36px;
-      margin: 0 0 8px;
-      border: 1px solid #475569;
-      border-radius: 6px;
-      background: #0f172a;
-      color: #f8fafc;
-      font-family: "Segoe UI", Arial, sans-serif;
-      font-size: 13px;
-      padding-left: 8px;
-      box-sizing: border-box;
-    }
-
-    .hint {
-      margin-top: 10px;
-      color: #94a3b8;
-      font-size: 12px;
-      line-height: 17px;
-    }
-
     .topbar {
       position: absolute;
       left: 0;
@@ -326,34 +263,12 @@
       </div>
 
       <div class="section-title">Máy chủ</div>
-      <button class="primary" onclick="RunAction('start')">Khởi chạy server</button>
-      <button onclick="RunAction('restart')">Khởi động lại server</button>
-      <button class="danger" onclick="RunAction('stop')">Dừng server</button>
-
-      <div class="section-title">Sự kiện</div>
-      <div id="eventButtons">
-        <button id="event_hungvuong_topup" class="event-button" onclick="ConfirmEvent('hungvuong,topup')"><span class="event-name">Hùng Vương</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_trungthu_topup" class="event-button" onclick="ConfirmEvent('trungthu,topup')"><span class="event-name">Trung Thu</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_halloween_topup" class="event-button" onclick="ConfirmEvent('halloween,topup')"><span class="event-name">Halloween</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_christmas_topup" class="event-button" onclick="ConfirmEvent('christmas,topup')"><span class="event-name">Noel</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_lunar_new_year_topup" class="event-button" onclick="ConfirmEvent('lunar_new_year,topup')"><span class="event-name">Tết</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_womens_day_topup" class="event-button" onclick="ConfirmEvent('womens_day,topup')"><span class="event-name">Quốc tế Phụ nữ 8/3</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_topup" class="event-button" onclick="ConfirmEvent('topup')"><span class="event-name">TopUp</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_all" class="event-button" onclick="ConfirmEvent('all')"><span class="event-name">Tất cả sự kiện</span><span class="event-state">Đang kiểm tra...</span></button>
-        <button id="event_none" class="event-button" onclick="ConfirmEvent('none')"><span class="event-name">Không sự kiện</span><span class="event-state">Đang kiểm tra...</span></button>
-      </div>
-
-      <div class="section-title">Tiềm năng / sức mạnh</div>
-      <button id="rate_1" class="rate-button" onclick="ConfirmExpRate('1')">x1</button>
-      <button id="rate_2" class="rate-button" onclick="ConfirmExpRate('2')">x2</button>
-      <button id="rate_3" class="rate-button" onclick="ConfirmExpRate('3')">x3</button>
-
-      <div class="section-title">Công cụ</div>
-      <button onclick="RunAction('build')">Biên dịch và cập nhật 20.jar</button>
-      <button onclick="RunAction('openlogs')">Mở thư mục log</button>
+      <button class="primary" onclick="RunAction('start')">Bật Server</button>
+      <button onclick="RunAction('restart')">Restart Server</button>
+      <button class="danger" onclick="RunAction('stop')">Tắt Server</button>
 
       <div class="footer-note">
-        Đổi sự kiện cần restart server để áp dụng. Log được ghi vào thư mục logs.
+        Log server và log lỗi được ghi trong thư mục logs.
       </div>
     </div>
 
@@ -371,7 +286,6 @@
         <div class="log-tabs">
           <span id="tabServer" class="tab active" onclick="SetLogTab('server')">Log server</span>
           <span id="tabError" class="tab" onclick="SetLogTab('error')">Log lỗi</span>
-          <span id="tabControl" class="tab" onclick="SetLogTab('control')">Log điều khiển</span>
         </div>
         <textarea id="logBox" readonly></textarea>
       </div>
@@ -409,36 +323,6 @@
       viewCleared = false;
       RunBat(action, "", false);
       window.setTimeout("RefreshAll()", 900);
-    }
-
-    function ConfirmEvent(value) {
-      viewCleared = false;
-      var label = EventLabel(value);
-      var verb = value == "none" ? "tắt toàn bộ sự kiện" : "bật sự kiện \"" + label + "\"";
-      var message = "Bạn có muốn " + verb + " không?\n\nDashboard sẽ tự khởi động lại server để áp dụng.";
-      if (!window.confirm(message)) {
-        return;
-      }
-
-      currentLog = "control";
-      SetLogTab("control");
-      document.getElementById("logBox").value = "Đang áp dụng " + label + " và khởi động lại server...\r\nVui lòng chờ.";
-      RunBat("eventrestart", value, true);
-      RefreshAll();
-    }
-
-    function ConfirmExpRate(rate) {
-      viewCleared = false;
-      var message = "Bạn có muốn bật x" + rate + " tiềm năng/sức mạnh toàn server không?\n\nDashboard sẽ tự khởi động lại server để áp dụng.";
-      if (!window.confirm(message)) {
-        return;
-      }
-
-      currentLog = "control";
-      SetLogTab("control");
-      document.getElementById("logBox").value = "Đang áp dụng x" + rate + " tiềm năng/sức mạnh và khởi động lại server...\r\nVui lòng chờ.";
-      RunBat("exprestart", rate, true);
-      RefreshAll();
     }
 
     function RunBat(action, value, wait) {
@@ -491,99 +375,25 @@
       var text = ReadFile(path);
       document.getElementById("statusText").innerText = FormatStatus(text);
       document.getElementById("lastUpdate").innerText = "Cập nhật: " + FormatTime(new Date());
-      UpdateEventButtons(GetStatusEventValue(text));
-      UpdateRateButtons(GetStatusRateValue(text));
     }
 
     function FormatStatus(text) {
       var lines = text.split(/\r?\n/);
+      var output = [];
       for (var i = 0; i < lines.length; i++) {
         if (lines[i].indexOf("Sự kiện:") == 0 || lines[i].indexOf("Su kien:") == 0) {
-          var value = Trim(lines[i].replace("Sự kiện:", "").replace("Su kien:", ""));
-          lines[i] = "Sự kiện: " + EventLabel(value);
+          continue;
         }
-      }
-      return lines.join("\r\n");
-    }
 
-    function EventLabel(value) {
-      var labels = {
-        "hungvuong,topup": "Hùng Vương + TopUp",
-        "trungthu,topup": "Trung Thu + TopUp",
-        "halloween,topup": "Halloween + TopUp",
-        "christmas,topup": "Christmas + TopUp",
-        "lunar_new_year,topup": "Tết + TopUp",
-        "womens_day,topup": "8/3 + TopUp",
-        "topup": "Chỉ TopUp",
-        "none": "Không sự kiện",
-        "all": "Tất cả sự kiện"
-      };
-      return labels[value] ? labels[value] : value;
-    }
-
-    function GetStatusEventValue(text) {
-      var lines = text.split(/\r?\n/);
-      var value = "";
-      for (var i = 0; i < lines.length; i++) {
-        if (lines[i].indexOf("Sự kiện:") == 0 || lines[i].indexOf("Su kien:") == 0) {
-          value = Trim(lines[i].replace("Sự kiện:", "").replace("Su kien:", ""));
-          break;
-        }
-      }
-      return value;
-    }
-
-    function GetStatusRateValue(text) {
-      var lines = text.split(/\r?\n/);
-      for (var i = 0; i < lines.length; i++) {
         if (lines[i].indexOf("TNSM:") == 0) {
-          return Trim(lines[i].replace("TNSM:", "").replace("x", ""));
-        }
-      }
-      return "1";
-    }
-
-    function UpdateEventButtons(activeValue) {
-      var values = [
-        "hungvuong,topup",
-        "trungthu,topup",
-        "halloween,topup",
-        "christmas,topup",
-        "lunar_new_year,topup",
-        "womens_day,topup",
-        "topup",
-        "all",
-        "none"
-      ];
-
-      for (var i = 0; i < values.length; i++) {
-        var button = document.getElementById(EventButtonId(values[i]));
-        if (!button) {
           continue;
         }
 
-        var active = values[i].toLowerCase() == activeValue.toLowerCase();
-        button.className = active ? "event-button active" : "event-button";
-        var spans = button.getElementsByTagName("span");
-        if (spans.length > 1) {
-          spans[1].innerText = active ? "Đang bật" : "Đang tắt";
+        if (Trim(lines[i]).length > 0) {
+          output[output.length] = lines[i];
         }
       }
-    }
-
-    function EventButtonId(value) {
-      return "event_" + value.replace(/,/g, "_");
-    }
-
-    function UpdateRateButtons(activeRate) {
-      var rates = ["1", "2", "3"];
-      for (var i = 0; i < rates.length; i++) {
-        var button = document.getElementById("rate_" + rates[i]);
-        if (!button) {
-          continue;
-        }
-        button.className = rates[i] == activeRate ? "rate-button active" : "rate-button";
-      }
+      return output.join("\r\n");
     }
 
     function SetLogTab(tab) {
@@ -591,7 +401,6 @@
       currentLog = tab;
       document.getElementById("tabServer").className = tab == "server" ? "tab active" : "tab";
       document.getElementById("tabError").className = tab == "error" ? "tab active" : "tab";
-      document.getElementById("tabControl").className = tab == "control" ? "tab active" : "tab";
       ReadLogs();
     }
 
@@ -599,8 +408,6 @@
       var path;
       if (currentLog == "error") {
         path = rootDir + "\\logs\\server-error.log";
-      } else if (currentLog == "control") {
-        path = rootDir + "\\logs\\control.log";
       } else {
         path = rootDir + "\\logs\\server.log";
       }
