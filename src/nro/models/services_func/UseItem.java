@@ -26,6 +26,7 @@ import nro.models.consts.ConstTaskBadges;
 import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.map.service.NpcService;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
@@ -1317,8 +1318,8 @@ public class UseItem {
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
         pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-        if (pl.inventory.gold > Inventory.LIMIT_GOLD) {
-            pl.inventory.gold = Inventory.LIMIT_GOLD;
+        if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
+            pl.inventory.gold = PlayerConfig.getMaxGold();
         }
         Service.gI().LogicEffect(pl, 62, 1, -1, 1, 1, 15000);
         Service.gI().LogicEffect(pl, 63, 1, -1, 1, 1, 5000);
@@ -1344,8 +1345,8 @@ public class UseItem {
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
         pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-        if (pl.inventory.gold > Inventory.LIMIT_GOLD) {
-            pl.inventory.gold = Inventory.LIMIT_GOLD;
+        if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
+            pl.inventory.gold = PlayerConfig.getMaxGold();
         }
         Service.gI().LogicEffect(pl, 62, 1, -1, 1, 1, 15000);
         Service.gI().LogicEffect(pl, 63, 1, -1, 1, 1, 5000);
@@ -1497,8 +1498,8 @@ public class UseItem {
             icon[0] = item.template.iconID;
             if (index <= 3) {
                 pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-                if (pl.inventory.gold > Inventory.LIMIT_GOLD) {
-                    pl.inventory.gold = Inventory.LIMIT_GOLD;
+                if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
+                    pl.inventory.gold = PlayerConfig.getMaxGold();
                 }
                 PlayerService.gI().sendInfoHpMpMoney(pl);
                 icon[1] = 930;

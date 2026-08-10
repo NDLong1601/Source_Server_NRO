@@ -3,6 +3,7 @@ package nro.models.services_func;
 import nro.models.database.HistoryTransactionDAO;
 import nro.models.item.Item;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.network.Message;
 import nro.models.services.ItemService;
@@ -352,9 +353,9 @@ public class Trade {
 
     private void startTrade() {
         byte tradeStatus = SUCCESS;
-        if (player1.inventory.gold + goldTrade2 > Inventory.LIMIT_GOLD) {
+        if (player1.inventory.gold + goldTrade2 > PlayerConfig.getMaxGold()) {
             tradeStatus = FAIL_MAX_GOLD_PLAYER1;
-        } else if (player2.inventory.gold + goldTrade1 > Inventory.LIMIT_GOLD) {
+        } else if (player2.inventory.gold + goldTrade1 > PlayerConfig.getMaxGold()) {
             tradeStatus = FAIL_MAX_GOLD_PLAYER2;
         }
         if (tradeStatus != SUCCESS) {

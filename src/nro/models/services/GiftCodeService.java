@@ -5,6 +5,7 @@ import nro.models.player_system.GiftCode;
 import nro.models.item.Item;
 import java.util.Set;
 import nro.models.player.Player;
+import nro.models.player.PlayerConfig;
 import nro.models.map.service.NpcService;
 import nro.models.shop.ItemShop;
 import nro.models.shop.Shop;
@@ -55,15 +56,15 @@ public class GiftCodeService {
 
                 switch (idItem) {
                     case -1 -> {
-                        player.inventory.gold = Math.min(player.inventory.gold + (long) quantity, 2000000000L);
+                        player.inventory.gold = Math.min(player.inventory.gold + (long) quantity, PlayerConfig.getMaxGold());
                         textGift += "|2|" + quantity + " vàng\b";
                     }
                     case -2 -> {
-                        player.inventory.gem = Math.min(player.inventory.gem + quantity, 200000000);
+                        player.inventory.gem = Math.min(player.inventory.gem + quantity, PlayerConfig.getMaxGem());
                         textGift += "|3|" + quantity + " ngọc\b";
                     }
                     case -3 -> {
-                        player.inventory.ruby = Math.min(player.inventory.ruby + quantity, 200000000);
+                        player.inventory.ruby = Math.min(player.inventory.ruby + quantity, PlayerConfig.getMaxRuby());
                         textGift += "|4|" + quantity + " ngọc khóa\b";
                     }
                     default -> {

@@ -17,9 +17,6 @@ import nro.models.task.BadgesTaskService;
  */
 public class Inventory {
 
-    public static final long LIMIT_GOLD = 200_000_000_000L;
-    public static final int MAX_ITEMS_BAG = 80;
-    public static final int MAX_ITEMS_BOX = 100;
     public Item trainArmor;
     public List<String> giftCode;
     public List<Item> itemsBody;
@@ -76,8 +73,8 @@ public class Inventory {
 
     public void addGold(int gold) {
         this.gold += gold;
-        if (this.gold > LIMIT_GOLD) {
-            this.gold = LIMIT_GOLD;
+        if (this.gold > PlayerConfig.getMaxGold()) {
+            this.gold = PlayerConfig.getMaxGold();
         }
     }
 

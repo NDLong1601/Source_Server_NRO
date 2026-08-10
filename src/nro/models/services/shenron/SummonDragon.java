@@ -9,6 +9,7 @@ import nro.models.item.Item.ItemOption;
 import nro.models.map.Zone;
 import nro.models.map.service.NpcService;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.utils.Util;
@@ -436,7 +437,7 @@ public class SummonDragon {
                         break;
                     case 2: //2 tr vàng
                         if (this.playerSummonShenron.inventory.gold > 1800000000) {
-                            this.playerSummonShenron.inventory.gold = Inventory.LIMIT_GOLD;
+                            this.playerSummonShenron.inventory.gold = PlayerConfig.getMaxGold();
                         } else {
                             this.playerSummonShenron.inventory.gold += 200000000;
                         }
@@ -455,7 +456,7 @@ public class SummonDragon {
                         break;
                     case 2: //200k vàng
                         if (this.playerSummonShenron.inventory.gold > (2000000000 - 20000000)) {
-                            this.playerSummonShenron.inventory.gold = Inventory.LIMIT_GOLD;
+                            this.playerSummonShenron.inventory.gold = PlayerConfig.getMaxGold();
                         } else {
                             this.playerSummonShenron.inventory.gold += 20000000;
                         }

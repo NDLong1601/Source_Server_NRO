@@ -3,6 +3,7 @@ package nro.models.shop;
 import nro.models.consts.ConstAchievement;
 import nro.models.item.Item;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.shop.ItemShop;
 import nro.models.shop.Shop;
@@ -1098,7 +1099,7 @@ public class ShopService {
             }
             cost *= quantity;
 
-            if (pl.inventory.gold + cost > Inventory.LIMIT_GOLD) {
+            if (pl.inventory.gold + cost > PlayerConfig.getMaxGold()) {
                 Service.gI().sendThongBao(pl, "Vàng sau khi bán vượt quá giới hạn");
                 return;
             }

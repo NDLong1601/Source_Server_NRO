@@ -59,6 +59,7 @@
     [string]$Announce = "1",
     [string]$DropsJson = "[]",
     [string]$SkillsJson = "[]",
+    [string]$PayloadJson = "{}",
     [string]$Encoded = "0"
 )
 
@@ -83,7 +84,7 @@ foreach ($paramName in @(
         "IconSpec", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
-        "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson"
+        "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson", "PayloadJson"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -300,6 +301,122 @@ function Reset-CombineConfig {
     "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
 }
 
+function Get-PlayerConfigCatalog {
+    @(
+        [pscustomobject]@{ Key="player.start.gold"; Category="Khởi tạo - Tài sản"; Name="Vàng ban đầu"; Default="2000"; Kind="long"; Scope="Nhân vật mới"; Description="Số vàng của nhân vật khi vừa được tạo." },
+        [pscustomobject]@{ Key="player.start.gem"; Category="Khởi tạo - Tài sản"; Name="Ngọc xanh ban đầu"; Default="10000"; Kind="int"; Scope="Nhân vật mới"; Description="Số ngọc xanh của nhân vật mới." },
+        [pscustomobject]@{ Key="player.start.testGem"; Category="Khởi tạo - Tài sản"; Name="Ngọc xanh server test"; Default="1000000000"; Kind="int"; Scope="Nhân vật mới"; Description="Số ngọc xanh khởi tạo khi server.test=true." },
+        [pscustomobject]@{ Key="player.start.ruby"; Category="Khởi tạo - Tài sản"; Name="Hồng ngọc ban đầu"; Default="0"; Kind="int"; Scope="Nhân vật mới"; Description="Số hồng ngọc của nhân vật mới." },
+        [pscustomobject]@{ Key="player.start.coupon"; Category="Khởi tạo - Tài sản"; Name="Coupon ban đầu"; Default="0"; Kind="int"; Scope="Nhân vật mới"; Description="Số coupon của nhân vật mới." },
+        [pscustomobject]@{ Key="player.start.bagSlots"; Category="Khởi tạo - Sức chứa"; Name="Ô hành trang ban đầu"; Default="30"; Kind="slot"; Scope="Nhân vật mới"; Description="Độ dài items_bag khi tạo nhân vật." },
+        [pscustomobject]@{ Key="player.start.boxSlots"; Category="Khởi tạo - Sức chứa"; Name="Ô rương ban đầu"; Default="30"; Kind="slot"; Scope="Nhân vật mới"; Description="Độ dài items_box khi tạo nhân vật." },
+        [pscustomobject]@{ Key="player.start.stamina"; Category="Khởi tạo - Chỉ số"; Name="Thể lực ban đầu"; Default="1000"; Kind="stamina"; Scope="Nhân vật mới"; Description="Thể lực hiện tại và tối đa lúc tạo nhân vật." },
+        [pscustomobject]@{ Key="player.start.limitPower"; Category="Khởi tạo - Chỉ số"; Name="Cấp giới hạn ban đầu"; Default="0"; Kind="limit-level"; Scope="Nhân vật mới"; Description="Cấp mở giới hạn sức mạnh ban đầu, từ 0 đến 9." },
+        [pscustomobject]@{ Key="player.start.power"; Category="Khởi tạo - Chỉ số"; Name="Sức mạnh ban đầu"; Default="2000"; Kind="long"; Scope="Nhân vật mới"; Description="Sức mạnh của nhân vật khi vừa tạo." },
+        [pscustomobject]@{ Key="player.start.potential"; Category="Khởi tạo - Chỉ số"; Name="Tiềm năng ban đầu"; Default="2000"; Kind="long"; Scope="Nhân vật mới"; Description="Tiềm năng của nhân vật khi vừa tạo." },
+        [pscustomobject]@{ Key="player.start.criticalDragon"; Category="Khởi tạo - Chỉ số"; Name="Chí mạng rồng ban đầu"; Default="0"; Kind="critical"; Scope="Nhân vật mới"; Description="Chỉ số chí mạng rồng ban đầu." },
+
+        [pscustomobject]@{ Key="player.start.earth.hp"; Category="Chỉ số gốc - Trái Đất"; Name="HP gốc"; Default="200"; Kind="positive-int"; Scope="Nhân vật mới"; Description="HP gốc ban đầu của Trái Đất." },
+        [pscustomobject]@{ Key="player.start.earth.mp"; Category="Chỉ số gốc - Trái Đất"; Name="KI gốc"; Default="100"; Kind="positive-int"; Scope="Nhân vật mới"; Description="KI gốc ban đầu của Trái Đất." },
+        [pscustomobject]@{ Key="player.start.earth.damage"; Category="Chỉ số gốc - Trái Đất"; Name="Sức đánh gốc"; Default="10"; Kind="positive-int"; Scope="Nhân vật mới"; Description="Sức đánh gốc ban đầu của Trái Đất." },
+        [pscustomobject]@{ Key="player.start.earth.defense"; Category="Chỉ số gốc - Trái Đất"; Name="Giáp gốc"; Default="0"; Kind="int"; Scope="Nhân vật mới"; Description="Giáp gốc ban đầu của Trái Đất." },
+        [pscustomobject]@{ Key="player.start.earth.critical"; Category="Chỉ số gốc - Trái Đất"; Name="Chí mạng gốc"; Default="0"; Kind="critical"; Scope="Nhân vật mới"; Description="Chí mạng gốc ban đầu của Trái Đất." },
+
+        [pscustomobject]@{ Key="player.start.namek.hp"; Category="Chỉ số gốc - Namek"; Name="HP gốc"; Default="100"; Kind="positive-int"; Scope="Nhân vật mới"; Description="HP gốc ban đầu của Namek." },
+        [pscustomobject]@{ Key="player.start.namek.mp"; Category="Chỉ số gốc - Namek"; Name="KI gốc"; Default="200"; Kind="positive-int"; Scope="Nhân vật mới"; Description="KI gốc ban đầu của Namek." },
+        [pscustomobject]@{ Key="player.start.namek.damage"; Category="Chỉ số gốc - Namek"; Name="Sức đánh gốc"; Default="10"; Kind="positive-int"; Scope="Nhân vật mới"; Description="Sức đánh gốc ban đầu của Namek." },
+        [pscustomobject]@{ Key="player.start.namek.defense"; Category="Chỉ số gốc - Namek"; Name="Giáp gốc"; Default="0"; Kind="int"; Scope="Nhân vật mới"; Description="Giáp gốc ban đầu của Namek." },
+        [pscustomobject]@{ Key="player.start.namek.critical"; Category="Chỉ số gốc - Namek"; Name="Chí mạng gốc"; Default="0"; Kind="critical"; Scope="Nhân vật mới"; Description="Chí mạng gốc ban đầu của Namek." },
+
+        [pscustomobject]@{ Key="player.start.saiyan.hp"; Category="Chỉ số gốc - Xayda"; Name="HP gốc"; Default="100"; Kind="positive-int"; Scope="Nhân vật mới"; Description="HP gốc ban đầu của Xayda." },
+        [pscustomobject]@{ Key="player.start.saiyan.mp"; Category="Chỉ số gốc - Xayda"; Name="KI gốc"; Default="100"; Kind="positive-int"; Scope="Nhân vật mới"; Description="KI gốc ban đầu của Xayda." },
+        [pscustomobject]@{ Key="player.start.saiyan.damage"; Category="Chỉ số gốc - Xayda"; Name="Sức đánh gốc"; Default="15"; Kind="positive-int"; Scope="Nhân vật mới"; Description="Sức đánh gốc ban đầu của Xayda." },
+        [pscustomobject]@{ Key="player.start.saiyan.defense"; Category="Chỉ số gốc - Xayda"; Name="Giáp gốc"; Default="0"; Kind="int"; Scope="Nhân vật mới"; Description="Giáp gốc ban đầu của Xayda." },
+        [pscustomobject]@{ Key="player.start.saiyan.critical"; Category="Chỉ số gốc - Xayda"; Name="Chí mạng gốc"; Default="0"; Kind="critical"; Scope="Nhân vật mới"; Description="Chí mạng gốc ban đầu của Xayda." },
+
+        [pscustomobject]@{ Key="player.max.gold"; Category="Giới hạn toàn server"; Name="Vàng tối đa"; Default="200000000000"; Kind="positive-long"; Scope="Runtime"; Description="Trần vàng dùng khi nhặt, giao dịch, mua bán và lưu player." },
+        [pscustomobject]@{ Key="player.max.gem"; Category="Giới hạn toàn server"; Name="Ngọc xanh tối đa"; Default="2147483647"; Kind="positive-int"; Scope="Runtime"; Description="Trần ngọc xanh; không vượt giới hạn int." },
+        [pscustomobject]@{ Key="player.max.ruby"; Category="Giới hạn toàn server"; Name="Hồng ngọc tối đa"; Default="2147483647"; Kind="positive-int"; Scope="Runtime"; Description="Trần hồng ngọc; không vượt giới hạn int." },
+        [pscustomobject]@{ Key="player.max.coupon"; Category="Giới hạn toàn server"; Name="Coupon tối đa"; Default="2147483647"; Kind="positive-int"; Scope="Runtime"; Description="Trần coupon; không vượt giới hạn int." },
+        [pscustomobject]@{ Key="player.max.bagSlots"; Category="Giới hạn toàn server"; Name="Ô hành trang tối đa"; Default="80"; Kind="slot"; Scope="Runtime"; Description="Trần hành trang; giao thức hiện dùng một byte nên tối đa an toàn là 127." },
+        [pscustomobject]@{ Key="player.max.boxSlots"; Category="Giới hạn toàn server"; Name="Ô rương tối đa"; Default="100"; Kind="slot"; Scope="Runtime"; Description="Trần rương; giao thức hiện dùng một byte nên tối đa an toàn là 127." },
+
+        [pscustomobject]@{ Key="player.limit.power"; Category="Giới hạn 10 cấp"; Name="Trần sức mạnh"; Default="17999999999,19999999999,24999999999,29999999999,39999999999,50010000000,60010000000,70010000000,80010000000,90010000000"; Kind="long-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
+        [pscustomobject]@{ Key="player.limit.hpMp"; Category="Giới hạn 10 cấp"; Name="Trần HP/KI gốc"; Default="220000,240000,300000,350000,400000,450000,500000,525000,550000,575000"; Kind="int-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
+        [pscustomobject]@{ Key="player.limit.damage"; Category="Giới hạn 10 cấp"; Name="Trần sức đánh gốc"; Default="11000,12000,15000,18000,20000,22000,24000,24500,25000,26000"; Kind="int-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
+        [pscustomobject]@{ Key="player.limit.defense"; Category="Giới hạn 10 cấp"; Name="Trần giáp gốc"; Default="550,600,700,800,1000,1200,1400,1500,1600,1800"; Kind="int-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
+        [pscustomobject]@{ Key="player.limit.critical"; Category="Giới hạn 10 cấp"; Name="Trần chí mạng gốc"; Default="1,2,3,4,5,6,7,8,9,10"; Kind="critical-list"; Scope="Runtime"; Description="Đúng 10 số từ 0 đến 127 tương ứng limitPower 0 đến 9." }
+    )
+}
+
+function Get-PlayerConfigEntry {
+    param([string]$Key)
+    Get-PlayerConfigCatalog | Where-Object { $_.Key -eq $Key } | Select-Object -First 1
+}
+
+function Assert-PlayerConfigValue {
+    param($Entry, [string]$Value)
+    $Value = $Value.Trim()
+    if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
+    if ($Entry.Kind -in @("int", "positive-int", "slot", "stamina", "critical", "limit-level")) {
+        if ($Value -notmatch '^\d+$' -or [decimal]$Value -gt 2147483647) { throw "Giá trị phải là số nguyên từ 0 đến 2.147.483.647." }
+        $number = [long]$Value
+        if ($Entry.Kind -eq "positive-int" -and $number -lt 1) { throw "Giá trị phải lớn hơn 0." }
+        if ($Entry.Kind -eq "slot" -and ($number -lt 1 -or $number -gt 127)) { throw "Số ô phải từ 1 đến 127." }
+        if ($Entry.Kind -eq "stamina" -and ($number -lt 1 -or $number -gt 32767)) { throw "Thể lực phải từ 1 đến 32.767." }
+        if ($Entry.Kind -eq "critical" -and $number -gt 127) { throw "Chí mạng không được vượt 127." }
+        if ($Entry.Kind -eq "limit-level" -and $number -gt 9) { throw "Cấp giới hạn phải từ 0 đến 9." }
+    } elseif ($Entry.Kind -in @("long", "positive-long")) {
+        $parsed = 0L
+        if (-not [long]::TryParse($Value, [ref]$parsed) -or $parsed -lt 0) { throw "Giá trị phải là số nguyên 64-bit không âm." }
+        if ($Entry.Kind -eq "positive-long" -and $parsed -lt 1) { throw "Giá trị phải lớn hơn 0." }
+    } elseif ($Entry.Kind -in @("int-list", "long-list", "critical-list")) {
+        $parts = @($Value -split ',')
+        if ($parts.Count -ne 10) { throw "Danh sách giới hạn phải có đúng 10 giá trị cho cấp 0 đến 9." }
+        $last = [decimal]-1
+        foreach ($part in $parts) {
+            $numberText = $part.Trim()
+            if ($numberText -notmatch '^\d+$') { throw "Danh sách chỉ gồm số nguyên không âm, phân cách bằng dấu phẩy." }
+            $number = [decimal]$numberText
+            if ($Entry.Kind -ne "long-list" -and $number -gt 2147483647) { throw "Mỗi giá trị phải nằm trong giới hạn int." }
+            if ($Entry.Kind -eq "critical-list" -and $number -gt 127) { throw "Mỗi giới hạn chí mạng phải từ 0 đến 127." }
+            if ($number -lt $last) { throw "Giới hạn cấp sau không được nhỏ hơn cấp trước." }
+            $last = $number
+        }
+        $Value = ($parts | ForEach-Object { $_.Trim() }) -join ','
+    } else {
+        throw "Kiểu cấu hình Player không được hỗ trợ: $($Entry.Kind)"
+    }
+    $Value
+}
+
+function List-PlayerConfig {
+    $path = Join-Path $Root "player.properties"
+    $map = Get-PropertyMap $path
+    $rows = New-Object System.Collections.Generic.List[string]
+    $rows.Add("key`tcategory`tname`tvalue`tdefault`tkind`tscope`tdescription")
+    foreach ($entry in (Get-PlayerConfigCatalog)) {
+        $value = if ($map.ContainsKey($entry.Key)) { $map[$entry.Key] } else { $entry.Default }
+        $rows.Add("$($entry.Key)`t$($entry.Category)`t$($entry.Name)`t$value`t$($entry.Default)`t$($entry.Kind)`t$($entry.Scope)`t$($entry.Description)")
+    }
+    $rows -join "`r`n"
+}
+
+function Save-PlayerConfig {
+    $entry = Get-PlayerConfigEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa cấu hình Player không hợp lệ: $ConfigKey" }
+    $validated = Assert-PlayerConfigValue $entry $ConfigValue
+    Set-PropertyValue -Path (Join-Path $Root "player.properties") -Key $entry.Key -Value $validated
+    "OK`tĐã lưu $($entry.Name). Giới hạn runtime áp dụng trong tối đa 1 giây; giá trị khởi tạo chỉ áp dụng cho player mới."
+}
+
+function Reset-PlayerConfig {
+    $entry = Get-PlayerConfigEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa cấu hình Player không hợp lệ: $ConfigKey" }
+    Set-PropertyValue -Path (Join-Path $Root "player.properties") -Key $entry.Key -Value "" -Remove
+    "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
+}
+
 function SqlString {
     param([string]$Value)
     if ($null -eq $Value) {
@@ -380,6 +497,245 @@ function Invoke-MySql {
             Remove-Item -LiteralPath $tempSql -Force -ErrorAction SilentlyContinue
         }
     }
+}
+
+function Get-PlayerConfigCurrentValue {
+    param([string]$Key)
+    $entry = Get-PlayerConfigEntry $Key
+    if ($null -eq $entry) { throw "Thiếu khai báo cấu hình Player: $Key" }
+    $map = Get-PropertyMap (Join-Path $Root "player.properties")
+    if ($map.ContainsKey($Key)) { return [string]$map[$Key] }
+    [string]$entry.Default
+}
+
+function Convert-PlayerJsonArray {
+    param([string]$Json, [string]$Label, [int]$MinimumCount = 0)
+    try { $result = $Json | ConvertFrom-Json } catch { throw "$Label không phải JSON hợp lệ." }
+    if ($result.Count -lt $MinimumCount) { throw "$Label thiếu dữ liệu: cần ít nhất $MinimumCount phần tử." }
+    ,$result
+}
+
+function Get-PlayerUsedSlotCount {
+    param([object[]]$Items)
+    $used = 0
+    foreach ($itemText in $Items) {
+        try {
+            $item = ([string]$itemText) | ConvertFrom-Json
+            if ($item.Count -gt 0 -and [int]$item[0] -ne -1) { $used++ }
+        } catch { throw "Dữ liệu item của player bị hỏng." }
+    }
+    $used
+}
+
+function Get-PlayerDataVersion {
+    param($Record)
+    $raw = @($Record.DataPoint, $Record.DataInventory, $Record.ItemsBag, $Record.ItemsBox,
+        $Record.DataLocation, $Record.Ban, $Record.Active) -join "|"
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [Text.Encoding]::UTF8.GetBytes($raw)
+        (($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString("x2") }) -join "")
+    } finally { $sha.Dispose() }
+}
+
+function Get-PlayerRawRecord {
+    param([int]$PlayerId)
+    if ($PlayerId -le 0) { throw "Player ID không hợp lệ." }
+    $text = Invoke-MySql @"
+SELECT p.id,p.account_id,p.name,COALESCE(a.username,''),p.gender,p.head,p.clan_id,
+       DATE_FORMAT(p.create_time,'%Y-%m-%d %H:%i:%s'),
+       COALESCE(DATE_FORMAT(a.last_time_login,'%Y-%m-%d %H:%i:%s'),''),
+       COALESCE(DATE_FORMAT(a.last_time_logout,'%Y-%m-%d %H:%i:%s'),''),
+       COALESCE(a.ban,0),COALESCE(a.active,0),COALESCE(a.is_admin,0),
+       p.data_point,p.data_inventory,p.items_bag,p.items_box,p.data_location
+FROM player p LEFT JOIN account a ON a.id=p.account_id WHERE p.id=$PlayerId LIMIT 1;
+"@
+    $lines = @($text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { throw "Không tìm thấy player ID $PlayerId." }
+    $parts = @($lines[1] -split "`t", 18)
+    if ($parts.Count -lt 18) { throw "Không đọc được dữ liệu player ID $PlayerId." }
+    [pscustomobject]@{
+        Id=$parts[0]; AccountId=$parts[1]; Name=$parts[2]; Username=$parts[3]; Gender=$parts[4];
+        Head=$parts[5]; ClanId=$parts[6]; CreatedAt=$parts[7]; LastLogin=$parts[8]; LastLogout=$parts[9];
+        Ban=$parts[10]; Active=$parts[11]; IsAdmin=$parts[12]; DataPoint=$parts[13];
+        DataInventory=$parts[14]; ItemsBag=$parts[15]; ItemsBox=$parts[16]; DataLocation=$parts[17]
+    }
+}
+
+function Test-PlayerPossiblyOnline {
+    param($Record)
+    if ([string]::IsNullOrWhiteSpace($Record.LastLogin) -or [string]::IsNullOrWhiteSpace($Record.LastLogout)) { return $false }
+    ([datetime]::Parse($Record.LastLogin) -gt [datetime]::Parse($Record.LastLogout))
+}
+
+function List-Players {
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safe = $Search.Replace("\", "\\").Replace("'", "''")
+        if ($Search -match '^\d+$') {
+            $where = "WHERE p.id=$(SqlInt $Search) OR p.account_id=$(SqlInt $Search) OR p.name LIKE '%$safe%' OR a.username LIKE '%$safe%'"
+        } else {
+            $where = "WHERE p.name LIKE '%$safe%' OR a.username LIKE '%$safe%'"
+        }
+    }
+    Invoke-MySql @"
+SELECT p.id,p.name,COALESCE(a.username,'') AS username,p.gender,
+       COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.data_point,'`$[1]')),'0') AS power,
+       COALESCE(JSON_LENGTH(p.items_bag),0) AS bag_slots,
+       COALESCE(JSON_LENGTH(p.items_box),0) AS box_slots,
+       COALESCE(a.ban,0) AS ban,COALESCE(a.active,0) AS active,
+       CASE WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?' ELSE 'OFFLINE' END AS online_state,
+       p.account_id
+FROM player p LEFT JOIN account a ON a.id=p.account_id
+$where ORDER BY p.id DESC LIMIT 300;
+"@
+}
+
+function Get-PlayerDetail {
+    $record = Get-PlayerRawRecord (SqlInt $Id)
+    $point = Convert-PlayerJsonArray $record.DataPoint "data_point" 14
+    $inventory = Convert-PlayerJsonArray $record.DataInventory "data_inventory" 4
+    $bag = Convert-PlayerJsonArray $record.ItemsBag "items_bag"
+    $box = Convert-PlayerJsonArray $record.ItemsBox "items_box"
+    $location = Convert-PlayerJsonArray $record.DataLocation "data_location" 3
+    $level = [int]$point[0]
+    $powerLimits = @((Get-PlayerConfigCurrentValue "player.limit.power") -split ',')
+    $hpLimits = @((Get-PlayerConfigCurrentValue "player.limit.hpMp") -split ',')
+    $damageLimits = @((Get-PlayerConfigCurrentValue "player.limit.damage") -split ',')
+    $defenseLimits = @((Get-PlayerConfigCurrentValue "player.limit.defense") -split ',')
+    $criticalLimits = @((Get-PlayerConfigCurrentValue "player.limit.critical") -split ',')
+    $safeLevel = [Math]::Max(0, [Math]::Min(9, $level))
+    $online = if (Test-PlayerPossiblyOnline $record) { "ONLINE?" } else { "OFFLINE" }
+    $version = Get-PlayerDataVersion $record
+    $header = "id`taccountId`tname`tusername`tgender`thead`tclanId`tcreatedAt`tlastLogin`tlastLogout`tonline`tban`tactive`tisAdmin`tlimitPower`tpower`tpotential`tstamina`tmaxStamina`thpg`tmpg`tdamage`tdefense`tcritical`tcriticalDragon`thp`tmp`tgold`tgem`truby`tcoupon`tbagSlots`tbagUsed`tboxSlots`tboxUsed`tmapId`tx`ty`tversion`tpowerLimit`thpMpLimit`tdamageLimit`tdefenseLimit`tcriticalLimit`tmaxGold`tmaxGem`tmaxRuby`tmaxCoupon`tmaxBag`tmaxBox"
+    $values = @(
+        $record.Id,$record.AccountId,$record.Name,$record.Username,$record.Gender,$record.Head,$record.ClanId,
+        $record.CreatedAt,$record.LastLogin,$record.LastLogout,$online,$record.Ban,$record.Active,$record.IsAdmin,
+        $point[0],$point[1],$point[2],$point[3],$point[4],$point[5],$point[6],$point[7],$point[8],$point[9],$point[10],$point[12],$point[13],
+        $inventory[0],$inventory[1],$inventory[2],$inventory[3],$bag.Count,(Get-PlayerUsedSlotCount $bag),$box.Count,(Get-PlayerUsedSlotCount $box),
+        $location[0],$location[1],$location[2],$version,$powerLimits[$safeLevel],$hpLimits[$safeLevel],$damageLimits[$safeLevel],
+        $defenseLimits[$safeLevel],$criticalLimits[$safeLevel],(Get-PlayerConfigCurrentValue "player.max.gold"),
+        (Get-PlayerConfigCurrentValue "player.max.gem"),(Get-PlayerConfigCurrentValue "player.max.ruby"),
+        (Get-PlayerConfigCurrentValue "player.max.coupon"),(Get-PlayerConfigCurrentValue "player.max.bagSlots"),
+        (Get-PlayerConfigCurrentValue "player.max.boxSlots")
+    ) -join "`t"
+    "$header`r`n$values"
+}
+
+function Get-RequiredPayloadLong {
+    param($Payload, [string]$Property, [string]$Label, [long]$Minimum, [long]$Maximum)
+    $prop = $Payload.PSObject.Properties[$Property]
+    if ($null -eq $prop) { throw "Thiếu trường $Label." }
+    $text = [string]$prop.Value
+    $number = 0L
+    if (-not [long]::TryParse($text, [ref]$number) -or $number -lt $Minimum -or $number -gt $Maximum) {
+        throw "$Label phải từ $Minimum đến $Maximum."
+    }
+    $number
+}
+
+function Resize-PlayerItems {
+    param([object[]]$Items, [int]$Target, [string]$Label)
+    if ($Target -lt $Items.Count) {
+        for ($i = $Items.Count - 1; $i -ge $Target; $i--) {
+            try { $item = ([string]$Items[$i]) | ConvertFrom-Json } catch { throw "$Label có item lỗi ở ô $($i + 1)." }
+            if ($item.Count -eq 0 -or [int]$item[0] -ne -1) { throw "Không thể giảm ${Label}: ô $($i + 1) đang có vật phẩm." }
+        }
+        return @($Items[0..($Target - 1)])
+    }
+    $result = New-Object System.Collections.Generic.List[object]
+    foreach ($item in $Items) { $result.Add($item) }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    while ($result.Count -lt $Target) { $result.Add("[-1,0,`"[]`",$now]") }
+    $result.ToArray()
+}
+
+function Save-PlayerCore {
+    try { $payload = $PayloadJson | ConvertFrom-Json } catch { throw "Dữ liệu form Player không hợp lệ." }
+    $playerId = SqlInt $Id
+    $record = Get-PlayerRawRecord $playerId
+    if ([string]$payload.version -ne (Get-PlayerDataVersion $record)) { throw "Dữ liệu player đã thay đổi. Hãy tải lại trước khi lưu." }
+    $forceOffline = [string]$payload.forceOffline -eq "1"
+    if ((Test-PlayerPossiblyOnline $record) -and -not $forceOffline) {
+        throw "Player có dấu hiệu đang online. Hãy cho player logout hoặc dừng server rồi bật xác nhận sửa offline."
+    }
+
+    $point = Convert-PlayerJsonArray $record.DataPoint "data_point" 14
+    $inventory = Convert-PlayerJsonArray $record.DataInventory "data_inventory" 4
+    $bag = Convert-PlayerJsonArray $record.ItemsBag "items_bag"
+    $box = Convert-PlayerJsonArray $record.ItemsBox "items_box"
+
+    $newLevel = [int](Get-RequiredPayloadLong $payload "limitPower" "Cấp giới hạn" 0 9)
+    $newPower = Get-RequiredPayloadLong $payload "power" "Sức mạnh" 0 ([long]::MaxValue)
+    $newPotential = Get-RequiredPayloadLong $payload "potential" "Tiềm năng" 0 ([long]::MaxValue)
+    $newStamina = [int](Get-RequiredPayloadLong $payload "stamina" "Thể lực" 0 32767)
+    $newMaxStamina = [int](Get-RequiredPayloadLong $payload "maxStamina" "Thể lực tối đa" 1 32767)
+    if ($newStamina -gt $newMaxStamina) { throw "Thể lực hiện tại không được lớn hơn thể lực tối đa." }
+    $newHp = [int](Get-RequiredPayloadLong $payload "hpg" "HP gốc" 1 2147483647)
+    $newMp = [int](Get-RequiredPayloadLong $payload "mpg" "KI gốc" 1 2147483647)
+    $newDamage = [int](Get-RequiredPayloadLong $payload "damage" "Sức đánh gốc" 1 2147483647)
+    $newDefense = [int](Get-RequiredPayloadLong $payload "defense" "Giáp gốc" 0 2147483647)
+    $newCritical = [int](Get-RequiredPayloadLong $payload "critical" "Chí mạng gốc" 0 127)
+    $newCriticalDragon = [int](Get-RequiredPayloadLong $payload "criticalDragon" "Chí mạng rồng" 0 127)
+
+    $powerLimits = @((Get-PlayerConfigCurrentValue "player.limit.power") -split ',')
+    $hpLimits = @((Get-PlayerConfigCurrentValue "player.limit.hpMp") -split ',')
+    $damageLimits = @((Get-PlayerConfigCurrentValue "player.limit.damage") -split ',')
+    $defenseLimits = @((Get-PlayerConfigCurrentValue "player.limit.defense") -split ',')
+    $criticalLimits = @((Get-PlayerConfigCurrentValue "player.limit.critical") -split ',')
+    $tierChanged = $newLevel -ne [int]$point[0]
+    if (($tierChanged -or $newPower -ne [long]$point[1]) -and $newPower -gt [long]$powerLimits[$newLevel]) { throw "Sức mạnh vượt trần cấp $newLevel ($($powerLimits[$newLevel]))." }
+    if (($tierChanged -or $newHp -ne [int]$point[5]) -and $newHp -gt [int]$hpLimits[$newLevel]) { throw "HP gốc vượt trần cấp $newLevel ($($hpLimits[$newLevel]))." }
+    if (($tierChanged -or $newMp -ne [int]$point[6]) -and $newMp -gt [int]$hpLimits[$newLevel]) { throw "KI gốc vượt trần cấp $newLevel ($($hpLimits[$newLevel]))." }
+    if (($tierChanged -or $newDamage -ne [int]$point[7]) -and $newDamage -gt [int]$damageLimits[$newLevel]) { throw "Sức đánh gốc vượt trần cấp $newLevel ($($damageLimits[$newLevel]))." }
+    if (($tierChanged -or $newDefense -ne [int]$point[8]) -and $newDefense -gt [int]$defenseLimits[$newLevel]) { throw "Giáp gốc vượt trần cấp $newLevel ($($defenseLimits[$newLevel]))." }
+    if (($tierChanged -or $newCritical -ne [int]$point[9]) -and $newCritical -gt [int]$criticalLimits[$newLevel]) { throw "Chí mạng gốc vượt trần cấp $newLevel ($($criticalLimits[$newLevel]))." }
+
+    $newGold = Get-RequiredPayloadLong $payload "gold" "Vàng" 0 ([long]::MaxValue)
+    $newGem = [int](Get-RequiredPayloadLong $payload "gem" "Ngọc xanh" 0 2147483647)
+    $newRuby = [int](Get-RequiredPayloadLong $payload "ruby" "Hồng ngọc" 0 2147483647)
+    $newCoupon = [int](Get-RequiredPayloadLong $payload "coupon" "Coupon" 0 2147483647)
+    $maxGold = [long](Get-PlayerConfigCurrentValue "player.max.gold")
+    $maxGem = [int](Get-PlayerConfigCurrentValue "player.max.gem")
+    $maxRuby = [int](Get-PlayerConfigCurrentValue "player.max.ruby")
+    $maxCoupon = [int](Get-PlayerConfigCurrentValue "player.max.coupon")
+    if ($newGold -ne [long]$inventory[0] -and $newGold -gt $maxGold) { throw "Vàng vượt giới hạn toàn server $maxGold." }
+    if ($newGem -ne [int]$inventory[1] -and $newGem -gt $maxGem) { throw "Ngọc xanh vượt giới hạn toàn server $maxGem." }
+    if ($newRuby -ne [int]$inventory[2] -and $newRuby -gt $maxRuby) { throw "Hồng ngọc vượt giới hạn toàn server $maxRuby." }
+    if ($newCoupon -ne [int]$inventory[3] -and $newCoupon -gt $maxCoupon) { throw "Coupon vượt giới hạn toàn server $maxCoupon." }
+
+    $newBagSlots = [int](Get-RequiredPayloadLong $payload "bagSlots" "Ô hành trang" 1 127)
+    $newBoxSlots = [int](Get-RequiredPayloadLong $payload "boxSlots" "Ô rương" 1 127)
+    $maxBag = [int](Get-PlayerConfigCurrentValue "player.max.bagSlots")
+    $maxBox = [int](Get-PlayerConfigCurrentValue "player.max.boxSlots")
+    if ($newBagSlots -ne $bag.Count -and $newBagSlots -gt $maxBag) { throw "Ô hành trang vượt giới hạn toàn server $maxBag." }
+    if ($newBoxSlots -ne $box.Count -and $newBoxSlots -gt $maxBox) { throw "Ô rương vượt giới hạn toàn server $maxBox." }
+    $bag = Resize-PlayerItems $bag $newBagSlots "hành trang"
+    $box = Resize-PlayerItems $box $newBoxSlots "rương"
+
+    $point[0]=$newLevel; $point[1]=$newPower; $point[2]=$newPotential; $point[3]=$newStamina; $point[4]=$newMaxStamina
+    $point[5]=$newHp; $point[6]=$newMp; $point[7]=$newDamage; $point[8]=$newDefense; $point[9]=$newCritical; $point[10]=$newCriticalDragon
+    $inventory[0]=$newGold; $inventory[1]=$newGem; $inventory[2]=$newRuby; $inventory[3]=$newCoupon
+    $pointJson = ConvertTo-Json -InputObject @($point) -Compress
+    $inventoryJson = ConvertTo-Json -InputObject @($inventory) -Compress
+    $bagJson = ConvertTo-Json -InputObject @($bag) -Compress
+    $boxJson = ConvertTo-Json -InputObject @($box) -Compress
+    $ban = [int](Get-RequiredPayloadLong $payload "ban" "Trạng thái khóa" 0 1)
+    $active = [int](Get-RequiredPayloadLong $payload "active" "Trạng thái kích hoạt" 0 1)
+    Invoke-MySql "START TRANSACTION; UPDATE player SET data_point=$(SqlString $pointJson),data_inventory=$(SqlString $inventoryJson),items_bag=$(SqlString $bagJson),items_box=$(SqlString $boxJson) WHERE id=$playerId; UPDATE account SET ban=$ban,active=$active WHERE id=$(SqlInt $record.AccountId); COMMIT;" | Out-Null
+    "OK`tĐã cập nhật player $($record.Name) (ID $playerId)."
+}
+
+function Rescue-Player {
+    try { $payload = $PayloadJson | ConvertFrom-Json } catch { throw "Dữ liệu cứu hộ Player không hợp lệ." }
+    $record = Get-PlayerRawRecord (SqlInt $Id)
+    if ([string]$payload.version -ne (Get-PlayerDataVersion $record)) { throw "Dữ liệu player đã thay đổi. Hãy tải lại trước khi cứu hộ." }
+    $forceOffline = [string]$payload.forceOffline -eq "1"
+    if ((Test-PlayerPossiblyOnline $record) -and -not $forceOffline) { throw "Player có dấu hiệu đang online; không thể cứu hộ bằng database." }
+    $mapId = [int]$record.Gender + 21
+    $location = "[$mapId,300,336]"
+    Invoke-MySql "UPDATE player SET data_location=$(SqlString $location) WHERE id=$(SqlInt $record.Id);" | Out-Null
+    "OK`tĐã đưa $($record.Name) về map $mapId, tọa độ 300/336."
 }
 
 function List-Items {
@@ -1240,7 +1596,8 @@ function Invoke-MySqlDump {
     $user = if ($config["database.user"]) { $config["database.user"] } else { "root" }
     $pass = if ($config.ContainsKey("database.pass")) { $config["database.pass"] } else { "" }
     $args = @("--no-create-info", "--skip-triggers", "--compact", "--complete-insert", "--skip-comments",
-        "--skip-add-locks", "--skip-disable-keys", "--default-character-set=utf8mb4",
+        "--skip-add-locks", "--skip-disable-keys", "--single-transaction", "--skip-lock-tables",
+        "--default-character-set=utf8mb4",
         "-h", $hostName, "-P", $port, "-u", $user)
     if (-not [string]::IsNullOrEmpty($pass)) { $args += "--password=$pass" }
     $args += "--where=$Where"
@@ -1287,6 +1644,10 @@ function Get-AuditSummary {
         "resetcombineconfig" { "Khôi phục cấu hình Combine mặc định" }
         "setevent" { "Đổi sự kiện server thành $EventValue" }
         "setexp" { "Đổi tỉ lệ TNSM thành $ExpRate" }
+        "saveplayerconfig" { "Đổi cấu hình Player $ConfigKey = $ConfigValue" }
+        "resetplayerconfig" { "Khôi phục cấu hình Player $ConfigKey về mặc định" }
+        "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
+        "rescueplayer" { "Cứu hộ Player ID $Id về map nhà" }
         default { $ActionName }
     }
 }
@@ -1373,6 +1734,18 @@ function Get-AuditContext {
                 $fileSnapshots.Add([pscustomobject]@{ path="Config.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
             }
         }
+        { $_ -in @("saveplayerconfig", "resetplayerconfig") } {
+            $configPath = Join-Path $Root "player.properties"
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="player.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
+        "saveplayercore" {
+            $playerId = SqlInt $Id
+            $snapshots.Add((New-DbAuditSnapshot "player" "id=$playerId"))
+            $snapshots.Add((New-DbAuditSnapshot "account" "id IN (SELECT account_id FROM player WHERE id=$playerId)"))
+        }
+        "rescueplayer" { $snapshots.Add((New-DbAuditSnapshot "player" "id=$(SqlInt $Id)")) }
         default { return $null }
     }
     [pscustomobject]@{ action=$ActionName; summary=(Get-AuditSummary $ActionName); snapshots=$snapshots.ToArray(); fileSnapshots=$fileSnapshots.ToArray() }
@@ -1437,7 +1810,7 @@ function Undo-AuditEntry {
     }
     foreach ($fileSnapshot in @($payload.fileSnapshots)) {
         $relativePath = [string]$fileSnapshot.path
-        if ($relativePath -notin @("Config.properties", "combine.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
+        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
         [IO.File]::WriteAllBytes((Join-Path $Root $relativePath), [Convert]::FromBase64String([string]$fileSnapshot.contentBase64))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$payload.configBase64)) {
@@ -1460,7 +1833,8 @@ $mutationActions = @(
     "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "deleteshopitem",
     "saveshopoption", "deleteshopoption", "savegiftcode", "deletegiftcode",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
-    "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp"
+    "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
+    "saveplayerconfig", "resetplayerconfig", "saveplayercore", "rescueplayer"
 )
 $isAuditedMutation = $mutationActions -contains $actionLower
 $auditContext = $null
@@ -1515,6 +1889,13 @@ try {
         "listcombineconfig" { List-CombineConfig }
         "savecombineconfig" { Save-CombineConfig }
         "resetcombineconfig" { Reset-CombineConfig }
+        "listplayerconfig" { List-PlayerConfig }
+        "saveplayerconfig" { Save-PlayerConfig }
+        "resetplayerconfig" { Reset-PlayerConfig }
+        "listplayers" { List-Players }
+        "getplayerdetail" { Get-PlayerDetail }
+        "saveplayercore" { Save-PlayerCore }
+        "rescueplayer" { Rescue-Player }
         "setevent" {
             if ([string]::IsNullOrWhiteSpace($EventValue)) { $EventValue = "none" }
             Set-ConfigValue -Key "server.event" -NewValue $EventValue

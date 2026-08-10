@@ -46,6 +46,7 @@
       border-right: 1px solid #0f172a;
       box-sizing: border-box;
       padding: 18px 14px;
+      overflow-y: auto;
     }
 
     h1 {
@@ -64,8 +65,8 @@
     .nav-button {
       display: block;
       width: 100%;
-      height: 40px;
-      margin: 0 0 8px;
+      height: 35px;
+      margin: 0 0 5px;
       border: 1px solid #334155;
       border-radius: 7px;
       background: #22304a;
@@ -758,6 +759,141 @@
       line-height: 17px;
     }
 
+    #panelPlayers .left-pane {
+      width: 46%;
+    }
+
+    #panelPlayers .right-pane {
+      width: 52%;
+    }
+
+    .player-card {
+      margin: 0 0 12px;
+      padding: 11px;
+      border: 1px solid #dbe3ed;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .player-card .section-title {
+      margin-bottom: 5px;
+      color: #0f766e;
+      font-size: 14px;
+    }
+
+    .player-meta {
+      margin: 0 0 10px;
+      color: #64748b;
+      line-height: 18px;
+    }
+
+    .player-limit-note {
+      margin-top: 7px;
+      padding: 7px 9px;
+      border-left: 3px solid #0f766e;
+      background: #ecfeff;
+      color: #155e75;
+      font-size: 12px;
+      line-height: 17px;
+    }
+
+    .player-warning {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-left: 3px solid #f59e0b;
+      background: #fffbeb;
+      color: #78350f;
+      font-size: 12px;
+      line-height: 17px;
+    }
+
+    .player-state {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .player-state.online {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .player-state.offline {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .player-inline-check {
+      margin-top: 9px;
+    }
+
+    .player-inline-check input {
+      width: auto;
+      height: auto;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .player-inline-check label {
+      display: inline;
+      margin: 0;
+      color: #78350f;
+    }
+
+    #playerConfigValue {
+      min-height: 78px;
+    }
+
+    .player-config-tabs {
+      margin: 0 0 10px;
+      padding: 4px;
+      height: 48px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+    }
+
+    #panelPlayerConfig .columns {
+      top: 58px;
+    }
+
+    .player-config-tab {
+      display: inline-block;
+      width: auto;
+      min-height: 32px;
+      height: auto;
+      margin: 3px;
+      padding: 7px 11px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: #475569;
+      line-height: 16px;
+      vertical-align: top;
+    }
+
+    .player-config-tab:hover {
+      border-color: #99f6e4;
+      background: #ecfeff;
+      color: #0f766e;
+    }
+
+    .player-config-tab.active {
+      border-color: #0f766e;
+      background: #0f766e;
+      color: #ffffff;
+      box-shadow: 0 2px 5px rgba(15, 118, 110, 0.2);
+    }
+
     @media screen and (max-width: 1100px) {
       #app {
         min-width: 760px;
@@ -768,7 +904,7 @@
         right: 0;
         bottom: auto;
         width: auto;
-        height: 156px;
+        height: 142px;
         border-right: 0;
         border-bottom: 1px solid #0f172a;
         padding: 14px;
@@ -789,25 +925,19 @@
       .nav-button {
         display: inline-block;
         width: 15.6%;
-        margin: 10px 0.7% 0 0;
+        height: 34px;
+        margin: 6px 0.7% 0 0;
         text-align: center;
         padding: 0 5px;
       }
 
       .status-card {
-        position: absolute;
-        left: 14px;
-        right: 14px;
-        bottom: 10px;
-        min-height: 34px;
-        margin: 0;
-        padding: 7px 10px;
-        line-height: 16px;
+        display: none;
       }
 
       #main {
         left: 0;
-        top: 156px;
+        top: 142px;
       }
 
       .topbar {
@@ -836,7 +966,9 @@
       }
 
       #panelGift .gift-left-pane,
-      #panelGift .gift-right-pane {
+      #panelGift .gift-right-pane,
+      #panelPlayers .left-pane,
+      #panelPlayers .right-pane {
         width: auto;
       }
 
@@ -859,11 +991,16 @@
       }
 
       #sidebar {
-        height: 178px;
+        height: 188px;
+      }
+
+      .nav-button {
+        width: 19.1%;
+        margin-right: 0.5%;
       }
 
       #main {
-        top: 178px;
+        top: 188px;
         padding-left: 12px;
         padding-right: 12px;
       }
@@ -888,7 +1025,9 @@
 
       .combo.toolbar-combo,
       #itemSearch,
-      #equipSearch {
+      #equipSearch,
+      #playerSearch,
+      #playerConfigSearch {
         width: 100% !important;
         margin: 0 0 6px;
       }
@@ -947,6 +1086,8 @@
       <div class="sub">Menu quản trị dữ liệu riêng</div>
       <button id="navItems" class="nav-button active" onclick="ShowTab('items')">Vật phẩm</button>
       <button id="navEvents" class="nav-button" onclick="ShowTab('events')">Sự kiện</button>
+      <button id="navPlayerConfig" class="nav-button" onclick="ShowTab('playerconfig')">Cấu hình Player</button>
+      <button id="navPlayers" class="nav-button" onclick="ShowTab('players')">Quản lý Player</button>
       <button id="navEquip" class="nav-button" onclick="ShowTab('equip')">Chỉ số TB</button>
       <button id="navCombine" class="nav-button" onclick="ShowTab('combine')">Nâng cấp/ Cường hóa</button>
       <button id="navGift" class="nav-button" onclick="ShowTab('gift')">Giftcode</button>
@@ -1554,6 +1695,133 @@
         </div>
       </div>
 
+      <div id="panelPlayerConfig" class="panel">
+        <div id="playerConfigTabs" class="player-config-tabs"></div>
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="playerConfigSearch" style="width:360px" placeholder="Tìm tên hoặc khóa trong nhóm đang chọn" onkeyup="FilterPlayerConfigRows()">
+              <button onclick="LoadPlayerConfig()">Tải lại</button>
+            </div>
+            <div class="table-wrap"><table id="playerConfigTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Cấu hình Player toàn server</div>
+            <input type="hidden" id="playerConfigKey">
+            <div class="row">
+              <div class="cell"><label>Nhóm</label><input id="playerConfigCategory" readonly></div>
+              <div class="cell"><label>Phạm vi áp dụng</label><input id="playerConfigScope" readonly></div>
+            </div>
+            <label>Tên cấu hình</label><input id="playerConfigName" readonly>
+            <div class="row">
+              <div class="cell"><label>Kiểu dữ liệu</label><input id="playerConfigKind" readonly></div>
+              <div class="cell"><label>Giá trị mặc định</label><input id="playerConfigDefault" readonly></div>
+            </div>
+            <label>Giá trị đang dùng</label><textarea id="playerConfigValue" placeholder="Chọn cấu hình ở bảng bên trái"></textarea>
+            <label>Mô tả</label><textarea id="playerConfigDescription" readonly></textarea>
+            <div class="actions">
+              <button class="primary" onclick="SavePlayerConfig()">Lưu cấu hình</button>
+              <button onclick="ResetPlayerConfig()">Về mặc định</button>
+            </div>
+            <div class="player-limit-note">Runtime: server tự đọc lại trong tối đa 1 giây. Nhân vật mới: chỉ có tác dụng với player được tạo sau khi lưu.</div>
+            <div class="player-warning">Danh sách giới hạn cấp phải có đúng 10 số theo cấp 0 đến 9. Ô hành trang/rương không vượt 127 vì giao thức gửi kích thước bằng một byte.</div>
+            <div id="playerConfigMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelPlayers" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="playerSearch" style="width:300px" placeholder="Tên player, username, player/account ID" onkeyup="PlayerSearchKey(event)">
+              <button onclick="LoadPlayers()">Tìm</button>
+            </div>
+            <div class="table-wrap"><table id="playersTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Chi tiết Player <span id="playerOnlineBadge" class="player-state">Chưa chọn</span></div>
+            <input type="hidden" id="playerId">
+            <input type="hidden" id="playerVersion">
+
+            <div class="player-card">
+              <div class="section-title">Tổng quan</div>
+              <div class="row">
+                <div class="cell"><label>Tên nhân vật</label><input id="playerName" readonly></div>
+                <div class="cell"><label>Username</label><input id="playerUsername" readonly></div>
+                <div class="cell"><label>Player / Account ID</label><input id="playerIdentity" readonly></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Hành tinh</label><input id="playerGender" readonly></div>
+                <div class="cell"><label>Clan ID</label><input id="playerClanId" readonly></div>
+                <div class="cell"><label>Map / tọa độ</label><input id="playerLocation" readonly></div>
+              </div>
+              <div id="playerLoginMeta" class="player-meta"></div>
+            </div>
+
+            <div class="player-card">
+              <div class="section-title">Sức mạnh và chỉ số gốc</div>
+              <div class="row">
+                <div class="cell"><label>Cấp giới hạn</label><select id="playerLimitPower" onchange="UpdatePlayerTierNote()">
+                  <option value="0">Cấp 0</option><option value="1">Cấp 1</option><option value="2">Cấp 2</option><option value="3">Cấp 3</option><option value="4">Cấp 4</option>
+                  <option value="5">Cấp 5</option><option value="6">Cấp 6</option><option value="7">Cấp 7</option><option value="8">Cấp 8</option><option value="9">Cấp 9</option>
+                </select></div>
+                <div class="cell"><label>Sức mạnh</label><input id="playerPower"></div>
+                <div class="cell"><label>Tiềm năng</label><input id="playerPotential"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>HP gốc</label><input id="playerHpG"></div>
+                <div class="cell"><label>KI gốc</label><input id="playerMpG"></div>
+                <div class="cell"><label>Sức đánh gốc</label><input id="playerDamageG"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Giáp gốc</label><input id="playerDefenseG"></div>
+                <div class="cell"><label>Chí mạng gốc</label><input id="playerCriticalG"></div>
+                <div class="cell"><label>Chí mạng rồng</label><input id="playerCriticalDragon"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Thể lực</label><input id="playerStamina"></div>
+                <div class="cell"><label>Thể lực tối đa</label><input id="playerMaxStamina"></div>
+              </div>
+              <div id="playerTierNote" class="player-limit-note"></div>
+            </div>
+
+            <div class="player-card">
+              <div class="section-title">Tài sản và sức chứa</div>
+              <div class="row">
+                <div class="cell"><label>Vàng</label><input id="playerGold"></div>
+                <div class="cell"><label>Ngọc xanh</label><input id="playerGem"></div>
+                <div class="cell"><label>Hồng ngọc</label><input id="playerRuby"></div>
+                <div class="cell"><label>Coupon</label><input id="playerCoupon"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Ô hành trang</label><input id="playerBagSlots"></div>
+                <div class="cell"><label>Đang dùng</label><input id="playerBagUsed" readonly></div>
+                <div class="cell"><label>Ô rương</label><input id="playerBoxSlots"></div>
+                <div class="cell"><label>Đang dùng</label><input id="playerBoxUsed" readonly></div>
+              </div>
+              <div id="playerAssetNote" class="player-limit-note"></div>
+            </div>
+
+            <div class="player-card">
+              <div class="section-title">Tài khoản và thao tác</div>
+              <div class="row">
+                <div class="cell"><label>Khóa tài khoản</label><select id="playerBan"><option value="0">Không khóa</option><option value="1">Đang khóa</option></select></div>
+                <div class="cell"><label>Kích hoạt</label><select id="playerActive"><option value="1">Đã kích hoạt</option><option value="0">Chưa kích hoạt</option></select></div>
+              </div>
+              <div class="player-inline-check"><input type="checkbox" id="playerForceOffline"><label for="playerForceOffline">Tôi xác nhận player đã logout hoặc server đã dừng (dùng khi trạng thái ONLINE? bị treo).</label></div>
+              <div class="actions">
+                <button class="primary" onclick="SavePlayerCore()">Lưu Player</button>
+                <button onclick="ReloadSelectedPlayer()">Tải lại</button>
+                <button class="danger" onclick="RescuePlayer()">Cứu hộ về map nhà</button>
+              </div>
+              <div class="player-warning">Không sửa trực tiếp player đang online. Khi thu nhỏ hành trang/rương, mọi ô bị cắt phải rỗng.</div>
+            </div>
+            <div id="playerMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="panelAudit" class="panel">
         <div class="columns">
           <div class="left-pane">
@@ -1604,6 +1872,13 @@
     var mobDrops = [];
     var selectedBossDrop = -1;
     var selectedMobDrop = -1;
+    var playerConfigRows = [];
+    var filteredPlayerConfigRows = [];
+    var selectedPlayerConfigKey = "";
+    var selectedPlayerConfigCategory = "";
+    var playerRows = [];
+    var selectedPlayerId = "";
+    var selectedPlayerDetail = null;
     var bossSkillRows = [];
     var bossSkillNames = {};
     var bossDefaultSkills = [];
@@ -1671,6 +1946,8 @@
       currentTab = tab;
       document.getElementById("panelItems").className = tab == "items" ? "panel active" : "panel";
       document.getElementById("panelEvents").className = tab == "events" ? "panel active" : "panel";
+      document.getElementById("panelPlayerConfig").className = tab == "playerconfig" ? "panel active" : "panel";
+      document.getElementById("panelPlayers").className = tab == "players" ? "panel active" : "panel";
       document.getElementById("panelEquip").className = tab == "equip" ? "panel active" : "panel";
       document.getElementById("panelCombine").className = tab == "combine" ? "panel active" : "panel";
       document.getElementById("panelGift").className = tab == "gift" ? "panel active" : "panel";
@@ -1680,6 +1957,8 @@
       document.getElementById("panelAudit").className = tab == "audit" ? "panel active" : "panel";
       document.getElementById("navItems").className = tab == "items" ? "nav-button active" : "nav-button";
       document.getElementById("navEvents").className = tab == "events" ? "nav-button active" : "nav-button";
+      document.getElementById("navPlayerConfig").className = tab == "playerconfig" ? "nav-button active" : "nav-button";
+      document.getElementById("navPlayers").className = tab == "players" ? "nav-button active" : "nav-button";
       document.getElementById("navEquip").className = tab == "equip" ? "nav-button active" : "nav-button";
       document.getElementById("navCombine").className = tab == "combine" ? "nav-button active" : "nav-button";
       document.getElementById("navGift").className = tab == "gift" ? "nav-button active" : "nav-button";
@@ -1695,6 +1974,14 @@
         document.getElementById("pageTitle").innerText = "Sự kiện";
         document.getElementById("pageSub").innerText = "Bật/tắt event và chỉnh tỉ lệ TNSM";
         LoadStatus();
+      } else if (tab == "playerconfig") {
+        document.getElementById("pageTitle").innerText = "Cấu hình Player toàn server";
+        document.getElementById("pageSub").innerText = "Chỉ số khởi tạo, tiền tệ, sức chứa và giới hạn 10 cấp";
+        LoadPlayerConfig();
+      } else if (tab == "players") {
+        document.getElementById("pageTitle").innerText = "Quản lý Player";
+        document.getElementById("pageSub").innerText = "Tìm và sửa chỉ số, tài sản, hành trang/rương của player offline";
+        LoadPlayers();
       } else if (tab == "equip") {
         document.getElementById("pageTitle").innerText = "Chỉ số trang bị";
         document.getElementById("pageSub").innerText = "Quản lý option của trang bị bán trong shop theo gender";
@@ -1735,6 +2022,8 @@
       LoadStatus();
       if (currentTab == "items") LoadItems();
       if (currentTab == "events") LoadStatus();
+      if (currentTab == "playerconfig") LoadPlayerConfig();
+      if (currentTab == "players") LoadPlayers();
       if (currentTab == "equip") LoadEquipItems();
       if (currentTab == "combine") LoadCombineConfig();
       if (currentTab == "gift") { LoadGiftItems(false); LoadGiftCodes(); }
@@ -3583,6 +3872,218 @@
 
     function ShowSpawnItemName(prefix) {
       Set(prefix + "DropItemName", spawnItemNames[V(prefix + "DropItem")] || "Không tìm thấy item");
+    }
+
+    function LoadPlayerConfig() {
+      playerConfigRows = ParseTsv(RunAdmin("listplayerconfig", {}));
+      RenderPlayerConfigTabs();
+      FilterPlayerConfigRows();
+      var restored = false;
+      if (selectedPlayerConfigKey) {
+        for (var i = 1; i < playerConfigRows.length; i++) {
+          if (playerConfigRows[i][0] == selectedPlayerConfigKey) { PickPlayerConfigByKey(selectedPlayerConfigKey); restored = true; break; }
+        }
+      }
+      if (!restored && filteredPlayerConfigRows.length > 1) PickFilteredPlayerConfig(1);
+      Msg("playerConfigMessage", playerConfigRows.length > 1 ? "Đã tải " + (playerConfigRows.length - 1) + " cấu hình Player." : "Không tải được cấu hình Player.");
+      AdjustTableOffsets();
+    }
+
+    function EnsurePlayerConfigRows() {
+      if (!playerConfigRows || playerConfigRows.length < 2) {
+        playerConfigRows = ParseTsv(RunAdmin("listplayerconfig", {}));
+        RenderPlayerConfigTabs();
+      }
+    }
+
+    function PlayerConfigCategories() {
+      var categories = [];
+      var seen = {};
+      for (var i = 1; i < playerConfigRows.length; i++) {
+        var category = playerConfigRows[i][1];
+        if (category && !seen[category]) { seen[category] = true; categories.push(category); }
+      }
+      return categories;
+    }
+
+    function RenderPlayerConfigTabs() {
+      var categories = PlayerConfigCategories();
+      var categoryExists = false;
+      for (var i = 0; i < categories.length; i++) if (categories[i] == selectedPlayerConfigCategory) categoryExists = true;
+      if (!categoryExists) selectedPlayerConfigCategory = categories.length ? categories[0] : "";
+      var html = "";
+      for (var c = 0; c < categories.length; c++) {
+        var active = categories[c] == selectedPlayerConfigCategory ? " active" : "";
+        html += '<button class="player-config-tab' + active + '" onclick="SelectPlayerConfigCategory(' + c + ')">' + Html(categories[c]) + '</button>';
+      }
+      document.getElementById("playerConfigTabs").innerHTML = html;
+    }
+
+    function SelectPlayerConfigCategory(index) {
+      var categories = PlayerConfigCategories();
+      if (!categories[index]) return;
+      selectedPlayerConfigCategory = categories[index];
+      selectedPlayerConfigKey = "";
+      Set("playerConfigKey", ""); Set("playerConfigCategory", selectedPlayerConfigCategory);
+      Set("playerConfigName", ""); Set("playerConfigValue", ""); Set("playerConfigDefault", "");
+      Set("playerConfigKind", ""); Set("playerConfigScope", ""); Set("playerConfigDescription", "");
+      RenderPlayerConfigTabs();
+      FilterPlayerConfigRows();
+      if (filteredPlayerConfigRows.length > 1) PickFilteredPlayerConfig(1);
+    }
+
+    function FilterPlayerConfigRows() {
+      var q = Trim(V("playerConfigSearch")).toLowerCase();
+      filteredPlayerConfigRows = [playerConfigRows[0] || []];
+      for (var i = 1; i < playerConfigRows.length; i++) {
+        if (playerConfigRows[i][1] != selectedPlayerConfigCategory) continue;
+        if (!q || playerConfigRows[i].join(" ").toLowerCase().indexOf(q) >= 0) filteredPlayerConfigRows.push(playerConfigRows[i]);
+      }
+      var html = "<thead><tr><th>Cấu hình</th><th>Giá trị</th><th>Phạm vi</th></tr></thead><tbody>";
+      for (var r = 1; r < filteredPlayerConfigRows.length; r++) {
+        var row = filteredPlayerConfigRows[r];
+        html += '<tr onclick="PickFilteredPlayerConfig(' + r + ')"><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(row[6]) + '</td></tr>';
+      }
+      document.getElementById("playerConfigTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickFilteredPlayerConfig(index) {
+      if (!filteredPlayerConfigRows[index]) return;
+      PickPlayerConfigByKey(filteredPlayerConfigRows[index][0]);
+    }
+
+    function PickPlayerConfigByKey(key) {
+      for (var i = 1; i < playerConfigRows.length; i++) {
+        var row = playerConfigRows[i];
+        if (row[0] != key) continue;
+        selectedPlayerConfigKey = key;
+        if (selectedPlayerConfigCategory != row[1]) {
+          selectedPlayerConfigCategory = row[1];
+          RenderPlayerConfigTabs();
+          FilterPlayerConfigRows();
+        }
+        Set("playerConfigKey", row[0]); Set("playerConfigCategory", row[1]); Set("playerConfigName", row[2]);
+        Set("playerConfigValue", row[3]); Set("playerConfigDefault", row[4]); Set("playerConfigKind", row[5]);
+        Set("playerConfigScope", row[6]); Set("playerConfigDescription", row[7]);
+        return;
+      }
+    }
+
+    function PlayerConfigCurrentValue(key) {
+      EnsurePlayerConfigRows();
+      for (var i = 1; i < playerConfigRows.length; i++) if (playerConfigRows[i][0] == key) return playerConfigRows[i][3];
+      return "";
+    }
+
+    function SavePlayerConfig() {
+      if (!V("playerConfigKey")) { Msg("playerConfigMessage", "Chọn một cấu hình trước."); return; }
+      var result = RunAdmin("saveplayerconfig", { ConfigKey: V("playerConfigKey"), ConfigValue: Trim(V("playerConfigValue")) });
+      Msg("playerConfigMessage", StatusText(result));
+      if (!IsAdminError(result)) LoadPlayerConfig();
+    }
+
+    function ResetPlayerConfig() {
+      if (!V("playerConfigKey")) { Msg("playerConfigMessage", "Chọn một cấu hình trước."); return; }
+      if (!window.confirm("Đưa " + V("playerConfigName") + " về mặc định " + V("playerConfigDefault") + "?")) return;
+      var result = RunAdmin("resetplayerconfig", { ConfigKey: V("playerConfigKey") });
+      Msg("playerConfigMessage", StatusText(result));
+      if (!IsAdminError(result)) LoadPlayerConfig();
+    }
+
+    function PlayerGenderLabel(value) {
+      return value == "0" ? "Trái Đất" : (value == "1" ? "Namek" : (value == "2" ? "Xayda" : value));
+    }
+
+    function PlayerSearchKey(e) {
+      e = e || window.event;
+      if (e.keyCode == 13) LoadPlayers();
+    }
+
+    function LoadPlayers() {
+      EnsurePlayerConfigRows();
+      playerRows = ParseTsv(RunAdmin("listplayers", { Search: V("playerSearch") }));
+      var html = "<thead><tr><th>ID</th><th>Player</th><th>Tài khoản</th><th>Hành tinh</th><th>Sức mạnh</th><th>Hành trang</th><th>Rương</th><th>Trạng thái</th></tr></thead><tbody>";
+      for (var i = 1; i < playerRows.length; i++) {
+        var row = playerRows[i];
+        var state = row[9] == "ONLINE?" ? "ONLINE?" : (row[7] == "1" ? "BỊ KHÓA" : (row[8] == "1" ? "OFFLINE" : "CHƯA ACTIVE"));
+        html += '<tr onclick="PickPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(PlayerGenderLabel(row[3])) + '</td><td>' + Html(row[4]) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td><td>' + Html(state) + '</td></tr>';
+      }
+      document.getElementById("playersTable").innerHTML = html + "</tbody>";
+      Msg("playerMessage", playerRows.length > 1 ? "Đã tải " + (playerRows.length - 1) + " player." : "Không tìm thấy player phù hợp.");
+      if (selectedPlayerId) ReloadSelectedPlayer();
+      AdjustTableOffsets();
+    }
+
+    function PickPlayer(index) {
+      if (!playerRows[index]) return;
+      selectedPlayerId = playerRows[index][0];
+      LoadPlayerDetail(selectedPlayerId);
+    }
+
+    function ReloadSelectedPlayer() {
+      if (!selectedPlayerId) { Msg("playerMessage", "Chọn một player trước."); return; }
+      LoadPlayerDetail(selectedPlayerId);
+    }
+
+    function LoadPlayerDetail(playerId) {
+      var rows = ParseTsv(RunAdmin("getplayerdetail", { Id: playerId }));
+      if (rows.length < 2) { Msg("playerMessage", "Không tải được chi tiết player."); return; }
+      var r = rows[1];
+      selectedPlayerDetail = r;
+      selectedPlayerId = r[0];
+      Set("playerId", r[0]); Set("playerVersion", r[38]); Set("playerName", r[2]); Set("playerUsername", r[3]);
+      Set("playerIdentity", r[0] + " / " + r[1]); Set("playerGender", PlayerGenderLabel(r[4]) + " (" + r[4] + ")");
+      Set("playerClanId", r[6]); Set("playerLocation", "Map " + r[35] + " / " + r[36] + ", " + r[37]);
+      document.getElementById("playerLoginMeta").innerText = "Tạo: " + r[7] + " | Login: " + r[8] + " | Logout: " + r[9] + (r[13] == "1" ? " | Tài khoản admin" : "");
+      var badge = document.getElementById("playerOnlineBadge");
+      badge.innerText = r[10]; badge.className = "player-state " + (r[10] == "ONLINE?" ? "online" : "offline");
+      Set("playerLimitPower", r[14]); Set("playerPower", r[15]); Set("playerPotential", r[16]);
+      Set("playerStamina", r[17]); Set("playerMaxStamina", r[18]); Set("playerHpG", r[19]); Set("playerMpG", r[20]);
+      Set("playerDamageG", r[21]); Set("playerDefenseG", r[22]); Set("playerCriticalG", r[23]); Set("playerCriticalDragon", r[24]);
+      Set("playerGold", r[27]); Set("playerGem", r[28]); Set("playerRuby", r[29]); Set("playerCoupon", r[30]);
+      Set("playerBagSlots", r[31]); Set("playerBagUsed", r[32] + " / " + r[31]); Set("playerBoxSlots", r[33]); Set("playerBoxUsed", r[34] + " / " + r[33]);
+      Set("playerBan", r[11]); Set("playerActive", r[12]); document.getElementById("playerForceOffline").checked = false;
+      UpdatePlayerTierNote();
+      document.getElementById("playerAssetNote").innerText = "Giới hạn: vàng " + r[44] + ", ngọc " + r[45] + ", ruby " + r[46] + ", coupon " + r[47] + ", hành trang " + r[48] + " ô, rương " + r[49] + " ô.";
+      Msg("playerMessage", "Đã tải player " + r[2] + ".");
+    }
+
+    function PlayerLimitAt(key, level) {
+      var parts = PlayerConfigCurrentValue(key).split(",");
+      return level >= 0 && level < parts.length ? Trim(parts[level]) : "?";
+    }
+
+    function UpdatePlayerTierNote() {
+      var level = parseInt(V("playerLimitPower") || "0", 10);
+      document.getElementById("playerTierNote").innerText = "Trần cấp " + level + ": sức mạnh " + PlayerLimitAt("player.limit.power", level) + ", HP/KI " + PlayerLimitAt("player.limit.hpMp", level) + ", sức đánh " + PlayerLimitAt("player.limit.damage", level) + ", giáp " + PlayerLimitAt("player.limit.defense", level) + ", chí mạng " + PlayerLimitAt("player.limit.critical", level) + ".";
+    }
+
+    function PlayerPayload() {
+      return {
+        version: V("playerVersion"), forceOffline: document.getElementById("playerForceOffline").checked ? "1" : "0",
+        limitPower: V("playerLimitPower"), power: Trim(V("playerPower")), potential: Trim(V("playerPotential")),
+        stamina: Trim(V("playerStamina")), maxStamina: Trim(V("playerMaxStamina")), hpg: Trim(V("playerHpG")), mpg: Trim(V("playerMpG")),
+        damage: Trim(V("playerDamageG")), defense: Trim(V("playerDefenseG")), critical: Trim(V("playerCriticalG")), criticalDragon: Trim(V("playerCriticalDragon")),
+        gold: Trim(V("playerGold")), gem: Trim(V("playerGem")), ruby: Trim(V("playerRuby")), coupon: Trim(V("playerCoupon")),
+        bagSlots: Trim(V("playerBagSlots")), boxSlots: Trim(V("playerBoxSlots")), ban: V("playerBan"), active: V("playerActive")
+      };
+    }
+
+    function SavePlayerCore() {
+      if (!V("playerId")) { Msg("playerMessage", "Chọn một player trước."); return; }
+      if (!window.confirm("Lưu chỉ số, tài sản và sức chứa cho " + V("playerName") + "?")) return;
+      var result = RunAdmin("saveplayercore", { Id: V("playerId"), PayloadJson: JSON.stringify(PlayerPayload()) });
+      Msg("playerMessage", StatusText(result));
+      if (!IsAdminError(result)) { LoadPlayerDetail(V("playerId")); LoadPlayers(); }
+    }
+
+    function RescuePlayer() {
+      if (!V("playerId")) { Msg("playerMessage", "Chọn một player trước."); return; }
+      if (!window.confirm("Đưa " + V("playerName") + " về map nhà, tọa độ 300/336?")) return;
+      var payload = { version: V("playerVersion"), forceOffline: document.getElementById("playerForceOffline").checked ? "1" : "0" };
+      var result = RunAdmin("rescueplayer", { Id: V("playerId"), PayloadJson: JSON.stringify(payload) });
+      Msg("playerMessage", StatusText(result));
+      if (!IsAdminError(result)) LoadPlayerDetail(V("playerId"));
     }
 
     function LoadAuditHistory() {

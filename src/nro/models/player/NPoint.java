@@ -1699,165 +1699,27 @@ public class NPoint {
     }
 
     public long getPowerLimit() {
-        switch (limitPower) {
-            case 0:
-                return 17999999999L;
-            case 1:
-                return 19999999999L;
-            case 2:
-                return 24999999999L;
-            case 3:
-                return 29999999999L;
-            case 4:
-                return 39999999999L;
-            case 5:
-                return 50010000000L;
-            case 6:
-                return 60010000000L;
-            case 7:
-                return 70010000000L;
-            case 8:
-                return 80010000000L;
-            case 9:
-                return 90010000000L;
-            default:
-                return 0;
-        }
+        return PlayerConfig.getPowerLimit(limitPower);
     }
 
     public long getPowerNextLimit() {
-        switch (limitPower + 1) {
-            case 0:
-                return 17999999999L;
-            case 1:
-                return 19999999999L;
-            case 2:
-                return 24999999999L;
-            case 3:
-                return 29999999999L;
-            case 4:
-                return 39999999999L;
-            case 5:
-                return 50010000000L;
-            case 6:
-                return 60010000000L;
-            case 7:
-                return 70010000000L;
-            case 8:
-                return 80010000000L;
-            case 9:
-                return 90010000000L;
-            default:
-                return 0;
-        }
+        return PlayerConfig.getPowerLimit(limitPower + 1);
     }
 
     public int getHpMpLimit() {
-        switch (limitPower) {
-            case 0:
-                return 220000;
-            case 1:
-                return 240000;
-            case 2:
-                return 300000;
-            case 3:
-                return 350000;
-            case 4:
-                return 400000;
-            case 5:
-                return 450000;
-            case 6:
-                return 500000;
-            case 7:
-                return 525000;
-            case 8:
-                return 550000;
-            case 9:
-                return 575000;
-            default:
-                return 0;
-        }
+        return PlayerConfig.getHpMpLimit(limitPower);
     }
 
     public int getDameLimit() {
-        switch (limitPower) {
-            case 0:
-                return 11000;
-            case 1:
-                return 12000;
-            case 2:
-                return 15000;
-            case 3:
-                return 18000;
-            case 4:
-                return 20000;
-            case 5:
-                return 22000;
-            case 6:
-                return 24000;
-            case 7:
-                return 24500;
-            case 8:
-                return 25000;
-            case 9:
-                return 26000;
-            default:
-                return 0;
-        }
+        return PlayerConfig.getDamageLimit(limitPower);
     }
 
     public short getDefLimit() {
-        switch (limitPower) {
-            case 0:
-                return 550;
-            case 1:
-                return 600;
-            case 2:
-                return 700;
-            case 3:
-                return 800;
-            case 4:
-                return 1000;
-            case 5:
-                return 1200;
-            case 6:
-                return 1400;
-            case 7:
-                return 1500;
-            case 8:
-                return 1600;
-            case 9:
-                return 1800;
-            default:
-                return 0;
-        }
+        return (short) PlayerConfig.getDefenseLimit(limitPower);
     }
 
     public byte getCritLimit() {
-        switch (limitPower) {
-            case 0:
-                return 1;
-            case 1:
-                return 2;
-            case 2:
-                return 3;
-            case 3:
-                return 4;
-            case 4:
-                return 5;
-            case 5:
-                return 6;
-            case 6:
-                return 7;
-            case 7:
-                return 8;
-            case 8:
-                return 9;
-            case 9:
-                return 10;
-            default:
-                return 0;
-        }
+        return (byte) PlayerConfig.getCriticalLimit(limitPower);
     }
 
     public void powerUp(long power) {

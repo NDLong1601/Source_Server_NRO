@@ -29,6 +29,7 @@ import nro.models.Bot.NewBot;
 import nro.models.Bot.BotGiaoDich;
 import nro.models.consts.ConstTaskBadges;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.server.Manager;
 import nro.models.services.ClanService;
 import nro.models.map.service.ChangeMapService;
@@ -222,7 +223,7 @@ public class Input {
 
                             switch (idItemBuff) {
                                 case -1:
-                                    pBuffItem.inventory.gold = Math.min(pBuffItem.inventory.gold + (long) slItemBuff, Inventory.LIMIT_GOLD);
+                                    pBuffItem.inventory.gold = Math.min(pBuffItem.inventory.gold + (long) slItemBuff, PlayerConfig.getMaxGold());
                                     txtBuff += slItemBuff + " vàng\b";
                                     Service.gI().sendMoney(pBuffItem);
                                     ServerLog.logAdmin(pBuffItem.name, slItemBuff);
@@ -500,8 +501,8 @@ public class Input {
                         if (ThoiVang.quantity < sltv) {
                             Service.gI().sendThongBao(player, "Bạn chỉ có " + ThoiVang.quantity + " Thỏi vàng");
                         } else {
-                            if (player.inventory.gold + cost > Inventory.LIMIT_GOLD) {
-                                int slban = (int) ((Inventory.LIMIT_GOLD - player.inventory.gold) / 37000000);
+                            if (player.inventory.gold + cost > PlayerConfig.getMaxGold()) {
+                                int slban = (int) ((PlayerConfig.getMaxGold() - player.inventory.gold) / 37000000);
                                 if (slban < 1) {
                                     Service.gI().sendThongBao(player, "Vàng sau khi bán vượt quá giới hạn");
                                 } else if (slban < 2) {

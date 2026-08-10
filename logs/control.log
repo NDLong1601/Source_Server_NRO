@@ -49,3 +49,35 @@
 [2026-08-10 16:48:39] Đã dừng tiến trình server PID 23852.
 [2026-08-10 16:48:44] Đã áp dụng 20.jar.pending trước khi khởi động; backup: 20.jar.bak_pending_20260810_164844.
 [2026-08-10 16:48:44] Đã khởi chạy server từ 20.jar với PID 12956.
+[2026-08-10 18:00:53] Đã dừng tiến trình server PID 12956.
+[2026-08-10 18:00:53] Đã dừng tiến trình server PID 7220.
+[2026-08-10 18:00:57] Đã áp dụng 20.jar.pending trước khi khởi động; backup: 20.jar.bak_pending_20260810_180057.
+[2026-08-10 18:00:57] Đã khởi chạy server từ 20.jar với PID 17556.
+[2026-08-10 18:02:00] Server đang chạy, bỏ qua lệnh khởi chạy.
+[2026-08-10 18:07:57] Đã dừng tiến trình server PID 17556.
+[2026-08-10 18:07:57] Đã dừng tiến trình server PID 24616.
+[2026-08-10 18:08:02] Đã áp dụng 20.jar.pending trước khi khởi động; backup: 20.jar.bak_pending_20260810_180802.
+[2026-08-10 18:08:02] Đã khởi chạy server từ 20.jar với PID 15692.
+[2026-08-10 18:08:06] Server đã mở cổng 14445 với PID 19560.
+[2026-08-10 18:11:38] Server đang chạy, bỏ qua lệnh khởi chạy.
+[2026-08-10 18:36:19] Đã dừng tiến trình server PID 15692.
+[2026-08-10 18:36:19] Đã dừng tiến trình server PID 19560.
+[2026-08-10 18:36:24] Đã khởi chạy server từ 20.jar với PID 25756.
+[2026-08-10 18:36:28] Server đã mở cổng 14445 với PID 26320.
+[2026-08-10 18:38:39] Đã dừng tiến trình server PID 25756.
+[2026-08-10 18:38:39] Đã dừng tiến trình server PID 26320.
+[2026-08-10 18:38:43] Đã khởi chạy server từ 20.jar với PID 23336.
+[2026-08-10 18:38:47] Server đã mở cổng 14445 với PID 22648.
+[2026-08-10 18:39:21] Server đang chạy, bỏ qua lệnh khởi chạy.
+[2026-08-10 18:49:36] Đã dừng tiến trình server PID 23336.
+[2026-08-10 18:49:36] Đã dừng tiến trình server PID 22648.
+[2026-08-10 18:49:40] Đã khởi chạy server từ 20.jar với PID 23648.
+[2026-08-10 18:49:44] Server đã mở cổng 14445 với PID 25636.
+[2026-08-10 18:50:29] Đã dừng tiến trình server PID 23648.
+[2026-08-10 18:50:29] Đã dừng tiến trình server PID 25636.
+[2026-08-10 18:50:33] Đã khởi chạy server từ 20.jar với PID 2672.
+[2026-08-10 18:50:36] Server đã mở cổng 14445 với PID 7360.
+[2026-08-10 18:53:08] Đã dừng tiến trình server PID 2672.
+[2026-08-10 18:53:08] Đã dừng tiến trình server PID 7360.
+[2026-08-10 18:53:13] Đã khởi chạy server từ 20.jar với PID 22044.
+[2026-08-10 18:53:17] Server đã mở cổng 14445 với PID 25128.

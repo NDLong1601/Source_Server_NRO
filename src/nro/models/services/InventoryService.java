@@ -4,6 +4,7 @@ import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
 import nro.models.npc.MabuEgg;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.player.Pet;
 import nro.models.player.Player;
 import nro.models.network.Message;
@@ -749,7 +750,7 @@ public class InventoryService {
         //gold, gem, ruby
         switch (item.template.type) {
             case 9:
-                if (player.inventory.gold + item.quantity <= Inventory.LIMIT_GOLD) {
+                if (player.inventory.gold + item.quantity <= PlayerConfig.getMaxGold()) {
                     if (player.effectSkill.isChibi && player.typeChibi == 0) {
                         player.inventory.gold += item.quantity;
                     }
@@ -780,7 +781,7 @@ public class InventoryService {
 
         //mở rộng hành trang - rương đồ
         if (item.template.id == 517) {
-            if (player.inventory.itemsBag.size() < Inventory.MAX_ITEMS_BAG) {
+            if (player.inventory.itemsBag.size() < PlayerConfig.getMaxBagSlots()) {
                 player.inventory.itemsBag.add(ItemService.gI().createItemNull());
                 Service.gI().sendThongBaoOK(player, "Hành trang của bạn đã được mở rộng thêm 1 ô");
                 return true;
@@ -789,7 +790,7 @@ public class InventoryService {
                 return false;
             }
         } else if (item.template.id == 518) {
-            if (player.inventory.itemsBox.size() < Inventory.MAX_ITEMS_BOX) {
+            if (player.inventory.itemsBox.size() < PlayerConfig.getMaxBoxSlots()) {
                 player.inventory.itemsBox.add(ItemService.gI().createItemNull());
                 Service.gI().sendThongBaoOK(player, "Rương đồ của bạn đã được mở rộng thêm 1 ô");
                 return true;

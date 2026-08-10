@@ -221,7 +221,13 @@ function Write-Status {
     $port = [int](Get-ConfigValue -Key "server.port" -Default "14445")
     $listeningIds = @(Get-ListeningProcessIds -CandidateIds $processIds -Port $port)
     $displayIds = if ($listeningIds.Count -gt 0) { $listeningIds } else { $processIds }
-    $status = if ($processIds.Count -gt 0) { "Đang chạy" } else { "Đang dừng" }
+    $status = if ($listeningIds.Count -gt 0) {
+        "Đang chạy"
+    } elseif ($processIds.Count -gt 0) {
+        "Lỗi khởi động (chưa mở cổng $port)"
+    } else {
+        "Đang dừng"
+    }
     $pidText = if ($displayIds.Count -gt 0) { ($displayIds -join ", ") } else { "-" }
     $lastLog = if (Test-Path $ServerLog) { (Get-Item $ServerLog).LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss") } else { "-" }
 
@@ -237,8 +243,15 @@ function Write-Status {
 }
 
 function Start-Server {
-    if (@(Get-ServerProcessIds).Count -gt 0) {
-        Write-ControlLog "Server đang chạy, bỏ qua lệnh khởi chạy."
+    $existingIds = @(Get-ServerProcessIds)
+    if ($existingIds.Count -gt 0) {
+        $port = [int](Get-ConfigValue -Key "server.port" -Default "14445")
+        $listeningIds = @(Get-ListeningProcessIds -CandidateIds $existingIds -Port $port)
+        if ($listeningIds.Count -gt 0) {
+            Write-ControlLog "Server đang chạy, bỏ qua lệnh khởi chạy."
+        } else {
+            Write-ControlLog "Có tiến trình Java nhưng cổng $port chưa mở. Hãy dùng Restart để dọn tiến trình lỗi và khởi động lại."
+        }
         Write-Status
         return
     }
@@ -273,7 +286,20 @@ function Start-Server {
     Write-FileAtomic -Path $PidPath -Text ([string]$process.Id)
 
     Write-ControlLog "Đã khởi chạy server từ 20.jar với PID $($process.Id)."
-    Start-Sleep -Seconds 1
+    $port = [int](Get-ConfigValue -Key "server.port" -Default "14445")
+    $listeningIds = @()
+    for ($attempt = 0; $attempt -lt 12; $attempt++) {
+        Start-Sleep -Seconds 1
+        $currentIds = @(Get-ServerProcessIds)
+        if ($currentIds.Count -eq 0) { break }
+        $listeningIds = @(Get-ListeningProcessIds -CandidateIds $currentIds -Port $port)
+        if ($listeningIds.Count -gt 0) { break }
+    }
+    if ($listeningIds.Count -gt 0) {
+        Write-ControlLog "Server đã mở cổng $port với PID $($listeningIds -join ', ')."
+    } else {
+        Write-ControlLog "Server không mở được cổng $port sau khi khởi động. Kiểm tra logs\server-error.log."
+    }
     Write-Status
 }
 
@@ -370,16 +396,36 @@ function Build-Server {
             }
 
             $builtJar = Join-Path $Root "dist\NgocRongOnline.jar"
+            $builtClasses = Join-Path $Root "build\classes"
             $targetJar = Join-Path $Root "20.jar"
-            if (-not (Test-Path $builtJar)) {
-                Write-ControlLog "Build xong nhưng không tìm thấy dist\NgocRongOnline.jar."
+            if (-not (Test-Path $builtJar) -or -not (Test-Path $builtClasses)) {
+                Write-ControlLog "Build xong nhưng thiếu dist\NgocRongOnline.jar hoặc build\classes."
+                return
+            }
+            if (-not $jar) {
+                Write-ControlLog "Build xong nhưng không tìm thấy jar.exe để cập nhật JAR runtime."
+                return
+            }
+            if (-not (Test-Path $targetJar)) {
+                Write-ControlLog "Không tìm thấy 20.jar nền chứa thư viện runtime."
                 return
             }
 
             $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
             Copy-Item -Path $targetJar -Destination $backup -Force
-            Copy-Item -Path $builtJar -Destination $targetJar -Force
-            Write-ControlLog "Build hoàn tất. Đã cập nhật 20.jar và tạo backup $([System.IO.Path]::GetFileName($backup))."
+            & $jar.Source uf $targetJar -C $builtClasses . 2>&1 | Tee-Object -FilePath $ControlLog -Append
+            if ($LASTEXITCODE -ne 0) {
+                Copy-Item -Path $backup -Destination $targetJar -Force
+                Write-ControlLog "Cập nhật class vào 20.jar thất bại; đã khôi phục backup."
+                return
+            }
+            $jarEntries = @(& $jar.Source tf $targetJar 2>&1)
+            if ($LASTEXITCODE -ne 0 -or $jarEntries -notcontains "com/zaxxer/hikari/HikariConfig.class") {
+                Copy-Item -Path $backup -Destination $targetJar -Force
+                Write-ControlLog "20.jar sau build thiếu thư viện HikariCP; đã khôi phục backup."
+                return
+            }
+            Write-ControlLog "Build hoàn tất. Đã cập nhật class vào JAR runtime đầy đủ và tạo backup $([System.IO.Path]::GetFileName($backup))."
             return
         }
 

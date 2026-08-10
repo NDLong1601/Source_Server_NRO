@@ -6,6 +6,7 @@ import nro.models.item.ItemTime;
 import nro.models.player.Friend;
 import nro.models.player.Fusion;
 import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
 import nro.models.map.service.MapService;
@@ -37,11 +38,11 @@ public class PlayerDAO {
     public static boolean createNewPlayer(int userId, String name, byte gender, int hair) {
         try {
             JSONArray dataArray = new JSONArray();
-            int greenGem = (Manager.TEST) ? 1000000000 : 10000;
-            dataArray.add(2000); //vàng
+            int greenGem = PlayerConfig.getStartGem(Manager.TEST);
+            dataArray.add(PlayerConfig.getStartGold()); //vàng
             dataArray.add(greenGem); //ngọc xanh
-            dataArray.add(0); //hồng ngọc
-            dataArray.add(0); //point
+            dataArray.add(PlayerConfig.getStartRuby()); //hồng ngọc
+            dataArray.add(PlayerConfig.getStartCoupon()); //point
             dataArray.add(0); //event
             String inventory = dataArray.toJSONString();
             dataArray.clear();
@@ -51,20 +52,20 @@ public class PlayerDAO {
             String location = dataArray.toJSONString();
             dataArray.clear();
 
-            dataArray.add(0); //giới hạn sức mạnh
-            dataArray.add(2000); //sức mạnh
-            dataArray.add(2000); //tiềm năng
-            dataArray.add(1000); //thể lực
-            dataArray.add(1000); //thể lực đầy
-            dataArray.add(gender == 0 ? 200 : 100); //hp gốc
-            dataArray.add(gender == 1 ? 200 : 100); //ki gốc
-            dataArray.add(gender == 2 ? 15 : 10); //sức đánh gốc
-            dataArray.add(0); //giáp gốc
-            dataArray.add(0); //chí mạng gốc
-            dataArray.add(0); //chí mạng dragon
+            dataArray.add(PlayerConfig.getStartLimitPower()); //giới hạn sức mạnh
+            dataArray.add(PlayerConfig.getStartPower()); //sức mạnh
+            dataArray.add(PlayerConfig.getStartPotential()); //tiềm năng
+            dataArray.add(PlayerConfig.getStartStamina()); //thể lực
+            dataArray.add(PlayerConfig.getStartStamina()); //thể lực đầy
+            dataArray.add(PlayerConfig.getStartHp(gender)); //hp gốc
+            dataArray.add(PlayerConfig.getStartMp(gender)); //ki gốc
+            dataArray.add(PlayerConfig.getStartDamage(gender)); //sức đánh gốc
+            dataArray.add(PlayerConfig.getStartDefense(gender)); //giáp gốc
+            dataArray.add(PlayerConfig.getStartCritical(gender)); //chí mạng gốc
+            dataArray.add(PlayerConfig.getStartCriticalDragon()); //chí mạng dragon
             dataArray.add(0); //năng động
-            dataArray.add(gender == 0 ? 200 : 100); //hp hiện tại
-            dataArray.add(gender == 1 ? 200 : 100); //ki hiện tại
+            dataArray.add(PlayerConfig.getStartHp(gender)); //hp hiện tại
+            dataArray.add(PlayerConfig.getStartMp(gender)); //ki hiện tại
             String point = dataArray.toJSONString();
             dataArray.clear();
 
@@ -125,7 +126,7 @@ public class PlayerDAO {
             String itemsBody = dataArray.toJSONString();
             dataArray.clear();
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < PlayerConfig.getStartBagSlots(); i++) {
                 if (i == 0) { //thỏi vàng
                     opt.add(2); //id option
                     opt.add(8); //param option
@@ -146,7 +147,7 @@ public class PlayerDAO {
             String itemsBag = dataArray.toJSONString();
             dataArray.clear();
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < PlayerConfig.getStartBoxSlots(); i++) {
                 if (i == 0) { //rada
                     opt.add(14); //id option
                     opt.add(1); //param option
@@ -356,8 +357,8 @@ public class PlayerDAO {
                 JSONArray dataArray = new JSONArray();
 
                 //data kim lượng
-                dataArray.add(player.inventory.gold > Inventory.LIMIT_GOLD
-                        ? Inventory.LIMIT_GOLD : player.inventory.gold);
+                dataArray.add(player.inventory.gold > PlayerConfig.getMaxGold()
+                        ? PlayerConfig.getMaxGold() : player.inventory.gold);
                 dataArray.add(player.inventory.gem);
                 dataArray.add(player.inventory.ruby);
                 dataArray.add(player.inventory.coupon);
