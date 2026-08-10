@@ -58,6 +58,10 @@ public class SonTinh extends Boss {
             it.options.add(new Item.ItemOption(154, 0));
             it.options.add(new Item.ItemOption(93, Util.nextInt(1, 15)));
             Service.gI().dropItemMap(this.zone, it);
+            int[] offerings = {1220, 1221, 1222};
+            ItemMap offering = new ItemMap(this.zone, offerings[Util.nextInt(offerings.length)], 1,
+                    this.location.x + 20, this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), playerReward.id);
+            Service.gI().dropItemMap(this.zone, offering);
             isReward = true;
             lastTimeReward = System.currentTimeMillis();
             this.chat("Được! hảo hán!");

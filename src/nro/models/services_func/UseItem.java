@@ -54,6 +54,7 @@ import static nro.models.server.Manager.isTopSukienChanged;
 import nro.models.services.ChatGlobalService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Logger;
+import nro.models.database.PlayerDAO;
 
 /**
  *
@@ -1427,6 +1428,7 @@ public class UseItem {
             InventoryService.gI().subQuantityItemsBag(player, itemused, 1);
 
             player.point_sukien2 += 1;
+            PlayerDAO.updateEventRankingPoints(player);
             if (!Manager.isTopSukien2Changed) {
                 Manager.isTopSukien2Changed = true;
             }
@@ -1473,6 +1475,7 @@ public class UseItem {
             InventoryService.gI().subQuantityItemsBag(player, itemused, 1);
 
             player.point_sukien += 1;
+            PlayerDAO.updateEventRankingPoints(player);
             Manager.isTopSukienChanged = true;
 
             PlayerService.gI().sendInfoHpMpMoney(player);

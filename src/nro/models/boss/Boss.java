@@ -1,6 +1,7 @@
 package nro.models.boss;
 
 import nro.models.admin.AdminSpawnConfigService;
+import nro.models.admin.AdminEventConfigService;
 import nro.models.boss.Boss_Manager.BrolyManager;
 import nro.models.boss.Boss_Manager.LunarNewYearEventManager;
 import nro.models.boss.Boss_Manager.GasDestroyManager;
@@ -293,6 +294,7 @@ public class Boss extends Player implements IBoss {
     public Zone getMapJoin() {
         int defaultMapId = this.data[this.currentLevel].getMapJoin()[Util.nextInt(0, this.data[this.currentLevel].getMapJoin().length - 1)];
         int mapId = AdminSpawnConfigService.gI().getServerBossMapId((int) this.id, defaultMapId);
+        mapId = AdminEventConfigService.gI().getEventBossMapId(this, mapId);
         Zone map = MapService.gI().getMapWithRandZone(mapId);
         return map;
     }
@@ -663,6 +665,10 @@ public class Boss extends Player implements IBoss {
             int dropY = this.zone.map.yPhysicInTop(this.location.x, this.location.y);
             for (nro.models.map.ItemMap item : AdminSpawnConfigService.gI().createServerBossDrops(
                     (int) this.id, this.zone, plKill.id, this.location.x, dropY)) {
+                Service.gI().dropItemMap(this.zone, item);
+            }
+            for (nro.models.map.ItemMap item : AdminEventConfigService.gI().createBossDrops(
+                    this, plKill.id, this.location.x, dropY)) {
                 Service.gI().dropItemMap(this.zone, item);
             }
         }

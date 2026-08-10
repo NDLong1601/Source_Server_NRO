@@ -2,6 +2,7 @@ package nro.models.event;
 
 import nro.models.consts.ConstFont;
 import nro.models.item.Item;
+import nro.models.database.PlayerDAO;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.server.Manager;
@@ -20,6 +21,10 @@ public class XeNuocMia extends Npc {
 
     @Override
     public void openBaseMenu(Player player) {
+        if (!EventManager.gI().isActive("summer")) {
+            createOtherMenu(player, 0, "Sự kiện mùa hè hiện chưa mở.", "Đóng");
+            return;
+        }
         createOtherMenu(player, 0, "Cậu muốn uống gì nào",
                 "Mua 1 ly\nnước mía",
                 "Mua 10 ly\nnước mía");
@@ -27,6 +32,9 @@ public class XeNuocMia extends Npc {
 
     @Override
     public void confirmMenu(Player pl, int select) {
+        if (!EventManager.gI().isActive("summer")) {
+            return;
+        }
         if (canOpenNpc(pl)) {
             switch (pl.idMark.getIndexMenu()) {
                 case 0 -> {
@@ -105,6 +113,7 @@ public class XeNuocMia extends Npc {
             InventoryService.gI().addItemBag(player, itemRandom);
             InventoryService.gI().sendItemBags(player);
             player.point_sukien1 += 1;
+            PlayerDAO.updateEventRankingPoints(player);
             if (!Manager.isTopSukien1Changed) {
                 Manager.isTopSukien1Changed = true;
             }
@@ -149,6 +158,7 @@ public class XeNuocMia extends Npc {
             InventoryService.gI().sendItemBags(player);
             Service.gI().sendMoney(player);
             player.point_sukien1 += 10;
+            PlayerDAO.updateEventRankingPoints(player);
             if (!Manager.isTopSukien1Changed) {
                 Manager.isTopSukien1Changed = true;
             }

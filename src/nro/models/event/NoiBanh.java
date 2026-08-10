@@ -18,6 +18,10 @@ public class NoiBanh extends Npc {
 
     @Override
     public void openBaseMenu(Player player) {
+        if (!EventManager.gI().isActive("hungvuong")) {
+            createOtherMenu(player, 0, "Sự kiện Giỗ Tổ Hùng Vương hiện chưa mở.", "Đóng");
+            return;
+        }
         createOtherMenu(player, 0, "Xin chào " + player.name + "\nTôi là nồi nấu bánh.\nBạn cần gì?",
                 "Tự nấu\nbánh",
                 "Từ chối");
@@ -25,6 +29,9 @@ public class NoiBanh extends Npc {
 
     @Override
     public void confirmMenu(Player pl, int select) {
+        if (!EventManager.gI().isActive("hungvuong")) {
+            return;
+        }
         if (canOpenNpc(pl)) {
             switch (pl.idMark.getIndexMenu()) {
                 case 0 -> {
@@ -45,7 +52,8 @@ public class NoiBanh extends Npc {
                             Item botgao = InventoryService.gI().findItemBag(pl, 1547);// ga
                             Item muoitieu = InventoryService.gI().findItemBag(pl, 1545);// trung
                             Item chalua = InventoryService.gI().findItemBag(pl, 1544);// botmy
-                            if (comnep != null && botgao != null && muoitieu != null && chalua != null) {
+                            if (hasQuantity(comnep, 99) && hasQuantity(botgao, 10)
+                                    && hasQuantity(muoitieu, 10) && hasQuantity(chalua, 1)) {
                                 InventoryService.gI().subQuantityItemsBag(pl, comnep, 99);
                                 InventoryService.gI().subQuantityItemsBag(pl, botgao, 10);
                                 InventoryService.gI().subQuantityItemsBag(pl, muoitieu, 10);
@@ -63,7 +71,7 @@ public class NoiBanh extends Npc {
                             Item comnep1 = InventoryService.gI().findItemBag(pl, 1546);
                             Item dauxanh = InventoryService.gI().findItemBag(pl, 1548);// ga
                             Item thittuoi = InventoryService.gI().findItemBag(pl, 1549);// trung
-                            if (comnep1 != null && dauxanh != null && thittuoi != null) {
+                            if (hasQuantity(comnep1, 99) && hasQuantity(dauxanh, 99) && hasQuantity(thittuoi, 99)) {
                                 InventoryService.gI().subQuantityItemsBag(pl, comnep1, 99);
                                 InventoryService.gI().subQuantityItemsBag(pl, dauxanh, 99);
                                 InventoryService.gI().subQuantityItemsBag(pl, thittuoi, 99);
@@ -80,5 +88,9 @@ public class NoiBanh extends Npc {
                 }
             }
         }
+    }
+
+    private boolean hasQuantity(Item item, int quantity) {
+        return item != null && item.quantity >= quantity;
     }
 }

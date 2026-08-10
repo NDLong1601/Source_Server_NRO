@@ -598,6 +598,165 @@
       width: auto !important;
     }
 
+    .event-pane {
+      background: #f8fafc;
+    }
+
+    .event-summary {
+      margin: 0 -6px 12px;
+      white-space: nowrap;
+    }
+
+    .event-stat {
+      display: inline-block;
+      width: 24%;
+      min-height: 72px;
+      margin: 0 0.5%;
+      padding: 11px 13px;
+      vertical-align: top;
+      box-sizing: border-box;
+      border: 1px solid #dbe3ed;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .event-stat-label {
+      color: #64748b;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .event-stat-value {
+      margin-top: 7px;
+      color: #0f172a;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .event-layout {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .event-main,
+    .event-side {
+      display: table-cell;
+      vertical-align: top;
+    }
+
+    .event-main {
+      width: 46%;
+      padding-right: 12px;
+    }
+
+    .event-side { width: 54%; }
+
+    .event-side-card {
+      margin-bottom: 12px;
+      padding: 13px;
+      border: 1px solid #dbe3ed;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .event-grid {
+      margin: 0 -5px;
+    }
+
+    .event-card {
+      position: relative;
+      display: inline-block;
+      width: 99%;
+      min-height: 126px;
+      margin: 0 0.5% 10px;
+      padding: 12px 12px 10px 42px;
+      vertical-align: top;
+      box-sizing: border-box;
+      border: 1px solid #dbe3ed;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .event-card.enabled {
+      border-color: #5eead4;
+      box-shadow: inset 3px 0 0 #0f766e;
+    }
+
+    .event-card.selected {
+      border-color: #2563eb;
+      box-shadow: inset 3px 0 0 #2563eb;
+    }
+
+    .event-card input {
+      position: absolute;
+      left: 13px;
+      top: 15px;
+      width: auto;
+      height: auto;
+    }
+
+    .event-card-name {
+      margin-right: 4px;
+      color: #0f172a;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .event-card-code,
+    .event-card-detail,
+    .event-card-health {
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 11px;
+      line-height: 16px;
+    }
+
+    .event-card-code {
+      color: #0f766e;
+      font-family: Consolas, monospace;
+    }
+
+    .event-badge {
+      display: inline-block;
+      margin: 0 4px 3px 0;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 14px;
+      text-transform: uppercase;
+    }
+
+    .event-badge.active, .event-badge.ready { background: #dcfce7; color: #166534; }
+    .event-badge.pending { background: #ede9fe; color: #6d28d9; }
+    .event-badge.configured { background: #dbeafe; color: #1d4ed8; }
+    .event-badge.off { background: #e2e8f0; color: #475569; }
+    .event-badge.warning { background: #fef3c7; color: #92400e; }
+    .event-badge.error { background: #fee2e2; color: #991b1b; }
+    .event-badge.mob { background: #ccfbf1; color: #115e59; }
+    .event-badge.boss { background: #ffedd5; color: #9a3412; }
+    .event-badge.built_in { background: #e0e7ff; color: #3730a3; }
+    .event-badge.gameplay, .event-badge.reward { background: #f3e8ff; color: #7e22ce; }
+    .event-badge.disabled { background: #f1f5f9; color: #64748b; }
+
+    .event-config-title { color: #1d4ed8; font-weight: 700; }
+    .event-config-table { max-height: 145px; }
+    .event-config-table tr.selected td { background: #dbeafe; }
+    .event-help { margin: 7px 0; color: #64748b; font-size: 11px; line-height: 16px; }
+    .event-inline-check { margin-top: 20px; white-space: nowrap; }
+    .event-inline-check input { width: auto; height: auto; }
+    .event-map-list { max-height: 145px; margin-top: 7px; }
+
+    .event-selection {
+      margin-top: 8px;
+      padding: 9px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      line-height: 18px;
+    }
+
     .gift-status-active,
     tr:hover td.gift-status-active {
       background: #dcfce7 !important;
@@ -1267,39 +1426,119 @@
       </div>
 
       <div id="panelEvents" class="panel">
-        <div class="right-pane single-pane">
-          <div class="section-title">Cấu hình sự kiện</div>
-          <div class="row">
-            <div class="cell">
-              <label>Sự kiện đang bật</label>
-              <select id="eventValue">
-                <option value="none">Không sự kiện</option>
-                <option value="topup">TopUp</option>
-                <option value="hungvuong,topup">Hùng Vương + TopUp</option>
-                <option value="trungthu,topup">Trung Thu + TopUp</option>
-                <option value="halloween,topup">Halloween + TopUp</option>
-                <option value="christmas,topup">Noel + TopUp</option>
-                <option value="lunar_new_year,topup">Tết + TopUp</option>
-                <option value="womens_day,topup">8/3 + TopUp</option>
-                <option value="all">Tất cả sự kiện</option>
-              </select>
+        <div class="right-pane single-pane event-pane">
+          <input id="eventValue" class="hidden-value" value="none">
+          <div id="eventSummary" class="event-summary"></div>
+          <div class="event-layout">
+            <div class="event-main">
+              <div class="section-title">Danh sách sự kiện <span id="eventRuntimeBadge" class="event-badge off">Đang tải</span></div>
+              <div id="eventCards" class="event-grid"></div>
             </div>
-            <div class="cell">
-              <label>TNSM</label>
-              <select id="expRate">
-                <option value="1">x1</option>
-                <option value="2">x2</option>
-                <option value="3">x3</option>
-                <option value="5">x5</option>
-                <option value="10">x10</option>
-              </select>
+            <div class="event-side">
+              <div class="event-side-card">
+                <div class="section-title">Áp dụng cấu hình</div>
+                <label>Tỉ lệ TNSM toàn server</label>
+                <select id="expRate">
+                  <option value="1">x1</option>
+                  <option value="2">x2</option>
+                  <option value="3">x3</option>
+                  <option value="5">x5</option>
+                  <option value="10">x10</option>
+                </select>
+                <div id="eventSelection" class="event-selection">Chưa chọn sự kiện.</div>
+                <div class="actions">
+                  <button class="primary" onclick="SaveEvent()">Lưu cấu hình</button>
+                  <button onclick="LoadEvents()">Tải lại</button>
+                  <button onclick="RestartServer()">Restart server</button>
+                </div>
+                <div id="eventMessage" class="message"></div>
+              </div>
+              <div id="eventConfigEditor" class="event-side-card">
+                <div class="section-title">Cấu hình riêng: <span id="eventConfigTitle" class="event-config-title">Chọn sự kiện</span></div>
+                <input type="hidden" id="eventConfigCode">
+                <label>Mô tả vận hành</label>
+                <textarea id="eventConfigDescription" placeholder="Mô tả boss, NPC, cách chơi và lưu ý vận hành"></textarea>
+                <label>Buff tỉ lệ drop cấu hình (x)</label><input id="eventDropMultiplier" value="1">
+                <div class="actions">
+                  <button class="primary" onclick="SaveEventConfig()">Lưu cấu hình riêng</button>
+                </div>
+                <div class="event-help">Drop multiplier chỉ áp dụng các item nguồn Mob/Boss bên dưới.</div>
+
+                <div class="split-small">
+                  <div class="section-title">Buff điểm cho player</div>
+                  <div class="row">
+                    <div class="cell"><label>ID hoặc tên player</label><input id="eventPlayerSearch" placeholder="Nhập ID hoặc tên chính xác"></div>
+                    <div class="cell"><label>Số điểm cộng</label><input id="eventPlayerPoints" value="1"></div>
+                  </div>
+                  <div class="actions">
+                    <button onclick="SearchEventPlayers()">Tìm player</button>
+                    <button class="primary" onclick="GrantEventPoints()">Buff điểm</button>
+                  </div>
+                  <div class="mini-table event-config-table"><table id="eventPlayerTable"></table></div>
+                  <div class="event-help">Click player trong kết quả để chọn chính xác. Player online được cập nhật ngay trong game và nhận thông báo.</div>
+                  <div class="section-title">Lịch sử buff gần đây</div>
+                  <div class="mini-table event-config-table"><table id="eventGrantTable"></table></div>
+                </div>
+
+                <div class="split-small">
+                  <div class="section-title">Boss của sự kiện <span id="eventBossCountBadge" class="event-badge configured">0</span></div>
+                  <div class="mini-table event-config-table"><table id="eventBossTable"></table></div>
+                  <input type="hidden" id="eventBossOriginalId">
+                  <div class="row">
+                    <div class="cell"><label>Boss ID</label><input id="eventBossId" placeholder="-351"></div>
+                    <div class="cell"><label>Tên boss</label><input id="eventBossName" placeholder="Bí ma"></div>
+                    <div class="cell"><label>Số lượng</label><input id="eventBossQuantity" value="1"></div>
+                    <div class="cell event-inline-check"><input type="checkbox" id="eventBossEnabled" checked> Bật</div>
+                  </div>
+                  <label>Ghi chú boss</label><input id="eventBossNotes" placeholder="Boss con xuất hiện cùng, lưu ý map...">
+                  <label>Map xuất hiện</label>
+                  <input id="eventBossMapSearch" placeholder="Tìm ID hoặc tên map" onkeyup="RenderEventBossMapChecklist()">
+                  <div id="eventBossMapChecklist" class="option-picker-list event-map-list"></div>
+                  <div id="eventBossMapSummary" class="option-picker-summary"></div>
+                  <div class="actions">
+                    <button class="primary" onclick="SaveEventBoss()">Lưu boss</button>
+                    <button onclick="ClearEventBossForm()">Thêm mới</button>
+                    <button class="danger" onclick="DeleteEventBoss()">Xóa</button>
+                  </div>
+                </div>
+
+                <div class="split-small">
+                  <div class="section-title">Vật phẩm sự kiện <span id="eventItemCountBadge" class="event-badge configured">0</span></div>
+                  <div class="mini-table event-config-table"><table id="eventItemTable"></table></div>
+                  <input type="hidden" id="eventItemRowId">
+                  <div class="row">
+                    <div class="cell"><label>Item ID</label><input id="eventItemId" placeholder="585"></div>
+                    <div class="cell"><label>Nguồn</label><select id="eventItemSource"><option value="mob">Mob (tự động rơi)</option><option value="boss">Boss (tự động rơi)</option><option value="gameplay">Gameplay / đổi quà</option><option value="reward">Phần thưởng</option><option value="built_in">Code có sẵn</option></select></div>
+                    <div class="cell"><label>ID nguồn (-1 = tất cả)</label><input id="eventItemSourceId" value="-1"></div>
+                  </div>
+                  <div class="row">
+                    <div class="cell"><label>Số lượng min</label><input id="eventItemMin" value="1"></div>
+                    <div class="cell"><label>Số lượng max</label><input id="eventItemMax" value="1"></div>
+                    <div class="cell"><label>Tỉ lệ rơi (%)</label><input id="eventItemRate" value="100"></div>
+                    <div class="cell event-inline-check"><input type="checkbox" id="eventItemEnabled" checked> Bật</div>
+                  </div>
+                  <label>Ghi chú vật phẩm</label><input id="eventItemNotes" placeholder="Nguyên liệu chơi, vật phẩm đổi thưởng...">
+                  <div class="event-help">Nguồn Mob/Boss hoạt động tự động. ID nguồn là mob template ID hoặc boss ID; dùng -1 cho mọi mob/boss.</div>
+                  <div class="actions">
+                    <button class="primary" onclick="SaveEventItem()">Lưu vật phẩm</button>
+                    <button onclick="ClearEventItemForm()">Gắn mới</button>
+                    <button class="danger" onclick="DeleteEventItem()">Xóa</button>
+                  </div>
+                </div>
+                <div id="eventConfigMessage" class="message"></div>
+              </div>
+              <div class="event-side-card">
+                <div class="section-title">Nguyên tắc vận hành</div>
+                <div class="event-card-detail">
+                  Màu xanh: sẵn sàng hoặc đang chạy.<br>
+                  Màu tím: đã lưu và đang chờ restart.<br>
+                  Màu vàng: chạy được nhưng còn hạng mục cần kiểm tra.<br>
+                  Màu đỏ: thiếu dependency, không nên bật.<br><br>
+                  Buff điểm player được xử lý ngay. Boss, map, NPC và drop được áp dụng sau khi server khởi động lại.
+                </div>
+              </div>
             </div>
           </div>
-          <div class="actions">
-            <button class="primary" onclick="SaveEvent()">Lưu sự kiện</button>
-            <button onclick="RestartServer()">Restart server</button>
-          </div>
-          <div id="eventMessage" class="message"></div>
         </div>
       </div>
 
@@ -2010,6 +2249,15 @@
     var bossSelectedMaps = [];
     var auditRows = [];
     var selectedAuditIndex = -1;
+    var eventRows = [];
+    var eventStats = [];
+    var eventProfileRows = [];
+    var eventBossRows = [];
+    var eventItemRows = [];
+    var eventPlayerRows = [];
+    var eventGrantRows = [];
+    var eventBossSelectedMaps = [];
+    var selectedEventCode = "";
 
     window.onload = function () {
       FitWindowToScreen();
@@ -2112,8 +2360,8 @@
         LoadItems();
       } else if (tab == "events") {
         document.getElementById("pageTitle").innerText = "Sự kiện";
-        document.getElementById("pageSub").innerText = "Bật/tắt event và chỉnh tỉ lệ TNSM";
-        LoadStatus();
+        document.getElementById("pageSub").innerText = "Boss nhiều map, vật phẩm và buff điểm cho từng player";
+        LoadEvents();
       } else if (tab == "playerconfig") {
         document.getElementById("pageTitle").innerText = "Cấu hình Player toàn server";
         document.getElementById("pageSub").innerText = "Chỉ số khởi tạo, tiền tệ, sức chứa và giới hạn 10 cấp";
@@ -2166,7 +2414,7 @@
     function RefreshCurrent() {
       LoadStatus();
       if (currentTab == "items") LoadItems();
-      if (currentTab == "events") LoadStatus();
+      if (currentTab == "events") LoadEvents();
       if (currentTab == "playerconfig") LoadPlayerConfig();
       if (currentTab == "petconfig") LoadPetConfig();
       if (currentTab == "players") LoadPlayers();
@@ -3072,20 +3320,384 @@
       var rows = ParseTsv(RunAdmin("status", {}));
       var eventValue = "none";
       var expRate = "1";
+      var serverRunning = "0";
+      var restartPending = "0";
+      var startedAt = "";
       for (var i = 1; i < rows.length; i++) {
         if (rows[i][0] == "server.event") eventValue = rows[i][1] || "none";
         if (rows[i][0] == "server.expserver") expRate = rows[i][1] || "1";
+        if (rows[i][0] == "server.running") serverRunning = rows[i][1] || "0";
+        if (rows[i][0] == "server.restart_pending") restartPending = rows[i][1] || "0";
+        if (rows[i][0] == "server.started_at") startedAt = rows[i][1] || "";
       }
       Set("eventValue", eventValue);
       Set("expRate", expRate);
-      document.getElementById("statusBox").innerText = "server.event=" + eventValue + "\r\nserver.expserver=" + expRate + "\r\nDB: Config.properties";
+      document.getElementById("statusBox").innerText = "server.event=" + eventValue + "\r\nserver.expserver=" + expRate +
+        "\r\nServer: " + (serverRunning == "1" ? "đang chạy" : "đã dừng") +
+        (restartPending == "1" ? " / chờ restart" : "") + (startedAt ? "\r\nKhởi động: " + startedAt : "");
+    }
+
+    function LoadEvents() {
+      LoadStatus();
+      eventRows = ParseTsv(RunAdmin("listevents", {}));
+      eventStats = ParseTsv(RunAdmin("eventstats", {}));
+      RenderEventCards();
+      RenderEventSummary();
+      var selectedIndex = FindEventIndex(selectedEventCode);
+      if (selectedIndex < 1 && eventRows.length > 1) selectedIndex = 1;
+      if (selectedIndex > 0) SelectEventConfig(selectedIndex);
+    }
+
+    function EventStateLabel(state) {
+      if (state == "active") return "Đang chạy";
+      if (state == "pending") return "Chờ restart";
+      if (state == "configured") return "Đã cấu hình";
+      return "Đang tắt";
+    }
+
+    function EventHealthLabel(health) {
+      if (health == "ready") return "Sẵn sàng";
+      if (health == "error") return "Có lỗi";
+      return "Cần kiểm tra";
+    }
+
+    function RenderEventCards() {
+      var html = "";
+      for (var i = 1; i < eventRows.length; i++) {
+        var row = eventRows[i];
+        var checked = row[2] == "1";
+        html += '<div id="eventCard_' + HtmlAttr(row[0]) + '" class="' + EventCardClass(i) + '" onclick="SelectEventConfig(' + i + ')">' +
+          '<input type="checkbox" id="eventToggle_' + HtmlAttr(row[0]) + '" ' + (checked ? "checked " : "") +
+          'onclick="ToggleEvent(' + i + ', this.checked); event.cancelBubble=true;">' +
+          '<div><span class="event-card-name">' + Html(row[1]) + '</span></div>' +
+          '<div class="event-card-code">' + Html(row[0]) + ' · ' + Html(row[6]) + ' boss · ' + Html(row[10] || "0") + ' item</div>' +
+          '<div><span class="event-badge ' + HtmlAttr(row[3]) + '">' + Html(EventStateLabel(row[3])) + '</span>' +
+          '<span class="event-badge ' + HtmlAttr(row[4]) + '">' + Html(EventHealthLabel(row[4])) + '</span>' +
+          '<span class="event-badge configured">Buff riêng</span>' +
+          '<span class="event-badge configured">Drop x' + Html(row[9] || "1") + '</span></div>' +
+          '<div class="event-card-detail">' + Html(row[7]) + '</div>' +
+          '<div class="event-card-health">' + Html(row[5]) + '</div></div>';
+      }
+      document.getElementById("eventCards").innerHTML = html;
+      UpdateEventSelection();
+    }
+
+    function FindEventIndex(code) {
+      for (var i = 1; i < eventRows.length; i++) if (eventRows[i][0] == code) return i;
+      return -1;
+    }
+
+    function EventCardClass(index) {
+      if (!eventRows[index]) return "event-card";
+      var value = "event-card";
+      if (eventRows[index][2] == "1") value += " enabled";
+      if (eventRows[index][0] == selectedEventCode) value += " selected";
+      return value;
+    }
+
+    function ToggleEvent(index, checked) {
+      if (!eventRows[index]) return;
+      eventRows[index][2] = checked ? "1" : "0";
+      var card = document.getElementById("eventCard_" + eventRows[index][0]);
+      if (card) card.className = EventCardClass(index);
+      UpdateEventSelection();
+    }
+
+    function SelectEventConfig(index) {
+      if (!eventRows[index]) return;
+      selectedEventCode = eventRows[index][0];
+      Set("eventConfigCode", selectedEventCode);
+      document.getElementById("eventConfigTitle").innerText = eventRows[index][1] + " (" + selectedEventCode + ")";
+      for (var i = 1; i < eventRows.length; i++) {
+        var card = document.getElementById("eventCard_" + eventRows[i][0]);
+        if (card) card.className = EventCardClass(i);
+      }
+      LoadEventConfigDetail();
+    }
+
+    function LoadEventConfigDetail() {
+      if (!selectedEventCode) return;
+      eventProfileRows = ParseTsv(RunAdmin("geteventconfig", { EventValue: selectedEventCode }));
+      eventBossRows = ParseTsv(RunAdmin("listeventbosses", { EventValue: selectedEventCode }));
+      eventItemRows = ParseTsv(RunAdmin("listeventitems", { EventValue: selectedEventCode }));
+      eventGrantRows = ParseTsv(RunAdmin("listeventpointgrants", { EventValue: selectedEventCode }));
+      if (spawnMaps.length == 0) spawnMaps = ParseTsv(RunAdmin("listspawnmaps", {}));
+      if (eventProfileRows.length > 1) {
+        Set("eventConfigDescription", eventProfileRows[1][2]);
+        Set("eventDropMultiplier", eventProfileRows[1][4]);
+      }
+      RenderEventBosses();
+      RenderEventItems();
+      RenderEventPointGrants();
+      ClearEventBossForm();
+      ClearEventItemForm();
+    }
+
+    function RenderEventBosses() {
+      var html = '<thead><tr><th>ID</th><th>Boss</th><th>SL</th><th>Map</th><th>Trạng thái</th></tr></thead><tbody>';
+      var enabledCount = 0;
+      for (var i = 1; i < eventBossRows.length; i++) {
+        var row = eventBossRows[i];
+        if (row[3] == "1") enabledCount++;
+        var mapCount = ParseNumberArray(row[5] || "[]").length;
+        html += '<tr onclick="PickEventBoss(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) +
+          '</td><td>' + Html(row[2]) + '</td><td>' + Html(mapCount ? mapCount + " map" : "Mặc định") + '</td><td><span class="event-badge ' + (row[3] == "1" ? "active" : "disabled") + '">' +
+          (row[3] == "1" ? "Đang bật" : "Đã tắt") + '</span></td></tr>';
+      }
+      document.getElementById("eventBossTable").innerHTML = html + '</tbody>';
+      document.getElementById("eventBossCountBadge").innerText = enabledCount + " bật / " + Math.max(0, eventBossRows.length - 1);
+    }
+
+    function PickEventBoss(index) {
+      var row = eventBossRows[index];
+      Set("eventBossOriginalId", row[0]);
+      Set("eventBossId", row[0]);
+      document.getElementById("eventBossId").readOnly = true;
+      Set("eventBossName", row[1]);
+      Set("eventBossQuantity", row[2]);
+      document.getElementById("eventBossEnabled").checked = row[3] == "1";
+      Set("eventBossNotes", row[4]);
+      eventBossSelectedMaps = ParseNumberArray(row[5] || "[]");
+      Set("eventBossMapSearch", "");
+      RenderEventBossMapChecklist();
+    }
+
+    function ClearEventBossForm() {
+      Set("eventBossOriginalId", "");
+      Set("eventBossId", "");
+      document.getElementById("eventBossId").readOnly = false;
+      Set("eventBossName", "");
+      Set("eventBossQuantity", "1");
+      Set("eventBossNotes", "");
+      eventBossSelectedMaps = [];
+      Set("eventBossMapSearch", "");
+      RenderEventBossMapChecklist();
+      document.getElementById("eventBossEnabled").checked = true;
+    }
+
+    function SaveEventBoss() {
+      if (!selectedEventCode) return;
+      var text = RunAdmin("saveeventboss", { EventValue: selectedEventCode, BossId: V("eventBossId"), Name: V("eventBossName"),
+        BossQuantity: V("eventBossQuantity"), Enabled: CheckedValue("eventBossEnabled"), Notes: V("eventBossNotes"),
+        MapIdsJson: JSON.stringify(eventBossSelectedMaps) });
+      Msg("eventConfigMessage", StatusText(text));
+      if (!IsAdminError(text)) { LoadEventConfigDetail(); RefreshEventCardsOnly(); }
+    }
+
+    function RenderEventBossMapChecklist() {
+      if (!document.getElementById("eventBossMapChecklist")) return;
+      var selected = {};
+      for (var i = 0; i < eventBossSelectedMaps.length; i++) selected["" + eventBossSelectedMaps[i]] = true;
+      RenderChecklist({
+        listId: "eventBossMapChecklist", idPrefix: "eventBossMapChoice", rows: spawnMaps, rowStart: 1,
+        query: V("eventBossMapSearch"), selected: selected, selectedOrder: eventBossSelectedMaps,
+        toggleFunction: "ToggleEventBossMap", emptyText: "Không tìm thấy map phù hợp."
+      });
+      var names = [];
+      for (var m = 0; m < eventBossSelectedMaps.length; m++) {
+        names.push(eventBossSelectedMaps[m] + " - " + ChecklistLabelFromRows(spawnMaps, 1, 0, 1, "" + eventBossSelectedMaps[m]));
+      }
+      document.getElementById("eventBossMapSummary").innerText = names.length
+        ? "Đã chọn " + names.length + " map; boss chọn ngẫu nhiên: " + names.join(", ")
+        : "Chưa chọn map — boss dùng map mặc định trong BossesData.";
+    }
+
+    function ToggleEventBossMap(id, checked) {
+      var value = parseInt(id, 10);
+      var next = [];
+      for (var i = 0; i < eventBossSelectedMaps.length; i++) if (eventBossSelectedMaps[i] != value) next.push(eventBossSelectedMaps[i]);
+      if (checked) next.push(value);
+      eventBossSelectedMaps = next;
+      RenderEventBossMapChecklist();
+    }
+
+    function SearchEventPlayers() {
+      if (!Trim(V("eventPlayerSearch"))) { Msg("eventConfigMessage", "Nhập ID hoặc tên player cần tìm."); return; }
+      eventPlayerRows = ParseTsv(RunAdmin("searcheventplayers", { Search: V("eventPlayerSearch") }));
+      var html = '<thead><tr><th>ID</th><th>Player</th><th>Tài khoản</th><th>Điểm</th><th>Trạng thái</th></tr></thead><tbody>';
+      for (var i = 1; i < eventPlayerRows.length; i++) {
+        var row = eventPlayerRows[i];
+        html += '<tr onclick="PickEventPointPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) +
+          '</td><td>' + Html(row[2]) + '</td><td>' + Html(FormatNumber(row[3] || "0")) + '</td><td><span class="event-badge ' +
+          (row[4] == "ONLINE?" ? "active" : "off") + '">' + Html(row[4] == "ONLINE?" ? "Online" : "Offline") + '</span></td></tr>';
+      }
+      document.getElementById("eventPlayerTable").innerHTML = html + '</tbody>';
+      Msg("eventConfigMessage", eventPlayerRows.length > 1 ? "Chọn đúng player trong kết quả rồi nhập số điểm." : "Không tìm thấy player.");
+    }
+
+    function PickEventPointPlayer(index) {
+      if (!eventPlayerRows[index]) return;
+      Set("eventPlayerSearch", eventPlayerRows[index][0]);
+      Msg("eventConfigMessage", "Đã chọn " + eventPlayerRows[index][1] + " (ID " + eventPlayerRows[index][0] + "), điểm hiện tại " + FormatNumber(eventPlayerRows[index][3] || "0") + ".");
+    }
+
+    function GrantEventPoints() {
+      if (!selectedEventCode) return;
+      if (!Trim(V("eventPlayerSearch"))) { Msg("eventConfigMessage", "Nhập hoặc chọn player cần buff."); return; }
+      if (!window.confirm("Cộng " + V("eventPlayerPoints") + " điểm sự kiện cho player " + V("eventPlayerSearch") + "?")) return;
+      var text = RunAdmin("granteventpoint", { EventValue: selectedEventCode, Search: V("eventPlayerSearch"), Points: V("eventPlayerPoints") });
+      if (!IsAdminError(text)) {
+        eventGrantRows = ParseTsv(RunAdmin("listeventpointgrants", { EventValue: selectedEventCode }));
+        RenderEventPointGrants();
+        SearchEventPlayers();
+      }
+      Msg("eventConfigMessage", StatusText(text));
+    }
+
+    function RenderEventPointGrants() {
+      var html = '<thead><tr><th>Player</th><th>Điểm</th><th>Thời gian</th><th>Trạng thái</th></tr></thead><tbody>';
+      for (var i = 1; i < eventGrantRows.length; i++) {
+        var row = eventGrantRows[i];
+        var badgeClass = row[4] == "processed" ? "active" : (row[4] == "failed" ? "error" : "pending");
+        var label = row[4] == "processed" ? "Đã cộng" : (row[4] == "failed" ? "Lỗi" : "Đang xử lý");
+        html += '<tr><td>' + Html(row[1] + " - " + row[2]) + '</td><td>+' + Html(FormatNumber(row[3])) +
+          '</td><td>' + Html(row[5]) + '</td><td><span class="event-badge ' + badgeClass + '">' + label + '</span></td></tr>';
+      }
+      document.getElementById("eventGrantTable").innerHTML = html + '</tbody>';
+    }
+
+    function DeleteEventBoss() {
+      if (!V("eventBossOriginalId")) { Msg("eventConfigMessage", "Chọn một boss cần xóa."); return; }
+      if (!window.confirm("Xóa Boss " + V("eventBossName") + " khỏi cấu hình " + selectedEventCode + "?")) return;
+      var text = RunAdmin("deleteeventboss", { EventValue: selectedEventCode, BossId: V("eventBossOriginalId") });
+      Msg("eventConfigMessage", StatusText(text));
+      if (!IsAdminError(text)) { LoadEventConfigDetail(); RefreshEventCardsOnly(); }
+    }
+
+    function EventSourceLabel(source) {
+      if (source == "mob") return "Mob";
+      if (source == "boss") return "Boss";
+      if (source == "built_in") return "Code sẵn";
+      if (source == "reward") return "Phần thưởng";
+      return "Gameplay";
+    }
+
+    function RenderEventItems() {
+      var html = '<thead><tr><th>Item</th><th>Nguồn</th><th>SL</th><th>Tỉ lệ</th><th>TT</th></tr></thead><tbody>';
+      var enabledCount = 0;
+      for (var i = 1; i < eventItemRows.length; i++) {
+        var row = eventItemRows[i];
+        if (row[8] == "1") enabledCount++;
+        html += '<tr onclick="PickEventItem(' + i + ')"><td>' + Html(row[1] + " - " + row[2]) + '</td><td><span class="event-badge ' +
+          HtmlAttr(row[3]) + '">' + Html(EventSourceLabel(row[3])) + '</span></td><td>' + Html(row[5] + "-" + row[6]) +
+          '</td><td>' + Html(row[7]) + '%</td><td><span class="event-badge ' + (row[8] == "1" ? "active" : "disabled") + '">' +
+          (row[8] == "1" ? "Bật" : "Tắt") + '</span></td></tr>';
+      }
+      document.getElementById("eventItemTable").innerHTML = html + '</tbody>';
+      document.getElementById("eventItemCountBadge").innerText = enabledCount + " bật / " + Math.max(0, eventItemRows.length - 1);
+    }
+
+    function PickEventItem(index) {
+      var row = eventItemRows[index];
+      Set("eventItemRowId", row[0]);
+      Set("eventItemId", row[1]);
+      Set("eventItemSource", row[3]);
+      Set("eventItemSourceId", row[4]);
+      Set("eventItemMin", row[5]);
+      Set("eventItemMax", row[6]);
+      Set("eventItemRate", row[7]);
+      document.getElementById("eventItemEnabled").checked = row[8] == "1";
+      Set("eventItemNotes", row[9]);
+    }
+
+    function ClearEventItemForm() {
+      Set("eventItemRowId", "");
+      Set("eventItemId", "");
+      Set("eventItemSource", "mob");
+      Set("eventItemSourceId", "-1");
+      Set("eventItemMin", "1");
+      Set("eventItemMax", "1");
+      Set("eventItemRate", "100");
+      Set("eventItemNotes", "");
+      document.getElementById("eventItemEnabled").checked = true;
+    }
+
+    function SaveEventItem() {
+      if (!selectedEventCode) return;
+      var text = RunAdmin("saveeventitem", { EventValue: selectedEventCode, Id: V("eventItemRowId"), TemplateId: V("eventItemId"),
+        SourceType: V("eventItemSource"), SourceId: V("eventItemSourceId"), QuantityMin: V("eventItemMin"), QuantityMax: V("eventItemMax"),
+        DropRate: V("eventItemRate"), Enabled: CheckedValue("eventItemEnabled"), Notes: V("eventItemNotes") });
+      Msg("eventConfigMessage", StatusText(text));
+      if (!IsAdminError(text)) { LoadEventConfigDetail(); RefreshEventCardsOnly(); }
+    }
+
+    function DeleteEventItem() {
+      if (!V("eventItemRowId")) { Msg("eventConfigMessage", "Chọn một vật phẩm cần xóa."); return; }
+      if (!window.confirm("Xóa Item " + V("eventItemId") + " khỏi cấu hình " + selectedEventCode + "?")) return;
+      var text = RunAdmin("deleteeventitem", { EventValue: selectedEventCode, Id: V("eventItemRowId") });
+      Msg("eventConfigMessage", StatusText(text));
+      if (!IsAdminError(text)) { LoadEventConfigDetail(); RefreshEventCardsOnly(); }
+    }
+
+    function SaveEventConfig() {
+      if (!selectedEventCode) return;
+      var text = RunAdmin("saveeventconfig", { EventValue: selectedEventCode, Description: V("eventConfigDescription"),
+        DropMultiplier: V("eventDropMultiplier") });
+      Msg("eventConfigMessage", StatusText(text));
+      if (!IsAdminError(text)) RefreshEventCardsOnly();
+    }
+
+    function RefreshEventCardsOnly() {
+      eventRows = ParseTsv(RunAdmin("listevents", {}));
+      RenderEventCards();
+      RenderEventSummary();
+    }
+
+    function UpdateEventSelection() {
+      var codes = [];
+      var names = [];
+      var bossCount = 0;
+      for (var i = 1; i < eventRows.length; i++) {
+        if (eventRows[i][2] != "1") continue;
+        codes.push(eventRows[i][0]);
+        names.push(eventRows[i][1]);
+        bossCount += parseInt(eventRows[i][6] || "0", 10);
+      }
+      Set("eventValue", codes.length ? codes.join(",") : "none");
+      document.getElementById("eventSelection").innerText = codes.length ?
+        ("Đã chọn " + codes.length + " sự kiện · dự kiến " + bossCount + " boss\r\n" + names.join(", ")) :
+        "Không có sự kiện theo mùa được chọn.";
+    }
+
+    function RenderEventSummary() {
+      if (eventStats.length < 2) return;
+      var s = eventStats[1];
+      var enabled = 0;
+      for (var i = 1; i < eventRows.length; i++) if (eventRows[i][2] == "1") enabled++;
+      var runtimeText = s[0] == "1" ? (s[1] == "1" ? "Chờ restart" : "Đang chạy") : "Đã dừng";
+      var runtimeClass = s[0] != "1" ? "off" : (s[1] == "1" ? "pending" : "active");
+      document.getElementById("eventRuntimeBadge").className = "event-badge " + runtimeClass;
+      document.getElementById("eventRuntimeBadge").innerText = runtimeText;
+      document.getElementById("eventSummary").innerHTML =
+        EventStatHtml("Runtime", runtimeText) +
+        EventStatHtml("Sự kiện đã chọn", enabled) +
+        EventStatHtml("Player có điểm", FormatNumber(s[4] || "0")) +
+        EventStatHtml("Tổng điểm sự kiện", FormatNumber(s[5] || "0"));
+    }
+
+    function EventStatHtml(label, value) {
+      return '<div class="event-stat"><div class="event-stat-label">' + Html(label) +
+        '</div><div class="event-stat-value">' + Html(value) + '</div></div>';
     }
 
     function SaveEvent() {
+      UpdateEventSelection();
+      var warningNames = [];
+      var errorNames = [];
+      for (var i = 1; i < eventRows.length; i++) {
+        if (eventRows[i][2] != "1") continue;
+        if (eventRows[i][4] == "error") errorNames.push(eventRows[i][1]);
+        if (eventRows[i][4] == "warning") warningNames.push(eventRows[i][1]);
+      }
+      if (errorNames.length) {
+        Msg("eventMessage", "ERROR: Không thể bật event đang thiếu dependency: " + errorNames.join(", "));
+        return;
+      }
+      if (warningNames.length && !window.confirm("Các event sau còn cảnh báo: " + warningNames.join(", ") + ". Vẫn lưu cấu hình?")) return;
       var a = StatusText(RunAdmin("setevent", { EventValue: V("eventValue") }));
       var b = StatusText(RunAdmin("setexp", { ExpRate: V("expRate") }));
       Msg("eventMessage", a + "\r\n" + b);
-      LoadStatus();
+      LoadEvents();
     }
 
     var giftCodeRows = [];

@@ -28,17 +28,19 @@ public class EventDAO {
 
     public static void loadInternationalWomensDayEvent() {
         try (Connection con = LocalManager.getConnection();) {
+            ensureSchema(con);
             PreparedStatement ps = con.prepareStatement("SELECT `data` FROM `event` WHERE `name` = 'international_womens_day'");
             ResultSet rs = ps.executeQuery();
             if (rs.first()) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(String.valueOf(rs.getString("data")), JsonObject.class);
-                remainingTimeToIncreaseDame = jsonObject.getAsJsonPrimitive("damePrecent").getAsLong();
-                remainingTimeToIncreaseHP = jsonObject.getAsJsonPrimitive("hpPrecent").getAsLong();
-                remainingTimeToIncreaseMP = jsonObject.getAsJsonPrimitive("mpPrecent").getAsLong();
-                remainingTimeToIncreasePotentialAndPower = jsonObject.getAsJsonPrimitive("papPrecent").getAsLong();
+                remainingTimeToIncreaseDame = getLong(jsonObject, "damePrecent");
+                remainingTimeToIncreaseHP = getLong(jsonObject, "hpPrecent");
+                remainingTimeToIncreaseMP = getLong(jsonObject, "mpPrecent");
+                remainingTimeToIncreasePotentialAndPower = getLong(jsonObject, "papPrecent");
             }
         } catch (Exception ex) {
+            Logger.logException(EventDAO.class, ex, "Không thể tải dữ liệu sự kiện 8/3");
         }
     }
 
@@ -52,11 +54,30 @@ public class EventDAO {
 
             String jsonData = jsonObject.toString();
 
-            LocalManager.executeUpdate("UPDATE `event` SET `data` = ? WHERE `name` = 'international_womens_day'", jsonData);
+            LocalManager.executeUpdate("INSERT INTO `event` (`name`, `data`) VALUES ('international_womens_day', ?) "
+                    + "ON DUPLICATE KEY UPDATE `data` = VALUES(`data`)", jsonData);
         } catch (Exception e) {
-            Logger.error("Lỗi save Event Data\n");
+            Logger.logException(EventDAO.class, e, "Không thể lưu dữ liệu sự kiện 8/3");
         }
 
+    }
+
+    private static void ensureSchema(Connection con) throws Exception {
+        try (PreparedStatement ps = con.prepareStatement("CREATE TABLE IF NOT EXISTS `event` ("
+                + "`name` varchar(64) NOT NULL, `data` text NOT NULL, "
+                + "`updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), "
+                + "PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")) {
+            ps.executeUpdate();
+        }
+        try (PreparedStatement ps = con.prepareStatement("INSERT IGNORE INTO `event` (`name`, `data`) "
+                + "VALUES ('international_womens_day', '{\"damePrecent\":0,\"hpPrecent\":0,\"mpPrecent\":0,\"papPrecent\":0}')")) {
+            ps.executeUpdate();
+        }
+    }
+
+    private static long getLong(JsonObject data, String key) {
+        return data != null && data.has(key) && !data.get(key).isJsonNull()
+                ? data.getAsJsonPrimitive(key).getAsLong() : 0;
     }
 
 }

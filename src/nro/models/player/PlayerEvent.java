@@ -22,6 +22,12 @@ public class PlayerEvent {
     public void addEventPoint(int num) {
         eventPoint += num;
     }
+
+    public void grantEventPoint(int num) {
+        if (num > 0) {
+            eventPoint += num;
+        }
+    }
     
     public void subEventPoint(int num) {
         eventPoint -= num;

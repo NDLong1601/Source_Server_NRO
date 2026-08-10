@@ -443,14 +443,15 @@ function Build-Server {
         $sourceList = Join-Path $Root "build\dashboard-sources.txt"
         Get-ChildItem -Path (Join-Path $Root "src") -Recurse -Filter "*.java" |
             ForEach-Object { $_.FullName } |
-            Set-Content -Path $sourceList -Encoding UTF8
+            Set-Content -Path $sourceList -Encoding ASCII
 
         $classpath = @(
             (Join-Path $Root "20.jar"),
             (Join-Path $Root "lib\*")
         ) -join ";"
 
-        & javac --release 17 -encoding UTF-8 -cp $classpath -d $tempClasses "@$sourceList" 2>&1 |
+        $processorPath = Join-Path $Root "lib\lombok.jar"
+        & javac --release 17 -encoding UTF-8 -cp $classpath -processorpath $processorPath -d $tempClasses "@$sourceList" 2>&1 |
             Tee-Object -FilePath $ControlLog -Append
         if ($LASTEXITCODE -ne 0) {
             Write-ControlLog "Build bằng javac thất bại với mã lỗi $LASTEXITCODE."

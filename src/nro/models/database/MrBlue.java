@@ -1039,22 +1039,24 @@ public class MrBlue {
             //data item event
             try {
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("data_item_event"));
-                player.itemEvent.remainingTVGSCount = Integer.parseInt(dataArray.get(0).toString());
-                player.itemEvent.lastTVGSTime = Long.parseLong(dataArray.get(1).toString());
-                player.itemEvent.remainingHHCount = Integer.parseInt(dataArray.get(2).toString());
-                player.itemEvent.lastHHTime = Long.parseLong(dataArray.get(3).toString());
-                player.itemEvent.remainingBNCount = Integer.parseInt(dataArray.get(4).toString());
-                player.itemEvent.lastBNTime = Long.parseLong(dataArray.get(5).toString());
-                player.itemEvent.remainingBanhQuyCount = Integer.parseInt(dataArray.get(6).toString());
-                player.itemEvent.lastItemBanhQuy = Long.parseLong(dataArray.get(7).toString());
-                player.itemEvent.remainingKeoNguoiTuyetCount = Integer.parseInt(dataArray.get(8).toString());
-                player.itemEvent.lastItemKeoNguoiTuyet = Long.parseLong(dataArray.get(9).toString());
-                player.itemEvent.remainingCaTuyetCount = Integer.parseInt(dataArray.get(10).toString());
-                player.itemEvent.lastItemCaTuyet = Long.parseLong(dataArray.get(11).toString());
-                player.itemEvent.remainingChuongDongCount = Integer.parseInt(dataArray.get(12).toString());
-                player.itemEvent.lastItemChuongDong = Long.parseLong(dataArray.get(13).toString());
-                player.itemEvent.remainingKeoDuongCount = Integer.parseInt(dataArray.get(14).toString());
-                player.itemEvent.lastItemKeoDuong = Long.parseLong(dataArray.get(15).toString());
+                player.itemEvent.remainingTVGSCount = jsonInt(dataArray, 0);
+                player.itemEvent.lastTVGSTime = jsonLong(dataArray, 1);
+                player.itemEvent.remainingHHCount = jsonInt(dataArray, 2);
+                player.itemEvent.lastHHTime = jsonLong(dataArray, 3);
+                player.itemEvent.remainingBNCount = jsonInt(dataArray, 4);
+                player.itemEvent.lastBNTime = jsonLong(dataArray, 5);
+                player.itemEvent.remainingBanhQuyCount = jsonInt(dataArray, 6);
+                player.itemEvent.lastItemBanhQuy = jsonLong(dataArray, 7);
+                player.itemEvent.remainingKeoNguoiTuyetCount = jsonInt(dataArray, 8);
+                player.itemEvent.lastItemKeoNguoiTuyet = jsonLong(dataArray, 9);
+                player.itemEvent.remainingCaTuyetCount = jsonInt(dataArray, 10);
+                player.itemEvent.lastItemCaTuyet = jsonLong(dataArray, 11);
+                player.itemEvent.remainingChuongDongCount = jsonInt(dataArray, 12);
+                player.itemEvent.lastItemChuongDong = jsonLong(dataArray, 13);
+                player.itemEvent.remainingKeoDuongCount = jsonInt(dataArray, 14);
+                player.itemEvent.lastItemKeoDuong = jsonLong(dataArray, 15);
+                player.itemEvent.remainingManhVo = jsonInt(dataArray, 16);
+                player.itemEvent.lastItemManhVo = jsonLong(dataArray, 17);
             } catch (Exception e) {
                 player.itemEvent.remainingTVGSCount = 0;
                 player.itemEvent.lastTVGSTime = 0;
@@ -1072,6 +1074,8 @@ public class MrBlue {
                 player.itemEvent.lastItemKeoDuong = 0;
                 player.itemEvent.remainingKeoNguoiTuyetCount = 0;
                 player.itemEvent.lastItemKeoNguoiTuyet = 0;
+                player.itemEvent.remainingManhVo = 0;
+                player.itemEvent.lastItemManhVo = 0;
 
             }
             //data luyện tập
@@ -1347,5 +1351,20 @@ public class MrBlue {
         } catch (NumberFormatException e) {
         }
         return ops;
+    }
+
+    private static int jsonInt(JSONArray data, int index) {
+        return (int) jsonLong(data, index);
+    }
+
+    private static long jsonLong(JSONArray data, int index) {
+        if (data == null || index < 0 || index >= data.size() || data.get(index) == null) {
+            return 0;
+        }
+        try {
+            return Long.parseLong(data.get(index).toString());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

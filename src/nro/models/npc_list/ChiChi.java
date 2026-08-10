@@ -12,6 +12,7 @@ import nro.models.server.Manager;
 import nro.models.services.Service;
 import nro.models.services_func.Input;
 import nro.models.shop.ShopService;
+import nro.models.event.EventManager;
 
 /**
  *
@@ -26,6 +27,10 @@ public class ChiChi extends Npc {
 
     @Override
     public void openBaseMenu(Player player) {
+        if (!EventManager.gI().isActive("summer")) {
+            createOtherMenu(player, ConstNpc.BASE_MENU, "Sự kiện mùa hè hiện chưa mở.", "Đóng");
+            return;
+        }
         if (canOpenNpc(player)) {
             List<String> menu = new ArrayList<>(Arrays.asList(
                     "Top\nHộp quà\nthiếu nhi\n2025",
@@ -44,6 +49,9 @@ public class ChiChi extends Npc {
 
     @Override
     public void confirmMenu(Player player, int select) {
+        if (!EventManager.gI().isActive("summer")) {
+            return;
+        }
         if (canOpenNpc(player)) {
             int soLuong = 0;
             if (this.mapId == 5) {

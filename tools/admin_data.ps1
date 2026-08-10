@@ -59,6 +59,17 @@
     [string]$Announce = "1",
     [string]$DropsJson = "[]",
     [string]$SkillsJson = "[]",
+    [string]$PointMultiplier = "1",
+    [string]$DropMultiplier = "1",
+    [string]$BossId = "",
+    [string]$BossQuantity = "1",
+    [string]$SourceType = "mob",
+    [string]$SourceId = "-1",
+    [string]$QuantityMin = "1",
+    [string]$QuantityMax = "1",
+    [string]$DropRate = "100",
+    [string]$Points = "0",
+    [string]$Notes = "",
     [string]$PayloadJson = "{}",
     [string]$Encoded = "0"
 )
@@ -84,7 +95,8 @@ foreach ($paramName in @(
         "IconSpec", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
-        "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson", "PayloadJson"
+        "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
+        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "PayloadJson"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -675,6 +687,403 @@ function Invoke-MySql {
             Remove-Item -LiteralPath $tempSql -Force -ErrorAction SilentlyContinue
         }
     }
+}
+
+function Get-MySqlScalar {
+    param([string]$Sql, [string]$Default = "0")
+    $raw = Invoke-MySql $Sql
+    $lines = @($raw -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { return $Default }
+    [string]$lines[-1]
+}
+
+function Get-EventRuntimeState {
+    $running = $false
+    $restartPending = $false
+    $startedAt = ""
+    $pidPath = Join-Path $Root "logs\server.pid"
+    if (Test-Path $pidPath) {
+        $serverPid = (Get-Content -LiteralPath $pidPath -ErrorAction SilentlyContinue | Select-Object -First 1)
+        if ([string]$serverPid -match '^\d+$') {
+            $process = Get-Process -Id ([int]$serverPid) -ErrorAction SilentlyContinue
+            if ($null -ne $process) {
+                $running = $true
+                try {
+                    $startedAt = $process.StartTime.ToString("yyyy-MM-dd HH:mm:ss")
+                    $configInfo = Get-Item (Join-Path $Root "Config.properties") -ErrorAction SilentlyContinue
+                    if ($null -ne $configInfo) { $restartPending = $configInfo.LastWriteTime -gt $process.StartTime }
+                    if (-not $restartPending) {
+                        $eventTableCount = Get-MySqlScalar "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('admin_event_config','admin_event_boss','admin_event_item');"
+                        if ($eventTableCount -eq '3') {
+                            $eventUpdatedText = Get-MySqlScalar "SELECT DATE_FORMAT(MAX(updated_at),'%Y-%m-%d %H:%i:%s') FROM (SELECT updated_at FROM admin_event_config UNION ALL SELECT updated_at FROM admin_event_boss UNION ALL SELECT updated_at FROM admin_event_item) event_updates;" ""
+                            $eventUpdated = [datetime]::MinValue
+                            if ([datetime]::TryParseExact($eventUpdatedText, 'yyyy-MM-dd HH:mm:ss', [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeLocal, [ref]$eventUpdated)) {
+                                $restartPending = $eventUpdated -gt $process.StartTime
+                            }
+                        }
+                    }
+                } catch { }
+            }
+        }
+    }
+    [pscustomobject]@{ Running=$running; RestartPending=$restartPending; StartedAt=$startedAt }
+}
+
+function Normalize-EventValue {
+    param([string]$Value)
+    $aliases = @{
+        "tet"="lunar_new_year"; "international_womens_day"="womens_day"; "8_3"="womens_day";
+        "noel"="christmas"; "hung_vuong"="hungvuong"; "trung_thu"="trungthu";
+        "top_up"="topup"; "he"="summer"; "mua_he"="summer"
+    }
+    $allowed = @("lunar_new_year","womens_day","halloween","christmas","hungvuong","trungthu","summer","topup")
+    $selected = New-Object System.Collections.Generic.List[string]
+    foreach ($raw in @($Value -split ',')) {
+        $code = ([string]$raw).Trim().ToLowerInvariant()
+        if ([string]::IsNullOrWhiteSpace($code)) { continue }
+        if ($aliases.ContainsKey($code)) { $code = $aliases[$code] }
+        if ($code -eq "none") { continue }
+        if ($code -eq "all") { return "all" }
+        if ($allowed -notcontains $code) { throw "Mã sự kiện không hợp lệ: $code" }
+        if (-not $selected.Contains($code)) { $selected.Add($code) }
+    }
+    if ($selected.Count -eq 0) { return "none" }
+    ($allowed | Where-Object { $selected.Contains($_) }) -join ','
+}
+
+function Assert-EventCode {
+    param([string]$Value)
+    $normalized = Normalize-EventValue $Value
+    if ($normalized -eq "none" -or $normalized -eq "all" -or $normalized.Contains(',')) {
+        throw "Hãy chọn đúng một sự kiện để cấu hình."
+    }
+    $normalized
+}
+
+function Ensure-EventConfigSchema {
+    $needsDefaultSeed = (Get-MySqlScalar "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='admin_event_config';") -ne '1'
+    $sql = @"
+CREATE TABLE IF NOT EXISTS admin_event_config (
+  event_code VARCHAR(64) NOT NULL,
+  display_name VARCHAR(100) NOT NULL,
+  description VARCHAR(500) NOT NULL DEFAULT '',
+  point_multiplier DECIMAL(7,3) NOT NULL DEFAULT 1.000,
+  drop_multiplier DECIMAL(7,3) NOT NULL DEFAULT 1.000,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (event_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin_event_boss (
+  event_code VARCHAR(64) NOT NULL,
+  boss_id INT NOT NULL,
+  boss_name VARCHAR(100) NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  notes VARCHAR(500) NOT NULL DEFAULT '',
+  map_ids_json TEXT NOT NULL DEFAULT ('[]'),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (event_code,boss_id),
+  KEY idx_admin_event_boss_enabled (event_code,enabled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE admin_event_boss ADD COLUMN IF NOT EXISTS map_ids_json TEXT NOT NULL DEFAULT ('[]') AFTER notes;
+
+CREATE TABLE IF NOT EXISTS admin_event_item (
+  id INT NOT NULL AUTO_INCREMENT,
+  event_code VARCHAR(64) NOT NULL,
+  item_id INT NOT NULL,
+  source_type VARCHAR(16) NOT NULL DEFAULT 'mob',
+  source_id INT NOT NULL DEFAULT -1,
+  quantity_min INT NOT NULL DEFAULT 1,
+  quantity_max INT NOT NULL DEFAULT 1,
+  drop_rate DECIMAL(7,4) NOT NULL DEFAULT 100.0000,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  options_json TEXT NOT NULL,
+  notes VARCHAR(500) NOT NULL DEFAULT '',
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_admin_event_item_source (event_code,item_id,source_type,source_id),
+  KEY idx_admin_event_item_event (event_code,enabled),
+  KEY idx_admin_event_item_item (item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin_event_point_grant (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  event_code VARCHAR(64) NOT NULL,
+  player_id BIGINT NOT NULL,
+  player_name VARCHAR(100) NOT NULL,
+  points INT NOT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'pending',
+  result_message VARCHAR(500) NOT NULL DEFAULT '',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  processed_at TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_admin_event_grant_status (status,id),
+  KEY idx_admin_event_grant_player (player_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ADMIN_EVENT_DEFAULT_SEED
+INSERT IGNORE INTO admin_event_config (event_code,display_name,description) VALUES
+('lunar_new_year','Tết Nguyên Đán','NPC Đường Tăng và boss Lân con.'),
+('womens_day','Quốc tế Phụ nữ 8/3','Buff chỉ số và hoạt động ngày 8/3.'),
+('halloween','Halloween','Boss Bí ma, Ma trơi và Dơi.'),
+('christmas','Giáng Sinh','Boss Ông già Noel và hộp quà Giáng Sinh.'),
+('hungvuong','Giỗ Tổ Hùng Vương','Boss Thủy Tinh, Sơn Tinh, NPC Hùng Vương và Nồi bánh.'),
+('trungthu','Trung Thu','Boss Khỉ đột, Nguyệt thần và Nhật thần.'),
+('summer','Mùa Hè','NPC mùa hè và nguyên liệu rơi trên toàn bản đồ.'),
+('topup','TopUp','Khung cấu hình cho sự kiện nạp thẻ.');
+
+INSERT IGNORE INTO admin_event_boss (event_code,boss_id,boss_name,quantity,enabled,notes) VALUES
+('lunar_new_year',-371,'Lân con',10,1,'Boss ID runtime được random từ ID gốc -371.'),
+('halloween',-351,'Bí ma',10,1,''),
+('halloween',-349,'Ma trơi',10,1,''),
+('halloween',-350,'Dơi',10,1,''),
+('christmas',-353,'Ông già Noel',30,1,''),
+('hungvuong',-355,'Thủy Tinh',10,1,'Sơn Tinh xuất hiện cùng boss.'),
+('trungthu',-344,'Khỉ đột',10,1,''),
+('trungthu',-345,'Nguyệt thần',10,1,'Nhật thần xuất hiện cùng boss.');
+
+INSERT IGNORE INTO admin_event_item (event_code,item_id,source_type,source_id,quantity_min,quantity_max,drop_rate,enabled,options_json,notes) VALUES
+('halloween',585,'built_in',-1,1,1,0,1,'[]','Bí ngô đang rơi theo code boss Halloween.'),
+('christmas',648,'built_in',-1,1,1,0,1,'[]','Hộp quà đang rơi theo code boss Noel.'),
+('hungvuong',1546,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code gameplay.'),
+('hungvuong',1220,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('hungvuong',1221,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('hungvuong',1222,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('trungthu',1045,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('trungthu',890,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('trungthu',891,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('summer',1798,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1799,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1800,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1612,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1801,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code mùa hè.'),
+('summer',1802,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code mùa hè.');
+"@
+    if (-not $needsDefaultSeed) {
+        $seedIndex = $sql.IndexOf('-- ADMIN_EVENT_DEFAULT_SEED')
+        if ($seedIndex -ge 0) { $sql = $sql.Substring(0, $seedIndex) }
+    }
+    Invoke-MySql $sql | Out-Null
+}
+
+function Assert-DecimalRange {
+    param([string]$Value, [string]$Label, [double]$Minimum, [double]$Maximum)
+    $number = 0D
+    if (-not [double]::TryParse($Value, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$number) -or $number -lt $Minimum -or $number -gt $Maximum) {
+        throw "$Label phải từ $Minimum đến $Maximum, dùng dấu chấm cho số lẻ."
+    }
+    $number.ToString("0.####", [Globalization.CultureInfo]::InvariantCulture)
+}
+
+function Get-EventProfile {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    Invoke-MySql "SELECT event_code,display_name,REPLACE(REPLACE(REPLACE(description,CHAR(13),' '),CHAR(10),' '),CHAR(9),' '),point_multiplier,drop_multiplier,DATE_FORMAT(updated_at,'%Y-%m-%d %H:%i:%s') AS updated_at FROM admin_event_config WHERE event_code=$(SqlString $code) LIMIT 1;"
+}
+
+function List-EventBosses {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    Invoke-MySql "SELECT boss_id,boss_name,quantity,enabled,REPLACE(REPLACE(REPLACE(notes,CHAR(13),' '),CHAR(10),' '),CHAR(9),' '),COALESCE(NULLIF(map_ids_json,''),'[]') FROM admin_event_boss WHERE event_code=$(SqlString $code) ORDER BY enabled DESC,boss_name,boss_id;"
+}
+
+function List-EventItems {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    Invoke-MySql "SELECT e.id,e.item_id,COALESCE(i.NAME,CONCAT('Item ',e.item_id)) AS item_name,e.source_type,e.source_id,e.quantity_min,e.quantity_max,e.drop_rate,e.enabled,REPLACE(REPLACE(REPLACE(e.notes,CHAR(13),' '),CHAR(10),' '),CHAR(9),' ') FROM admin_event_item e LEFT JOIN item_template i ON i.id=e.item_id WHERE e.event_code=$(SqlString $code) ORDER BY e.enabled DESC,e.source_type,e.id;"
+}
+
+function Save-EventProfile {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    $drop = Assert-DecimalRange $DropMultiplier "Hệ số drop" 0 100
+    if ($Description.Length -gt 500) { throw "Mô tả sự kiện tối đa 500 ký tự." }
+    Invoke-MySql "UPDATE admin_event_config SET description=$(SqlString $Description),point_multiplier=1,drop_multiplier=$drop WHERE event_code=$(SqlString $code);" | Out-Null
+    "OK`tĐã lưu cấu hình $code. Restart server để áp dụng."
+}
+
+function Save-EventBoss {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    $boss = SqlInt $BossId
+    if ($boss -eq 0) { throw "Boss ID không được bằng 0." }
+    $bossCatalogEntry = Get-ExistingBossCatalog | Where-Object { $_.Id -eq $boss } | Select-Object -First 1
+    if ($null -eq $bossCatalogEntry) { throw "Boss ID $boss không tồn tại trong BossManager." }
+    $quantity = Assert-PositiveInt $BossQuantity "Số lượng boss" 500
+    $enabledValue = Assert-BoolValue $Enabled "Trạng thái boss"
+    if ([string]::IsNullOrWhiteSpace($Name)) { $Name = [string]$bossCatalogEntry.Name }
+    try { $parsedMapIds = $MapIdsJson | ConvertFrom-Json; $mapIds = @($parsedMapIds) } catch { throw "Danh sách map không phải JSON hợp lệ." }
+    $validatedMapIds = New-Object System.Collections.Generic.List[int]
+    foreach ($configuredMapId in $mapIds) {
+        if ([string]$configuredMapId -notmatch '^\d+$') { throw "ID map phải là số nguyên không âm." }
+        $mapNumber = [int]$configuredMapId
+        if ((Get-MySqlScalar "SELECT COUNT(*) FROM map_template WHERE id=$mapNumber AND zones>0;") -ne '1') { throw "Map ID $mapNumber không tồn tại hoặc không có zone để boss xuất hiện." }
+        if (-not $validatedMapIds.Contains($mapNumber)) { $validatedMapIds.Add($mapNumber) }
+    }
+    $mapIdsValue = ConvertTo-Json -InputObject $validatedMapIds.ToArray() -Compress
+    if ([string]::IsNullOrWhiteSpace($mapIdsValue)) { $mapIdsValue = '[]' }
+    Invoke-MySql "INSERT INTO admin_event_boss (event_code,boss_id,boss_name,quantity,enabled,notes,map_ids_json) VALUES ($(SqlString $code),$boss,$(SqlString $Name.Trim()),$quantity,$enabledValue,$(SqlString $Notes),$(SqlString $mapIdsValue)) ON DUPLICATE KEY UPDATE boss_name=VALUES(boss_name),quantity=VALUES(quantity),enabled=VALUES(enabled),notes=VALUES(notes),map_ids_json=VALUES(map_ids_json);" | Out-Null
+    "OK`tĐã gắn Boss $boss vào $code. Restart server để áp dụng."
+}
+
+function Delete-EventBoss {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    $boss = SqlInt $BossId
+    Invoke-MySql "DELETE FROM admin_event_boss WHERE event_code=$(SqlString $code) AND boss_id=$boss;" | Out-Null
+    "OK`tĐã xóa cấu hình Boss $boss khỏi $code. Restart server để áp dụng."
+}
+
+function Save-EventItem {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    $itemId = Assert-PositiveInt $TemplateId "Item ID" 32767
+    $source = $SourceType.Trim().ToLowerInvariant()
+    if ($source -notin @('mob','boss','gameplay','reward','built_in')) { throw "Nguồn vật phẩm không hợp lệ." }
+    $sourceValue = SqlInt $SourceId
+    $min = Assert-PositiveInt $QuantityMin "Số lượng min" 30000
+    $max = Assert-PositiveInt $QuantityMax "Số lượng max" 30000
+    if ($min -gt $max) { throw "Số lượng min không được lớn hơn max." }
+    $rate = Assert-DecimalRange $DropRate "Tỉ lệ drop" 0 100
+    $enabledValue = Assert-BoolValue $Enabled "Trạng thái vật phẩm"
+    if ((Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id=$itemId;") -ne '1') { throw "Không tìm thấy Item ID $itemId." }
+    $rowId = SqlInt $Id
+    if ($rowId -gt 0) {
+        Invoke-MySql "UPDATE admin_event_item SET item_id=$itemId,source_type=$(SqlString $source),source_id=$sourceValue,quantity_min=$min,quantity_max=$max,drop_rate=$rate,enabled=$enabledValue,notes=$(SqlString $Notes) WHERE id=$rowId AND event_code=$(SqlString $code);" | Out-Null
+    } else {
+        Invoke-MySql "INSERT INTO admin_event_item (event_code,item_id,source_type,source_id,quantity_min,quantity_max,drop_rate,enabled,options_json,notes) VALUES ($(SqlString $code),$itemId,$(SqlString $source),$sourceValue,$min,$max,$rate,$enabledValue,'[]',$(SqlString $Notes)) ON DUPLICATE KEY UPDATE quantity_min=VALUES(quantity_min),quantity_max=VALUES(quantity_max),drop_rate=VALUES(drop_rate),enabled=VALUES(enabled),notes=VALUES(notes);" | Out-Null
+    }
+    "OK`tĐã gắn Item $itemId vào $code. Nguồn mob/boss có hiệu lực sau khi restart."
+}
+
+function Delete-EventItem {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    $rowId = Assert-PositiveInt $Id "Dòng vật phẩm" 2147483647
+    Invoke-MySql "DELETE FROM admin_event_item WHERE id=$rowId AND event_code=$(SqlString $code);" | Out-Null
+    "OK`tĐã xóa vật phẩm sự kiện ID $rowId. Restart server để áp dụng."
+}
+
+function Search-EventPlayers {
+    Ensure-EventConfigSchema
+    if ([string]::IsNullOrWhiteSpace($Search)) { throw "Nhập ID hoặc tên player cần tìm." }
+    $safe = $Search.Trim().Replace("\", "\\").Replace("'", "''")
+    $where = if ($Search.Trim() -match '^\d+$') {
+        "p.id=$(SqlInt $Search.Trim()) OR p.name LIKE '%$safe%'"
+    } else {
+        "p.name LIKE '%$safe%'"
+    }
+    Invoke-MySql "SELECT p.id,p.name,COALESCE(a.username,''),p.event_point,CASE WHEN a.last_time_login>a.last_time_logout THEN 'ONLINE?' ELSE 'OFFLINE' END AS online_state FROM player p LEFT JOIN account a ON a.id=p.account_id WHERE $where ORDER BY CASE WHEN p.name=$(SqlString $Search.Trim()) THEN 0 ELSE 1 END,p.id DESC LIMIT 20;"
+}
+
+function List-EventPointGrants {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    Invoke-MySql "SELECT id,player_id,player_name,points,status,DATE_FORMAT(created_at,'%Y-%m-%d %H:%i:%s'),COALESCE(DATE_FORMAT(processed_at,'%Y-%m-%d %H:%i:%s'),''),result_message FROM admin_event_point_grant WHERE event_code=$(SqlString $code) ORDER BY id DESC LIMIT 30;"
+}
+
+function Grant-EventPoint {
+    Ensure-EventConfigSchema
+    $code = Assert-EventCode $EventValue
+    if ([string]::IsNullOrWhiteSpace($Search)) { throw "Nhập ID hoặc tên chính xác của player." }
+    $pointValue = Assert-PositiveInt $Points "Số điểm cộng" 1000000000
+    $target = $Search.Trim()
+    $where = if ($target -match '^\d+$') { "p.id=$(SqlInt $target)" } else { "p.name=$(SqlString $target)" }
+    $playerText = Invoke-MySql "SELECT p.id,p.name,p.event_point FROM player p WHERE $where LIMIT 2;"
+    $playerLines = @($playerText -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($playerLines.Count -lt 2) { throw "Không tìm thấy player '$target'." }
+    if ($playerLines.Count -gt 2) { throw "Có nhiều player trùng thông tin; hãy dùng Player ID." }
+    $player = $playerLines[1] -split "`t", 3
+    $runtime = Get-EventRuntimeState
+    if (-not $runtime.Running) {
+        Invoke-MySql "START TRANSACTION; UPDATE player SET event_point=event_point+$pointValue WHERE id=$($player[0]); INSERT INTO admin_event_point_grant (event_code,player_id,player_name,points,status,result_message,processed_at) VALUES ($(SqlString $code),$($player[0]),$(SqlString $player[1]),$pointValue,'processed','Đã cộng trực tiếp khi server dừng',NOW()); COMMIT;" | Out-Null
+        $result = "OK`tĐã cộng $pointValue điểm cho $($player[1]) (ID $($player[0])). Tổng mới: $([long]$player[2] + $pointValue)."
+        Write-AuditEntry -ActionName "granteventpoint" -Summary "Cộng $pointValue điểm sự kiện cho $($player[1]) (ID $($player[0]))" -Status "success" -Reversible $false -Payload "" -ResultMessage $result
+        return $result
+    }
+    $grantId = Get-MySqlScalar "INSERT INTO admin_event_point_grant (event_code,player_id,player_name,points) VALUES ($(SqlString $code),$($player[0]),$(SqlString $player[1]),$pointValue); SELECT LAST_INSERT_ID();"
+    $statusText = "pending`t"
+    for ($attempt = 0; $attempt -lt 8; $attempt++) {
+        Start-Sleep -Milliseconds 350
+        $statusText = Get-MySqlScalar "SELECT CONCAT(status,CHAR(9),result_message) FROM admin_event_point_grant WHERE id=$(SqlInt $grantId);" "pending`t"
+        if (-not $statusText.StartsWith('pending')) { break }
+    }
+    if ($statusText.StartsWith('failed')) { throw "Không thể cộng điểm: $($statusText -replace '^failed\t','')" }
+    $result = if ($statusText.StartsWith('processed')) {
+        "OK`tĐã cộng $pointValue điểm cho $($player[1]) (ID $($player[0]))."
+    } else {
+        "OK`tĐã xếp hàng cộng $pointValue điểm cho $($player[1]) (ID $($player[0]))."
+    }
+    Write-AuditEntry -ActionName "granteventpoint" -Summary "Cộng $pointValue điểm sự kiện cho $($player[1]) (ID $($player[0]))" -Status "success" -Reversible $false -Payload "" -ResultMessage $result
+    $result
+}
+
+function List-Events {
+    Ensure-EventConfigSchema
+    $config = Get-ConfigMap
+    $configured = Normalize-EventValue ([string]$config["server.event"])
+    $selected = @($configured -split ',')
+    $runtime = Get-EventRuntimeState
+    $eventTableExists = (Get-MySqlScalar "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='event';") -eq "1"
+    $eventRowExists = $false
+    if ($eventTableExists) {
+        $eventRowExists = (Get-MySqlScalar "SELECT COUNT(*) FROM event WHERE name='international_womens_day';") -eq "1"
+    }
+    $profileRows = Invoke-MySql @"
+SELECT c.event_code,c.point_multiplier,c.drop_multiplier,
+       COALESCE((SELECT SUM(b.quantity) FROM admin_event_boss b WHERE b.event_code=c.event_code AND b.enabled=1),0) AS boss_count,
+       COALESCE((SELECT COUNT(*) FROM admin_event_item i WHERE i.event_code=c.event_code),0) AS item_count
+FROM admin_event_config c ORDER BY c.event_code;
+"@
+    $profiles = @{}
+    foreach ($line in @($profileRows -split "`r?`n" | Select-Object -Skip 1)) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        $cells = $line -split "`t"
+        $profiles[$cells[0]] = [pscustomobject]@{ Point=$cells[1]; Drop=$cells[2]; Bosses=$cells[3]; Items=$cells[4] }
+    }
+    $defs = @(
+        [pscustomobject]@{Code="lunar_new_year"; Name="Tết Nguyên Đán"; Bosses=10; Components="NPC Đường Tăng map 0; 10 Lân con"; Health="warning"; Message="Boss Lân con chưa có phần thưởng trực tiếp."},
+        [pscustomobject]@{Code="womens_day"; Name="Quốc tế Phụ nữ 8/3"; Bosses=0; Components="Buff chỉ số lưu trong bảng event"; Health=$(if ($eventTableExists -and $eventRowExists) {"warning"} else {"error"}); Message=$(if ($eventTableExists -and $eventRowExists) {"Dữ liệu hợp lệ; cơ chế áp buff cần được bổ sung theo thiết kế gameplay."} else {"Thiếu bảng hoặc dòng international_womens_day."})},
+        [pscustomobject]@{Code="halloween"; Name="Halloween"; Bosses=30; Components="10 Bí ma; 10 Ma trơi; 10 Dơi"; Health="ready"; Message="Drop Bí ngô ID 585 hợp lệ."},
+        [pscustomobject]@{Code="christmas"; Name="Giáng Sinh"; Bosses=30; Components="30 Ông già Noel"; Health="ready"; Message="Drop Hộp quà Giáng Sinh ID 648 hợp lệ."},
+        [pscustomobject]@{Code="hungvuong"; Name="Giỗ Tổ Hùng Vương"; Bosses=20; Components="10 Thủy Tinh; 10 Sơn Tinh; NPC Hùng Vương và Nồi bánh"; Health="ready"; Message="Nguyên liệu rơi từ quái và boss khi event được bật."},
+        [pscustomobject]@{Code="trungthu"; Name="Trung Thu"; Bosses=30; Components="10 Khỉ đột; 10 Nguyệt thần; 10 Nhật thần"; Health="ready"; Message="Drop dùng item 1045, 890 và 891."},
+        [pscustomobject]@{Code="summer"; Name="Mùa Hè"; Bosses=0; Components="Chi Chi; Xe nước mía; drop nguyên liệu toàn map"; Health="ready"; Message="Drop và NPC được khóa theo trạng thái event."},
+        [pscustomobject]@{Code="topup"; Name="TopUp"; Bosses=0; Components="Chưa có gameplay trong class TopUp"; Health="warning"; Message="Chỉ nên bật khi đã bổ sung cơ chế TopUp."}
+    )
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("code`tname`tenabled`tstate`thealth`thealth_message`tboss_count`tcomponents`tpoint_multiplier`tdrop_multiplier`titem_count")
+    foreach ($def in $defs) {
+        $enabled = $configured -eq "all" -or $selected -contains $def.Code
+        $state = "off"
+        if ($enabled) {
+            if ($runtime.RestartPending) { $state = "pending" }
+            elseif ($runtime.Running) { $state = "active" }
+            else { $state = "configured" }
+        }
+        $profile = $profiles[$def.Code]
+        $bossCount = if ($null -ne $profile) { $profile.Bosses } else { $def.Bosses }
+        $pointMultiplier = if ($null -ne $profile) { $profile.Point } else { "1.000" }
+        $dropMultiplier = if ($null -ne $profile) { $profile.Drop } else { "1.000" }
+        $itemCount = if ($null -ne $profile) { $profile.Items } else { "0" }
+        $lines.Add("$($def.Code)`t$($def.Name)`t$(if ($enabled) {1} else {0})`t$state`t$($def.Health)`t$($def.Message)`t$bossCount`t$($def.Components)`t$pointMultiplier`t$dropMultiplier`t$itemCount")
+    }
+    $lines -join "`r`n"
+}
+
+function Get-EventStats {
+    $runtime = Get-EventRuntimeState
+    $dbStats = Invoke-MySql @"
+SELECT COUNT(*) AS players,
+       COALESCE(SUM(event_point<>0),0) AS event_players,COALESCE(SUM(event_point),0) AS total_event_point,COALESCE(MAX(event_point),0) AS max_event_point,
+       COALESCE(SUM(point_sukien<>0 OR point_sukien1<>0 OR point_sukien2<>0),0) AS ranked_players,
+       COALESCE(MAX(point_sukien),0) AS max_rank_1,COALESCE(MAX(point_sukien1),0) AS max_rank_2,COALESCE(MAX(point_sukien2),0) AS max_rank_3
+FROM player;
+"@
+    $lines = @($dbStats -split "`r?`n")
+    if ($lines.Count -lt 2) { throw "Không đọc được thống kê sự kiện." }
+    "server_running`trestart_pending`tstarted_at`t$($lines[0])`r`n$(if ($runtime.Running) {1} else {0})`t$(if ($runtime.RestartPending) {1} else {0})`t$($runtime.StartedAt)`t$($lines[1])"
 }
 
 function Get-PlayerConfigCurrentValue {
@@ -1906,6 +2315,11 @@ function Get-AuditSummary {
         "deleteadminboss" { "Xóa Boss tùy chỉnh ID $OwnerId" }
         "saveadminmob" { "Lưu Mob template ${TemplateId}: $(Get-JsonArrayCount $DropsJson) drop, chu kỳ $(if ($UseInterval -eq '1') { "$IntervalMinutes phút" } else { 'mặc định' })" }
         "deleteadminmob" { "Trả Mob config $OwnerId về mặc định" }
+        "saveeventconfig" { "Lưu cấu hình ${EventValue}: drop x$DropMultiplier" }
+        "saveeventboss" { "Gắn Boss $BossId ($Name), số lượng $BossQuantity, $(Get-JsonArrayCount $MapIdsJson) map vào $EventValue" }
+        "deleteeventboss" { "Xóa Boss $BossId khỏi $EventValue" }
+        "saveeventitem" { "Gắn Item $TemplateId, nguồn $SourceType/$SourceId vào $EventValue" }
+        "deleteeventitem" { "Xóa dòng vật phẩm sự kiện ID $Id khỏi $EventValue" }
         "savecombineconfig" { "Đổi Combine $ConfigKey = $ConfigValue" }
         "resetcombineconfig" { "Khôi phục cấu hình Combine mặc định" }
         "setevent" { "Đổi sự kiện server thành $EventValue" }
@@ -1998,6 +2412,20 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "admin_mob_config" "id=$configId"))
             $snapshots.Add((New-DbAuditSnapshot "admin_spawn_drop" "owner_type='mob' AND owner_id=$configId"))
         }
+        "saveeventconfig" {
+            $code = Assert-EventCode $EventValue
+            $snapshots.Add((New-DbAuditSnapshot "admin_event_config" "event_code=$(SqlString $code)"))
+        }
+        { $_ -in @("saveeventboss", "deleteeventboss") } {
+            $code = Assert-EventCode $EventValue
+            $snapshots.Add((New-DbAuditSnapshot "admin_event_boss" "event_code=$(SqlString $code) AND boss_id=$(SqlInt $BossId)"))
+        }
+        "saveeventitem" {
+            $code = Assert-EventCode $EventValue
+            $where = if ((SqlInt $Id) -gt 0) { "id=$(SqlInt $Id)" } else { "event_code=$(SqlString $code) AND item_id=$(SqlInt $TemplateId) AND source_type=$(SqlString $SourceType.Trim().ToLowerInvariant()) AND source_id=$(SqlInt $SourceId)" }
+            $snapshots.Add((New-DbAuditSnapshot "admin_event_item" $where))
+        }
+        "deleteeventitem" { $snapshots.Add((New-DbAuditSnapshot "admin_event_item" "id=$(SqlInt $Id)")) }
         { $_ -in @("savecombineconfig", "resetcombineconfig") } {
             $configPath = Join-Path $Root "combine.properties"
             if (Test-Path $configPath) {
@@ -2116,7 +2544,8 @@ $mutationActions = @(
     "saveshopoption", "saveshopoptions", "deleteshopoption", "savegiftcode", "deletegiftcode",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
-    "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer"
+    "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
+    "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem"
 )
 $isAuditedMutation = $mutationActions -contains $actionLower
 $auditContext = $null
@@ -2124,13 +2553,30 @@ $auditContext = $null
 try {
     if ($isAuditedMutation) {
         Ensure-AuditSchema
+        if ($actionLower -like '*eventconfig' -or $actionLower -like '*eventboss' -or $actionLower -like '*eventitem') {
+            Ensure-EventConfigSchema
+        }
         $auditContext = Get-AuditContext $actionLower
     }
     $result = switch ($actionLower) {
         "status" {
             $config = Get-ConfigMap
-            "key`tvalue`r`nserver.event`t$($config['server.event'])`r`nserver.expserver`t$($config['server.expserver'])"
+            $runtime = Get-EventRuntimeState
+            "key`tvalue`r`nserver.event`t$($config['server.event'])`r`nserver.expserver`t$($config['server.expserver'])`r`nserver.running`t$(if ($runtime.Running) {1} else {0})`r`nserver.restart_pending`t$(if ($runtime.RestartPending) {1} else {0})`r`nserver.started_at`t$($runtime.StartedAt)"
         }
+        "listevents" { List-Events }
+        "eventstats" { Get-EventStats }
+        "geteventconfig" { Get-EventProfile }
+        "listeventbosses" { List-EventBosses }
+        "listeventitems" { List-EventItems }
+        "searcheventplayers" { Search-EventPlayers }
+        "listeventpointgrants" { List-EventPointGrants }
+        "granteventpoint" { Grant-EventPoint }
+        "saveeventconfig" { Save-EventProfile }
+        "saveeventboss" { Save-EventBoss }
+        "deleteeventboss" { Delete-EventBoss }
+        "saveeventitem" { Save-EventItem }
+        "deleteeventitem" { Delete-EventItem }
         "listitems" { List-Items }
         "listitemcatalog" { List-ItemCatalog }
         "listitemtypes" { List-ItemTypes }
@@ -2185,7 +2631,7 @@ try {
         "saveplayercore" { Save-PlayerCore }
         "rescueplayer" { Rescue-Player }
         "setevent" {
-            if ([string]::IsNullOrWhiteSpace($EventValue)) { $EventValue = "none" }
+            $EventValue = Normalize-EventValue $EventValue
             Set-ConfigValue -Key "server.event" -NewValue $EventValue
             "OK`tĐã cập nhật server.event=$EventValue. Restart server để áp dụng."
         }

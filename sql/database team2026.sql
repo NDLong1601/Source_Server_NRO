@@ -11899,6 +11899,113 @@ ALTER TABLE `tab_shop`
 COMMIT;
 
 -- --------------------------------------------------------
+-- Dữ liệu cấu hình dùng chung cho sự kiện
+
+CREATE TABLE IF NOT EXISTS `event` (
+  `name` varchar(64) NOT NULL,
+  `data` text NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `event` (`name`, `data`) VALUES
+('international_womens_day', '{"damePrecent":0,"hpPrecent":0,"mpPrecent":0,"papPrecent":0}')
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
+-- --------------------------------------------------------
+-- Cấu hình Boss/Mob tùy biến dùng bởi NRO Admin Data
+
+CREATE TABLE IF NOT EXISTS `admin_event_config` (
+  `event_code` varchar(64) NOT NULL,
+  `display_name` varchar(100) NOT NULL,
+  `description` varchar(500) NOT NULL DEFAULT '',
+  `point_multiplier` decimal(7,3) NOT NULL DEFAULT 1.000,
+  `drop_multiplier` decimal(7,3) NOT NULL DEFAULT 1.000,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`event_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_event_boss` (
+  `event_code` varchar(64) NOT NULL,
+  `boss_id` int NOT NULL,
+  `boss_name` varchar(100) NOT NULL,
+  `quantity` int NOT NULL DEFAULT 1,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `notes` varchar(500) NOT NULL DEFAULT '',
+  `map_ids_json` text NOT NULL DEFAULT ('[]'),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`event_code`,`boss_id`),
+  KEY `idx_admin_event_boss_enabled` (`event_code`,`enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_event_point_grant` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `event_code` varchar(64) NOT NULL,
+  `player_id` bigint NOT NULL,
+  `player_name` varchar(100) NOT NULL,
+  `points` int NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `result_message` varchar(500) NOT NULL DEFAULT '',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `processed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_event_grant_status` (`status`,`id`),
+  KEY `idx_admin_event_grant_player` (`player_id`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_event_item` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `event_code` varchar(64) NOT NULL,
+  `item_id` int NOT NULL,
+  `source_type` varchar(16) NOT NULL DEFAULT 'mob',
+  `source_id` int NOT NULL DEFAULT -1,
+  `quantity_min` int NOT NULL DEFAULT 1,
+  `quantity_max` int NOT NULL DEFAULT 1,
+  `drop_rate` decimal(7,4) NOT NULL DEFAULT 100.0000,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `options_json` text NOT NULL,
+  `notes` varchar(500) NOT NULL DEFAULT '',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_admin_event_item_source` (`event_code`,`item_id`,`source_type`,`source_id`),
+  KEY `idx_admin_event_item_event` (`event_code`,`enabled`),
+  KEY `idx_admin_event_item_item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `admin_event_config` (`event_code`,`display_name`,`description`) VALUES
+('lunar_new_year','Tết Nguyên Đán','NPC Đường Tăng và boss Lân con.'),
+('womens_day','Quốc tế Phụ nữ 8/3','Buff chỉ số và hoạt động ngày 8/3.'),
+('halloween','Halloween','Boss Bí ma, Ma trơi và Dơi.'),
+('christmas','Giáng Sinh','Boss Ông già Noel và hộp quà Giáng Sinh.'),
+('hungvuong','Giỗ Tổ Hùng Vương','Boss Thủy Tinh, Sơn Tinh, NPC Hùng Vương và Nồi bánh.'),
+('trungthu','Trung Thu','Boss Khỉ đột, Nguyệt thần và Nhật thần.'),
+('summer','Mùa Hè','NPC mùa hè và nguyên liệu rơi trên toàn bản đồ.'),
+('topup','TopUp','Khung cấu hình cho sự kiện nạp thẻ.');
+
+INSERT IGNORE INTO `admin_event_boss` (`event_code`,`boss_id`,`boss_name`,`quantity`,`enabled`,`notes`) VALUES
+('lunar_new_year',-371,'Lân con',10,1,'Boss ID runtime được random từ ID gốc -371.'),
+('halloween',-351,'Bí ma',10,1,''),('halloween',-349,'Ma trơi',10,1,''),('halloween',-350,'Dơi',10,1,''),
+('christmas',-353,'Ông già Noel',30,1,''),('hungvuong',-355,'Thủy Tinh',10,1,'Sơn Tinh xuất hiện cùng boss.'),
+('trungthu',-344,'Khỉ đột',10,1,''),('trungthu',-345,'Nguyệt thần',10,1,'Nhật thần xuất hiện cùng boss.');
+
+INSERT IGNORE INTO `admin_event_item` (`event_code`,`item_id`,`source_type`,`source_id`,`quantity_min`,`quantity_max`,`drop_rate`,`enabled`,`options_json`,`notes`) VALUES
+('halloween',585,'built_in',-1,1,1,0,1,'[]','Bí ngô đang rơi theo code boss Halloween.'),
+('christmas',648,'built_in',-1,1,1,0,1,'[]','Hộp quà đang rơi theo code boss Noel.'),
+('hungvuong',1546,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code gameplay.'),
+('hungvuong',1220,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('hungvuong',1221,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('hungvuong',1222,'built_in',-1,1,1,0,1,'[]','Lễ vật đang rơi theo code boss.'),
+('trungthu',1045,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('trungthu',890,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('trungthu',891,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code boss.'),
+('summer',1798,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1799,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1800,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1612,'built_in',-1,1,1,0,1,'[]','Nguyên liệu đang rơi theo code mùa hè.'),
+('summer',1801,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code mùa hè.'),
+('summer',1802,'built_in',-1,1,1,0,1,'[]','Vật phẩm đang rơi theo code mùa hè.');
+
+-- --------------------------------------------------------
 -- Cấu hình Boss/Mob tùy biến dùng bởi NRO Admin Data
 
 CREATE TABLE IF NOT EXISTS `admin_boss_config` (

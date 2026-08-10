@@ -1,6 +1,7 @@
 package nro.models.mob;
 
 import nro.models.admin.AdminSpawnConfigService;
+import nro.models.admin.AdminEventConfigService;
 import nro.models.services.InventoryService;
 import nro.models.services.Service;
 import nro.models.services.TaskService;
@@ -31,6 +32,7 @@ import nro.models.map.service.MapService;
 import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.TimeUtil;
+import nro.models.event.EventManager;
 
 public class Mob {
 
@@ -610,6 +612,8 @@ public class Mob {
             return list;
         }
 
+        list.addAll(AdminEventConfigService.gI().createMobDrops(this, player.id, x, yEnd));
+
         if (this.tempId == 0) {
             list.addAll(AdminSpawnConfigService.gI().createMobDrops(this, player.id, x, yEnd));
             return list;
@@ -695,7 +699,7 @@ public class Mob {
                 player.event.luotNhanNgocMienPhi = 0;
             }
         }
-        if (MapService.gI().AllMap(mapid)) {
+        if (EventManager.gI().isActive("summer") && MapService.gI().AllMap(mapid)) {
             if (Util.isTrue(5, 100)) {
                 ItemMap it = new ItemMap(zone, 1798, 1, x, yEnd, player.id);
                 list.add(it);
@@ -719,6 +723,16 @@ public class Mob {
             if (Util.isTrue(1, 130)) {
                 ItemMap it = new ItemMap(zone, 1802, 1, x, yEnd, player.id);
                 list.add(it);
+            }
+        }
+
+        if (EventManager.gI().isActive("hungvuong") && MapService.gI().AllMap(mapid)) {
+            if (Util.isTrue(12, 100)) {
+                list.add(new ItemMap(zone, 1546, 1, x, yEnd, player.id));
+            }
+            if (Util.isTrue(4, 100)) {
+                int[] ingredients = {1544, 1545, 1547, 1548, 1549, 1558};
+                list.add(new ItemMap(zone, ingredients[Util.nextInt(ingredients.length)], 1, x, yEnd, player.id));
             }
         }
 

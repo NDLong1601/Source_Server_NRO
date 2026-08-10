@@ -42,6 +42,10 @@ public class VuaHung extends Npc {
 
     @Override
     public void openBaseMenu(Player player) {
+        if (!EventManager.gI().isActive("hungvuong")) {
+            createOtherMenu(player, 0, "Sự kiện Giỗ Tổ Hùng Vương hiện chưa mở.", "Đóng");
+            return;
+        }
         long now = System.currentTimeMillis();
         long elapsed = now - START_TIME;
         long phaseStartTime = START_TIME + (elapsed / (60 * 60 * 1000)) * (60 * 60 * 1000);
@@ -94,6 +98,9 @@ public class VuaHung extends Npc {
 
     @Override
     public void confirmMenu(Player pl, int select) {
+        if (!EventManager.gI().isActive("hungvuong")) {
+            return;
+        }
         if (canOpenNpc(pl)) {
             switch (pl.idMark.getIndexMenu()) {
                 case 0 -> {

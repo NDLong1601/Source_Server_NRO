@@ -949,6 +949,7 @@ public final class Manager {
             Topsukien = realTop(queryTopsukien, ConnectionDatabase);
             Logger.success(Logger.PURPLE + "Successfully Top Su Kien (" + Topsukien.size() + ")\n");
             Topsukien1 = realTop(queryTopsukien1, ConnectionDatabase);
+            Topsukien2 = realTop(queryTopsukien2, ConnectionDatabase);
             Topwhis = realTop(queryTopwhis, ConnectionDatabase);
             Logger.success(Logger.RED + "Successfully top Thach Dau Whis (" + Topwhis.size() + ")\n");
             Topmaydam = realTop(queryTopmaydam, ConnectionDatabase);

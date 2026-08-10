@@ -735,41 +735,11 @@ public class ShopService {
 
         // Đổi bằng điểm sự kiện
         if (is.tabShop.id == 59) {
-            int eventPointPrice = 0;
+            int eventPointPrice = Math.max(0, is.cost);
 
-            switch (is.temp.id) {
-                case 1567:
-                case 1731:
-                    eventPointPrice = 999;
-                    break;
-                case 1711:
-                    eventPointPrice = 750;
-                    break;
-                case 1840:
-                    eventPointPrice = 99;
-                    break;
-                case 1713:
-                    eventPointPrice = 499;
-                    break;
-                case 1608:
-                    eventPointPrice = 9;
-                    break;
-                case 1682:
-                    eventPointPrice = 499;
-                    break;
-                case 1698:
-                    eventPointPrice = 499;
-                    break;
-                case 1821:
-                    eventPointPrice = 199;
-                    break;
-                case 1757:
-                    eventPointPrice = 99;
-                    break;
-                case 1592:
-                    eventPointPrice = 99;
-                    break;
-                default:
+            if (eventPointPrice == 0) {
+                Service.gI().sendThongBao(player, "Vật phẩm chưa được cấu hình giá điểm sự kiện.");
+                return;
             }
 
             if (player.event.getEventPoint() < eventPointPrice) {

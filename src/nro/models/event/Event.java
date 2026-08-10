@@ -1,5 +1,8 @@
 package nro.models.event;
 
+import java.util.HashSet;
+import java.util.Set;
+import nro.models.admin.AdminEventConfigService;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.ievent.IEvent;
 import nro.models.map.service.MapService;
@@ -7,6 +10,15 @@ import nro.models.npc.NpcFactory;
 import nro.models.utils.Logger;
 
 public abstract class Event implements IEvent {
+
+    private String eventCode = "default";
+    private final Set<Integer> declaredBosses = new HashSet<>();
+
+    public void init(String code) {
+        this.eventCode = code;
+        init();
+        AdminEventConfigService.gI().spawnAdditionalBosses(eventCode, declaredBosses);
+    }
 
     @Override
     public void init() {
@@ -37,6 +49,8 @@ public abstract class Event implements IEvent {
         if (total.length > 0) {
             len = total[0];
         }
+        declaredBosses.add(bossId);
+        len = AdminEventConfigService.gI().getBossQuantity(eventCode, bossId, len);
         try {
             for (int i = 0; i < len; i++) {
                 BossManager.gI().createBoss(bossId);

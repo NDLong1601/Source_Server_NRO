@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import nro.models.database.HistoryTransactionDAO;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.admin.AdminSpawnConfigService;
+import nro.models.admin.AdminEventConfigService;
 import nro.models.boss.Boss_Manager.OtherBossManager;
 import nro.models.boss.Boss_Manager.TreasureUnderSeaManager;
 import nro.models.boss.Boss_Manager.SnakeWayManager;
@@ -33,6 +34,11 @@ import nro.models.network.MessageSendCollect;
 import nro.models.managers.SuperRankManager;
 import nro.models.interfaces.ISessionAcceptHandler;
 import nro.models.boss.Boss_Manager.BrolyManager;
+import nro.models.boss.Boss_Manager.ChristmasEventManager;
+import nro.models.boss.Boss_Manager.HalloweenEventManager;
+import nro.models.boss.Boss_Manager.HungVuongEventManager;
+import nro.models.boss.Boss_Manager.LunarNewYearEventManager;
+import nro.models.boss.Boss_Manager.TrungThuEventManager;
 import nro.models.event.EventManager;
 import nro.models.Bot.BotManager;
 import nro.models.boss.Boss_Manager.FinalBossManager;
@@ -120,11 +126,18 @@ public class ServerManager {
             new Thread(ShenronEventManager.gI(), "Update Shenron").start();
 
             AdminSpawnConfigService.gI().load();
+            AdminEventConfigService.gI().load();
+            new Thread(AdminEventConfigService.gI(), "Admin event point grants").start();
             BossManager.gI().loadBoss();
             Manager.MAPS.forEach(nro.models.map.Map::initBoss);
             EventManager.gI().init();
 
             new Thread(BossManager.gI(), "Update boss").start();
+            new Thread(TrungThuEventManager.gI(), "Update Trung Thu event boss").start();
+            new Thread(HalloweenEventManager.gI(), "Update Halloween event boss").start();
+            new Thread(ChristmasEventManager.gI(), "Update Christmas event boss").start();
+            new Thread(HungVuongEventManager.gI(), "Update Hung Vuong event boss").start();
+            new Thread(LunarNewYearEventManager.gI(), "Update Lunar New Year event boss").start();
             new Thread(YardartManager.gI(), "Update yardart boss").start();
             new Thread(FinalBossManager.gI(), "Update final boss").start();
             new Thread(SkillSummonedManager.gI(), "Update skill-summoned boss").start();
@@ -184,7 +197,7 @@ public class ServerManager {
                 Manager.Topsukien1 = Manager.realTop(Manager.queryTopsukien1, con);
             }
             if (Manager.isTopSukien2Changed) {
-                Manager.Topsukien1 = Manager.realTop(Manager.queryTopsukien1, con);
+                Manager.Topsukien2 = Manager.realTop(Manager.queryTopsukien2, con);
             }
             if (Manager.isTopWhisChanged) {
                 Manager.Topwhis = Manager.realTop(Manager.queryTopwhis, con);
@@ -300,9 +313,9 @@ public class ServerManager {
     }
 
     private static void activeCommandLine() {
-        Scanner sc = new Scanner(System.in);
-        while (true) {
-            String line = sc.nextLine();
+        try (Scanner sc = new Scanner(System.in)) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
             switch (line) {
                 case "bt":
                     Maintenance.gI().startSeconds(5);
@@ -328,6 +341,7 @@ public class ServerManager {
                 default:
                     System.out.println("Lệnh không hợp lệ.");
                     break;
+            }
             }
         }
     }

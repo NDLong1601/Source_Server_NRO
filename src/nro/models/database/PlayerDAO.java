@@ -36,6 +36,18 @@ public class PlayerDAO {
 
     ; 
 
+    public static void updateEventRankingPoints(Player player) {
+        if (player == null || player.id <= 0) {
+            return;
+        }
+        try {
+            LocalManager.executeUpdate("UPDATE player SET point_sukien = ?, point_sukien1 = ?, point_sukien2 = ? WHERE id = ?",
+                    player.point_sukien, player.point_sukien1, player.point_sukien2, player.id);
+        } catch (Exception e) {
+            Logger.logException(PlayerDAO.class, e, "Không thể đồng bộ điểm bảng xếp hạng sự kiện");
+        }
+    }
+
     public static boolean createNewPlayer(int userId, String name, byte gender, int hair) {
         try {
             JSONArray dataArray = new JSONArray();
@@ -871,6 +883,18 @@ public class PlayerDAO {
                 dataArray.add(player.itemEvent.lastHHTime);
                 dataArray.add(player.itemEvent.remainingBNCount);
                 dataArray.add(player.itemEvent.lastBNTime);
+                dataArray.add(player.itemEvent.remainingBanhQuyCount);
+                dataArray.add(player.itemEvent.lastItemBanhQuy);
+                dataArray.add(player.itemEvent.remainingKeoNguoiTuyetCount);
+                dataArray.add(player.itemEvent.lastItemKeoNguoiTuyet);
+                dataArray.add(player.itemEvent.remainingCaTuyetCount);
+                dataArray.add(player.itemEvent.lastItemCaTuyet);
+                dataArray.add(player.itemEvent.remainingChuongDongCount);
+                dataArray.add(player.itemEvent.lastItemChuongDong);
+                dataArray.add(player.itemEvent.remainingKeoDuongCount);
+                dataArray.add(player.itemEvent.lastItemKeoDuong);
+                dataArray.add(player.itemEvent.remainingManhVo);
+                dataArray.add(player.itemEvent.lastItemManhVo);
                 String dataItemEvent = dataArray.toJSONString();
                 dataArray.clear();
 
