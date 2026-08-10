@@ -81,3 +81,11 @@
 [2026-08-10 18:53:08] Đã dừng tiến trình server PID 7360.
 [2026-08-10 18:53:13] Đã khởi chạy server từ 20.jar với PID 22044.
 [2026-08-10 18:53:17] Server đã mở cổng 14445 với PID 25128.
+[2026-08-10 18:55:35] Đã dừng tiến trình server PID 22044.
+[2026-08-10 18:55:35] Đã dừng tiến trình server PID 25128.
+[2026-08-10 18:55:39] Đã khởi chạy server từ 20.jar với PID 6928.
+[2026-08-10 18:55:43] Server đã mở cổng 14445 với PID 15168.
+[2026-08-10 19:34:18] Đã dừng tiến trình server PID 6928.
+[2026-08-10 19:34:18] Đã dừng tiến trình server PID 15168.
+[2026-08-10 19:34:23] Đã khởi chạy server từ 20.jar với PID 4880.
+[2026-08-10 19:34:27] Server đã mở cổng 14445 với PID 25296.

@@ -678,7 +678,8 @@
       width: 170px;
     }
 
-    #giftRewardOptionCount {
+    #giftRewardOptionCount,
+    .option-count-input {
       background: #ecfeff;
       color: #0f766e;
       font-weight: 700;
@@ -691,7 +692,7 @@
       background: #f8fafc;
     }
 
-    .gift-option-columns {
+    .option-param-columns {
       position: relative;
       height: 23px;
       margin: 0 5px;
@@ -701,27 +702,29 @@
       text-transform: uppercase;
     }
 
-    .gift-option-columns .gift-param-heading {
+    .option-param-columns .option-param-heading {
       position: absolute;
       right: 8px;
-      width: 126px;
+      width: 34%;
+      min-width: 126px;
+      max-width: 190px;
       text-align: center;
     }
 
-    #giftOptionList {
+    .param-option-list {
       max-height: 330px;
       padding: 6px;
     }
 
-    #giftOptionList .option-picker-item {
+    .param-option-list .option-picker-item {
       display: block;
       width: 100%;
       min-height: 38px;
-      padding: 8px 146px 7px 9px;
+      padding: 8px 40% 7px 9px;
       border-bottom: 1px solid #e5eaf0;
     }
 
-    #giftOptionList .option-picker-item label {
+    .param-option-list .option-picker-item label {
       display: inline-block;
       max-width: 100%;
       line-height: 18px;
@@ -729,19 +732,21 @@
       vertical-align: top;
     }
 
-    .gift-option-row {
+    .param-option-row {
       position: relative;
     }
 
-    #giftOptionList .gift-option-selected {
+    .param-option-list .param-option-selected {
       background: #ecfeff;
     }
 
-    .gift-option-param {
+    .param-option-input {
       position: absolute;
       right: 8px;
       top: 5px;
-      width: 126px;
+      width: 34%;
+      min-width: 126px;
+      max-width: 190px;
       height: 28px;
       padding: 0 8px;
       border-color: #94a3b8;
@@ -1418,8 +1423,8 @@
               </div>
               <div class="option-picker-box">
                 <div class="option-picker-toolbar"><input id="giftOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="FilterGiftOptions()"></div>
-                <div class="gift-option-columns"><span>Option áp dụng cho vật phẩm</span><span class="gift-param-heading">Param</span></div>
-                <div id="giftOptionList" class="option-picker-list"></div>
+                <div class="option-param-columns"><span>Option áp dụng cho vật phẩm</span><span class="option-param-heading">Param</span></div>
+                <div id="giftOptionList" class="option-picker-list param-option-list"></div>
               </div>
             </div>
 
@@ -1623,8 +1628,13 @@
             <div class="split-small">
               <div class="section-title">Vật phẩm bán</div>
               <div class="row">
-                <div class="cell"><label>ID dòng</label><input id="shopItemId"></div>
-                <div class="cell"><label>Item ID</label><input id="shopTempId"></div>
+                <div class="cell"><label>ID dòng đang sửa</label><input id="shopItemId" readonly placeholder="Tự tạo khi thêm mới"></div>
+                <input id="shopTempId" type="hidden" value="">
+              </div>
+              <div class="option-picker-box">
+                <div class="option-picker-toolbar"><input id="shopItemSearch" placeholder="Tìm theo ID, tên hoặc phụ đề vật phẩm" onkeyup="RenderShopItemPicker()"></div>
+                <div id="shopItemSummary" class="option-picker-summary">Chưa chọn vật phẩm</div>
+                <div id="shopItemList" class="option-picker-list"></div>
               </div>
               <div class="row">
                 <div class="cell"><label>Giá</label><input id="shopCost"></div>
@@ -1660,33 +1670,27 @@
                 <div class="cell"><label>Icon spec</label><input id="shopIconSpec"></div>
               </div>
               <div class="actions">
-                <button onclick="NewShopItem()">Item mới</button>
-                <button class="primary" onclick="SaveShopItem()">Lưu item</button>
+                <button onclick="NewShopItem()">Chọn nhóm mới</button>
+                <button class="primary" onclick="SaveShopItem()">Lưu vật phẩm đã chọn</button>
                 <button class="danger" onclick="DeleteShopItem()">Xóa item</button>
-                <button onclick="LoadShopOptions()">Options</button>
               </div>
               <div class="mini-table"><table id="shopItemsTable"></table></div>
             </div>
 
             <div class="split-small">
               <div class="section-title">Option item shop</div>
-              <div class="row">
-                <div class="cell"><label>Option row</label><input id="shopOptionRowId"></div>
-                <div class="cell">
-                  <label>Option ID</label>
-                  <input id="shopOptionId" class="hidden-value" value="">
-                  <div id="combo_shopOptionId" class="combo" onclick="ToggleCombo('shopOptionId'); event.cancelBubble = true;">
-                    <span id="combo_shopOptionId_text" class="combo-text">Chọn option</span>
-                    <span class="combo-button"><span class="combo-caret"></span></span>
-                    <div id="combo_shopOptionId_menu" class="combo-menu"></div>
-                  </div>
-                </div>
-                <div class="cell"><label>Param</label><input id="shopOptionParam"></div>
+              <div class="row gift-reward-meta">
+                <div class="cell"><label>Vật phẩm đang cấu hình</label><input id="shopOptionItemLabel" readonly placeholder="Chọn một dòng vật phẩm trong bảng shop"></div>
+                <div class="cell gift-count-cell"><label>Đã chọn option</label><input id="shopOptionCount" class="option-count-input" value="0" readonly></div>
+              </div>
+              <div class="option-picker-box">
+                <div class="option-picker-toolbar"><input id="shopOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderShopOptionPicker()"></div>
+                <div class="option-param-columns"><span>Option áp dụng cho vật phẩm</span><span class="option-param-heading">Param</span></div>
+                <div id="shopOptionList" class="option-picker-list param-option-list"></div>
               </div>
               <div class="actions">
-                <button onclick="NewShopOption()">Option mới</button>
-                <button class="primary" onclick="SaveShopOption()">Lưu option</button>
-                <button class="danger" onclick="DeleteShopOption()">Xóa option</button>
+                <button class="primary" onclick="SaveShopOptions()">Lưu danh sách option</button>
+                <button onclick="LoadShopOptions()">Tải lại</button>
               </div>
               <div class="mini-table"><table id="shopOptionsTable"></table></div>
             </div>
@@ -1863,6 +1867,8 @@
     var currentTab = "items";
     var comboData = {};
     var currentEquipGender = "";
+    var itemCatalogRows = [];
+    var itemCatalogById = {};
     var spawnMaps = [];
     var spawnItems = [];
     var spawnItemNames = {};
@@ -2013,6 +2019,7 @@
       } else {
         document.getElementById("pageTitle").innerText = "NPC & Shop";
         document.getElementById("pageSub").innerText = "Gán shop, tab, item và option cho NPC";
+        LoadItemCatalog(false);
         LoadShops();
       }
       AdjustTableOffsets();
@@ -2026,10 +2033,10 @@
       if (currentTab == "players") LoadPlayers();
       if (currentTab == "equip") LoadEquipItems();
       if (currentTab == "combine") LoadCombineConfig();
-      if (currentTab == "gift") { LoadGiftItems(false); LoadGiftCodes(); }
+      if (currentTab == "gift") { LoadGiftItems(true); LoadGiftCodes(); }
       if (currentTab == "boss") LoadAdminBosses();
       if (currentTab == "mob") LoadAdminMobs();
-      if (currentTab == "npc") LoadShops();
+      if (currentTab == "npc") { LoadItemCatalog(true); LoadShops(); }
       if (currentTab == "audit") LoadAuditHistory();
     }
 
@@ -2278,7 +2285,6 @@
       ]);
       SetComboItems("shopIsNew", [["1", "Bật"], ["0", "Tắt"]]);
       SetComboItems("shopIsSell", [["1", "Bật"], ["0", "Tắt"]]);
-      SetComboItems("shopOptionId", [["", "Chọn option"]]);
       RenderEquipPresets();
     }
 
@@ -2335,7 +2341,7 @@
     }
 
     function CloseCombos(exceptId) {
-      var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionId"];
+      var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "shopTypeSell", "shopIsNew", "shopIsSell"];
       for (var i = 0; i < ids.length; i++) {
         if (ids[i] == exceptId) continue;
         var combo = document.getElementById("combo_" + ids[i]);
@@ -2361,6 +2367,45 @@
 
     function EscapeJs(value) {
       return ("" + value).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    // Nguồn dữ liệu vật phẩm dùng chung cho Giftcode, Shop và các checklist khác.
+    // Tên/phụ đề luôn lấy từ item_template theo ID, không lưu bản sao ở từng màn hình.
+    function LoadItemCatalog(force) {
+      if (!force && itemCatalogRows.length > 1) return;
+      var rows = ParseTsv(RunAdmin("listitemcatalog", {}));
+      if (!rows.length || rows[0][0] != "id") return;
+      itemCatalogRows = rows;
+      itemCatalogById = {};
+      for (var i = 1; i < rows.length; i++) {
+        itemCatalogById[rows[i][0]] = {
+          id: rows[i][0], name: rows[i][1] || ("Vật phẩm " + rows[i][0]),
+          description: rows[i][2] || "", type: rows[i][3] || "", gender: rows[i][4] || ""
+        };
+      }
+      SyncGiftItemCatalog();
+      RenderShopItemPicker();
+    }
+
+    function ItemCatalogName(id) {
+      id = "" + id;
+      return itemCatalogById[id] ? itemCatalogById[id].name : "Vật phẩm " + id;
+    }
+
+    function ItemCatalogLabel(id) {
+      id = "" + id;
+      var item = itemCatalogById[id];
+      if (!item) return "Vật phẩm " + id;
+      return item.name + (item.description ? " — " + item.description : "");
+    }
+
+    function RenderItemPicker(config) {
+      config.rows = config.rows || itemCatalogRows;
+      config.rowStart = config.rowStart == null ? 1 : config.rowStart;
+      config.labelResolver = config.labelResolver || ItemCatalogLabel;
+      config.searchIndexes = config.searchIndexes || [1, 2, 3, 4];
+      config.emptyText = config.emptyText || "Không tìm thấy vật phẩm phù hợp.";
+      RenderChecklist(config);
     }
 
     var itemRows = [];
@@ -2402,27 +2447,16 @@
       });
       Msg("itemMessage", StatusText(text));
       LoadItems();
+      if (!IsAdminError(text)) LoadItemCatalog(true);
     }
 
     var optionRows = [];
     function LoadOptions() {
       optionRows = ParseTsv(RunAdmin("listoptions", {}));
       RenderOptionTable(optionRows);
-      FillOptionSelect();
       RenderEquipOptionPicker();
+      RenderShopOptionPicker();
       RenderBossOptionChecklist();
-    }
-
-    function FillOptionSelect() {
-      var selected = V("shopOptionId");
-      var items = [["", "Chọn option"]];
-      for (var i = 1; i < optionRows.length; i++) {
-        var id = optionRows[i][0] || "";
-        var name = optionRows[i][1] || "";
-        items.push([id, id + " - " + name]);
-      }
-      SetComboItems("shopOptionId", items);
-      if (selected) Set("shopOptionId", selected);
     }
 
     function FilterOptionRows() {
@@ -2726,11 +2760,9 @@
     function RenderOptionPicker(listId, searchId, selectedIds, toggleFunction, idPrefix) {
       var selected = {};
       for (var i = 0; i < selectedIds.length; i++) selected[selectedIds[i]] = true;
-      RenderChecklist({
+      RenderOptionChecklist({
         listId: listId,
         idPrefix: idPrefix,
-        rows: optionRows,
-        rowStart: 1,
         query: V(searchId),
         selected: selected,
         selectedOrder: selectedIds,
@@ -2738,6 +2770,14 @@
         toggleFunction: toggleFunction,
         emptyText: "Không tìm thấy option phù hợp."
       });
+    }
+
+    function RenderOptionChecklist(config) {
+      config.rows = optionRows;
+      config.rowStart = 1;
+      config.labelResolver = config.labelResolver || OptionName;
+      config.emptyText = config.emptyText || "Không tìm thấy option phù hợp.";
+      RenderChecklist(config);
     }
 
     // Renderer checklist dùng chung cho Combine, trang bị, Giftcode và các tab thêm sau này.
@@ -2773,8 +2813,12 @@
         var id = "" + (rows[r][idIndex] == null ? "" : rows[r][idIndex]);
         var name = rows[r][labelIndex] || "Chưa có tên";
         if (!id || rendered[id]) continue;
-        if (query && (id + " " + name).toLowerCase().indexOf(query) < 0) continue;
+        var searchText = id + " " + name;
+        var searchIndexes = config.searchIndexes || [];
+        for (var x = 0; x < searchIndexes.length; x++) searchText += " " + (rows[r][searchIndexes[x]] || "");
+        if (query && searchText.toLowerCase().indexOf(query) < 0) continue;
         if (limit && visible >= limit) break;
+        if (config.labelResolver) name = config.labelResolver(id, rows[r]);
         html += ChecklistItemHtml(config, id, name, !!selected[id], paramValues[id]);
         rendered[id] = true;
         visible++;
@@ -3025,16 +3069,21 @@
     }
 
     function LoadGiftItems(force) {
-      if (!force && giftItemRows.length > 1) {
-        RenderGiftItems();
-        return;
-      }
-      giftItemRows = ParseTsv(RunAdmin("listgiftitems", {}));
+      LoadItemCatalog(force);
+      SyncGiftItemCatalog();
+      RenderGiftItems();
+      RenderGiftRewardsTable();
+    }
+
+    function SyncGiftItemCatalog() {
+      giftItemRows = [["id", "item_name", "description", "item_type", "gender"]];
+      giftItemRows.push(["-1", "Vàng", "", "-1", ""]);
+      giftItemRows.push(["-2", "Ngọc", "", "-1", ""]);
+      giftItemRows.push(["-3", "Ngọc khóa", "", "-1", ""]);
+      for (var c = 1; c < itemCatalogRows.length; c++) giftItemRows.push(itemCatalogRows[c]);
       giftItemNameMap = {};
       for (var r = 1; r < giftItemRows.length; r++) giftItemNameMap[giftItemRows[r][0]] = giftItemRows[r][1] || ("Vật phẩm " + giftItemRows[r][0]);
       for (var i = 0; i < giftRewards.length; i++) giftRewards[i].name = GiftItemName(giftRewards[i].id);
-      RenderGiftItems();
-      RenderGiftRewardsTable();
     }
 
     function FilterGiftItems() {
@@ -3053,7 +3102,11 @@
       if (id == "-2") return "Ngọc";
       if (id == "-3") return "Ngọc khóa";
       if (giftItemNameMap[id]) return giftItemNameMap[id];
-      return "Vật phẩm " + id;
+      return ItemCatalogName(id);
+    }
+
+    function GiftItemLabel(id) {
+      return parseInt(id, 10) < 0 ? GiftItemName(id) : ItemCatalogLabel(id);
     }
 
     function FindGiftReward(id) {
@@ -3073,7 +3126,7 @@
         selectedOrder.push(reward.id);
         selectedLabels[reward.id] = reward.name;
       }
-      RenderChecklist({
+      RenderItemPicker({
         listId: "giftItemList",
         idPrefix: "giftItem",
         rows: giftItemRows,
@@ -3082,7 +3135,8 @@
         selected: selected,
         selectedOrder: selectedOrder,
         selectedLabels: selectedLabels,
-        labelResolver: GiftItemName,
+        labelResolver: GiftItemLabel,
+        searchIndexes: [1, 2, 3, 4],
         toggleFunction: "ToggleGiftItem",
         limit: 100,
         emptyText: "Không tìm thấy vật phẩm phù hợp."
@@ -3173,11 +3227,9 @@
         selectedOrder.push(optionId);
         paramValues[optionId] = option.param;
       }
-      RenderChecklist({
+      RenderOptionChecklist({
         listId: "giftOptionList",
         idPrefix: "giftOption",
-        rows: optionRows,
-        rowStart: 1,
         query: V("giftOptionSearch"),
         selected: selectedMap,
         selectedOrder: selectedOrder,
@@ -3187,9 +3239,9 @@
         limit: 120,
         showParam: true,
         paramFunction: "SetGiftRewardOptionParam",
-        itemClass: "gift-option-row",
-        selectedClass: "gift-option-selected",
-        paramClass: "gift-option-param",
+        itemClass: "param-option-row",
+        selectedClass: "param-option-selected",
+        paramClass: "param-option-input",
         emptyText: "Không tìm thấy option phù hợp."
       });
       Set("giftRewardOptionCount", "" + reward.options.length);
@@ -3256,6 +3308,9 @@
     function PickShop(index) {
       var r = shopRows[index];
       Set("shopId", r[0]); Set("shopNpcId", r[1]); Set("shopTag", r[3]); Set("shopType", r[4]);
+      Set("tabId", ""); Set("tabName", "");
+      NewShopItem();
+      document.getElementById("shopItemsTable").innerHTML = "";
       LoadTabs();
     }
 
@@ -3283,6 +3338,7 @@
 
     function PickTab(index) {
       Set("tabId", tabRows[index][0]); Set("tabName", tabRows[index][2]);
+      NewShopItem();
       LoadShopItems();
     }
 
@@ -3313,85 +3369,199 @@
     }
 
     var shopItemRows = [];
+    var shopSelectedItemIds = [];
     function LoadShopItems() {
       if (!V("tabId")) { Msg("npcMessage", "Chọn tab trước."); return; }
+      LoadItemCatalog(false);
       shopItemRows = ParseTsv(RunAdmin("listshopitems", { TabId: V("tabId") }));
-      RenderTableMapped("shopItemsTable", shopItemRows, ["ID", "Tab", "Item", "Tên", "New", "Sell", "Tiền", "Giá"], "PickShopItem", function (col, value) {
-        if (col == 4 || col == 5) return ToggleLabel(value);
-        if (col == 6) return MoneyLabel(value);
+      var displayRows = [["id", "temp_id", "item_name", "item_description", "cost", "type_sell", "is_sell"]];
+      for (var i = 1; i < shopItemRows.length; i++) {
+        var row = shopItemRows[i];
+        displayRows.push([row[0], row[2], row[3], row[4], row[8], row[7], row[6]]);
+      }
+      RenderTableMapped("shopItemsTable", displayRows, ["ID", "Item", "Tên", "Phụ đề", "Giá", "Tiền", "Bán"], "PickShopItem", function (col, value) {
+        if (col == 5) return MoneyLabel(value);
+        if (col == 6) return ToggleLabel(value);
         return value;
       });
+      RenderShopItemPicker();
     }
 
     function PickShopItem(index) {
       var r = shopItemRows[index];
-      Set("shopItemId", r[0]); Set("shopTempId", r[2]); Set("shopIsNew", r[4]); Set("shopIsSell", r[5]);
-      Set("shopTypeSell", r[6]); Set("shopCost", r[7]); Set("shopIconSpec", r[8]);
+      shopSelectedItemIds = [r[2]];
+      Set("shopItemId", r[0]); Set("shopTempId", r[2]); Set("shopIsNew", r[5]); Set("shopIsSell", r[6]);
+      Set("shopTypeSell", r[7]); Set("shopCost", r[8]); Set("shopIconSpec", r[9]);
+      Set("shopItemSearch", "");
+      RenderShopItemPicker();
       LoadShopOptions();
     }
 
     function NewShopItem() {
+      shopSelectedItemIds = [];
       Set("shopItemId", ""); Set("shopTempId", ""); Set("shopCost", "0"); Set("shopTypeSell", "0");
       Set("shopIsNew", "0"); Set("shopIsSell", "1"); Set("shopIconSpec", "0");
+      Set("shopItemSearch", "");
+      RenderShopItemPicker();
+      ClearShopOptionEditor();
+    }
+
+    function RenderShopItemPicker() {
+      if (!document.getElementById("shopItemList")) return;
+      var selected = {};
+      for (var i = 0; i < shopSelectedItemIds.length; i++) selected[shopSelectedItemIds[i]] = true;
+      RenderItemPicker({
+        listId: "shopItemList", idPrefix: "shopItem", query: V("shopItemSearch"),
+        selected: selected, selectedOrder: shopSelectedItemIds,
+        toggleFunction: "ToggleShopItem", limit: 150
+      });
+      var labels = [];
+      for (var s = 0; s < shopSelectedItemIds.length && s < 3; s++) labels.push(shopSelectedItemIds[s] + " - " + ItemCatalogName(shopSelectedItemIds[s]));
+      document.getElementById("shopItemSummary").innerText = shopSelectedItemIds.length
+        ? "Đã chọn " + shopSelectedItemIds.length + " vật phẩm: " + labels.join("; ") + (shopSelectedItemIds.length > 3 ? "..." : "")
+        : "Chưa chọn vật phẩm";
+    }
+
+    function ToggleShopItem(id, checked) {
+      var next = [];
+      var found = false;
+      for (var i = 0; i < shopSelectedItemIds.length; i++) {
+        if (shopSelectedItemIds[i] == id) found = true;
+        if (!(shopSelectedItemIds[i] == id && !checked)) next.push(shopSelectedItemIds[i]);
+      }
+      if (checked && !found) next.push("" + id);
+      shopSelectedItemIds = next;
+      Set("shopTempId", shopSelectedItemIds.length == 1 ? shopSelectedItemIds[0] : "");
+      RenderShopItemPicker();
     }
 
     function SaveShopItem() {
-      var text = RunAdmin("saveshopitem", {
-        Id: V("shopItemId"), TabId: V("tabId"), TempId: V("shopTempId"), Cost: V("shopCost"),
+      if (!V("tabId")) { Msg("npcMessage", "Chọn tab shop trước."); return; }
+      if (!shopSelectedItemIds.length) { Msg("npcMessage", "Tìm và tích chọn ít nhất một vật phẩm."); return; }
+      if (V("shopItemId") && shopSelectedItemIds.length != 1) {
+        Msg("npcMessage", "Khi sửa một dòng shop, chỉ chọn đúng một vật phẩm. Bấm 'Chọn nhóm mới' để thêm nhiều vật phẩm cùng lúc.");
+        return;
+      }
+      var params = {
+        Id: V("shopItemId"), TabId: V("tabId"), TempId: shopSelectedItemIds[0], Cost: V("shopCost"),
         TypeSell: V("shopTypeSell"), IsNew: V("shopIsNew"), IsSell: V("shopIsSell"), IconSpec: V("shopIconSpec")
-      });
+      };
+      var action = "saveshopitem";
+      if (!V("shopItemId")) {
+        action = "saveshopitems";
+        params.PayloadJson = JSON.stringify(shopSelectedItemIds);
+      }
+      var text = RunAdmin(action, params);
       Msg("npcMessage", StatusText(text));
-      LoadShopItems();
+      if (!IsAdminError(text)) { NewShopItem(); LoadShopItems(); }
     }
 
     function DeleteShopItem() {
       if (!V("shopItemId")) return;
       if (!window.confirm("Xóa vật phẩm shop ID " + V("shopItemId") + "?")) return;
-      Msg("npcMessage", StatusText(RunAdmin("deleteshopitem", { Id: V("shopItemId") })));
-      LoadShopItems();
+      var text = RunAdmin("deleteshopitem", { Id: V("shopItemId") });
+      Msg("npcMessage", StatusText(text));
+      if (!IsAdminError(text)) { NewShopItem(); LoadShopItems(); }
     }
 
     var shopOptionRows = [];
+    var shopOptionValues = [];
     function LoadShopOptions() {
       if (!V("shopItemId")) { Msg("npcMessage", "Chọn item shop trước."); return; }
       shopOptionRows = ParseTsv(RunAdmin("listshopoptions", { Id: V("shopItemId") }));
-      RenderTableMapped("shopOptionsTable", shopOptionRows, ["ID", "Item shop", "Option", "Tên", "Param"], "PickShopOption", function (col, value, row) {
+      shopOptionValues = [];
+      for (var i = 1; i < shopOptionRows.length; i++) {
+        var existing = FindShopOption(shopOptionRows[i][2]);
+        if (existing) {
+          existing.rowId = shopOptionRows[i][0];
+          existing.param = shopOptionRows[i][4];
+        } else {
+          shopOptionValues.push({ rowId: shopOptionRows[i][0], id: shopOptionRows[i][2], param: shopOptionRows[i][4] });
+        }
+      }
+      RenderTableMapped("shopOptionsTable", shopOptionRows, ["ID", "Item shop", "Option", "Tên", "Param"], "Noop", function (col, value, row) {
         if (col == 2) return value + " - " + (row[3] || "");
         if (col == 3) return row[3] || "";
         return value;
       });
+      Set("shopOptionSearch", "");
+      RenderShopOptionPicker();
     }
 
-    function PickShopOption(index) {
-      Set("shopOptionRowId", shopOptionRows[index][0]);
-      Set("shopOptionId", shopOptionRows[index][2]);
-      Set("shopOptionParam", shopOptionRows[index][4]);
+    function FindShopOption(id) {
+      for (var i = 0; i < shopOptionValues.length; i++) if (("" + shopOptionValues[i].id) == ("" + id)) return shopOptionValues[i];
+      return null;
     }
 
-    function NewShopOption() {
-      Set("shopOptionRowId", ""); Set("shopOptionId", ""); Set("shopOptionParam", "0");
-    }
-
-    function SaveShopOption() {
-      if (!V("shopItemId")) { Msg("npcMessage", "Chọn item shop trước."); return; }
-      var text = RunAdmin("saveshopoption", {
-        Id: V("shopOptionRowId"), TempId: V("shopItemId"), OptionId: V("shopOptionId"), Param: V("shopOptionParam")
+    function RenderShopOptionPicker() {
+      if (!document.getElementById("shopOptionList")) return;
+      if (!V("shopItemId")) {
+        document.getElementById("shopOptionList").innerHTML = "Chọn một dòng vật phẩm trong bảng shop trước.";
+        Set("shopOptionItemLabel", "");
+        Set("shopOptionCount", "0");
+        return;
+      }
+      var selected = {}, order = [], params = {};
+      for (var i = 0; i < shopOptionValues.length; i++) {
+        var id = "" + shopOptionValues[i].id;
+        selected[id] = true; order.push(id); params[id] = shopOptionValues[i].param;
+      }
+      RenderOptionChecklist({
+        listId: "shopOptionList", idPrefix: "shopOption",
+        query: V("shopOptionSearch"), selected: selected, selectedOrder: order,
+        labelResolver: OptionName, toggleFunction: "ToggleShopOption", limit: 120,
+        showParam: true, paramFunction: "SetShopOptionParam",
+        itemClass: "param-option-row", selectedClass: "param-option-selected", paramClass: "param-option-input",
+        emptyText: "Không tìm thấy option phù hợp."
       });
-      Msg("npcMessage", StatusText(text));
-      LoadShopOptions();
+      var itemId = shopSelectedItemIds[0] || V("shopTempId");
+      Set("shopOptionItemLabel", itemId + " - " + ItemCatalogName(itemId));
+      Set("shopOptionCount", "" + shopOptionValues.length);
     }
 
-    function DeleteShopOption() {
-      if (!V("shopOptionRowId")) return;
-      if (!window.confirm("Xóa option ID " + V("shopOptionRowId") + "?")) return;
-      Msg("npcMessage", StatusText(RunAdmin("deleteshopoption", { Id: V("shopOptionRowId") })));
-      LoadShopOptions();
+    function ToggleShopOption(id, checked) {
+      var option = FindShopOption(id);
+      if (checked && !option) shopOptionValues.push({ rowId: "", id: "" + id, param: "0" });
+      if (!checked && option) {
+        var next = [];
+        for (var i = 0; i < shopOptionValues.length; i++) if (("" + shopOptionValues[i].id) != ("" + id)) next.push(shopOptionValues[i]);
+        shopOptionValues = next;
+      }
+      RenderShopOptionPicker();
+    }
+
+    function SetShopOptionParam(id, value) {
+      var option = FindShopOption(id);
+      if (option) option.param = value;
+    }
+
+    function SaveShopOptions() {
+      if (!V("shopItemId")) { Msg("npcMessage", "Chọn một vật phẩm shop trước."); return; }
+      var payload = [];
+      for (var i = 0; i < shopOptionValues.length; i++) payload.push({ id: shopOptionValues[i].id, param: shopOptionValues[i].param });
+      var text = RunAdmin("saveshopoptions", { Id: V("shopItemId"), PayloadJson: JSON.stringify(payload) });
+      Msg("npcMessage", StatusText(text));
+      if (!IsAdminError(text)) LoadShopOptions();
+    }
+
+    function ClearShopOptionEditor() {
+      shopOptionRows = [];
+      shopOptionValues = [];
+      Set("shopOptionSearch", "");
+      document.getElementById("shopOptionsTable").innerHTML = "";
+      RenderShopOptionPicker();
     }
 
     function ClearShopChildren() {
+      shopSelectedItemIds = [];
+      shopOptionRows = [];
+      shopOptionValues = [];
+      Set("tabId", ""); Set("tabName", ""); Set("shopItemId", ""); Set("shopTempId", "");
       document.getElementById("tabsTable").innerHTML = "";
       document.getElementById("shopItemsTable").innerHTML = "";
       document.getElementById("shopOptionsTable").innerHTML = "";
+      RenderShopItemPicker();
+      RenderShopOptionPicker();
     }
 
     function LoadSpawnLookups() {
@@ -3399,11 +3569,10 @@
         spawnMaps = ParseTsv(RunAdmin("listspawnmaps", {}));
       }
       RenderBossMapChecklist();
-      if (!spawnItemNames.__loaded) {
-        spawnItems = ParseTsv(RunAdmin("listspawnitems", {}));
-        for (var r = 1; r < spawnItems.length; r++) spawnItemNames[spawnItems[r][0]] = spawnItems[r][1] || ("Vật phẩm " + spawnItems[r][0]);
-        spawnItemNames.__loaded = true;
-      }
+      LoadItemCatalog(false);
+      spawnItems = itemCatalogRows;
+      spawnItemNames = {};
+      for (var r = 1; r < spawnItems.length; r++) spawnItemNames[spawnItems[r][0]] = ItemCatalogName(spawnItems[r][0]);
       RenderBossItemChecklist();
     }
 
@@ -3483,10 +3652,10 @@
       for (var i = 0; i < bossDrops.length; i++) {
         selected["" + bossDrops[i].itemId] = true; order.push(bossDrops[i].itemId);
       }
-      RenderChecklist({
+      RenderItemPicker({
         listId: "bossItemChecklist", idPrefix: "bossDropChoice", rows: spawnItems, rowStart: 1,
         query: V("bossItemSearch"), selected: selected, selectedOrder: order,
-        selectedLabels: spawnItemNames, toggleFunction: "ToggleBossDropItem", limit: 250,
+        labelResolver: ItemCatalogLabel, toggleFunction: "ToggleBossDropItem", limit: 250,
         emptyText: "Không tìm thấy vật phẩm phù hợp."
       });
       document.getElementById("bossItemSummary").innerText = bossDrops.length

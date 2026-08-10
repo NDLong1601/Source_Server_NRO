@@ -755,6 +755,19 @@ function List-Items {
     Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template $whereSql ORDER BY id DESC LIMIT 300;"
 }
 
+function List-ItemCatalog {
+    Invoke-MySql @"
+SELECT id,
+       REPLACE(REPLACE(REPLACE(COALESCE(`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
+       REPLACE(REPLACE(REPLACE(COALESCE(description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS description,
+       `TYPE` AS item_type,
+       gender
+FROM item_template
+ORDER BY id
+LIMIT 10000;
+"@
+}
+
 function List-ItemTypes {
     Invoke-MySql "SELECT `TYPE`, COUNT(*) AS total FROM item_template GROUP BY `TYPE` ORDER BY `TYPE`;"
 }
@@ -826,7 +839,16 @@ COMMIT;
 }
 
 function List-ShopItems {
-    Invoke-MySql "SELECT i.id, i.tab_id, i.temp_id, COALESCE(t.`NAME`, '') AS item_name, i.is_new, i.is_sell, i.type_sell, i.cost, i.icon_spec, i.create_time FROM item_shop i LEFT JOIN item_template t ON t.id = i.temp_id WHERE i.tab_id=$(SqlInt $TabId) ORDER BY i.create_time DESC, i.id DESC;"
+    Invoke-MySql @"
+SELECT i.id, i.tab_id, i.temp_id,
+       REPLACE(REPLACE(REPLACE(COALESCE(t.`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
+       REPLACE(REPLACE(REPLACE(COALESCE(t.description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_description,
+       i.is_new, i.is_sell, i.type_sell, i.cost, i.icon_spec, i.create_time
+FROM item_shop i
+LEFT JOIN item_template t ON t.id = i.temp_id
+WHERE i.tab_id=$(SqlInt $TabId)
+ORDER BY i.create_time DESC, i.id DESC;
+"@
 }
 
 function List-EquipmentShopItems {
@@ -886,8 +908,44 @@ function Save-ShopItem {
     "OK`tĐã thêm vật phẩm vào shop."
 }
 
+function Convert-UniqueIdPayload {
+    param([string]$Json, [string]$Label)
+    try { $rawIds = @($Json | ConvertFrom-Json) } catch { throw "$Label không đúng định dạng JSON." }
+    $ids = New-Object System.Collections.Generic.List[int]
+    $seen = @{}
+    foreach ($rawId in $rawIds) {
+        $idText = [string]$rawId
+        if ($idText -notmatch '^\d+$' -or [int64]$idText -gt 32767) { throw "$Label có ID không hợp lệ: $idText" }
+        if (-not $seen.ContainsKey($idText)) {
+            $seen[$idText] = $true
+            $ids.Add([int]$idText)
+        }
+    }
+    return $ids.ToArray()
+}
+
+function Save-ShopItems {
+    $tabIdNum = SqlInt $TabId
+    if ($tabIdNum -le 0) { throw "Chọn tab shop trước." }
+    $ids = @(Convert-UniqueIdPayload -Json $PayloadJson -Label "Danh sách vật phẩm")
+    if ($ids.Count -eq 0) { throw "Chọn ít nhất một vật phẩm để thêm vào shop." }
+    $idSql = $ids -join ','
+    $sql = @"
+START TRANSACTION;
+INSERT INTO item_shop (tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, create_time)
+SELECT $tabIdNum, t.id, $(SqlInt $IsNew), $(SqlInt $IsSell), $(SqlInt $TypeSell), $(SqlInt $Cost), $(SqlInt $IconSpec), NOW()
+FROM item_template t
+WHERE t.id IN ($idSql)
+  AND NOT EXISTS (SELECT 1 FROM item_shop current_item WHERE current_item.tab_id=$tabIdNum AND current_item.temp_id=t.id);
+COMMIT;
+"@
+    Invoke-MySql $sql | Out-Null
+    "OK`tĐã xử lý $($ids.Count) vật phẩm cho tab shop; vật phẩm đã tồn tại được giữ nguyên."
+}
+
 function Delete-ShopItem {
-    Invoke-MySql "DELETE FROM item_shop WHERE id=$(SqlInt $Id);" | Out-Null
+    $itemShopId = SqlInt $Id
+    Invoke-MySql "START TRANSACTION; DELETE FROM item_shop_option WHERE item_shop_id=$itemShopId; DELETE FROM item_shop WHERE id=$itemShopId; COMMIT;" | Out-Null
     "OK`tĐã xóa vật phẩm shop ID $Id."
 }
 
@@ -904,6 +962,34 @@ function Save-ShopOption {
 
     Invoke-MySql "INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES ($(SqlInt $TempId), $(SqlInt $OptionId), $(SqlInt $Param));" | Out-Null
     "OK`tĐã thêm option cho vật phẩm shop."
+}
+
+function Save-ShopOptions {
+    $itemShopId = SqlInt $Id
+    if ($itemShopId -le 0) { throw "Chọn vật phẩm shop trước." }
+    try { $rawOptions = @($PayloadJson | ConvertFrom-Json) } catch { throw "Danh sách option không đúng định dạng JSON." }
+    $seen = @{}
+    $values = New-Object System.Collections.Generic.List[string]
+    foreach ($rawOption in $rawOptions) {
+        $optionIdText = [string]$rawOption.id
+        $paramText = [string]$rawOption.param
+        if ($optionIdText -notmatch '^\d+$' -or [int64]$optionIdText -gt 2147483647) { throw "Option ID không hợp lệ: $optionIdText" }
+        if ($paramText -notmatch '^-?\d+$' -or [int64]$paramText -lt -2147483648 -or [int64]$paramText -gt 2147483647) {
+            throw "Param của option $optionIdText phải là số nguyên 32-bit."
+        }
+        if ($seen.ContainsKey($optionIdText)) { throw "Option ID $optionIdText bị chọn trùng." }
+        $seen[$optionIdText] = $true
+        $values.Add("($itemShopId,$([int]$optionIdText),$([int]$paramText))")
+    }
+    $sql = New-Object System.Text.StringBuilder
+    [void]$sql.AppendLine("START TRANSACTION;")
+    [void]$sql.AppendLine("DELETE FROM item_shop_option WHERE item_shop_id=$itemShopId;")
+    if ($values.Count -gt 0) {
+        [void]$sql.AppendLine("INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES $($values -join ',');")
+    }
+    [void]$sql.AppendLine("COMMIT;")
+    Invoke-MySql $sql.ToString() | Out-Null
+    "OK`tĐã lưu $($values.Count) option cho vật phẩm shop ID $itemShopId."
 }
 
 function Delete-ShopOption {
@@ -1629,8 +1715,10 @@ function Get-AuditSummary {
         "savetab" { "Lưu tab shop $(if ($TabId) { "ID $TabId" } else { $Name }) vào shop $ShopId" }
         "deletetab" { "Xóa tab shop ID $TabId" }
         "saveshopitem" { "Lưu item shop $(if ($Id) { "ID $Id" } else { "template $TempId" }), tab $TabId, giá $Cost loại $TypeSell" }
+        "saveshopitems" { "Thêm $(Get-JsonArrayCount $PayloadJson) vật phẩm vào tab shop $TabId, giá $Cost loại $TypeSell" }
         "deleteshopitem" { "Xóa item shop ID $Id" }
         "saveshopoption" { "Lưu option shop $(if ($Id) { "ID $Id" } else { "option $OptionId" }), param $Param" }
+        "saveshopoptions" { "Lưu $(Get-JsonArrayCount $PayloadJson) option cho item shop ID $Id" }
         "deleteshopoption" { "Xóa option shop ID $Id" }
         "savegiftcode" { "Lưu Giftcode $GiftCode, lượt $CountLeft, $(Get-JsonArrayCount $GiftDetail) phần quà" }
         "deletegiftcode" { "Xóa Giftcode ID $Id" }
@@ -1682,6 +1770,13 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "item_shop" $where))
             $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "item_shop_id IN (SELECT id FROM item_shop WHERE $where)"))
         }
+        "saveshopitems" {
+            $ids = @(Convert-UniqueIdPayload -Json $PayloadJson -Label "Danh sách vật phẩm")
+            if ($ids.Count -eq 0) { throw "Chọn ít nhất một vật phẩm để thêm vào shop." }
+            $where = "tab_id=$(SqlInt $TabId) AND temp_id IN ($($ids -join ','))"
+            $snapshots.Add((New-DbAuditSnapshot "item_shop" $where))
+            $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "item_shop_id IN (SELECT id FROM item_shop WHERE $where)"))
+        }
         "deleteshopitem" {
             $itemShop = SqlInt $Id
             $snapshots.Add((New-DbAuditSnapshot "item_shop" "id=$itemShop"))
@@ -1691,6 +1786,7 @@ function Get-AuditContext {
             $where = if ((SqlInt $Id) -gt 0) { "id=$(SqlInt $Id)" } else { "item_shop_id=$(SqlInt $TempId) AND option_id=$(SqlInt $OptionId) AND param=$(SqlInt $Param)" }
             $snapshots.Add((New-DbAuditSnapshot "item_shop_option" $where))
         }
+        "saveshopoptions" { $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "item_shop_id=$(SqlInt $Id)")) }
         "deleteshopoption" { $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "id=$(SqlInt $Id)")) }
         "savegiftcode" {
             $where = if ((SqlInt $Id) -gt 0) { "id=$(SqlInt $Id)" } else { "code=$(SqlString $GiftCode.Trim())" }
@@ -1830,8 +1926,8 @@ function Record-ManualAuditEntry {
 
 $actionLower = $Action.ToLowerInvariant()
 $mutationActions = @(
-    "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "deleteshopitem",
-    "saveshopoption", "deleteshopoption", "savegiftcode", "deletegiftcode",
+    "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
+    "saveshopoption", "saveshopoptions", "deleteshopoption", "savegiftcode", "deletegiftcode",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "saveplayercore", "rescueplayer"
@@ -1850,6 +1946,7 @@ try {
             "key`tvalue`r`nserver.event`t$($config['server.event'])`r`nserver.expserver`t$($config['server.expserver'])"
         }
         "listitems" { List-Items }
+        "listitemcatalog" { List-ItemCatalog }
         "listitemtypes" { List-ItemTypes }
         "getitem" { Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template WHERE id=$(SqlInt $Id) LIMIT 1;" }
         "saveitem" { Save-Item }
@@ -1863,9 +1960,11 @@ try {
         "listequipmentshopitems" { List-EquipmentShopItems }
         "listshopitems" { List-ShopItems }
         "saveshopitem" { Save-ShopItem }
+        "saveshopitems" { Save-ShopItems }
         "deleteshopitem" { Delete-ShopItem }
         "listshopoptions" { List-ShopOptions }
         "saveshopoption" { Save-ShopOption }
+        "saveshopoptions" { Save-ShopOptions }
         "deleteshopoption" { Delete-ShopOption }
         "listgiftcodes" { List-GiftCodes }
         "listgiftitems" { List-GiftItems }
