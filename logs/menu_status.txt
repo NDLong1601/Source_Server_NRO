@@ -2,4 +2,4 @@
 PID: 3100
 Sự kiện: halloween
 TNSM: x2
-Log cập nhật: 2026-08-10 22:59:53
+Log cập nhật: 2026-08-10 23:19:47

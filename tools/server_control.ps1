@@ -88,6 +88,8 @@ function Write-ControlLog {
     $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
     Invoke-WithRetry -Script {
         Add-Content -Path $ControlLog -Value $line -Encoding UTF8
+        $recentLines = @(Get-Content -LiteralPath $ControlLog -Encoding UTF8 | Select-Object -Last 20)
+        Write-FileAtomic -Path $ControlLog -Text (($recentLines -join [Environment]::NewLine) + [Environment]::NewLine)
     }
 }
 

@@ -13,7 +13,7 @@ if /i "%~1"=="exprestart" goto control
 if /i "%~1"=="build" goto control
 if /i "%~1"=="openlogs" goto control
 
-start "" mshta.exe "%~dp0server_menu.hta"
+start "" "%~dp0tools\HtaTaskbarLauncherV2.exe" "%~dp0server_menu.hta" "%~dp0assets\icons\server_menu_v2.ico"
 exit /b
 
 :control

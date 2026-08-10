@@ -1,5 +1,5 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-start "" mshta.exe "%~dp0admin_data_menu.hta"
+start "" "%~dp0tools\HtaTaskbarLauncher.exe" "%~dp0admin_data_menu.hta" "%~dp0assets\icons\admin_menu.ico"
 exit /b

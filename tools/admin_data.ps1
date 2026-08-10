@@ -105,6 +105,7 @@ $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $LogDir = Join-Path $Root "logs"
 $ResultPath = if ([string]::IsNullOrWhiteSpace($Output)) { Join-Path $LogDir "admin_data_result.txt" } else { $Output }
 $AdminLog = Join-Path $LogDir "admin_data.log"
+$AdminLogMutex = New-Object System.Threading.Mutex($false, "Global\NRO_ADMIN_DATA_LOG")
 
 if (-not (Test-Path $LogDir)) {
     New-Item -ItemType Directory -Path $LogDir | Out-Null
@@ -117,13 +118,32 @@ function Write-Result {
 
 function Write-AdminLog {
     param([string]$Message)
-    $line = "[{0}] {1}{2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message, [Environment]::NewLine
+    $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
+    $hasLogMutex = $false
     for ($i = 0; $i -lt 8; $i++) {
         try {
-            $bytes = [System.Text.Encoding]::UTF8.GetBytes($line)
-            $stream = [System.IO.File]::Open($AdminLog, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::ReadWrite)
+            $hasLogMutex = $AdminLogMutex.WaitOne(5000)
+            if (-not $hasLogMutex) {
+                throw "Không lấy được khóa ghi admin log."
+            }
+
+            $recentLines = @()
+            if (Test-Path -LiteralPath $AdminLog) {
+                $recentLines = @([System.IO.File]::ReadAllLines($AdminLog, [System.Text.Encoding]::UTF8))
+            }
+            $recentLines = @($recentLines + $line | Select-Object -Last 20)
+
+            $stream = [System.IO.File]::Open($AdminLog, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::ReadWrite)
             try {
-                $stream.Write($bytes, 0, $bytes.Length)
+                $writer = New-Object System.IO.StreamWriter($stream, $Utf8NoBom)
+                try {
+                    foreach ($recentLine in $recentLines) {
+                        $writer.WriteLine($recentLine)
+                    }
+                    $writer.Flush()
+                } finally {
+                    $writer.Dispose()
+                }
             } finally {
                 $stream.Dispose()
             }
@@ -133,6 +153,11 @@ function Write-AdminLog {
                 return
             }
             Start-Sleep -Milliseconds 100
+        } finally {
+            if ($hasLogMutex) {
+                $AdminLogMutex.ReleaseMutex() | Out-Null
+                $hasLogMutex = $false
+            }
         }
     }
 }
