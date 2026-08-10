@@ -1099,9 +1099,9 @@
     }
 
     function RunAdmin(action, params) {
-      var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + resultPath + '"';
+      var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + resultPath + '" -Encoded "1"';
       for (var key in params) {
-        cmd += " -" + key + ' "' + SafeArg(params[key]) + '"';
+        cmd += " -" + key + ' "' + SafeArg(EncodeArg(params[key])) + '"';
       }
       shell.Run(cmd, 0, true);
       return ReadFile(resultPath);
@@ -1120,6 +1120,11 @@
     function SafeArg(value) {
       if (value == null) return "";
       return ("" + value).replace(/"/g, "'");
+    }
+
+    function EncodeArg(value) {
+      if (value == null) return "";
+      return encodeURIComponent("" + value);
     }
 
     function ReadFile(path) {

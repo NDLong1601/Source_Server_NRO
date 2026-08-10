@@ -22,6 +22,9 @@ import nro.models.map.Zone;
  */
 public class ItemService {
 
+    private static final int DROP_ACTIVATION_RATE = 5;
+    private static final int ACTIVITY_ACTIVATION_RATE = 10;
+
     private static ItemService i;
 
     public static ItemService gI() {
@@ -824,7 +827,7 @@ public class ItemService {
         return new int[]{op1, op2, op3, op4};
     }
 
-    public ItemMap randDoTL(Zone zone, int quantity, int x, int y, long id) {
+    public ItemMap randDoTL(Zone zone, int quantity, int x, int y, long id, int gender) {
         short idTempTL;
         short[] ao = {555, 557, 559};
         short[] quan = {556, 558, 560};
@@ -950,10 +953,11 @@ public class ItemService {
         ItemMap it = new ItemMap(zone, idTempTL, quantity, x, y, id);
         it.options.clear();
         it.options.addAll(itemoptions);
+        addDropActivationOption(it, gender);
         return it;
     }
 
-    public ItemMap randDoTLBoss(Zone zone, int quantity, int x, int y, long id) {
+    public ItemMap randDoTLBoss(Zone zone, int quantity, int x, int y, long id, int gender) {
         short idTempTL;
         short[] ao = {555, 557, 559};
         short[] quan = {556, 558, 560};
@@ -1082,6 +1086,7 @@ public class ItemService {
         ItemMap it = new ItemMap(zone, idTempTL, quantity, x, y, id);
         it.options.clear();
         it.options.addAll(itemoptions);
+        addDropActivationOption(it, gender);
         return it;
     }
 
@@ -1143,9 +1148,62 @@ public class ItemService {
     }
 
     private void Option_All(List<ItemOption> item, int skhId) {
-        item.add(new ItemOption(skhId, 1));
-        item.add(new ItemOption(ID(skhId), 1));
-        item.add(new ItemOption(30, 1));
+        addOptionIfAbsent(item, skhId, 1);
+        addOptionIfAbsent(item, ID(skhId), 1);
+        addOptionIfAbsent(item, 30, 1);
+    }
+
+    public void addDropActivationOption(ItemMap item, int gender) {
+        addRandomActivationOption(item.options, gender, DROP_ACTIVATION_RATE);
+    }
+
+    public void addActivityActivationOption(Item item, int gender) {
+        addRandomActivationOption(item.itemOptions, gender, ACTIVITY_ACTIVATION_RATE);
+    }
+
+    private void addRandomActivationOption(List<ItemOption> options, int gender, int chancePercent) {
+        if (options == null || chancePercent <= 0 || hasActivationOption(options) || !Util.isTrue(chancePercent, 100)) {
+            return;
+        }
+        Option_All(options, randomActivationSetByGender(gender));
+    }
+
+    private int randomActivationSetByGender(int gender) {
+        int normalizedGender = gender;
+        if (normalizedGender < 0 || normalizedGender > 2) {
+            normalizedGender = 2;
+        }
+        int[][] activationSets = {
+            {128, 127, 129}, // Trái đất: Kirin, Thiên Xin Hăng, Songoku
+            {130, 131, 132}, // Namek: Picolo, Ốc Tiêu, Pikkoro Daimao
+            {133, 134, 135} // Xayda: Kakarot, Cadic, Nappa
+        };
+        int[] sets = activationSets[normalizedGender];
+        return sets[Util.nextInt(sets.length)];
+    }
+
+    private boolean hasActivationOption(List<ItemOption> options) {
+        for (ItemOption option : options) {
+            if (option != null && option.optionTemplate != null) {
+                int id = option.optionTemplate.id;
+                if ((id >= 127 && id <= 135) || (id >= 136 && id <= 144)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void addOptionIfAbsent(List<ItemOption> options, int optionId, int param) {
+        if (optionId <= 0) {
+            return;
+        }
+        for (ItemOption option : options) {
+            if (option != null && option.optionTemplate != null && option.optionTemplate.id == optionId) {
+                return;
+            }
+        }
+        options.add(new ItemOption(optionId, param));
     }
 
     public int ID(int skhId) {

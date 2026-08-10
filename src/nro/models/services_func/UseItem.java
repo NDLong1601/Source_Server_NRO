@@ -1994,6 +1994,7 @@ public class UseItem {
 
             Random random = new Random();
             Item chosenItem = allPreInitializedItems.get(random.nextInt(allPreInitializedItems.size()));
+            ItemService.gI().addActivityActivationOption(chosenItem, player.gender);
             InventoryService.gI().addItemBag(player, chosenItem);
             InventoryService.gI().subQuantityItemsBag(player, itemused, 1);
             InventoryService.gI().sendItemBags(player);

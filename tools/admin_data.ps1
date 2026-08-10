@@ -31,7 +31,8 @@ param(
     [string]$OptionId = "",
     [string]$Param = "0",
     [string]$EventValue = "",
-    [string]$ExpRate = ""
+    [string]$ExpRate = "",
+    [string]$Encoded = "0"
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,6 +40,24 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [Console]::InputEncoding = $Utf8NoBom
 [Console]::OutputEncoding = $Utf8NoBom
 $OutputEncoding = $Utf8NoBom
+
+function Decode-InputParam {
+    param([string]$Value)
+    if ($Encoded -eq "1") {
+        return [System.Uri]::UnescapeDataString($Value)
+    }
+    return $Value
+}
+
+foreach ($paramName in @(
+        "Id", "Search", "Type", "Name", "Description", "Gender", "Level", "IconId", "Part",
+        "IsUpToUp", "PowerRequire", "Gold", "Gem", "Head", "Body", "Leg", "NpcId", "ShopId",
+        "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
+        "IconSpec", "OptionId", "Param", "EventValue", "ExpRate"
+    )) {
+    Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
+}
+
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $LogDir = Join-Path $Root "logs"
 $ResultPath = if ([string]::IsNullOrWhiteSpace($Output)) { Join-Path $LogDir "admin_data_result.txt" } else { $Output }
@@ -187,14 +206,24 @@ function Invoke-MySql {
         $args += "--password=$pass"
     }
     $args += $dbName
-    $args += "-e"
-    $args += $Sql
 
-    $output = & $mysql @args 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw ($output -join [Environment]::NewLine)
+    $tempSql = Join-Path $env:TEMP ("nro_admin_sql_{0}_{1}.sql" -f $PID, ([Guid]::NewGuid().ToString("N")))
+    [System.IO.File]::WriteAllText($tempSql, $Sql, $Utf8NoBom)
+    $sourcePath = $tempSql.Replace("\", "/")
+    $args += "--execute=source $sourcePath"
+
+    try {
+        $output = & $mysql @args 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw ($output -join [Environment]::NewLine)
+        }
+        return ($output -join [Environment]::NewLine)
     }
-    return ($output -join [Environment]::NewLine)
+    finally {
+        if (Test-Path $tempSql) {
+            Remove-Item -LiteralPath $tempSql -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 function List-Items {
@@ -224,10 +253,10 @@ function Save-Item {
         throw "ID vật phẩm không hợp lệ."
     }
     $sql = @"
-INSERT INTO item_template (`id`, `TYPE`, `gender`, `NAME`, `description`, `level`, `icon_id`, `part`, `is_up_to_up`, `power_require`, `gold`, `gem`, `head`, `body`, `leg`)
+INSERT INTO item_template (id, TYPE, gender, NAME, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)
 VALUES ($itemId, $(SqlInt $Type), $(SqlInt $Gender), $(SqlString $Name), $(SqlString $Description), $(SqlInt $Level), $(SqlInt $IconId), $(SqlInt $Part -1), $(SqlInt $IsUpToUp), $(SqlInt $PowerRequire), $(SqlInt $Gold), $(SqlInt $Gem), $(SqlInt $Head -1), $(SqlInt $Body -1), $(SqlInt $Leg -1))
 ON DUPLICATE KEY UPDATE
-`TYPE`=VALUES(`TYPE`), `gender`=VALUES(`gender`), `NAME`=VALUES(`NAME`), `description`=VALUES(`description`), `level`=VALUES(`level`), `icon_id`=VALUES(`icon_id`), `part`=VALUES(`part`), `is_up_to_up`=VALUES(`is_up_to_up`), `power_require`=VALUES(`power_require`), `gold`=VALUES(`gold`), `gem`=VALUES(`gem`), `head`=VALUES(`head`), `body`=VALUES(`body`), `leg`=VALUES(`leg`);
+TYPE=VALUES(TYPE), gender=VALUES(gender), NAME=VALUES(NAME), description=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id), part=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require), gold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);
 "@
     Invoke-MySql $sql | Out-Null
     "OK`tĐã lưu vật phẩm ID $itemId. Restart server để client/server nhận template mới."

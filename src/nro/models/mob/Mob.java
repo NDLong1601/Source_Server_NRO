@@ -982,7 +982,7 @@ public class Mob {
                 rate = (int) (rate * 0.85);
             }
             if (Util.isTrue(1, 50000)) {
-                ItemMap it = ItemService.gI().randDoTL(this.zone, 1, x, yEnd, player.id);
+                ItemMap it = ItemService.gI().randDoTL(this.zone, 1, x, yEnd, player.id, player.gender);
                 list.add(it);
                 //   ChatGlobalService.gI().ThongBaoRoiDo(player, "[ Hệ Thống ] " + player.name + " vừa nhặt được " + it.itemTemplate.name + " tại " + this.zone.map.mapName + " khu " + this.zone.zoneId);
             }

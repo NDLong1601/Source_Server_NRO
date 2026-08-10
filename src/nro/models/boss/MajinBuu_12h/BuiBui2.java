@@ -47,7 +47,7 @@ public class BuiBui2 extends Boss {
         int quantity = Util.nextInt(20000, 30000);
         // Tạo itemMap cho item ID 190
         if (Util.isTrue(1 , 100)) {
-        ItemMap it = ItemService.gI().randDoTLBoss(this.zone, 1, x, y, plKill.id);
+        ItemMap it = ItemService.gI().randDoTLBoss(this.zone, 1, x, y, plKill.id, plKill.gender);
         if (it != null) {
         Service.gI().dropItemMap(zone, it);
         }
