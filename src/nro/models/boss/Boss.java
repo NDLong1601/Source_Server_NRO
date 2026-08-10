@@ -1,5 +1,6 @@
 package nro.models.boss;
 
+import nro.models.admin.AdminSpawnConfigService;
 import nro.models.boss.Boss_Manager.BrolyManager;
 import nro.models.boss.Boss_Manager.LunarNewYearEventManager;
 import nro.models.boss.Boss_Manager.GasDestroyManager;
@@ -219,7 +220,8 @@ public class Boss extends Player implements IBoss {
         }
         this.playerSkill.skills.clear();
         this.playerSkill.skillSelect = null;
-        int[][] skillTemps = data[this.currentLevel].getSkillTemp();
+        int[][] skillTemps = AdminSpawnConfigService.gI().getServerBossSkills(
+                (int) this.id, data[this.currentLevel].getSkillTemp());
         for (int[] skillTemp : skillTemps) {
             Skill skill = SkillUtil.createSkill(skillTemp[0], skillTemp[1]);
             if (skillTemp.length == 3) {
@@ -289,7 +291,8 @@ public class Boss extends Player implements IBoss {
     }
 
     public Zone getMapJoin() {
-        int mapId = this.data[this.currentLevel].getMapJoin()[Util.nextInt(0, this.data[this.currentLevel].getMapJoin().length - 1)];
+        int defaultMapId = this.data[this.currentLevel].getMapJoin()[Util.nextInt(0, this.data[this.currentLevel].getMapJoin().length - 1)];
+        int mapId = AdminSpawnConfigService.gI().getServerBossMapId((int) this.id, defaultMapId);
         Zone map = MapService.gI().getMapWithRandZone(mapId);
         return map;
     }
@@ -336,6 +339,15 @@ public class Boss extends Player implements IBoss {
     @Override
     public void update() {
         if (prepareBom) {
+            return;
+        }
+        if (!AdminSpawnConfigService.gI().isServerBossWithinSchedule((int) this.id)) {
+            if (this.zone != null) {
+                ChangeMapService.gI().exitMap(this);
+            }
+            this.zone = null;
+            this.lastZone = null;
+            this.changeStatus(BossStatus.REST);
             return;
         }
         super.update();
@@ -394,8 +406,9 @@ public class Boss extends Player implements IBoss {
         if (nextLevel >= this.data.length) {
             nextLevel = 0;
         }
+        long restMillis = AdminSpawnConfigService.gI().getServerBossRestMillis((int) this.id, secondsRest * 1000L);
         if (this.data[nextLevel].getTypeAppear() == AppearType.DEFAULT_APPEAR
-                && Util.canDoWithTime(lastTimeRest, secondsRest * 1000)) {
+                && Util.canDoWithTime(lastTimeRest, restMillis)) {
             this.changeStatus(BossStatus.RESPAWN);
         }
     }
@@ -645,6 +658,13 @@ public class Boss extends Player implements IBoss {
                 reward(plKill);
             }
             this.changeStatus(BossStatus.DIE);
+        }
+        if (plKill != null && this.zone != null) {
+            int dropY = this.zone.map.yPhysicInTop(this.location.x, this.location.y);
+            for (nro.models.map.ItemMap item : AdminSpawnConfigService.gI().createServerBossDrops(
+                    (int) this.id, this.zone, plKill.id, this.location.x, dropY)) {
+                Service.gI().dropItemMap(this.zone, item);
+            }
         }
     }
 

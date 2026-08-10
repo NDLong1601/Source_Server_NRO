@@ -11898,6 +11898,99 @@ ALTER TABLE `tab_shop`
   ADD CONSTRAINT `tab_shop_ibfk_1` FOREIGN KEY (`shop_id`) REFERENCES `shop` (`id`) ON DELETE CASCADE;
 COMMIT;
 
+-- --------------------------------------------------------
+-- Cấu hình Boss/Mob tùy biến dùng bởi NRO Admin Data
+
+CREATE TABLE IF NOT EXISTS `admin_boss_config` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `use_time_range` tinyint(1) NOT NULL DEFAULT 0,
+  `time_start` time DEFAULT NULL,
+  `time_end` time DEFAULT NULL,
+  `use_interval` tinyint(1) NOT NULL DEFAULT 0,
+  `interval_minutes` int NOT NULL DEFAULT 1,
+  `map_id` int NOT NULL,
+  `zone_id` int NOT NULL DEFAULT -1,
+  `spawn_x` int NOT NULL DEFAULT -1,
+  `spawn_y` int NOT NULL DEFAULT -1,
+  `gender` tinyint NOT NULL DEFAULT 0,
+  `head` smallint NOT NULL DEFAULT 0,
+  `body` smallint NOT NULL DEFAULT 0,
+  `leg` smallint NOT NULL DEFAULT 0,
+  `hp` int NOT NULL DEFAULT 1000000,
+  `damage` int NOT NULL DEFAULT 10000,
+  `announce` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_boss_enabled` (`enabled`),
+  KEY `idx_admin_boss_map` (`map_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_mob_config` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mob_template_id` int NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `use_time_range` tinyint(1) NOT NULL DEFAULT 0,
+  `time_start` time DEFAULT NULL,
+  `time_end` time DEFAULT NULL,
+  `use_interval` tinyint(1) NOT NULL DEFAULT 0,
+  `interval_minutes` int NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_admin_mob_template` (`mob_template_id`),
+  KEY `idx_admin_mob_enabled` (`enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_spawn_drop` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `owner_type` varchar(16) NOT NULL,
+  `owner_id` int NOT NULL,
+  `item_id` int NOT NULL,
+  `quantity_min` int NOT NULL DEFAULT 1,
+  `quantity_max` int NOT NULL DEFAULT 1,
+  `drop_rate` decimal(7,4) NOT NULL DEFAULT 100.0000,
+  `options_json` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_drop_owner` (`owner_type`,`owner_id`),
+  KEY `idx_admin_drop_item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_boss_override` (
+  `boss_id` int NOT NULL,
+  `boss_key` varchar(80) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `skills_json` text NOT NULL,
+  `use_time_range` tinyint(1) NOT NULL DEFAULT 0,
+  `time_start` time DEFAULT NULL,
+  `time_end` time DEFAULT NULL,
+  `use_interval` tinyint(1) NOT NULL DEFAULT 0,
+  `interval_minutes` int NOT NULL DEFAULT 1,
+  `map_id` int NOT NULL DEFAULT -1,
+  `map_ids_json` text NOT NULL DEFAULT ('[]'),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`boss_id`),
+  KEY `idx_admin_boss_override_key` (`boss_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `admin_change_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `action_name` varchar(64) NOT NULL,
+  `summary` varchar(500) NOT NULL,
+  `status` varchar(16) NOT NULL,
+  `reversible` tinyint(1) NOT NULL DEFAULT 0,
+  `rollback_payload` longtext DEFAULT NULL,
+  `result_message` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `undone_at` timestamp NULL DEFAULT NULL,
+  `undone_by_log_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_change_created` (`created_at`),
+  KEY `idx_admin_change_undo` (`reversible`,`status`,`undone_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

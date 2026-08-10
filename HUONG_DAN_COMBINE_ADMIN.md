@@ -23,7 +23,6 @@ Nút **Về mặc định** xóa giá trị override của khóa đã chọn; Ja
 ## Tỉ lệ và chỉ số mặc định
 
 | Nhóm | Chức năng | Giá trị mặc định |
-|---|---|---|
 | Cường hóa | Nâng trang bị +0 đến +7 | `80,50,20,10,7,5,1,0.3%` |
 | Cường hóa | Chỉ số tăng khi thành công | `10%`, tối thiểu 1 nếu phần trăm lớn hơn 0 |
 | Cường hóa | Chỉ số giảm khi rớt cấp | `11%`, tối thiểu 1 nếu phần trăm lớn hơn 0 |

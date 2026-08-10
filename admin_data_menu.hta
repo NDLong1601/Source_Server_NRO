@@ -430,6 +430,29 @@
       text-align: right;
     }
 
+    .boss-option-item {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding-right: 260px;
+    }
+
+    .boss-option-range {
+      position: absolute;
+      right: 6px;
+      top: 3px;
+      width: 244px;
+      white-space: nowrap;
+    }
+
+    .option-picker-item .boss-option-range input {
+      width: 88px;
+      height: 26px;
+      margin: 0 0 0 4px;
+      padding: 0 6px;
+      text-align: right;
+    }
+
     .option-picker-item input,
     .inline-check input {
       width: auto;
@@ -927,7 +950,10 @@
       <button id="navEquip" class="nav-button" onclick="ShowTab('equip')">Chỉ số TB</button>
       <button id="navCombine" class="nav-button" onclick="ShowTab('combine')">Nâng cấp/ Cường hóa</button>
       <button id="navGift" class="nav-button" onclick="ShowTab('gift')">Giftcode</button>
+      <button id="navBoss" class="nav-button" onclick="ShowTab('boss')">Boss</button>
+      <button id="navMob" class="nav-button" onclick="ShowTab('mob')">Mob / Quái</button>
       <button id="navNpc" class="nav-button" onclick="ShowTab('npc')">NPC & Shop</button>
+      <button id="navAudit" class="nav-button" onclick="ShowTab('audit')">Lịch sử thay đổi</button>
       <div class="status-card" id="statusBox">Đang tải cấu hình...</div>
     </div>
 
@@ -1267,6 +1293,151 @@
         </div>
       </div>
 
+      <div id="panelBoss" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="bossSearch" style="width:300px" placeholder="Tìm BossID, tên hoặc class">
+              <button onclick="LoadAdminBosses()">Tìm</button>
+            </div>
+            <div class="table-wrap"><table id="bossTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Boss đã đăng ký trong server</div>
+            <input type="hidden" id="bossId">
+            <input type="hidden" id="bossKey">
+            <input type="hidden" id="bossHasOverride">
+            <div class="row">
+              <div class="cell"><label>Boss ID</label><input id="bossServerId" readonly></div>
+              <div class="cell"><label>Mã Boss</label><input id="bossServerKey" readonly></div>
+            </div>
+            <div class="row">
+              <div class="cell"><label>Tên trong BossesData</label><input id="bossServerName" readonly></div>
+              <div class="cell"><label>Class khởi tạo</label><input id="bossServerClass" readonly></div>
+            </div>
+            <label>Map mặc định</label><input id="bossDefaultMaps" readonly>
+            <div class="inline-check"><input type="checkbox" id="bossEnabled" checked><label for="bossEnabled">Cho phép hệ thống khởi tạo Boss này</label></div>
+
+            <div class="split-small">
+              <div class="section-title">Map và lịch xuất hiện</div>
+              <label>Map ghi đè (có thể chọn nhiều)</label>
+              <input id="bossMapSearch" placeholder="Tìm theo ID hoặc tên map" onkeyup="RenderBossMapChecklist()">
+              <div id="bossMapSummary" class="option-picker-summary">Chưa chọn map — dùng map mặc định trong BossesData</div>
+              <div id="bossMapChecklist" class="option-picker-list"></div>
+              <div class="row">
+                <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseRange" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseRange">Chỉ trong khoảng giờ</label></div></div>
+                <div class="cell"><label>Từ (HH:mm)</label><input id="bossTimeStart" value="08:00" disabled></div>
+                <div class="cell"><label>Đến (HH:mm)</label><input id="bossTimeEnd" value="22:00" disabled></div>
+              </div>
+              <div class="row">
+                <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseInterval" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseInterval">Xuất hiện theo chu kỳ</label></div></div>
+                <div class="cell"><label>Số phút / lần</label><input id="bossInterval" value="10" disabled></div>
+              </div>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Skill mặc định đọc từ BossesData</div>
+              <div class="mini-table"><table id="bossDefaultSkillsTable"></table></div>
+            </div>
+            <div class="split-small">
+              <div class="section-title">Bộ skill sẽ áp dụng</div>
+              <div class="row">
+                <div class="cell"><label>Skill</label><select id="bossSkillId" onchange="ShowBossSkillInfo()"></select></div>
+                <div class="cell"><label>Cấp skill (1–7)</label><input id="bossSkillLevel" value="7"></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Hồi chiêu (ms)</label><input id="bossSkillCooldown" value="1000"></div>
+                <div class="cell"><label>Gợi ý</label><input id="bossSkillHint" value="1000 ms = 1 giây" readonly></div>
+              </div>
+              <div class="actions">
+                <button onclick="AddBossSkill()">Thêm / cập nhật skill</button>
+                <button onclick="ClearBossSkillEditor()">Nhập dòng mới</button>
+                <button onclick="ResetBossSkillsToDefault()">Nạp lại skill gốc</button>
+              </div>
+              <div class="mini-table"><table id="bossConfiguredSkillsTable"></table></div>
+            </div>
+            <div class="split-small">
+              <div class="section-title">Vật phẩm rơi thêm từ Boss</div>
+              <label>Tìm và chọn vật phẩm</label><input id="bossItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="RenderBossItemChecklist()">
+              <div id="bossItemSummary" class="option-picker-summary">Chưa chọn vật phẩm rơi thêm</div>
+              <div id="bossItemChecklist" class="option-picker-list"></div>
+              <div class="row">
+                <div class="cell"><label>Item ID đang chỉnh</label><input id="bossDropItem" readonly></div>
+                <div class="cell"><label>Tên vật phẩm</label><input id="bossDropItemName" readonly></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Số lượng min</label><input id="bossDropMin" value="1"></div>
+                <div class="cell"><label>Số lượng max</label><input id="bossDropMax" value="1"></div>
+                <div class="cell"><label>Tỉ lệ (%)</label><input id="bossDropRate" value="100"></div>
+              </div>
+              <label>Option và khoảng chỉ số random</label><input id="bossOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderBossOptionChecklist()">
+              <div id="bossOptionSummary" class="option-picker-summary">Chọn một vật phẩm để cấu hình option</div>
+              <div id="bossOptionChecklist" class="option-picker-list"></div>
+              <div class="actions"><button onclick="UpdateBossDrop()">Cập nhật vật phẩm đang chọn</button><button onclick="ClearBossDropSelection()">Bỏ chọn dòng chỉnh sửa</button></div>
+              <div class="mini-table"><table id="bossDropsTable"></table></div>
+            </div>
+            <div class="actions">
+              <button class="primary" onclick="SaveBossOverride()">Lưu cấu hình Boss</button>
+              <button class="danger" onclick="DeleteBossOverride()">Trả về mặc định</button>
+            </div>
+            <div class="split-small">Cấu hình tác động lên class Boss khi được tạo hoặc hồi sinh; danh sách này không phụ thuộc Boss đang online.</div>
+            <div id="bossMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelMob" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="mobSearch" style="width:260px" placeholder="Tìm ID hoặc tên Mob">
+              <button onclick="LoadAdminMobs()">Tìm</button>
+            </div>
+            <div class="table-wrap"><table id="mobTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Lịch và drop của Mob</div>
+            <input type="hidden" id="mobConfigId"><input type="hidden" id="mobTemplateId">
+            <div class="row">
+              <div class="cell"><label>Mob template</label><input id="mobName" readonly></div>
+              <div class="cell"><label>HP gốc</label><input id="mobBaseHp" readonly></div>
+              <div class="cell"><label>% sát thương</label><input id="mobBaseDamage" readonly></div>
+            </div>
+            <div class="inline-check"><input type="checkbox" id="mobEnabled" checked><label for="mobEnabled">Cho phép Mob xuất hiện (tắt sẽ ẩn toàn bộ Mob cùng template)</label></div>
+            <div class="split-small">
+              <div class="section-title">Lịch xuất hiện (có thể bật đồng thời)</div>
+              <div class="row">
+                <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseRange" onclick="ToggleSpawnSchedule('mob')"><label for="mobUseRange">Chỉ trong khoảng giờ</label></div></div>
+                <div class="cell"><label>Từ (HH:mm)</label><input id="mobTimeStart" value="08:00" disabled></div>
+                <div class="cell"><label>Đến (HH:mm)</label><input id="mobTimeEnd" value="22:00" disabled></div>
+              </div>
+              <div class="row">
+                <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseInterval" onclick="ToggleSpawnSchedule('mob')"><label for="mobUseInterval">Hồi sinh theo chu kỳ</label></div></div>
+                <div class="cell"><label>Số phút / lần</label><input id="mobInterval" value="1" disabled></div>
+              </div>
+            </div>
+            <div class="split-small">
+              <div class="section-title">Vật phẩm có thể rơi từ Mob</div>
+              <div class="row">
+                <div class="cell"><label>Item ID</label><input id="mobDropItem" onkeyup="ShowSpawnItemName('mob')"></div>
+                <div class="cell"><label>Tên vật phẩm</label><input id="mobDropItemName" readonly></div>
+              </div>
+              <div class="row">
+                <div class="cell"><label>Số lượng min</label><input id="mobDropMin" value="1"></div>
+                <div class="cell"><label>Số lượng max</label><input id="mobDropMax" value="1"></div>
+                <div class="cell"><label>Tỉ lệ (%)</label><input id="mobDropRate" value="100"></div>
+              </div>
+              <label>Chỉ số (optionId:param, phân cách dấu phẩy)</label><input id="mobDropOptions" placeholder="Ví dụ: 77:15,103:15,30:1">
+              <div class="actions"><button onclick="AddSpawnDrop('mob')">Thêm / cập nhật drop</button><button onclick="ClearSpawnDropEditor('mob')">Nhập dòng mới</button></div>
+              <div class="mini-table"><table id="mobDropsTable"></table></div>
+            </div>
+            <div class="actions"><button class="primary" onclick="SaveAdminMob()">Lưu cấu hình Mob</button><button class="danger" onclick="DeleteAdminMob()">Gỡ cấu hình tùy chỉnh</button></div>
+            <div class="split-small">Gỡ cấu hình không xóa mob_template: Mob sẽ trở lại lịch hồi sinh 3 giây và drop mặc định của server.</div>
+            <div id="mobMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="panelNpc" class="panel">
         <div class="columns">
           <div class="left-pane">
@@ -1382,6 +1553,37 @@
           </div>
         </div>
       </div>
+
+      <div id="panelAudit" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="auditSearch" style="width:320px" placeholder="Tìm thao tác hoặc nội dung thay đổi">
+              <button onclick="LoadAuditHistory()">Tìm</button>
+            </div>
+            <div class="table-wrap"><table id="auditTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Chi tiết thao tác</div>
+            <input type="hidden" id="auditId">
+            <input type="hidden" id="auditCanUndo">
+            <div class="row">
+              <div class="cell"><label>ID lịch sử</label><input id="auditDetailId" readonly></div>
+              <div class="cell"><label>Thời gian</label><input id="auditDetailTime" readonly></div>
+            </div>
+            <label>Hành động</label><input id="auditDetailAction" readonly>
+            <label>Nội dung thay đổi</label><textarea id="auditDetailSummary" readonly></textarea>
+            <label>Kết quả</label><textarea id="auditDetailResult" readonly></textarea>
+            <label>Trạng thái hoàn tác</label><input id="auditUndoState" readonly>
+            <div class="actions">
+              <button id="auditUndoButton" class="danger" onclick="UndoAuditEntry()" disabled>Hoàn tác thay đổi này</button>
+              <button onclick="LoadAuditHistory()">Làm mới lịch sử</button>
+            </div>
+            <div class="split-small">Để bảo vệ dữ liệu, chỉ thay đổi thành công gần nhất chưa hoàn tác mới có thể quay lại. Sau khi hoàn tác, thay đổi liền trước sẽ được mở khóa.</div>
+            <div id="auditMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1393,6 +1595,23 @@
     var currentTab = "items";
     var comboData = {};
     var currentEquipGender = "";
+    var spawnMaps = [];
+    var spawnItems = [];
+    var spawnItemNames = {};
+    var adminBossRows = [];
+    var adminMobRows = [];
+    var bossDrops = [];
+    var mobDrops = [];
+    var selectedBossDrop = -1;
+    var selectedMobDrop = -1;
+    var bossSkillRows = [];
+    var bossSkillNames = {};
+    var bossDefaultSkills = [];
+    var bossConfiguredSkills = [];
+    var selectedBossSkill = -1;
+    var bossSelectedMaps = [];
+    var auditRows = [];
+    var selectedAuditIndex = -1;
 
     window.onload = function () {
       FitWindowToScreen();
@@ -1455,13 +1674,19 @@
       document.getElementById("panelEquip").className = tab == "equip" ? "panel active" : "panel";
       document.getElementById("panelCombine").className = tab == "combine" ? "panel active" : "panel";
       document.getElementById("panelGift").className = tab == "gift" ? "panel active" : "panel";
+      document.getElementById("panelBoss").className = tab == "boss" ? "panel active" : "panel";
+      document.getElementById("panelMob").className = tab == "mob" ? "panel active" : "panel";
       document.getElementById("panelNpc").className = tab == "npc" ? "panel active" : "panel";
+      document.getElementById("panelAudit").className = tab == "audit" ? "panel active" : "panel";
       document.getElementById("navItems").className = tab == "items" ? "nav-button active" : "nav-button";
       document.getElementById("navEvents").className = tab == "events" ? "nav-button active" : "nav-button";
       document.getElementById("navEquip").className = tab == "equip" ? "nav-button active" : "nav-button";
       document.getElementById("navCombine").className = tab == "combine" ? "nav-button active" : "nav-button";
       document.getElementById("navGift").className = tab == "gift" ? "nav-button active" : "nav-button";
+      document.getElementById("navBoss").className = tab == "boss" ? "nav-button active" : "nav-button";
+      document.getElementById("navMob").className = tab == "mob" ? "nav-button active" : "nav-button";
       document.getElementById("navNpc").className = tab == "npc" ? "nav-button active" : "nav-button";
+      document.getElementById("navAudit").className = tab == "audit" ? "nav-button active" : "nav-button";
       if (tab == "items") {
         document.getElementById("pageTitle").innerText = "Vật phẩm";
         document.getElementById("pageSub").innerText = "Lọc theo type, xem và sửa item template";
@@ -1483,6 +1708,21 @@
         document.getElementById("pageSub").innerText = "Quản lý mã, số lượt, thời gian và quà kèm option riêng";
         LoadGiftItems(false);
         LoadGiftCodes();
+      } else if (tab == "boss") {
+        document.getElementById("pageTitle").innerText = "Quản lý Boss";
+        document.getElementById("pageSub").innerText = "Boss có trong server: skill, map, lịch xuất hiện và vật phẩm rơi";
+        LoadBossSkillCatalog();
+        LoadSpawnLookups();
+        LoadAdminBosses();
+      } else if (tab == "mob") {
+        document.getElementById("pageTitle").innerText = "Quản lý Mob / Quái";
+        document.getElementById("pageSub").innerText = "Bật tắt, đặt lịch hồi sinh và drop theo mob template";
+        LoadSpawnLookups();
+        LoadAdminMobs();
+      } else if (tab == "audit") {
+        document.getElementById("pageTitle").innerText = "Lịch sử thay đổi";
+        document.getElementById("pageSub").innerText = "Theo dõi thao tác ghi dữ liệu và hoàn tác thay đổi gần nhất";
+        LoadAuditHistory();
       } else {
         document.getElementById("pageTitle").innerText = "NPC & Shop";
         document.getElementById("pageSub").innerText = "Gán shop, tab, item và option cho NPC";
@@ -1498,7 +1738,10 @@
       if (currentTab == "equip") LoadEquipItems();
       if (currentTab == "combine") LoadCombineConfig();
       if (currentTab == "gift") { LoadGiftItems(false); LoadGiftCodes(); }
+      if (currentTab == "boss") LoadAdminBosses();
+      if (currentTab == "mob") LoadAdminMobs();
       if (currentTab == "npc") LoadShops();
+      if (currentTab == "audit") LoadAuditHistory();
     }
 
     function RunAdmin(action, params) {
@@ -1523,6 +1766,7 @@
 
     function RestartServer() {
       if (window.confirm("Khởi động lại server để áp dụng dữ liệu mới?")) {
+        RunAdmin("recordaudit", { Name: "restartserver", Description: "Yêu cầu Restart server từ NRO Admin Data" });
         RunBat("restart");
       }
     }
@@ -1877,6 +2121,7 @@
       RenderOptionTable(optionRows);
       FillOptionSelect();
       RenderEquipOptionPicker();
+      RenderBossOptionChecklist();
     }
 
     function FillOptionSelect() {
@@ -2859,6 +3104,528 @@
       document.getElementById("shopItemsTable").innerHTML = "";
       document.getElementById("shopOptionsTable").innerHTML = "";
     }
+
+    function LoadSpawnLookups() {
+      if (spawnMaps.length == 0) {
+        spawnMaps = ParseTsv(RunAdmin("listspawnmaps", {}));
+      }
+      RenderBossMapChecklist();
+      if (!spawnItemNames.__loaded) {
+        spawnItems = ParseTsv(RunAdmin("listspawnitems", {}));
+        for (var r = 1; r < spawnItems.length; r++) spawnItemNames[spawnItems[r][0]] = spawnItems[r][1] || ("Vật phẩm " + spawnItems[r][0]);
+        spawnItemNames.__loaded = true;
+      }
+      RenderBossItemChecklist();
+    }
+
+    function ToggleSpawnSchedule(prefix) {
+      document.getElementById(prefix + "TimeStart").disabled = !document.getElementById(prefix + "UseRange").checked;
+      document.getElementById(prefix + "TimeEnd").disabled = !document.getElementById(prefix + "UseRange").checked;
+      document.getElementById(prefix + "Interval").disabled = !document.getElementById(prefix + "UseInterval").checked;
+    }
+
+    function SpawnScheduleLabel(useRange, start, end, useInterval, minutes) {
+      var labels = [];
+      if (useRange == "1") labels.push((start || "--:--") + "–" + (end || "--:--"));
+      if (useInterval == "1") labels.push(minutes + " phút/lần");
+      return labels.length ? labels.join(" + ") : "Luôn hoạt động";
+    }
+
+    function ParseNumberArray(json) {
+      try {
+        var parsed = JSON.parse(json || "[]");
+        var result = [];
+        if (!parsed || parsed.length == null) return result;
+        for (var i = 0; i < parsed.length; i++) {
+          var value = parseInt(parsed[i], 10);
+          if (!isNaN(value) && result.indexOf(value) < 0) result.push(value);
+        }
+        return result;
+      } catch (e) { return []; }
+    }
+
+    function RenderBossMapChecklist() {
+      if (!document.getElementById("bossMapChecklist")) return;
+      var selected = {};
+      for (var i = 0; i < bossSelectedMaps.length; i++) selected["" + bossSelectedMaps[i]] = true;
+      RenderChecklist({
+        listId: "bossMapChecklist", idPrefix: "bossMapChoice", rows: spawnMaps, rowStart: 1,
+        query: V("bossMapSearch"), selected: selected, selectedOrder: bossSelectedMaps,
+        toggleFunction: "ToggleBossMap", emptyText: "Không tìm thấy map phù hợp."
+      });
+      var names = [];
+      for (var m = 0; m < bossSelectedMaps.length; m++) {
+        names.push(bossSelectedMaps[m] + " - " + ChecklistLabelFromRows(spawnMaps, 1, 0, 1, "" + bossSelectedMaps[m]));
+      }
+      document.getElementById("bossMapSummary").innerText = names.length
+        ? "Đã chọn " + names.length + " map; mỗi lần xuất hiện sẽ chọn ngẫu nhiên: " + names.join(", ")
+        : "Chưa chọn map — dùng map mặc định trong BossesData";
+    }
+
+    function ToggleBossMap(id, checked) {
+      var value = parseInt(id, 10);
+      var next = [];
+      for (var i = 0; i < bossSelectedMaps.length; i++) if (bossSelectedMaps[i] != value) next.push(bossSelectedMaps[i]);
+      if (checked) next.push(value);
+      bossSelectedMaps = next;
+      RenderBossMapChecklist();
+    }
+
+    function FindBossDropIndex(itemId) {
+      for (var i = 0; i < bossDrops.length; i++) if (parseInt(bossDrops[i].itemId, 10) == parseInt(itemId, 10)) return i;
+      return -1;
+    }
+
+    function NormalizeBossDrops() {
+      for (var i = 0; i < bossDrops.length; i++) {
+        var options = bossDrops[i].options || [];
+        for (var o = 0; o < options.length; o++) {
+          var fixed = options[o].param == null ? 0 : parseInt(options[o].param, 10);
+          if (options[o].paramMin == null) options[o].paramMin = fixed;
+          if (options[o].paramMax == null) options[o].paramMax = options[o].paramMin;
+          delete options[o].param;
+        }
+      }
+    }
+
+    function RenderBossItemChecklist() {
+      if (!document.getElementById("bossItemChecklist")) return;
+      var selected = {}; var order = [];
+      for (var i = 0; i < bossDrops.length; i++) {
+        selected["" + bossDrops[i].itemId] = true; order.push(bossDrops[i].itemId);
+      }
+      RenderChecklist({
+        listId: "bossItemChecklist", idPrefix: "bossDropChoice", rows: spawnItems, rowStart: 1,
+        query: V("bossItemSearch"), selected: selected, selectedOrder: order,
+        selectedLabels: spawnItemNames, toggleFunction: "ToggleBossDropItem", limit: 250,
+        emptyText: "Không tìm thấy vật phẩm phù hợp."
+      });
+      document.getElementById("bossItemSummary").innerText = bossDrops.length
+        ? "Đã chọn " + bossDrops.length + " vật phẩm rơi thêm. Chọn một dòng trong bảng dưới để chỉnh."
+        : "Chưa chọn vật phẩm rơi thêm";
+    }
+
+    function ToggleBossDropItem(id, checked) {
+      var index = FindBossDropIndex(id);
+      if (checked && index < 0) {
+        bossDrops.push({ itemId: parseInt(id, 10), quantityMin: 1, quantityMax: 1, dropRate: 100, options: [] });
+        index = bossDrops.length - 1;
+      } else if (!checked && index >= 0) {
+        bossDrops.splice(index, 1);
+        if (selectedBossDrop == index) selectedBossDrop = -1;
+        else if (selectedBossDrop > index) selectedBossDrop--;
+      }
+      RenderBossItemChecklist(); RenderBossDrops();
+      if (checked && index >= 0) PickBossDrop(index); else if (selectedBossDrop < 0) ClearBossDropSelection();
+    }
+
+    function RenderBossDrops() {
+      var html = "<thead><tr><th>Item</th><th>Số lượng</th><th>Tỉ lệ</th><th>Option random</th><th></th></tr></thead><tbody>";
+      for (var i = 0; i < bossDrops.length; i++) {
+        var d = bossDrops[i];
+        html += '<tr onclick="PickBossDrop(' + i + ')"><td>' + Html(d.itemId + " - " + (spawnItemNames[d.itemId] || "Không rõ")) + '</td><td>' + Html(d.quantityMin + "–" + d.quantityMax) + '</td><td>' + Html(d.dropRate + "%") + '</td><td>' + Html(SpawnOptionsText(d.options)) + '</td><td><button class="danger" onclick="RemoveBossDrop(' + i + '); event.cancelBubble=true">Xóa</button></td></tr>';
+      }
+      document.getElementById("bossDropsTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickBossDrop(index) {
+      if (index < 0 || index >= bossDrops.length) return;
+      selectedBossDrop = index;
+      var d = bossDrops[index];
+      Set("bossDropItem", d.itemId); Set("bossDropItemName", spawnItemNames[d.itemId] || "Không rõ");
+      Set("bossDropMin", d.quantityMin); Set("bossDropMax", d.quantityMax); Set("bossDropRate", d.dropRate);
+      RenderBossOptionChecklist();
+    }
+
+    function RemoveBossDrop(index) {
+      if (index < 0 || index >= bossDrops.length) return;
+      bossDrops.splice(index, 1); selectedBossDrop = -1;
+      ClearBossDropSelection(); RenderBossItemChecklist(); RenderBossDrops();
+    }
+
+    function ClearBossDropSelection() {
+      selectedBossDrop = -1;
+      Set("bossDropItem", ""); Set("bossDropItemName", ""); Set("bossDropMin", "1"); Set("bossDropMax", "1"); Set("bossDropRate", "100");
+      RenderBossOptionChecklist();
+    }
+
+    function UpdateBossDrop() {
+      if (selectedBossDrop < 0 || selectedBossDrop >= bossDrops.length) { Msg("bossMessage", "Hãy chọn một vật phẩm trong checklist hoặc bảng drop."); return; }
+      if (!/^\d+$/.test(V("bossDropMin")) || !/^\d+$/.test(V("bossDropMax")) || !/^\d+(\.\d+)?$/.test(V("bossDropRate"))) {
+        Msg("bossMessage", "Số lượng và tỉ lệ phải là số hợp lệ."); return;
+      }
+      var min = parseInt(V("bossDropMin"), 10), max = parseInt(V("bossDropMax"), 10), rate = parseFloat(V("bossDropRate"));
+      if (min < 1 || min > max || rate < 0 || rate > 100) { Msg("bossMessage", "Số lượng min không lớn hơn max và tỉ lệ phải từ 0–100."); return; }
+      var options = bossDrops[selectedBossDrop].options || [];
+      for (var i = 0; i < options.length; i++) {
+        if (!/^-?\d+$/.test("" + options[i].paramMin) || !/^-?\d+$/.test("" + options[i].paramMax) || parseInt(options[i].paramMin, 10) > parseInt(options[i].paramMax, 10)) {
+          Msg("bossMessage", "Option " + options[i].id + " có khoảng chỉ số không hợp lệ."); return;
+        }
+      }
+      bossDrops[selectedBossDrop].quantityMin = min; bossDrops[selectedBossDrop].quantityMax = max; bossDrops[selectedBossDrop].dropRate = rate;
+      RenderBossDrops(); Msg("bossMessage", "Đã cập nhật drop; bấm Lưu cấu hình Boss để ghi database.");
+    }
+
+    function RenderBossOptionChecklist() {
+      var target = document.getElementById("bossOptionChecklist");
+      if (!target) return;
+      if (selectedBossDrop < 0 || selectedBossDrop >= bossDrops.length) {
+        target.innerHTML = "Chọn một vật phẩm trong checklist hoặc bảng drop để cấu hình option.";
+        document.getElementById("bossOptionSummary").innerText = "Chưa chọn vật phẩm";
+        return;
+      }
+      var options = bossDrops[selectedBossDrop].options || [];
+      var selected = {}; var html = ""; var rendered = {}; var query = V("bossOptionSearch").toLowerCase();
+      for (var i = 0; i < options.length; i++) {
+        selected["" + options[i].id] = options[i];
+        html += BossOptionItemHtml("" + options[i].id, OptionName(options[i].id), true, options[i]); rendered["" + options[i].id] = true;
+      }
+      for (var r = 1; r < optionRows.length; r++) {
+        var id = "" + optionRows[r][0], name = optionRows[r][1] || "Chưa có tên";
+        if (!id || rendered[id] || (query && (id + " " + name).toLowerCase().indexOf(query) < 0)) continue;
+        html += BossOptionItemHtml(id, name, false, null); rendered[id] = true;
+      }
+      target.innerHTML = html || "Không tìm thấy option phù hợp.";
+      document.getElementById("bossOptionSummary").innerText = "Đã chọn " + options.length + " option cho " + V("bossDropItemName") + ". Min = Max nếu không muốn random.";
+    }
+
+    function BossOptionItemHtml(id, name, checked, option) {
+      var safeId = id.replace(/[^a-zA-Z0-9_-]/g, "_");
+      var html = '<div class="option-picker-item boss-option-item' + (checked ? ' checklist-item-selected' : '') + '"><input type="checkbox" id="bossDropOption_' + safeId + '"' + (checked ? ' checked="checked"' : '') + ' onclick="ToggleBossDropOption(\'' + EscapeJs(id) + '\', this.checked)"><label for="bossDropOption_' + safeId + '">' + Html(id + " - " + name) + '</label>';
+      if (checked) {
+        html += '<span class="boss-option-range">Min <input value="' + HtmlAttr(option.paramMin) + '" onchange="UpdateBossDropOptionBound(\'' + EscapeJs(id) + '\', \'paramMin\', this.value)"> Max <input value="' + HtmlAttr(option.paramMax) + '" onchange="UpdateBossDropOptionBound(\'' + EscapeJs(id) + '\', \'paramMax\', this.value)"></span>';
+      }
+      return html + "</div>";
+    }
+
+    function ToggleBossDropOption(id, checked) {
+      if (selectedBossDrop < 0 || selectedBossDrop >= bossDrops.length) return;
+      var options = bossDrops[selectedBossDrop].options || [], next = [], found = false;
+      for (var i = 0; i < options.length; i++) {
+        if (("" + options[i].id) == id) { found = true; if (!checked) continue; }
+        next.push(options[i]);
+      }
+      if (checked && !found) next.push({ id: parseInt(id, 10), paramMin: 0, paramMax: 0 });
+      bossDrops[selectedBossDrop].options = next;
+      RenderBossOptionChecklist(); RenderBossDrops();
+    }
+
+    function UpdateBossDropOptionBound(id, field, value) {
+      if (selectedBossDrop < 0 || !/^-?\d+$/.test(value)) { Msg("bossMessage", "Chỉ số option phải là số nguyên."); return; }
+      var options = bossDrops[selectedBossDrop].options || [];
+      for (var i = 0; i < options.length; i++) if (("" + options[i].id) == id) options[i][field] = parseInt(value, 10);
+      RenderBossDrops();
+    }
+
+    function LoadAdminBosses() {
+      LoadBossSkillCatalog();
+      adminBossRows = ParseTsv(RunAdmin("listexistingbosses", { Search: V("bossSearch") }));
+      var html = "<thead><tr><th>Boss ID</th><th>Tên Boss</th><th>Class</th><th>Map mặc định</th><th>Skill</th><th>Cấu hình</th></tr></thead><tbody>";
+      for (var i = 1; i < adminBossRows.length; i++) {
+        var row = adminBossRows[i];
+        var skills = ParseBossSkills(row[6]);
+        var status = row[8] == "0" ? "Đã tắt" : (row[7] == "1" ? "Tùy chỉnh" : "Mặc định");
+        var configuredMaps = ParseNumberArray(row[14]);
+        var mapLabel = configuredMaps.length ? ((row[15] || configuredMaps.join(", ")) + " (ghi đè)") : (row[4] || "Theo class");
+        html += '<tr onclick="PickAdminBoss(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[2] + " (" + row[1] + ")") + '</td><td>' + Html(row[3]) + '</td><td>' + Html(mapLabel) + '</td><td>' + skills.length + '</td><td>' + status + '</td></tr>';
+      }
+      document.getElementById("bossTable").innerHTML = html + "</tbody>";
+      Msg("bossMessage", adminBossRows.length > 1 ? "Đã đọc " + (adminBossRows.length - 1) + " Boss được đăng ký trong BossManager." : "Không tìm thấy Boss phù hợp.");
+      AdjustTableOffsets();
+    }
+
+    function PickAdminBoss(index) {
+      var row = adminBossRows[index];
+      Set("bossId", row[0]); Set("bossKey", row[1]); Set("bossHasOverride", row[7]);
+      Set("bossServerId", row[0]); Set("bossServerKey", row[1]); Set("bossServerName", row[2]);
+      Set("bossServerClass", row[3]); Set("bossDefaultMaps", row[4] || "Được class tự quyết định");
+      document.getElementById("bossEnabled").checked = row[8] != "0";
+      document.getElementById("bossUseRange").checked = row[9] == "1";
+      Set("bossTimeStart", row[10] || "08:00"); Set("bossTimeEnd", row[11] || "22:00");
+      document.getElementById("bossUseInterval").checked = row[12] == "1";
+      Set("bossInterval", row[13] || "10"); bossSelectedMaps = ParseNumberArray(row[14]);
+      bossDefaultSkills = ParseBossSkills(row[5]);
+      bossConfiguredSkills = ParseBossSkills(row[6]);
+      bossDrops = ParseSpawnDrops(row[16]); selectedBossDrop = -1;
+      selectedBossSkill = -1;
+      NormalizeBossDrops();
+      ToggleSpawnSchedule("boss"); RenderBossMapChecklist(); RenderBossDefaultSkills(); RenderBossConfiguredSkills(); ClearBossSkillEditor(); ClearBossDropSelection(); RenderBossItemChecklist(); RenderBossDrops();
+      Msg("bossMessage", "Đang cấu hình " + row[2] + ". Skill bên trên được đọc trực tiếp từ BossesData.java.");
+    }
+
+    function LoadBossSkillCatalog() {
+      if (bossSkillRows.length > 1) return;
+      bossSkillRows = ParseTsv(RunAdmin("listbossskills", {}));
+      var html = '<option value="">Chọn skill</option>';
+      bossSkillNames = {};
+      for (var i = 1; i < bossSkillRows.length; i++) {
+        var id = bossSkillRows[i][0];
+        if (bossSkillNames[id]) continue;
+        bossSkillNames[id] = bossSkillRows[i][1] || ("Skill " + id);
+        html += '<option value="' + HtmlAttr(id) + '">' + Html(id + " - " + bossSkillNames[id]) + '</option>';
+      }
+      document.getElementById("bossSkillId").innerHTML = html;
+    }
+
+    function ParseBossSkills(json) {
+      try {
+        var data = JSON.parse(json || "[]");
+        var result = [];
+        for (var i = 0; i < data.length; i++) result.push({ id: parseInt(data[i].id, 10), level: parseInt(data[i].level, 10), cooldown: parseInt(data[i].cooldown, 10) });
+        return result;
+      } catch (e) { return []; }
+    }
+
+    function BossSkillName(id) { return bossSkillNames["" + id] || ("Skill " + id); }
+
+    function RenderBossDefaultSkills() {
+      var html = "<thead><tr><th>ID</th><th>Tên skill</th><th>Cấp</th><th>Hồi chiêu</th></tr></thead><tbody>";
+      for (var i = 0; i < bossDefaultSkills.length; i++) {
+        var s = bossDefaultSkills[i];
+        html += "<tr><td>" + s.id + "</td><td>" + Html(BossSkillName(s.id)) + "</td><td>" + s.level + "</td><td>" + s.cooldown + " ms</td></tr>";
+      }
+      document.getElementById("bossDefaultSkillsTable").innerHTML = html + "</tbody>";
+    }
+
+    function RenderBossConfiguredSkills() {
+      var html = "<thead><tr><th>ID</th><th>Tên skill</th><th>Cấp</th><th>Hồi chiêu</th><th></th></tr></thead><tbody>";
+      for (var i = 0; i < bossConfiguredSkills.length; i++) {
+        var s = bossConfiguredSkills[i];
+        html += '<tr onclick="PickBossSkill(' + i + ')"><td>' + s.id + '</td><td>' + Html(BossSkillName(s.id)) + '</td><td>' + s.level + '</td><td>' + s.cooldown + ' ms</td><td><button class="danger" onclick="RemoveBossSkill(' + i + '); event.cancelBubble=true">Xóa</button></td></tr>';
+      }
+      document.getElementById("bossConfiguredSkillsTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickBossSkill(index) {
+      var s = bossConfiguredSkills[index]; selectedBossSkill = index;
+      Set("bossSkillId", s.id); Set("bossSkillLevel", s.level); Set("bossSkillCooldown", s.cooldown); ShowBossSkillInfo();
+    }
+
+    function AddBossSkill() {
+      if (!V("bossId")) { Msg("bossMessage", "Hãy chọn Boss trong bảng bên trái."); return; }
+      if (!/^\d+$/.test(V("bossSkillId")) || !/^[1-7]$/.test(V("bossSkillLevel")) || !/^\d+$/.test(V("bossSkillCooldown"))) {
+        Msg("bossMessage", "Hãy chọn skill, cấp từ 1–7 và nhập hồi chiêu bằng mili giây."); return;
+      }
+      var cooldown = parseInt(V("bossSkillCooldown"), 10);
+      if (cooldown < 50 || cooldown > 3600000) { Msg("bossMessage", "Hồi chiêu phải từ 50 ms đến 3.600.000 ms."); return; }
+      var skill = { id: parseInt(V("bossSkillId"), 10), level: parseInt(V("bossSkillLevel"), 10), cooldown: cooldown };
+      var target = selectedBossSkill;
+      if (target < 0) {
+        for (var i = 0; i < bossConfiguredSkills.length; i++) if (bossConfiguredSkills[i].id == skill.id) { target = i; break; }
+      }
+      if (target >= 0) bossConfiguredSkills[target] = skill; else bossConfiguredSkills.push(skill);
+      ClearBossSkillEditor(); RenderBossConfiguredSkills();
+      Msg("bossMessage", "Đã cập nhật bộ skill; bấm Lưu cấu hình Boss để ghi database.");
+    }
+
+    function RemoveBossSkill(index) {
+      bossConfiguredSkills.splice(index, 1); ClearBossSkillEditor(); RenderBossConfiguredSkills();
+    }
+
+    function ClearBossSkillEditor() {
+      selectedBossSkill = -1; Set("bossSkillId", ""); Set("bossSkillLevel", "7"); Set("bossSkillCooldown", "1000"); ShowBossSkillInfo();
+    }
+
+    function ShowBossSkillInfo() {
+      var name = V("bossSkillId") ? BossSkillName(V("bossSkillId")) : "1000 ms = 1 giây";
+      Set("bossSkillHint", name);
+    }
+
+    function ResetBossSkillsToDefault() {
+      bossConfiguredSkills = ParseBossSkills(JSON.stringify(bossDefaultSkills));
+      ClearBossSkillEditor(); RenderBossConfiguredSkills();
+      Msg("bossMessage", "Đã nạp lại skill gốc. Bấm Lưu nếu muốn ghi thành cấu hình hiện tại.");
+    }
+
+    function SaveBossOverride() {
+      if (!V("bossId")) { Msg("bossMessage", "Hãy chọn Boss trong bảng bên trái."); return; }
+      if (bossConfiguredSkills.length == 0) { Msg("bossMessage", "Boss phải có ít nhất một skill."); return; }
+      var text = RunAdmin("savebossoverride", {
+        OwnerId: V("bossId"), Name: V("bossKey"), Enabled: CheckedValue("bossEnabled"),
+        SkillsJson: JSON.stringify(bossConfiguredSkills), DropsJson: JSON.stringify(bossDrops),
+        UseTimeRange: CheckedValue("bossUseRange"), TimeStart: V("bossTimeStart"), TimeEnd: V("bossTimeEnd"),
+        UseInterval: CheckedValue("bossUseInterval"), IntervalMinutes: V("bossInterval"), MapIdsJson: JSON.stringify(bossSelectedMaps)
+      });
+      Msg("bossMessage", StatusText(text));
+      if (text.indexOf("OK\t") == 0 || text.indexOf("OK ") == 0) LoadAdminBosses();
+    }
+
+    function DeleteBossOverride() {
+      if (!V("bossId")) return;
+      if (V("bossHasOverride") != "1") { Msg("bossMessage", "Boss này đang dùng skill mặc định, không có cấu hình để gỡ."); return; }
+      if (!window.confirm("Trả " + V("bossServerName") + " về bộ skill mặc định trong mã nguồn?")) return;
+      Msg("bossMessage", StatusText(RunAdmin("deletebossoverride", { OwnerId: V("bossId") })));
+      LoadAdminBosses();
+    }
+
+    function LoadAdminMobs() {
+      LoadSpawnLookups();
+      adminMobRows = ParseTsv(RunAdmin("listadminmobs", { Search: V("mobSearch") }));
+      var html = "<thead><tr><th>ID</th><th>Tên Mob</th><th>HP</th><th>Trạng thái</th><th>Lịch</th><th>Cấu hình</th></tr></thead><tbody>";
+      for (var i = 1; i < adminMobRows.length; i++) {
+        var row = adminMobRows[i];
+        html += '<tr onclick="PickAdminMob(' + i + ')"><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + (row[5] == "1" ? "Bật" : "Tắt") + '</td><td>' + Html(SpawnScheduleLabel(row[6], row[7], row[8], row[9], row[10])) + '</td><td>' + (row[0] == "0" ? "Mặc định" : "Tùy chỉnh") + '</td></tr>';
+      }
+      document.getElementById("mobTable").innerHTML = html + "</tbody>";
+      Msg("mobMessage", adminMobRows.length > 1 ? "Đã tải " + (adminMobRows.length - 1) + " mob template." : "Không tìm thấy Mob.");
+      AdjustTableOffsets();
+    }
+
+    function PickAdminMob(index) {
+      var row = adminMobRows[index];
+      Set("mobConfigId", row[0]); Set("mobTemplateId", row[1]); Set("mobName", row[1] + " - " + row[2]);
+      Set("mobBaseHp", row[3]); Set("mobBaseDamage", row[4]); document.getElementById("mobEnabled").checked = row[5] == "1";
+      document.getElementById("mobUseRange").checked = row[6] == "1"; Set("mobTimeStart", row[7] || "08:00"); Set("mobTimeEnd", row[8] || "22:00");
+      document.getElementById("mobUseInterval").checked = row[9] == "1"; Set("mobInterval", row[10] || "1");
+      mobDrops = ParseSpawnDrops(row[11]); selectedMobDrop = -1;
+      ToggleSpawnSchedule("mob"); ClearSpawnDropEditor("mob"); RenderSpawnDrops("mob");
+      Msg("mobMessage", "Đang cấu hình Mob " + row[2] + ".");
+    }
+
+    function SaveAdminMob() {
+      if (!V("mobTemplateId")) { Msg("mobMessage", "Hãy chọn một Mob trong bảng bên trái."); return; }
+      var text = RunAdmin("saveadminmob", {
+        OwnerId: V("mobConfigId"), TemplateId: V("mobTemplateId"), Enabled: CheckedValue("mobEnabled"),
+        UseTimeRange: CheckedValue("mobUseRange"), TimeStart: V("mobTimeStart"), TimeEnd: V("mobTimeEnd"),
+        UseInterval: CheckedValue("mobUseInterval"), IntervalMinutes: V("mobInterval"), DropsJson: JSON.stringify(mobDrops)
+      });
+      Msg("mobMessage", StatusText(text));
+      if (text.indexOf("OK\t") == 0 || text.indexOf("OK ") == 0) LoadAdminMobs();
+    }
+
+    function DeleteAdminMob() {
+      if (!V("mobConfigId") || V("mobConfigId") == "0") { Msg("mobMessage", "Mob này đang dùng cấu hình mặc định."); return; }
+      if (!window.confirm("Gỡ lịch và drop tùy chỉnh của " + V("mobName") + "?")) return;
+      Msg("mobMessage", StatusText(RunAdmin("deleteadminmob", { OwnerId: V("mobConfigId") })));
+      LoadAdminMobs();
+    }
+
+    function ParseSpawnDrops(json) {
+      try {
+        var parsed = JSON.parse(json || "[]");
+        return parsed && parsed.length != null ? parsed : [];
+      } catch (e) { return []; }
+    }
+
+    function ParseSpawnOptions(text, messageId) {
+      var result = [];
+      text = Trim(text);
+      if (!text) return result;
+      var parts = text.split(",");
+      for (var i = 0; i < parts.length; i++) {
+        var pair = Trim(parts[i]).split(":");
+        if (pair.length != 2 || !/^\d+$/.test(Trim(pair[0])) || !/^-?\d+$/.test(Trim(pair[1]))) {
+          Msg(messageId, "Chỉ số không hợp lệ. Dùng dạng optionId:param, ví dụ 77:15,103:20.");
+          return null;
+        }
+        result.push({ id: parseInt(pair[0], 10), param: parseInt(pair[1], 10) });
+      }
+      return result;
+    }
+
+    function SpawnOptionsText(options) {
+      var labels = [];
+      options = options || [];
+      for (var i = 0; i < options.length; i++) {
+        var min = options[i].paramMin == null ? options[i].param : options[i].paramMin;
+        var max = options[i].paramMax == null ? min : options[i].paramMax;
+        labels.push(options[i].id + ":" + (min == max ? min : min + "–" + max));
+      }
+      return labels.join(",");
+    }
+
+    function AddSpawnDrop(prefix) {
+      var messageId = prefix + "Message";
+      if (!/^\d+$/.test(V(prefix + "DropItem")) || !/^\d+$/.test(V(prefix + "DropMin")) || !/^\d+$/.test(V(prefix + "DropMax")) || !/^\d+(\.\d+)?$/.test(V(prefix + "DropRate"))) {
+        Msg(messageId, "Item, số lượng và tỉ lệ phải là số hợp lệ."); return;
+      }
+      var rate = parseFloat(V(prefix + "DropRate"));
+      if (rate < 0 || rate > 100 || parseInt(V(prefix + "DropMin"), 10) < 1 || parseInt(V(prefix + "DropMin"), 10) > parseInt(V(prefix + "DropMax"), 10)) {
+        Msg(messageId, "Tỉ lệ phải từ 0–100 và số lượng min không lớn hơn max."); return;
+      }
+      var options = ParseSpawnOptions(V(prefix + "DropOptions"), messageId); if (options == null) return;
+      var drop = { itemId: parseInt(V(prefix + "DropItem"), 10), quantityMin: parseInt(V(prefix + "DropMin"), 10), quantityMax: parseInt(V(prefix + "DropMax"), 10), dropRate: rate, options: options };
+      var list = prefix == "boss" ? bossDrops : mobDrops;
+      var selected = prefix == "boss" ? selectedBossDrop : selectedMobDrop;
+      if (selected >= 0) list[selected] = drop; else list.push(drop);
+      if (prefix == "boss") selectedBossDrop = -1; else selectedMobDrop = -1;
+      ClearSpawnDropEditor(prefix); RenderSpawnDrops(prefix);
+      Msg(messageId, "Đã cập nhật danh sách drop; bấm Lưu để ghi vào database.");
+    }
+
+    function RenderSpawnDrops(prefix) {
+      var list = prefix == "boss" ? bossDrops : mobDrops;
+      var html = "<thead><tr><th>Item</th><th>Số lượng</th><th>Tỉ lệ</th><th>Chỉ số</th><th></th></tr></thead><tbody>";
+      for (var i = 0; i < list.length; i++) {
+        var d = list[i];
+        html += '<tr onclick="PickSpawnDrop(\'' + prefix + '\',' + i + ')"><td>' + Html(d.itemId + " - " + (spawnItemNames[d.itemId] || "Không rõ")) + '</td><td>' + Html(d.quantityMin + "–" + d.quantityMax) + '</td><td>' + Html(d.dropRate + "%") + '</td><td>' + Html(SpawnOptionsText(d.options)) + '</td><td><button class="danger" onclick="RemoveSpawnDrop(\'' + prefix + '\',' + i + '); event.cancelBubble=true">Xóa</button></td></tr>';
+      }
+      document.getElementById(prefix + "DropsTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickSpawnDrop(prefix, index) {
+      var list = prefix == "boss" ? bossDrops : mobDrops; var d = list[index];
+      if (prefix == "boss") selectedBossDrop = index; else selectedMobDrop = index;
+      Set(prefix + "DropItem", d.itemId); Set(prefix + "DropMin", d.quantityMin); Set(prefix + "DropMax", d.quantityMax); Set(prefix + "DropRate", d.dropRate); Set(prefix + "DropOptions", SpawnOptionsText(d.options));
+      ShowSpawnItemName(prefix);
+    }
+
+    function RemoveSpawnDrop(prefix, index) {
+      var list = prefix == "boss" ? bossDrops : mobDrops; list.splice(index, 1);
+      if (prefix == "boss") selectedBossDrop = -1; else selectedMobDrop = -1;
+      ClearSpawnDropEditor(prefix); RenderSpawnDrops(prefix);
+    }
+
+    function ClearSpawnDropEditor(prefix) {
+      Set(prefix + "DropItem", ""); Set(prefix + "DropItemName", ""); Set(prefix + "DropMin", "1"); Set(prefix + "DropMax", "1"); Set(prefix + "DropRate", "100"); Set(prefix + "DropOptions", "");
+      if (prefix == "boss") selectedBossDrop = -1; else selectedMobDrop = -1;
+    }
+
+    function ShowSpawnItemName(prefix) {
+      Set(prefix + "DropItemName", spawnItemNames[V(prefix + "DropItem")] || "Không tìm thấy item");
+    }
+
+    function LoadAuditHistory() {
+      auditRows = ParseTsv(RunAdmin("listaudit", { Search: V("auditSearch") }));
+      selectedAuditIndex = -1;
+      var html = "<thead><tr><th>ID</th><th>Thời gian</th><th>Hành động</th><th>Nội dung</th><th>Trạng thái</th><th>Hoàn tác</th></tr></thead><tbody>";
+      for (var i = 1; i < auditRows.length; i++) {
+        var row = auditRows[i];
+        var status = row[4] == "success" ? "Thành công" : (row[4] == "failed" ? "Thất bại" : row[4]);
+        var undo = row[6] ? "Đã hoàn tác" : (row[7] == "1" ? "Có thể hoàn tác" : (row[5] == "1" ? "Đang khóa" : "Không hỗ trợ"));
+        html += '<tr onclick="PickAuditEntry(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(status) + '</td><td>' + Html(undo) + '</td></tr>';
+      }
+      document.getElementById("auditTable").innerHTML = html + "</tbody>";
+      ClearAuditDetail();
+      Msg("auditMessage", auditRows.length > 1 ? "Đã tải " + (auditRows.length - 1) + " thao tác gần nhất." : "Chưa có thao tác thay đổi nào được ghi lại.");
+      AdjustTableOffsets();
+    }
+
+    function PickAuditEntry(index) {
+      var row = auditRows[index]; selectedAuditIndex = index;
+      Set("auditId", row[0]); Set("auditCanUndo", row[7]); Set("auditDetailId", row[0]); Set("auditDetailTime", row[1]);
+      Set("auditDetailAction", row[2]); Set("auditDetailSummary", row[3]); Set("auditDetailResult", row[8]);
+      var state = row[6] ? "Đã hoàn tác lúc " + row[6] : (row[7] == "1" ? "Có thể hoàn tác ngay" : (row[5] == "1" ? "Phải hoàn tác các thay đổi mới hơn trước" : "Thao tác này không hỗ trợ hoàn tác"));
+      Set("auditUndoState", state);
+      document.getElementById("auditUndoButton").disabled = row[7] != "1";
+      Msg("auditMessage", "Đang xem lịch sử #" + row[0] + ".");
+    }
+
+    function ClearAuditDetail() {
+      Set("auditId", ""); Set("auditCanUndo", "0"); Set("auditDetailId", ""); Set("auditDetailTime", "");
+      Set("auditDetailAction", ""); Set("auditDetailSummary", ""); Set("auditDetailResult", ""); Set("auditUndoState", "Chọn một dòng lịch sử để xem chi tiết");
+      document.getElementById("auditUndoButton").disabled = true;
+    }
+
+    function UndoAuditEntry() {
+      if (!V("auditId") || V("auditCanUndo") != "1") { Msg("auditMessage", "Chỉ thay đổi gần nhất mới có thể hoàn tác."); return; }
+      if (!window.confirm("Hoàn tác thay đổi #" + V("auditId") + "? Dữ liệu sẽ trở về trạng thái ngay trước thao tác này.")) return;
+      var text = RunAdmin("undoaudit", { Id: V("auditId") });
+      Msg("auditMessage", StatusText(text));
+      LoadAuditHistory();
+    }
+
+    function CheckedValue(id) { return document.getElementById(id).checked ? "1" : "0"; }
 
     function StatusText(text) {
       var rows = ParseTsv(text);

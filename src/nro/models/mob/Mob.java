@@ -1,5 +1,6 @@
 package nro.models.mob;
 
+import nro.models.admin.AdminSpawnConfigService;
 import nro.models.services.InventoryService;
 import nro.models.services.Service;
 import nro.models.services.TaskService;
@@ -254,6 +255,9 @@ public class Mob {
     }
 
     public void update() {
+        if (!AdminSpawnConfigService.gI().prepareMobUpdate(this)) {
+            return;
+        }
         if (zone.isGoldenFriezaAlive && TimeUtil.is21H()) {
             if (!isDie()) {
                 startDie();
@@ -291,7 +295,7 @@ public class Mob {
                     if (this.zone.isGoldenFriezaAlive && TimeUtil.is21H()) {
                         return;
                     }
-                    if (Util.canDoWithTime(lastTimeDie, 3000)) {
+                    if (Util.canDoWithTime(lastTimeDie, AdminSpawnConfigService.gI().getMobRespawnMillis(this.tempId))) {
                         this.hoiSinh();
                         this.sendMobHoiSinh();
                     }
@@ -607,6 +611,7 @@ public class Mob {
         }
 
         if (this.tempId == 0) {
+            list.addAll(AdminSpawnConfigService.gI().createMobDrops(this, player.id, x, yEnd));
             return list;
         }
         int mapid = player.zone.map.mapId;
@@ -1066,6 +1071,7 @@ public class Mob {
             }
         }
 
+        list.addAll(AdminSpawnConfigService.gI().createMobDrops(this, player.id, x, yEnd));
         return list;
 
     }

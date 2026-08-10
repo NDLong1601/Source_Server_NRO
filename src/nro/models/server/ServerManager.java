@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import nro.models.database.HistoryTransactionDAO;
 import nro.models.boss.Boss_Manager.BossManager;
+import nro.models.admin.AdminSpawnConfigService;
 import nro.models.boss.Boss_Manager.OtherBossManager;
 import nro.models.boss.Boss_Manager.TreasureUnderSeaManager;
 import nro.models.boss.Boss_Manager.SnakeWayManager;
@@ -118,6 +119,7 @@ public class ServerManager {
             AutoMaintenance.gI().start();
             new Thread(ShenronEventManager.gI(), "Update Shenron").start();
 
+            AdminSpawnConfigService.gI().load();
             BossManager.gI().loadBoss();
             Manager.MAPS.forEach(nro.models.map.Map::initBoss);
             EventManager.gI().init();

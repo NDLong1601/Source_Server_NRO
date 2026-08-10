@@ -45,3 +45,7 @@
 [2026-08-10 12:48:05] Đã dừng tiến trình server PID 11048.
 [2026-08-10 12:48:05] Đã dừng tiến trình server PID 9560.
 [2026-08-10 12:48:09] Đã khởi chạy server từ 20.jar với PID 19648.
+[2026-08-10 16:48:39] Đã dừng tiến trình server PID 19648.
+[2026-08-10 16:48:39] Đã dừng tiến trình server PID 23852.
+[2026-08-10 16:48:44] Đã áp dụng 20.jar.pending trước khi khởi động; backup: 20.jar.bak_pending_20260810_164844.
+[2026-08-10 16:48:44] Đã khởi chạy server từ 20.jar với PID 12956.

@@ -1,5 +1,6 @@
 package nro.models.boss.Boss_Manager;
 
+import nro.models.admin.AdminSpawnConfigService;
 import nro.models.boss.Android.Android13;
 import nro.models.boss.Android.Android14;
 import nro.models.boss.Android.Android15;
@@ -171,6 +172,9 @@ public class BossManager implements Runnable {
     }
 
     public Boss createBoss(int bossID) {
+        if (!AdminSpawnConfigService.gI().isServerBossEnabled(bossID)) {
+            return null;
+        }
         try {
             return switch (bossID) {               
                 case BossID.BROLY ->
