@@ -20,9 +20,7 @@ public class NangChiSoBongTai {
     private static final int DA_XANH_LAM_ID = 935;
     private static final int REQUIRED_HON_BONG_TAI = 200; 
 
-    private static final byte[] UPGRADE_OPTIONS = {77, 80, 81, 103, 50, 94, 5};
-    private static final byte PARAM_MIN = 5;
-    private static final byte PARAM_MAX = 15;
+    private static final int[] DEFAULT_UPGRADE_OPTIONS = {77, 80, 81, 103, 50, 94, 5};
 
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() == 3) {
@@ -41,7 +39,7 @@ public class NangChiSoBongTai {
             if (bongTai != null && honBongTai != null && daXanhLam != null) {
 
                 player.combineNew.gemCombine = GEM_NANG_BT;
-                player.combineNew.ratioCombine = RATIO_NANG_CAP;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("earring.level2.optionRate", RATIO_NANG_CAP);
 
                 // Lấy số lượng Mảnh hồn bông tai từ param (option 31)
                 int currentHonSoLuong = InventoryService.gI().getParam(player, ITEM_PARAM_INDEX, HON_BONG_TAI_ID);
@@ -108,8 +106,11 @@ public class NangChiSoBongTai {
             Item bongTai = player.combineNew.itemsCombine.stream().filter(item -> item.template.id == BONG_TAI_ID).findFirst().orElse(null);
 
             if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
-                byte optionId = UPGRADE_OPTIONS[Util.nextInt(0, UPGRADE_OPTIONS.length - 1)];
-                byte param = (byte) Util.nextInt(PARAM_MIN, PARAM_MAX);
+                int[] upgradeOptions = CombineConfig.getIntArray("earring.level2.options", DEFAULT_UPGRADE_OPTIONS);
+                int optionId = upgradeOptions[Util.nextInt(0, upgradeOptions.length - 1)];
+                int paramMin = CombineConfig.getInt("earring.level2.paramMin", 5, 0, 32767);
+                int paramMax = CombineConfig.getInt("earring.level2.paramMax", 15, paramMin, 32767);
+                int param = Util.nextInt(paramMin, paramMax);
                 
                 // Xóa các option cũ trên bông tai và thêm option mới
                 bongTai.itemOptions.clear();

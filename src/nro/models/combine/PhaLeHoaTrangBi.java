@@ -42,7 +42,7 @@ public class PhaLeHoaTrangBi {
     private static void QuyTrinh(Player player, Item item, int star) {
         player.combineNew.goldCombine = CombineSystem.getGoldPhaLeHoa(star);
         player.combineNew.gemCombine = CombineSystem.getGemPhaLeHoa(star);
-        player.combineNew.ratioCombine = getFakeRatio(star);
+        player.combineNew.ratioCombine = getRatio(star);
 
         String npcSay = item.template.name + "\n|2|";
         for (Item.ItemOption io : item.itemOptions) {
@@ -63,53 +63,8 @@ public class PhaLeHoaTrangBi {
     }
 
     public static float getRatio(int star) {
-        switch (star) {
-            case 0:
-                return 50f;
-            case 1:
-                return 20f;
-            case 2:
-                return 10f;
-            case 3:
-                return 5f;
-            case 4:
-                return 1f;
-            case 5:
-                return 0.7f;
-            case 6:
-                return 0.5f;
-            case 7:
-                return 0.1f;
-            case 8:
-                return 0.1f;
-        }
-
-        return 0;
-    }
-
-    private static int getFakeRatio(int star) {
-        return switch (star) {
-            case 0 ->
-                80;
-            case 1 ->
-                40;
-            case 2 ->
-                30;
-            case 3 ->
-                20;
-            case 4 ->
-                10;
-            case 5 ->
-                5;
-            case 6 ->
-                3;
-            case 7 ->
-                2;
-            case 8 ->
-                1;
-            default ->
-                0;
-        };
+        return (float) CombineConfig.getLevelRate("equipment.socket.rates", star,
+                50, 20, 10, 5, 1, 0.7, 0.5, 0.1, 0.1);
     }
 
     public static void phaLeHoa(Player player, int... numm) {

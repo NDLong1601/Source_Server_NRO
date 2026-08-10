@@ -376,6 +376,82 @@
       resize: vertical;
     }
 
+    .option-picker-box {
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: #f8fafc;
+    }
+
+    .option-picker-toolbar {
+      margin-bottom: 8px;
+    }
+
+    .option-picker-list {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #dbe3ed;
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 5px;
+    }
+
+    .option-picker-item {
+      display: inline-block;
+      width: 50%;
+      min-height: 30px;
+      box-sizing: border-box;
+      padding: 5px 7px;
+      vertical-align: top;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .option-picker-item:hover {
+      background: #ecfeff;
+    }
+
+    .checklist-item-selected {
+      background: #ecfeff;
+    }
+
+    .checklist-item-with-param {
+      position: relative;
+      padding-right: 116px;
+    }
+
+    .checklist-param-input {
+      position: absolute;
+      right: 6px;
+      top: 3px;
+      width: 100px;
+      height: 26px;
+      padding: 0 7px;
+      text-align: right;
+    }
+
+    .option-picker-item input,
+    .inline-check input {
+      width: auto;
+      height: auto;
+      margin: 1px 6px 0 0;
+      vertical-align: top;
+    }
+
+    .option-picker-item label,
+    .inline-check label {
+      display: inline;
+      margin: 0;
+      color: #172033;
+      cursor: pointer;
+    }
+
+    .option-picker-summary {
+      margin: 6px 0;
+      color: #0f766e;
+      font-weight: 600;
+    }
+
     .row {
       display: table;
       width: 100%;
@@ -498,6 +574,167 @@
       width: auto !important;
     }
 
+    .gift-status-active,
+    tr:hover td.gift-status-active {
+      background: #dcfce7 !important;
+      color: #166534;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .gift-status-empty,
+    .gift-status-expired,
+    tr:hover td.gift-status-empty,
+    tr:hover td.gift-status-expired {
+      background: #fee2e2 !important;
+      color: #991b1b;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .gift-status-waiting,
+    tr:hover td.gift-status-waiting {
+      background: #fef3c7 !important;
+      color: #92400e;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .gift-expiry-mode {
+      margin-top: 8px;
+      padding: 9px;
+      border: 1px solid #dbe3ed;
+      border-radius: 7px;
+      background: #f8fafc;
+    }
+
+    .gift-expiry-mode .inline-check {
+      display: inline-block;
+      margin: 0 18px 4px 0;
+    }
+
+    .gift-expiry-mode .inline-check input {
+      width: auto;
+      height: auto;
+    }
+
+    .gift-item-list {
+      max-height: 190px;
+    }
+
+    .gift-reward-table {
+      max-height: 150px;
+    }
+
+    #panelGift .gift-left-pane {
+      width: 54%;
+    }
+
+    #panelGift .gift-right-pane {
+      width: 44%;
+      padding: 16px;
+    }
+
+    #giftRewardEditor {
+      margin-top: 14px;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      background: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.06);
+    }
+
+    #giftRewardEditor .section-title {
+      margin-bottom: 5px;
+      color: #0f766e;
+      font-size: 16px;
+    }
+
+    .gift-reward-meta .gift-count-cell {
+      width: 170px;
+    }
+
+    #giftRewardOptionCount {
+      background: #ecfeff;
+      color: #0f766e;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #giftRewardEditor .option-picker-box {
+      margin-top: 11px;
+      padding: 10px;
+      background: #f8fafc;
+    }
+
+    .gift-option-columns {
+      position: relative;
+      height: 23px;
+      margin: 0 5px;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .gift-option-columns .gift-param-heading {
+      position: absolute;
+      right: 8px;
+      width: 126px;
+      text-align: center;
+    }
+
+    #giftOptionList {
+      max-height: 330px;
+      padding: 6px;
+    }
+
+    #giftOptionList .option-picker-item {
+      display: block;
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 146px 7px 9px;
+      border-bottom: 1px solid #e5eaf0;
+    }
+
+    #giftOptionList .option-picker-item label {
+      display: inline-block;
+      max-width: 100%;
+      line-height: 18px;
+      white-space: normal;
+      vertical-align: top;
+    }
+
+    .gift-option-row {
+      position: relative;
+    }
+
+    #giftOptionList .gift-option-selected {
+      background: #ecfeff;
+    }
+
+    .gift-option-param {
+      position: absolute;
+      right: 8px;
+      top: 5px;
+      width: 126px;
+      height: 28px;
+      padding: 0 8px;
+      border-color: #94a3b8;
+      background: #ffffff;
+      text-align: right;
+    }
+
+    .gift-note {
+      margin: 8px 0;
+      padding: 8px 10px;
+      border-left: 3px solid #f59e0b;
+      background: #fffbeb;
+      color: #78350f;
+      font-size: 12px;
+      line-height: 17px;
+    }
+
     @media screen and (max-width: 1100px) {
       #app {
         min-width: 760px;
@@ -528,9 +765,10 @@
 
       .nav-button {
         display: inline-block;
-        width: 23.5%;
-        margin: 10px 1% 0 0;
+        width: 15.6%;
+        margin: 10px 0.7% 0 0;
         text-align: center;
+        padding: 0 5px;
       }
 
       .status-card {
@@ -571,6 +809,11 @@
       .right-pane {
         left: 0;
         top: 46%;
+        width: auto;
+      }
+
+      #panelGift .gift-left-pane,
+      #panelGift .gift-right-pane {
         width: auto;
       }
 
@@ -663,6 +906,14 @@
         display: block;
         padding-right: 0;
       }
+
+      .option-picker-item {
+        width: 100%;
+      }
+
+      .gift-reward-meta .gift-count-cell {
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -674,6 +925,8 @@
       <button id="navItems" class="nav-button active" onclick="ShowTab('items')">Vật phẩm</button>
       <button id="navEvents" class="nav-button" onclick="ShowTab('events')">Sự kiện</button>
       <button id="navEquip" class="nav-button" onclick="ShowTab('equip')">Chỉ số TB</button>
+      <button id="navCombine" class="nav-button" onclick="ShowTab('combine')">Nâng cấp/ Cường hóa</button>
+      <button id="navGift" class="nav-button" onclick="ShowTab('gift')">Giftcode</button>
       <button id="navNpc" class="nav-button" onclick="ShowTab('npc')">NPC & Shop</button>
       <div class="status-card" id="statusBox">Đang tải cấu hình...</div>
     </div>
@@ -808,6 +1061,62 @@
         </div>
       </div>
 
+      <div id="panelCombine" class="panel">
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="combineSearch" style="width:360px" placeholder="Tìm chức năng hoặc nhóm" onkeyup="FilterCombineRows()">
+              <button onclick="LoadCombineConfig()">Tải lại</button>
+            </div>
+            <div class="table-wrap">
+              <table id="combineTable"></table>
+            </div>
+          </div>
+
+          <div class="right-pane">
+            <div class="section-title">Cấu hình chức năng combine</div>
+            <input type="hidden" id="combineKey">
+            <label>Nhóm</label><input id="combineCategory" readonly>
+            <label>Chức năng</label><input id="combineName" readonly>
+            <div class="row">
+              <div class="cell"><label>Kiểu dữ liệu</label><input id="combineKind" readonly></div>
+              <div class="cell"><label>Giá trị mặc định</label><input id="combineDefault" readonly></div>
+            </div>
+            <div id="combineValueBox">
+              <label>Giá trị đang dùng</label><textarea id="combineValue" placeholder="Chọn một cấu hình ở bảng bên trái"></textarea>
+            </div>
+            <div id="combineOptionBox" class="option-picker-box" style="display:none">
+              <div class="section-title">Danh sách option được phép random</div>
+              <div class="option-picker-toolbar">
+                <input id="combineOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderCombineOptionPicker()">
+              </div>
+              <div id="combineOptionSummary" class="option-picker-summary"></div>
+              <div id="combineOptionList" class="option-picker-list"></div>
+              <div class="row">
+                <div class="cell"><label>Param nhỏ nhất</label><input id="combineParamMin"></div>
+                <div class="cell"><label>Param lớn nhất</label><input id="combineParamMax"></div>
+              </div>
+              <div id="combineDuplicateBox" class="inline-check" style="display:none; margin-top:10px">
+                <input type="checkbox" id="combineAllowDuplicate">
+                <label for="combineAllowDuplicate">Cho phép hai dòng option bông tai cấp 3 bị trùng nhau</label>
+              </div>
+            </div>
+            <label>Mô tả</label><textarea id="combineDescription" readonly></textarea>
+            <div class="actions">
+              <button class="primary" onclick="SaveCombineConfig()">Lưu & áp dụng</button>
+              <button onclick="ResetCombineConfig()">Về mặc định</button>
+            </div>
+            <div class="split-small">
+              <div class="section-title">Quy tắc nhập</div>
+              <div>rate: số từ 0 đến 100, số lẻ dùng dấu chấm.</div>
+              <div>Option random: tick trực tiếp option mong muốn và nhập khoảng Param Min/Max.</div>
+              <div>bool: true hoặc false. Thay đổi có hiệu lực trong tối đa 1 giây, không cần restart.</div>
+            </div>
+            <div id="combineMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="panelEquip" class="panel">
         <div class="columns">
           <div class="left-pane">
@@ -850,16 +1159,16 @@
               <div class="section-title">Thêm / sửa option</div>
               <div class="row">
                 <div class="cell"><label>Option row</label><input id="equipOptionRowId"></div>
-                <div class="cell">
-                  <label>Option ID</label>
-                  <input id="equipOptionId" class="hidden-value" value="">
-                  <div id="combo_equipOptionId" class="combo" onclick="ToggleCombo('equipOptionId'); event.cancelBubble = true;">
-                    <span id="combo_equipOptionId_text" class="combo-text">Chọn option</span>
-                    <span class="combo-button"><span class="combo-caret"></span></span>
-                    <div id="combo_equipOptionId_menu" class="combo-menu"></div>
-                  </div>
-                </div>
                 <div class="cell"><label>Param</label><input id="equipOptionParam"></div>
+              </div>
+              <input id="equipOptionId" type="hidden" value="">
+              <div class="option-picker-box">
+                <div class="section-title">Chọn option cho dòng này</div>
+                <div class="option-picker-toolbar">
+                  <input id="equipOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderEquipOptionPicker()">
+                </div>
+                <div id="equipOptionSummary" class="option-picker-summary">Chưa chọn option</div>
+                <div id="equipOptionList" class="option-picker-list"></div>
               </div>
               <div class="actions">
                 <button onclick="NewEquipOption()">Option mới</button>
@@ -875,6 +1184,85 @@
               <div class="mini-table"><table id="equipPresetTable"></table></div>
             </div>
             <div id="equipMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelGift" class="panel">
+        <div class="columns">
+          <div class="left-pane gift-left-pane">
+            <div class="toolbar">
+              <input id="giftSearch" style="width:260px" placeholder="Tìm mã Giftcode">
+              <button onclick="LoadGiftCodes()">Tìm</button>
+              <button onclick="NewGiftCode()">Thêm mới</button>
+            </div>
+            <div class="table-wrap">
+              <table id="giftCodesTable"></table>
+            </div>
+          </div>
+
+          <div class="right-pane gift-right-pane">
+            <div class="section-title">Cấu hình Giftcode</div>
+            <div class="row">
+              <div class="cell"><label>ID</label><input id="giftId" readonly></div>
+              <div class="cell"><label>Mã Giftcode</label><input id="giftCode" maxlength="64" placeholder="Ví dụ: TAN_THU_2026"></div>
+            </div>
+            <div class="row">
+              <div class="cell"><label>Số lượt còn lại</label><input id="giftCount" value="100"></div>
+              <div class="cell">
+                <label>Giới hạn lượt</label>
+                <div class="inline-check"><input type="checkbox" id="giftUnlimited" onclick="ToggleGiftUnlimited()"><label for="giftUnlimited">Không giới hạn</label></div>
+              </div>
+            </div>
+
+            <label>Hạn sử dụng</label>
+            <div class="gift-expiry-mode">
+              <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryDays" value="days" checked onclick="SetGiftExpiryMode('days')"><label for="giftExpiryDays">Trong bao nhiêu ngày</label></div>
+              <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryRange" value="range" onclick="SetGiftExpiryMode('range')"><label for="giftExpiryRange">Từ ngày đến ngày</label></div>
+              <div id="giftDaysConfig">
+                <label>Số ngày hiệu lực tính từ lúc lưu</label><input id="giftDays" value="30">
+              </div>
+              <div id="giftRangeConfig" style="display:none">
+                <div class="row">
+                  <div class="cell"><label>Từ ngày (YYYY-MM-DD HH:mm:ss)</label><input id="giftStart" placeholder="2026-08-10 00:00:00"></div>
+                  <div class="cell"><label>Đến ngày (YYYY-MM-DD HH:mm:ss)</label><input id="giftEnd" placeholder="2026-09-10 23:59:59"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="split-small">
+              <div class="section-title">Danh sách quà</div>
+              <div class="option-picker-box">
+                <div class="option-picker-toolbar row">
+                  <div class="cell"><input id="giftItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="FilterGiftItems()"></div>
+                  <div class="cell" style="width:90px"><button onclick="LoadGiftItems(true)">Tải lại</button></div>
+                </div>
+                <div id="giftItemSummary" class="option-picker-summary">Chưa chọn phần quà</div>
+                <div id="giftItemList" class="option-picker-list gift-item-list"></div>
+              </div>
+              <div class="mini-table gift-reward-table"><table id="giftRewardsTable"></table></div>
+            </div>
+
+            <div id="giftRewardEditor" class="split-small" style="display:none">
+              <div class="section-title" id="giftRewardTitle">Cấu hình phần quà</div>
+              <div class="row gift-reward-meta">
+                <div class="cell"><label>Số lượng</label><input id="giftRewardQuantity" value="1" onchange="SetGiftRewardQuantity()"></div>
+                <div class="cell gift-count-cell"><label>Đã chọn option</label><input id="giftRewardOptionCount" value="0" readonly></div>
+              </div>
+              <div class="option-picker-box">
+                <div class="option-picker-toolbar"><input id="giftOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="FilterGiftOptions()"></div>
+                <div class="gift-option-columns"><span>Option áp dụng cho vật phẩm</span><span class="gift-param-heading">Param</span></div>
+                <div id="giftOptionList" class="option-picker-list"></div>
+              </div>
+            </div>
+
+            <div class="gift-note">Giftcode được server nạp vào bộ nhớ khi khởi động. Sau khi thêm, sửa hoặc xóa, hãy Restart server để áp dụng an toàn.</div>
+            <div class="actions">
+              <button onclick="NewGiftCode()">Mã mới</button>
+              <button class="primary" onclick="SaveGiftCode()">Lưu Giftcode</button>
+              <button class="danger" onclick="DeleteGiftCode()">Xóa Giftcode</button>
+            </div>
+            <div id="giftMessage" class="message"></div>
           </div>
         </div>
       </div>
@@ -1001,7 +1389,7 @@
     var shell = new ActiveXObject("WScript.Shell");
     var fso = new ActiveXObject("Scripting.FileSystemObject");
     var rootDir = GetRootDir();
-    var resultPath = rootDir + "\\logs\\admin_data_result.txt";
+    var adminRequestId = 0;
     var currentTab = "items";
     var comboData = {};
     var currentEquipGender = "";
@@ -1065,10 +1453,14 @@
       document.getElementById("panelItems").className = tab == "items" ? "panel active" : "panel";
       document.getElementById("panelEvents").className = tab == "events" ? "panel active" : "panel";
       document.getElementById("panelEquip").className = tab == "equip" ? "panel active" : "panel";
+      document.getElementById("panelCombine").className = tab == "combine" ? "panel active" : "panel";
+      document.getElementById("panelGift").className = tab == "gift" ? "panel active" : "panel";
       document.getElementById("panelNpc").className = tab == "npc" ? "panel active" : "panel";
       document.getElementById("navItems").className = tab == "items" ? "nav-button active" : "nav-button";
       document.getElementById("navEvents").className = tab == "events" ? "nav-button active" : "nav-button";
       document.getElementById("navEquip").className = tab == "equip" ? "nav-button active" : "nav-button";
+      document.getElementById("navCombine").className = tab == "combine" ? "nav-button active" : "nav-button";
+      document.getElementById("navGift").className = tab == "gift" ? "nav-button active" : "nav-button";
       document.getElementById("navNpc").className = tab == "npc" ? "nav-button active" : "nav-button";
       if (tab == "items") {
         document.getElementById("pageTitle").innerText = "Vật phẩm";
@@ -1082,6 +1474,15 @@
         document.getElementById("pageTitle").innerText = "Chỉ số trang bị";
         document.getElementById("pageSub").innerText = "Quản lý option của trang bị bán trong shop theo gender";
         LoadEquipItems();
+      } else if (tab == "combine") {
+        document.getElementById("pageTitle").innerText = "Quản lý Combine";
+        document.getElementById("pageSub").innerText = "Điều chỉnh tỉ lệ, mức tăng chỉ số và option random theo thời gian thực";
+        LoadCombineConfig();
+      } else if (tab == "gift") {
+        document.getElementById("pageTitle").innerText = "Quản lý Giftcode";
+        document.getElementById("pageSub").innerText = "Quản lý mã, số lượt, thời gian và quà kèm option riêng";
+        LoadGiftItems(false);
+        LoadGiftCodes();
       } else {
         document.getElementById("pageTitle").innerText = "NPC & Shop";
         document.getElementById("pageSub").innerText = "Gán shop, tab, item và option cho NPC";
@@ -1095,16 +1496,25 @@
       if (currentTab == "items") LoadItems();
       if (currentTab == "events") LoadStatus();
       if (currentTab == "equip") LoadEquipItems();
+      if (currentTab == "combine") LoadCombineConfig();
+      if (currentTab == "gift") { LoadGiftItems(false); LoadGiftCodes(); }
       if (currentTab == "npc") LoadShops();
     }
 
     function RunAdmin(action, params) {
-      var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + resultPath + '" -Encoded "1"';
+      adminRequestId++;
+      var requestPath = rootDir + "\\logs\\admin_data_result_" + (new Date().getTime()) + "_" + adminRequestId + ".txt";
+      var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + requestPath + '" -Encoded "1"';
       for (var key in params) {
         cmd += " -" + key + ' "' + SafeArg(EncodeArg(params[key])) + '"';
       }
       shell.Run(cmd, 0, true);
-      return ReadFile(resultPath);
+      var text = ReadFile(requestPath);
+      try {
+        if (fso.FileExists(requestPath)) fso.DeleteFile(requestPath, true);
+      } catch (e) {
+      }
+      return text;
     }
 
     function RunBat(action) {
@@ -1336,7 +1746,6 @@
       SetComboItems("shopIsNew", [["1", "Bật"], ["0", "Tắt"]]);
       SetComboItems("shopIsSell", [["1", "Bật"], ["0", "Tắt"]]);
       SetComboItems("shopOptionId", [["", "Chọn option"]]);
-      SetComboItems("equipOptionId", [["", "Chọn option"]]);
       RenderEquipPresets();
     }
 
@@ -1393,7 +1802,7 @@
     }
 
     function CloseCombos(exceptId) {
-      var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "equipOptionId", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionId"];
+      var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionId"];
       for (var i = 0; i < ids.length; i++) {
         if (ids[i] == exceptId) continue;
         var combo = document.getElementById("combo_" + ids[i]);
@@ -1467,11 +1876,11 @@
       optionRows = ParseTsv(RunAdmin("listoptions", {}));
       RenderOptionTable(optionRows);
       FillOptionSelect();
+      RenderEquipOptionPicker();
     }
 
     function FillOptionSelect() {
       var selected = V("shopOptionId");
-      var equipSelected = V("equipOptionId");
       var items = [["", "Chọn option"]];
       for (var i = 1; i < optionRows.length; i++) {
         var id = optionRows[i][0] || "";
@@ -1480,8 +1889,6 @@
       }
       SetComboItems("shopOptionId", items);
       if (selected) Set("shopOptionId", selected);
-      SetComboItems("equipOptionId", items);
-      if (equipSelected) Set("equipOptionId", equipSelected);
     }
 
     function FilterOptionRows() {
@@ -1555,12 +1962,34 @@
       Set("equipOptionRowId", equipOptionRows[index][0]);
       Set("equipOptionId", equipOptionRows[index][2]);
       Set("equipOptionParam", equipOptionRows[index][4]);
+      Set("equipOptionSearch", "");
+      RenderEquipOptionPicker();
     }
 
     function NewEquipOption() {
       Set("equipOptionRowId", "");
       Set("equipOptionId", "");
       Set("equipOptionParam", "0");
+      Set("equipOptionSearch", "");
+      RenderEquipOptionPicker();
+    }
+
+    function RenderEquipOptionPicker() {
+      if (!document.getElementById("equipOptionList") || !optionRows || optionRows.length < 2) return;
+      var selectedIds = V("equipOptionId") ? [V("equipOptionId")] : [];
+      RenderOptionPicker("equipOptionList", "equipOptionSearch", selectedIds, "ToggleEquipOption", "equipPicker");
+      document.getElementById("equipOptionSummary").innerText = selectedIds.length
+        ? "Đang chọn: " + selectedIds[0] + " - " + OptionName(selectedIds[0])
+        : "Chưa chọn option";
+    }
+
+    function ToggleEquipOption(id, checked) {
+      if (checked) {
+        Set("equipOptionId", id);
+      } else if (V("equipOptionId") == id) {
+        Set("equipOptionId", "");
+      }
+      RenderEquipOptionPicker();
     }
 
     function SaveEquipOption() {
@@ -1605,6 +2034,323 @@
       RenderTable("equipPresetTable", rows, ["Option", "Tên", "Param"], "Noop");
     }
 
+    var combineRows = [];
+    var selectedCombineKey = "";
+    var filteredCombineRows = [];
+
+    function LoadCombineConfig() {
+      if (!optionRows || optionRows.length < 2) LoadOptions();
+      combineRows = ParseTsv(RunAdmin("listcombineconfig", {}));
+      filteredCombineRows = VisibleCombineRows();
+      RenderCombineRows(filteredCombineRows);
+      if (selectedCombineKey) {
+        for (var i = 1; i < combineRows.length; i++) {
+          if (combineRows[i][0] == selectedCombineKey) {
+            PickCombineConfig(i);
+            break;
+          }
+        }
+      }
+      Msg("combineMessage", filteredCombineRows.length > 1 ? "Đã tải " + (filteredCombineRows.length - 1) + " nhóm cấu hình combine." : "Không tải được cấu hình combine.");
+      AdjustTableOffsets();
+    }
+
+    function IsCombineCompanionKey(key) {
+      return key == "earring.level2.paramMin" || key == "earring.level2.paramMax" ||
+        key == "earring.level3.paramMin" || key == "earring.level3.paramMax" ||
+        key == "earring.level3.allowDuplicate" ||
+        key == "angel.bonusParamMin" || key == "angel.bonusParamMax";
+    }
+
+    function VisibleCombineRows() {
+      var rows = [combineRows[0]];
+      for (var i = 1; i < combineRows.length; i++) {
+        if (!IsCombineCompanionKey(combineRows[i][0])) rows.push(combineRows[i]);
+      }
+      return rows;
+    }
+
+    function RenderCombineRows(rows) {
+      filteredCombineRows = rows;
+      var html = "<thead><tr><th>Nhóm</th><th>Chức năng</th><th>Giá trị đang dùng</th><th>Mặc định</th></tr></thead><tbody>";
+      for (var r = 1; r < rows.length; r++) {
+        var currentValue = rows[r][5] == "option-list" ? FormatCombineOptionValues(rows[r][3]) : rows[r][3];
+        var defaultValue = rows[r][5] == "option-list" ? FormatCombineOptionValues(rows[r][4]) : rows[r][4];
+        var optionKeys = OptionGroupKeys(rows[r][0]);
+        if (optionKeys) {
+          var minRow = FindCombineRow(optionKeys.min);
+          var maxRow = FindCombineRow(optionKeys.max);
+          currentValue += " | Param " + (minRow ? minRow[3] : "") + "-" + (maxRow ? maxRow[3] : "");
+          defaultValue += " | Param " + (minRow ? minRow[4] : "") + "-" + (maxRow ? maxRow[4] : "");
+          if (optionKeys.duplicate) currentValue += IsTrueValue(CombineConfigValue(optionKeys.duplicate)) ? " | Có thể trùng" : " | Không trùng";
+        }
+        html += '<tr onclick="PickFilteredCombineConfig(' + r + ')">';
+        html += "<td>" + Html(rows[r][1] || "") + "</td>";
+        html += "<td>" + Html(rows[r][2] || "") + "</td>";
+        html += "<td>" + Html(currentValue) + "</td>";
+        html += "<td>" + Html(defaultValue) + "</td></tr>";
+      }
+      html += "</tbody>";
+      document.getElementById("combineTable").innerHTML = html;
+    }
+
+    function FilterCombineRows() {
+      var q = V("combineSearch").toLowerCase();
+      var filtered = [combineRows[0]];
+      for (var i = 1; i < combineRows.length; i++) {
+        if (!IsCombineCompanionKey(combineRows[i][0]) &&
+            (combineRows[i].join(" ") || "").toLowerCase().indexOf(q) >= 0) filtered.push(combineRows[i]);
+      }
+      RenderCombineRows(filtered);
+    }
+
+    function PickFilteredCombineConfig(index) {
+      var key = filteredCombineRows[index][0];
+      for (var i = 1; i < combineRows.length; i++) {
+        if (combineRows[i][0] == key) {
+          PickCombineConfig(i);
+          return;
+        }
+      }
+    }
+
+    function PickCombineConfig(index) {
+      var r = combineRows[index];
+      selectedCombineKey = r[0];
+      Set("combineKey", r[0]);
+      Set("combineCategory", r[1]);
+      Set("combineName", r[2]);
+      Set("combineValue", r[3]);
+      Set("combineDefault", r[4]);
+      Set("combineKind", r[5]);
+      Set("combineDescription", r[6]);
+      var isOptionGroup = r[5] == "option-list" && OptionGroupKeys(r[0]) != null;
+      document.getElementById("combineValueBox").style.display = isOptionGroup ? "none" : "block";
+      document.getElementById("combineOptionBox").style.display = isOptionGroup ? "block" : "none";
+      if (isOptionGroup) {
+        var keys = OptionGroupKeys(r[0]);
+        Set("combineParamMin", CombineConfigValue(keys.min));
+        Set("combineParamMax", CombineConfigValue(keys.max));
+        Set("combineOptionSearch", "");
+        document.getElementById("combineDuplicateBox").style.display = keys.duplicate ? "block" : "none";
+        document.getElementById("combineAllowDuplicate").checked = keys.duplicate ? IsTrueValue(CombineConfigValue(keys.duplicate)) : false;
+        RenderCombineOptionPicker();
+      }
+      AdjustTableOffsets();
+    }
+
+    function FindCombineRow(key) {
+      for (var i = 1; i < combineRows.length; i++) {
+        if (combineRows[i][0] == key) return combineRows[i];
+      }
+      return null;
+    }
+
+    function CombineConfigValue(key) {
+      var row = FindCombineRow(key);
+      return row ? row[3] : "";
+    }
+
+    function OptionGroupKeys(key) {
+      if (key == "earring.level2.options") return { min: "earring.level2.paramMin", max: "earring.level2.paramMax", duplicate: "" };
+      if (key == "earring.level3.options") return { min: "earring.level3.paramMin", max: "earring.level3.paramMax", duplicate: "earring.level3.allowDuplicate" };
+      if (key == "angel.bonusOptions") return { min: "angel.bonusParamMin", max: "angel.bonusParamMax", duplicate: "" };
+      return null;
+    }
+
+    function ParseIdList(value) {
+      var parts = (value || "").split(",");
+      var ids = [];
+      for (var i = 0; i < parts.length; i++) {
+        var id = Trim(parts[i]);
+        if (id && ids.join(",").split(",").indexOf(id) < 0) ids.push(id);
+      }
+      return ids;
+    }
+
+    function OptionName(optionId) {
+      for (var i = 1; i < optionRows.length; i++) {
+        if (optionRows[i][0] == optionId) return optionRows[i][1] || "Option chưa có tên";
+      }
+      return "Option chưa có tên";
+    }
+
+    function FormatCombineOptionValues(value) {
+      var ids = ParseIdList(value);
+      var labels = [];
+      for (var i = 0; i < ids.length; i++) labels.push(ids[i] + " - " + OptionName(ids[i]));
+      return labels.join("; ");
+    }
+
+    function RenderCombineOptionPicker() {
+      if (!V("combineKey") || !OptionGroupKeys(V("combineKey"))) return;
+      var selectedIds = ParseIdList(V("combineValue"));
+      RenderOptionPicker("combineOptionList", "combineOptionSearch", selectedIds, "ToggleCombineOption", "combinePicker");
+      document.getElementById("combineOptionSummary").innerText = "Đã chọn " + selectedIds.length + " option: " + FormatCombineOptionValues(V("combineValue"));
+    }
+
+    function RenderOptionPicker(listId, searchId, selectedIds, toggleFunction, idPrefix) {
+      var selected = {};
+      for (var i = 0; i < selectedIds.length; i++) selected[selectedIds[i]] = true;
+      RenderChecklist({
+        listId: listId,
+        idPrefix: idPrefix,
+        rows: optionRows,
+        rowStart: 1,
+        query: V(searchId),
+        selected: selected,
+        selectedOrder: selectedIds,
+        labelResolver: OptionName,
+        toggleFunction: toggleFunction,
+        emptyText: "Không tìm thấy option phù hợp."
+      });
+    }
+
+    // Renderer checklist dùng chung cho Combine, trang bị, Giftcode và các tab thêm sau này.
+    // Cấu hình chính: listId, rows, query, selected, selectedOrder, toggleFunction, limit.
+    // Bật showParam và truyền paramValues/paramFunction khi mỗi mục cần một ô Param.
+    function RenderChecklist(config) {
+      var target = document.getElementById(config.listId);
+      if (!target) return;
+      var rows = config.rows || [];
+      var rowStart = config.rowStart == null ? 0 : config.rowStart;
+      var idIndex = config.idIndex == null ? 0 : config.idIndex;
+      var labelIndex = config.labelIndex == null ? 1 : config.labelIndex;
+      var selected = config.selected || {};
+      var selectedOrder = config.selectedOrder || [];
+      var selectedLabels = config.selectedLabels || {};
+      var paramValues = config.paramValues || {};
+      var query = (config.query || "").toLowerCase();
+      var limit = config.limit || 0;
+      var html = "";
+      var rendered = {};
+      var visible = 0;
+
+      for (var s = 0; s < selectedOrder.length; s++) {
+        var selectedId = "" + selectedOrder[s];
+        var selectedLabel = selectedLabels[selectedId];
+        if (!selectedLabel && config.labelResolver) selectedLabel = config.labelResolver(selectedId);
+        if (!selectedLabel) selectedLabel = ChecklistLabelFromRows(rows, rowStart, idIndex, labelIndex, selectedId);
+        html += ChecklistItemHtml(config, selectedId, selectedLabel || "Chưa có tên", true, paramValues[selectedId]);
+        rendered[selectedId] = true;
+      }
+
+      for (var r = rowStart; r < rows.length; r++) {
+        var id = "" + (rows[r][idIndex] == null ? "" : rows[r][idIndex]);
+        var name = rows[r][labelIndex] || "Chưa có tên";
+        if (!id || rendered[id]) continue;
+        if (query && (id + " " + name).toLowerCase().indexOf(query) < 0) continue;
+        if (limit && visible >= limit) break;
+        html += ChecklistItemHtml(config, id, name, !!selected[id], paramValues[id]);
+        rendered[id] = true;
+        visible++;
+      }
+      target.innerHTML = html || (config.emptyText || "Không tìm thấy dữ liệu phù hợp.");
+    }
+
+    function ChecklistLabelFromRows(rows, rowStart, idIndex, labelIndex, wantedId) {
+      for (var i = rowStart; i < rows.length; i++) {
+        if (("" + rows[i][idIndex]) == wantedId) return rows[i][labelIndex] || "Chưa có tên";
+      }
+      return "";
+    }
+
+    function ChecklistItemHtml(config, id, name, checked, param) {
+      var safeId = ("" + id).replace(/[^a-zA-Z0-9_-]/g, "_").replace(/-/g, "neg");
+      var checkboxId = (config.idPrefix || config.listId) + "_" + safeId;
+      var selectedClass = config.selectedClass == null ? "checklist-item-selected" : config.selectedClass;
+      var itemClass = "option-picker-item" + (config.itemClass ? " " + config.itemClass : "") +
+        (checked && selectedClass ? " " + selectedClass : "") +
+        (checked && config.showParam ? " checklist-item-with-param" : "");
+      var displayText = config.showId === false ? name : id + " - " + name;
+      var html = '<div class="' + itemClass + '"><input type="checkbox" id="' + HtmlAttr(checkboxId) + '" value="' + HtmlAttr(id) + '"' +
+        (checked ? ' checked="checked"' : '') + ' onclick="' + config.toggleFunction + '(\'' + EscapeJs(id) + '\', this.checked)">' +
+        '<label for="' + HtmlAttr(checkboxId) + '">' + Html(displayText) + '</label>';
+      if (config.showParam && checked) {
+        html += '<input class="' + (config.paramClass || "checklist-param-input") + '" value="' + HtmlAttr(param == null ? 0 : param) +
+          '" title="Param" onchange="' + config.paramFunction + '(\'' + EscapeJs(id) + '\', this.value)">';
+      }
+      return html + "</div>";
+    }
+
+    function ToggleCombineOption(id, checked) {
+      var ids = ParseIdList(V("combineValue"));
+      var next = [];
+      var found = false;
+      for (var i = 0; i < ids.length; i++) {
+        if (ids[i] == id) found = true;
+        if (!(ids[i] == id && !checked)) next.push(ids[i]);
+      }
+      if (checked && !found) next.push(id);
+      Set("combineValue", next.join(","));
+      document.getElementById("combineOptionSummary").innerText = "Đã chọn " + next.length + " option: " + FormatCombineOptionValues(V("combineValue"));
+    }
+
+    function IsTrueValue(value) {
+      return value == "true" || value == "1";
+    }
+
+    function SaveCombineValue(key, value) {
+      return RunAdmin("savecombineconfig", { ConfigKey: key, ConfigValue: value });
+    }
+
+    function SaveCombineConfig() {
+      if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+      var keys = OptionGroupKeys(V("combineKey"));
+      if (keys) {
+        var ids = ParseIdList(V("combineValue"));
+        var minValue = Trim(V("combineParamMin"));
+        var maxValue = Trim(V("combineParamMax"));
+        if (ids.length < 1) { Msg("combineMessage", "Cần chọn ít nhất một option."); return; }
+        if (!/^\d+$/.test(minValue) || !/^\d+$/.test(maxValue)) { Msg("combineMessage", "Param Min/Max phải là số nguyên không âm."); return; }
+        if (parseInt(minValue, 10) > parseInt(maxValue, 10)) { Msg("combineMessage", "Param Min không được lớn hơn Param Max."); return; }
+        var messages = [];
+        var result = SaveCombineValue(V("combineKey"), ids.join(","));
+        messages.push(StatusText(result));
+        if (IsAdminError(result)) { Msg("combineMessage", messages.join("\r\n")); return; }
+        result = SaveCombineValue(keys.min, minValue);
+        messages.push(StatusText(result));
+        if (IsAdminError(result)) { Msg("combineMessage", messages.join("\r\n")); return; }
+        result = SaveCombineValue(keys.max, maxValue);
+        messages.push(StatusText(result));
+        if (keys.duplicate && !IsAdminError(result)) {
+          result = SaveCombineValue(keys.duplicate, document.getElementById("combineAllowDuplicate").checked ? "true" : "false");
+          messages.push(StatusText(result));
+        }
+        Msg("combineMessage", messages.join("\r\n"));
+        if (!IsAdminError(result)) LoadCombineConfig();
+      } else {
+        var text = SaveCombineValue(V("combineKey"), V("combineValue"));
+        Msg("combineMessage", StatusText(text));
+        if (!IsAdminError(text)) LoadCombineConfig();
+      }
+    }
+
+    function ResetCombineConfig() {
+      if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+      if (!window.confirm("Đưa " + V("combineName") + " về mặc định " + V("combineDefault") + "?")) return;
+      var keys = OptionGroupKeys(V("combineKey"));
+      var resetKeys = [V("combineKey")];
+      if (keys) {
+        resetKeys.push(keys.min);
+        resetKeys.push(keys.max);
+        if (keys.duplicate) resetKeys.push(keys.duplicate);
+      }
+      var messages = [];
+      var text = "";
+      for (var i = 0; i < resetKeys.length; i++) {
+        text = RunAdmin("resetcombineconfig", { ConfigKey: resetKeys[i] });
+        messages.push(StatusText(text));
+        if (IsAdminError(text)) break;
+      }
+      Msg("combineMessage", messages.join("\r\n"));
+      if (!IsAdminError(text)) LoadCombineConfig();
+    }
+
+    function IsAdminError(text) {
+      return StatusText(text).indexOf("ERROR") == 0;
+    }
+
     function LoadStatus() {
       var rows = ParseTsv(RunAdmin("status", {}));
       var eventValue = "none";
@@ -1623,6 +2369,341 @@
       var b = StatusText(RunAdmin("setexp", { ExpRate: V("expRate") }));
       Msg("eventMessage", a + "\r\n" + b);
       LoadStatus();
+    }
+
+    var giftCodeRows = [];
+    var giftItemRows = [];
+    var giftItemNameMap = {};
+    var giftRewards = [];
+    var selectedGiftRewardId = "";
+    var giftItemFilterTimer = 0;
+    var giftOptionFilterTimer = 0;
+
+    function LoadGiftCodes() {
+      var rows = ParseTsv(RunAdmin("listgiftcodes", { Search: V("giftSearch") }));
+      if (rows.length && (rows[0][0] != "id" || rows[0][1] != "code")) {
+        Msg("giftMessage", "Dữ liệu trả về không phải bảng giftcode. Hãy bấm Làm mới.");
+        return;
+      }
+      giftCodeRows = rows;
+      RenderGiftCodes();
+      Msg("giftMessage", giftCodeRows.length > 1 ? "Đã tải " + (giftCodeRows.length - 1) + " Giftcode." : "Không có Giftcode phù hợp.");
+      AdjustTableOffsets();
+    }
+
+    function RenderGiftCodes() {
+      var html = '<colgroup><col style="width:6%"><col style="width:13%"><col style="width:25%"><col style="width:10%"><col style="width:17%"><col style="width:17%"><col style="width:12%"></colgroup>' +
+        "<thead><tr><th>ID</th><th>Giftcode</th><th>Quà</th><th>Còn lại</th><th>Từ ngày</th><th>Đến ngày</th><th>Trạng thái</th></tr></thead><tbody>";
+      for (var i = 1; i < giftCodeRows.length; i++) {
+        var row = giftCodeRows[i];
+        var status = GiftStatus(row[6]);
+        html += '<tr onclick="PickGiftCode(' + i + ')">' +
+          "<td>" + Html(row[0] || "") + "</td>" +
+          "<td>" + Html(row[1] || "") + "</td>" +
+          "<td>" + Html(GiftRewardSummary(row[3])) + "</td>" +
+          "<td>" + Html(row[2] == "-1" ? "Không giới hạn" : (row[2] || "0")) + "</td>" +
+          "<td>" + Html(row[4] || "") + "</td>" +
+          "<td>" + Html(row[5] || "") + "</td>" +
+          '<td class="gift-status-' + Html(row[6] || "expired") + '">' + status + "</td></tr>";
+      }
+      document.getElementById("giftCodesTable").innerHTML = html + "</tbody>";
+    }
+
+    function GiftStatus(status) {
+      if (status == "active") return "Còn";
+      if (status == "empty") return "Hết lượt";
+      if (status == "waiting") return "Chưa bắt đầu";
+      return "Hết hạn";
+    }
+
+    function ParseGiftRewards(detail) {
+      try {
+        var parsed = JSON.parse(detail || "[]");
+        var rewards = [];
+        for (var i = 0; i < parsed.length; i++) {
+          var options = parsed[i].options || [];
+          rewards.push({
+            id: "" + parsed[i].id,
+            name: GiftItemName(parsed[i].id),
+            quantity: "" + (parsed[i].quantity || 1),
+            options: options
+          });
+        }
+        return rewards;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function GiftRewardSummary(detail) {
+      var rewards = ParseGiftRewards(detail);
+      var labels = [];
+      for (var i = 0; i < rewards.length; i++) labels.push("x" + rewards[i].quantity + " " + rewards[i].name);
+      return labels.join("; ");
+    }
+
+    function PickGiftCode(index) {
+      var row = giftCodeRows[index];
+      Set("giftId", row[0]);
+      Set("giftCode", row[1]);
+      Set("giftCount", row[2] == "-1" ? "0" : row[2]);
+      document.getElementById("giftUnlimited").checked = row[2] == "-1";
+      ToggleGiftUnlimited();
+      SetGiftExpiryMode("range");
+      Set("giftStart", row[4]);
+      Set("giftEnd", row[5]);
+      giftRewards = ParseGiftRewards(row[3]);
+      selectedGiftRewardId = "";
+      RenderGiftItems();
+      RenderGiftRewardsTable();
+      HideGiftRewardEditor();
+      Msg("giftMessage", "Đang sửa Giftcode " + row[1] + ".");
+    }
+
+    function NewGiftCode() {
+      Set("giftId", "");
+      Set("giftCode", "");
+      Set("giftCount", "100");
+      Set("giftDays", "30");
+      Set("giftStart", "");
+      Set("giftEnd", "");
+      document.getElementById("giftUnlimited").checked = false;
+      ToggleGiftUnlimited();
+      SetGiftExpiryMode("days");
+      giftRewards = [];
+      selectedGiftRewardId = "";
+      RenderGiftItems();
+      RenderGiftRewardsTable();
+      HideGiftRewardEditor();
+      Msg("giftMessage", "Đang tạo Giftcode mới.");
+    }
+
+    function SetGiftExpiryMode(mode) {
+      document.getElementById("giftExpiryDays").checked = mode == "days";
+      document.getElementById("giftExpiryRange").checked = mode == "range";
+      document.getElementById("giftDaysConfig").style.display = mode == "days" ? "block" : "none";
+      document.getElementById("giftRangeConfig").style.display = mode == "range" ? "block" : "none";
+    }
+
+    function ToggleGiftUnlimited() {
+      var unlimited = document.getElementById("giftUnlimited").checked;
+      document.getElementById("giftCount").disabled = unlimited;
+    }
+
+    function LoadGiftItems(force) {
+      if (!force && giftItemRows.length > 1) {
+        RenderGiftItems();
+        return;
+      }
+      giftItemRows = ParseTsv(RunAdmin("listgiftitems", {}));
+      giftItemNameMap = {};
+      for (var r = 1; r < giftItemRows.length; r++) giftItemNameMap[giftItemRows[r][0]] = giftItemRows[r][1] || ("Vật phẩm " + giftItemRows[r][0]);
+      for (var i = 0; i < giftRewards.length; i++) giftRewards[i].name = GiftItemName(giftRewards[i].id);
+      RenderGiftItems();
+      RenderGiftRewardsTable();
+    }
+
+    function FilterGiftItems() {
+      if (giftItemFilterTimer) window.clearTimeout(giftItemFilterTimer);
+      giftItemFilterTimer = window.setTimeout(function () { RenderGiftItems(); }, 140);
+    }
+
+    function FilterGiftOptions() {
+      if (giftOptionFilterTimer) window.clearTimeout(giftOptionFilterTimer);
+      giftOptionFilterTimer = window.setTimeout(function () { RenderGiftOptionPicker(); }, 140);
+    }
+
+    function GiftItemName(id) {
+      id = "" + id;
+      if (id == "-1") return "Vàng";
+      if (id == "-2") return "Ngọc";
+      if (id == "-3") return "Ngọc khóa";
+      if (giftItemNameMap[id]) return giftItemNameMap[id];
+      return "Vật phẩm " + id;
+    }
+
+    function FindGiftReward(id) {
+      id = "" + id;
+      for (var i = 0; i < giftRewards.length; i++) if (giftRewards[i].id == id) return giftRewards[i];
+      return null;
+    }
+
+    function RenderGiftItems() {
+      if (!document.getElementById("giftItemList")) return;
+      var selected = {};
+      var selectedOrder = [];
+      var selectedLabels = {};
+      for (var s = 0; s < giftRewards.length; s++) {
+        var reward = giftRewards[s];
+        selected[reward.id] = true;
+        selectedOrder.push(reward.id);
+        selectedLabels[reward.id] = reward.name;
+      }
+      RenderChecklist({
+        listId: "giftItemList",
+        idPrefix: "giftItem",
+        rows: giftItemRows,
+        rowStart: 1,
+        query: V("giftItemSearch"),
+        selected: selected,
+        selectedOrder: selectedOrder,
+        selectedLabels: selectedLabels,
+        labelResolver: GiftItemName,
+        toggleFunction: "ToggleGiftItem",
+        limit: 100,
+        emptyText: "Không tìm thấy vật phẩm phù hợp."
+      });
+      UpdateGiftItemSummary();
+    }
+
+    function UpdateGiftItemSummary() {
+      document.getElementById("giftItemSummary").innerText = giftRewards.length ? "Đã chọn " + giftRewards.length + " phần quà" : "Chưa chọn phần quà";
+    }
+
+    function ToggleGiftItem(id, checked) {
+      var reward = FindGiftReward(id);
+      if (checked && !reward) {
+        giftRewards.push({ id: "" + id, name: GiftItemName(id), quantity: "1", options: [] });
+        selectedGiftRewardId = "" + id;
+      } else if (!checked && reward) {
+        var next = [];
+        for (var i = 0; i < giftRewards.length; i++) if (giftRewards[i].id != id) next.push(giftRewards[i]);
+        giftRewards = next;
+        if (selectedGiftRewardId == id) selectedGiftRewardId = "";
+      }
+      UpdateGiftItemSummary();
+      RenderGiftRewardsTable();
+      if (checked) ShowGiftRewardEditor();
+      else if (!selectedGiftRewardId) HideGiftRewardEditor();
+    }
+
+    function RenderGiftRewardsTable() {
+      var html = "<thead><tr><th>ID</th><th>Vật phẩm</th><th>Số lượng</th><th>Options</th></tr></thead><tbody>";
+      for (var i = 0; i < giftRewards.length; i++) {
+        var reward = giftRewards[i];
+        var optionLabels = [];
+        for (var o = 0; o < reward.options.length; o++) optionLabels.push(reward.options[o].id + ":" + reward.options[o].param);
+        html += '<tr onclick="PickGiftReward(' + i + ')"><td>' + Html(reward.id) + "</td><td>" + Html(reward.name) +
+          "</td><td>" + Html(reward.quantity) + "</td><td>" + Html(optionLabels.join(", ")) + "</td></tr>";
+      }
+      document.getElementById("giftRewardsTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickGiftReward(index) {
+      selectedGiftRewardId = giftRewards[index].id;
+      ShowGiftRewardEditor();
+    }
+
+    function HideGiftRewardEditor() {
+      document.getElementById("giftRewardEditor").style.display = "none";
+    }
+
+    function ShowGiftRewardEditor() {
+      var reward = FindGiftReward(selectedGiftRewardId);
+      if (!reward) { HideGiftRewardEditor(); return; }
+      document.getElementById("giftRewardEditor").style.display = "block";
+      document.getElementById("giftRewardTitle").innerText = "Cấu hình: " + reward.id + " - " + reward.name;
+      Set("giftRewardQuantity", reward.quantity);
+      Set("giftOptionSearch", "");
+      RenderGiftOptionPicker();
+    }
+
+    function SetGiftRewardQuantity() {
+      var reward = FindGiftReward(selectedGiftRewardId);
+      if (!reward) return;
+      reward.quantity = V("giftRewardQuantity");
+      RenderGiftRewardsTable();
+    }
+
+    function FindGiftRewardOption(reward, id) {
+      for (var i = 0; i < reward.options.length; i++) if (("" + reward.options[i].id) == ("" + id)) return reward.options[i];
+      return null;
+    }
+
+    function RenderGiftOptionPicker() {
+      var reward = FindGiftReward(selectedGiftRewardId);
+      if (!reward || !document.getElementById("giftOptionList")) return;
+      if (parseInt(reward.id, 10) < 0) {
+        reward.options = [];
+        document.getElementById("giftOptionList").innerHTML = "Vàng, ngọc và ngọc khóa không sử dụng option.";
+        Set("giftRewardOptionCount", "0");
+        return;
+      }
+      var selectedMap = {};
+      var selectedOrder = [];
+      var paramValues = {};
+      for (var s = 0; s < reward.options.length; s++) {
+        var option = reward.options[s];
+        var optionId = "" + option.id;
+        selectedMap[optionId] = true;
+        selectedOrder.push(optionId);
+        paramValues[optionId] = option.param;
+      }
+      RenderChecklist({
+        listId: "giftOptionList",
+        idPrefix: "giftOption",
+        rows: optionRows,
+        rowStart: 1,
+        query: V("giftOptionSearch"),
+        selected: selectedMap,
+        selectedOrder: selectedOrder,
+        paramValues: paramValues,
+        labelResolver: OptionName,
+        toggleFunction: "ToggleGiftRewardOption",
+        limit: 120,
+        showParam: true,
+        paramFunction: "SetGiftRewardOptionParam",
+        itemClass: "gift-option-row",
+        selectedClass: "gift-option-selected",
+        paramClass: "gift-option-param",
+        emptyText: "Không tìm thấy option phù hợp."
+      });
+      Set("giftRewardOptionCount", "" + reward.options.length);
+    }
+
+    function ToggleGiftRewardOption(id, checked) {
+      var reward = FindGiftReward(selectedGiftRewardId);
+      if (!reward) return;
+      var option = FindGiftRewardOption(reward, id);
+      if (checked && !option) reward.options.push({ id: parseInt(id, 10), param: 0 });
+      if (!checked && option) {
+        var next = [];
+        for (var i = 0; i < reward.options.length; i++) if (("" + reward.options[i].id) != ("" + id)) next.push(reward.options[i]);
+        reward.options = next;
+      }
+      RenderGiftOptionPicker();
+      RenderGiftRewardsTable();
+    }
+
+    function SetGiftRewardOptionParam(id, value) {
+      var reward = FindGiftReward(selectedGiftRewardId);
+      var option = reward ? FindGiftRewardOption(reward, id) : null;
+      if (option) option.param = value;
+      RenderGiftRewardsTable();
+    }
+
+    function SaveGiftCode() {
+      if (!Trim(V("giftCode"))) { Msg("giftMessage", "Cần nhập mã Giftcode."); return; }
+      if (!giftRewards.length) { Msg("giftMessage", "Chọn ít nhất một phần quà."); return; }
+      var mode = document.getElementById("giftExpiryRange").checked ? "range" : "days";
+      var detail = [];
+      for (var i = 0; i < giftRewards.length; i++) {
+        detail.push({ id: parseInt(giftRewards[i].id, 10), quantity: parseInt(giftRewards[i].quantity, 10), options: giftRewards[i].options });
+      }
+      var text = RunAdmin("savegiftcode", {
+        Id: V("giftId"), GiftCode: V("giftCode"), CountLeft: document.getElementById("giftUnlimited").checked ? "-1" : V("giftCount"),
+        GiftDetail: JSON.stringify(detail), ExpiryMode: mode, ValidDays: V("giftDays"), StartDate: V("giftStart"), EndDate: V("giftEnd")
+      });
+      if (text.indexOf("OK\t") == 0) LoadGiftCodes();
+      Msg("giftMessage", StatusText(text));
+    }
+
+    function DeleteGiftCode() {
+      if (!V("giftId")) { Msg("giftMessage", "Chọn Giftcode cần xóa."); return; }
+      if (!window.confirm("Xóa Giftcode " + V("giftCode") + "?")) return;
+      var text = RunAdmin("deletegiftcode", { Id: V("giftId") });
+      if (text.indexOf("OK\t") == 0) { NewGiftCode(); LoadGiftCodes(); }
+      Msg("giftMessage", StatusText(text));
     }
 
     var shopRows = [];
@@ -1787,6 +2868,10 @@
 
     function Html(value) {
       return ("" + value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function HtmlAttr(value) {
+      return Html(value).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
     function V(id) {

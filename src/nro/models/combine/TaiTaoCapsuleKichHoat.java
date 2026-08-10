@@ -51,9 +51,9 @@ public class TaiTaoCapsuleKichHoat {
         }
 
         player.combineNew.goldCombine = GOLD_TAI_TAO;
-        player.combineNew.ratioCombine = RATIO_TAI_TAO;
+        player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.rebuildActiveCapsuleRate", RATIO_TAI_TAO);
 
-        String npcSay = "|2|Tỉ lệ thành công: " + RATIO_TAI_TAO + "%\n"
+        String npcSay = "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n"
                 + "|2|Cần: " + REQUIRED_KHOANG + " Khoáng tái chế\n"
                 + "|2|Cần: " + REQUIRED_CAPSULE + " Capsule Vỡ\n"
                 + "|2|Cần: " + Util.numberToMoney(GOLD_TAI_TAO) + " vàng\n";
@@ -98,7 +98,7 @@ public class TaiTaoCapsuleKichHoat {
         removeItem(player, KHOANG_TAI_CHE_ID, REQUIRED_KHOANG);
         removeItem(player, CAPSULE_ID, REQUIRED_CAPSULE);
 
-        if (Util.isTrue(RATIO_TAI_TAO, 100)) {
+        if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
             int itemId = 1655;
             Item newItem = new Item();
             newItem.template = ItemService.gI().getTemplate(itemId);

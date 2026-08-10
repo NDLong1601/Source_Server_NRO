@@ -23,7 +23,7 @@ public class CheTaoDuiDuc {
             Item Hematite = player.combineNew.itemsCombine.get(0);
             if (Hematite.template.id == 1423 && Hematite.quantity >= 5) {
                 player.combineNew.goldCombine = GOLD_TAO_DA;
-                player.combineNew.ratioCombine = RATIO_TAO_DA;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.anvilRate", RATIO_TAO_DA);
 
                 String npcSay = "|2|Tạo Dùi Đục từ Đá Hematite\n";
                 npcSay += "|2|Cần 5 viên Hematite\n";

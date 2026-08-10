@@ -243,6 +243,25 @@ function Start-Server {
         return
     }
 
+    $pendingJar = Join-Path $Root "20.jar.pending"
+    if (Test-Path -LiteralPath $pendingJar) {
+        $targetJar = Join-Path $Root "20.jar"
+        $backupJar = Join-Path $Root ("20.jar.bak_pending_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
+        if (Test-Path -LiteralPath $targetJar) {
+            Copy-Item -LiteralPath $targetJar -Destination $backupJar
+        }
+        try {
+            Copy-Item -LiteralPath $pendingJar -Destination $targetJar -Force
+            Remove-Item -LiteralPath $pendingJar -Force
+            Write-ControlLog "Đã áp dụng 20.jar.pending trước khi khởi động; backup: $([System.IO.Path]::GetFileName($backupJar))."
+        } catch {
+            if (Test-Path -LiteralPath $backupJar) {
+                Copy-Item -LiteralPath $backupJar -Destination $targetJar -Force
+            }
+            throw "Không thể áp dụng 20.jar.pending: $($_.Exception.Message)"
+        }
+    }
+
     $process = Start-Process -FilePath "java.exe" `
         -WorkingDirectory $Root `
         -ArgumentList @("-server", "-Dfile.encoding=UTF-8", "-jar", "20.jar") `

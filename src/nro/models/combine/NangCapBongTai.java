@@ -44,10 +44,10 @@ public class NangCapBongTai {
             if (bongTai != null && manhVo != null) {
                 player.combineNew.goldCombine = GOLD_BONG_TAI;
                 player.combineNew.gemCombine = GEM_BONG_TAI;
-                player.combineNew.ratioCombine = RATIO_BONG_TAI;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("earring.level2.upgradeRate", RATIO_BONG_TAI);
 
                 String npcSay = "|2|Bông tai Porata [+2]" + "\n\n";
-                npcSay += "|2|Tỉ lệ thành công: " + RATIO_BONG_TAI + "%\n";
+                npcSay += "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n";
 
                 int currentMvp = InventoryService.gI().getParam(player, ITEM_PARAM_INDEX, ITEM_ID_MANH_VO_BT);
 
@@ -128,7 +128,7 @@ public class NangCapBongTai {
                 player.inventory.gold -= gold;
                 player.inventory.gem -= gem;
 
-                if (Util.isTrue(RATIO_BONG_TAI, 100)) {
+                if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     bongTai.template = ItemService.gI().getTemplate(ITEM_ID_BONG_TAI_C2);
                     bongTai.itemOptions.clear();
                     bongTai.itemOptions.add(new ItemOption(ITEM_OPTION_ID_CAP, ITEM_OPTION_VALUE_CAP_2));

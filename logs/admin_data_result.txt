@@ -1,4 +1,2001 @@
-﻿id	item_shop_id	option_id	option_name	param
-672	570	141	$(5 món +100% sát thương Kamejoko)	0
-673	570	47	Giáp+#	500
-1834	570	94	Giảm #% sát thương	10
+﻿id	item_name	item_type
+-3	Ngọc khóa	-1
+-2	Ngọc	-1
+-1	Vàng	-1
+0	Áo vải 3 lỗ	0
+1	Áo sợi len	0
+2	Áo vải thô	0
+3	Áo vải dày	0
+4	Áo len Pico	0
+5	Áo giáp sắt	0
+6	Quần vải đen	1
+7	Quần sợi len	1
+8	Quần vải thô	1
+9	Quần vải dày	1
+10	Quần vải thô Pico	1
+11	Quần giáp sắt	1
+12	Rada cấp 1	4
+13	Đậu thần cấp 1	6
+14	Ngọc Rồng 1 sao	12
+15	Ngọc Rồng 2 sao	12
+16	Ngọc Rồng 3 sao	12
+17	Ngọc Rồng 4 sao	12
+18	Ngọc Rồng 5 sao	12
+19	Ngọc Rồng 6 sao	12
+20	Ngọc Rồng 7 sao	12
+21	Găng vải đen	2
+22	Găng sợi len	2
+23	Găng vải thô	2
+24	Găng thun đen	2
+25	Găng len Pico	2
+26	Găng sắt	2
+27	Giầy nhựa	3
+28	Giầy sợi len	3
+29	Giầy vải thô	3
+30	Giầy cao su	3
+31	Giầy nhựa Pico	3
+32	Giầy sắt	3
+33	Áo thun 3 lỗ	0
+34	Áo thun dày	0
+35	Quần thun đen	1
+36	Quần thun dày	1
+37	Găng vải dày	2
+38	Găng thun dày	2
+39	Giày nhựa đế dày	3
+40	Giày cao su đế dày	3
+41	Áo sợi gai	0
+42	Áo thun Pico	0
+43	Quần sợi gai	1
+44	Quần thun Pico	1
+45	Găng thun Pico	2
+46	Găng sợi gai	2
+47	Giầy sợi gai	3
+48	Giầy cao su Pico	3
+49	Áo thun thô	0
+50	Áo giáp đồng	0
+51	Quần thun thô	1
+52	Quần giáp đồng	1
+53	Găng thun thô	2
+54	Găng đồng	2
+55	Giầy cao su thô	3
+56	Giầy đồng	3
+57	Rada cấp 2	4
+58	Rada cấp 3	4
+59	Rada cấp 4	4
+60	Đậu thần cấp 2	6
+61	Đậu thần cấp 3	6
+62	Đậu thần cấp 4	6
+63	Đậu thần cấp 5	6
+64	Đậu thần cấp 6	6
+65	Đậu thần cấp 7	6
+66	Sách đấm Dragon lv1	7
+67	Sách đấm Dragon lv2	7
+68	Sách đấm Dragon lv3	7
+69	Sách đấm Dragon lv4	7
+70	Sách đấm Dragon lv5	7
+71	Sách đấm Dragon lv6	7
+72	Sách đấm Dragon lv7	7
+73	Đùi gà	8
+74	Đùi gà nướng	27
+75	Đùi heo Xayda	8
+76	Vàng	9
+77	Ngọc	10
+78	Đứa bé	11
+79	Sách đấm Demon lv1	7
+80	Sách đấm Demon lv2	7
+81	Sách đấm Demon lv3	7
+82	Sách đấm Demon lv4	7
+83	Sách đấm Demon lv5	7
+84	Sách đấm Demon lv6	7
+85	Truyện tranh	8
+86	Sách đấm Demon lv7	7
+87	Sách đấm Galick lv1	7
+88	Sách đấm Galick lv2	7
+89	Sách đấm Galick lv3	7
+90	Sách đấm Galick lv4	7
+91	Sách đấm Galick lv5	7
+92	Sách đấm Galick lv6	7
+93	Sách đấm Galick lv7	7
+94	Sách Kamejoko lv1	7
+95	Sách Kamejoko lv2	7
+96	Sách Kamejoko lv3	7
+97	Sách Kamejoko lv4	7
+98	Sách Kamejoko lv5	7
+99	Sách Kamejoko lv6	7
+100	Sách Kamejoko lv7	7
+101	Sách Masenko lv1	7
+102	Sách Masenko lv2	7
+103	Sách Masenko lv3	7
+104	Sách Masenko lv4	7
+105	Sách Masenko lv5	7
+106	Sách Masenko lv6	7
+107	Sách Masenko lv7	7
+108	Sách Antomic lv1	7
+109	Sách Antomic lv2	7
+110	Sách Antomic lv3	7
+111	Sách Antomic lv4	7
+112	Sách Antomic lv5	7
+113	Sách Antomic lv6	7
+114	Sách Antomic lv7	7
+115	Thái Dương Hạ San lv1	7
+116	Thái Dương Hạ San lv2	7
+117	Thái Dương Hạ San lv3	7
+118	Thái Dương Hạ San lv4	7
+119	Thái Dương Hạ San lv5	7
+120	Thái Dương Hạ San lv6	7
+121	Thái Dương Hạ San lv7	7
+122	Sách học Trị thương lv1	7
+123	Sách học Trị thương lv2	7
+124	Sách học Trị thương lv3	7
+125	Sách học Trị thương lv4	7
+126	Sách học Trị thương lv5	7
+127	Sách học Trị thương lv6	7
+128	Sách học Trị thương lv7	7
+129	Tái tạo năng lượng lv1	7
+130	Tái tạo năng lượng lv2	7
+131	Tái tạo năng lượng lv3	7
+132	Tái tạo năng lượng lv4	7
+133	Tái tạo năng lượng lv5	7
+134	Tái tạo năng lượng lv6	7
+135	Tái tạo năng lượng lv7	7
+136	Áo vải Kame	0
+137	Áo thun Kame	0
+138	Áo võ Kame	0
+139	Áo võ Goku	0
+140	Quần vải Kame	1
+141	Quần thun Kame	1
+142	Quần võ Kame	1
+143	Quần võ goku	1
+144	Găng vải Kame	2
+145	Găng thun Kame	2
+146	Găng võ Kame	2
+147	Găng võ goku	2
+148	Giày nhựa Kame	3
+149	Giày cao su Kame	3
+150	Giày võ kame	3
+151	Giày võ goku	3
+152	Áo choàng len	0
+153	Áo choàng thun	0
+154	Áo vải Pico	0
+155	Áo da Pico	0
+156	Quần len cứng	1
+157	Quần thun cứng	1
+158	Quần vải cứng Pico	1
+159	Quần vải mềm Pico	1
+160	Găng len cứng	2
+161	Găng thun cứng	2
+162	Găng vải Pico	2
+163	Găng da Pico	2
+164	Giày nhựa cứng	3
+165	Giày cao su cứng	3
+166	Giày da Pico	3
+167	Giày sắt Pico	3
+168	Áo giáp bạc	0
+169	Áo giáp vàng	0
+170	Áo lông Xayda	0
+171	Áo khoác Xayda	0
+172	Quần giáp bạc	1
+173	Quần giáp vàng	1
+174	Quần lông Xayda	1
+175	Quần da Xayda	1
+176	Găng bạc	2
+177	Găng vàng	2
+178	Găng lông Xayda	2
+179	Găng da Xayda	2
+180	Giày bạc	3
+181	Giày vàng	3
+182	Giày lông Xayda	3
+183	Giày da Xayda	3
+184	Rada cấp 5	4
+185	Rada cấp 6	4
+186	Rada cấp 7	4
+187	Rada cấp 8	4
+188	Vàng	9
+189	Vàng	9
+190	Vàng	9
+191	Cà chua	27
+192	Cà rốt	27
+193	Gói 10 viên Capsule	27
+194	Viên Capsule đặc biệt	27
+195	Siêu thánh thủy	27
+196	Avatar	5
+197	Avatar	5
+198	Avatar	5
+199	Avatar	5
+200	Avatar	5
+201	Avatar	5
+202	Avatar	5
+203	Avatar	5
+204	Avatar	5
+205	Avatar	5
+206	Avatar	5
+207	Avatar	5
+208	Avatar	5
+209	Avatar	5
+210	Avatar	5
+211	Nho tím	27
+212	Nho xanh	27
+213	Bùa Trí Tuệ	13
+214	Bùa Mạnh Mẽ	13
+215	Bùa Da Trâu	13
+216	Bùa Oai Hùng	13
+217	Bùa Bất Tử	13
+218	Bùa Dẻo Dai	13
+219	Bùa Thu Hút	13
+220	Đá lục bảo	14
+221	Đá Saphia	14
+222	Đá Ruby	14
+223	Đá Titan	14
+224	Đá thạch anh tím	14
+225	Mảnh đá vụn	15
+226	Bình nước phép	16
+227	Avatar VIP	5
+228	Avatar VIP	5
+229	Avatar VIP	5
+230	Áo bạc Goku	0
+231	Áo vàng Goku	0
+232	Áo da Calic	0
+233	Áo jean Calic	0
+234	Áo sắt Tron	0
+235	Áo đồng Tron	0
+236	Áo bạc Zealot	0
+237	Áo vàng Zealot	0
+238	Áo lông đỏ	0
+239	Áo siêu xayda	0
+240	Áo Kaio	0
+241	Áo lưỡng long	0
+242	Quần bạc Goku	1
+243	Quần vàng Goku	1
+244	Quần da Calic	1
+245	Quần jean Calic	1
+246	Quần sắt Tron	1
+247	Quần đồng Tron	1
+248	Quần bạc Zealot	1
+249	Quần vàng Zealot	1
+250	Quần lông đỏ	1
+251	Quần siêu Xayda	1
+252	Quần Kaio	1
+253	Quần lưỡng long	1
+254	Găng bạc Goku	2
+255	Găng vàng Goku	2
+256	Găng da Calic	2
+257	Găng jean Calic	2
+258	Găng sắt Tron	2
+259	Găng đồng Tron	2
+260	Găng bạc Zealot	2
+261	Găng vàng Zealot	2
+262	Găng lông đỏ	2
+263	Găng siêu Xayda	2
+264	Găng Kaio	2
+265	Găng lưỡng long	2
+266	Giày bạc Goku	3
+267	Giày vàng Goku	3
+268	Giày da Calic	3
+269	Giày jean Calic	3
+270	Giày sắt Tron	3
+271	Giày đồng Tron	3
+272	Giày bạc Zealot	3
+273	Giày vàng Zealot	3
+274	Giày lông đỏ	3
+275	Giày siêu Xayda	3
+276	Giày Kaio	3
+277	Giày lưỡng long	3
+278	Rada cấp 9	4
+279	Rada cấp 10	4
+280	Rada cấp 11	4
+281	Rada cấp 12	4
+282	Cải trang	5
+283	Cải trang	5
+284	Cải trang	5
+285	Cải trang	5
+286	Cải trang	5
+287	Cải trang	5
+288	Cải trang	5
+289	Cải trang	5
+290	Cải trang	5
+291	Cải trang	5
+292	Cải trang	5
+293	Gói 30 đậu thần cấp 1	27
+294	Gói 30 đậu thần cấp 2	27
+295	Gói 30 đậu thần cấp 3	27
+296	Gói 30 đậu thần cấp 4	27
+297	Gói 30 đậu thần cấp 5	27
+298	Gói 30 đậu thần cấp 6	27
+299	Gói 30 đậu thần cấp 7	27
+300	Kaioken lv1	7
+301	Kaioken lv2	7
+302	Kaioken lv3	7
+303	Kaioken lv4	7
+304	Kaioken lv5	7
+305	Kaioken lv6	7
+306	Kaioken lv7	7
+307	Quả cầu Kênh Khi lv1	7
+308	Quả cầu Kênh Khi lv2	7
+309	Quả cầu Kênh Khi lv3	7
+310	Quả cầu Kênh Khi lv4	7
+311	Quả cầu Kênh Khi lv5	7
+312	Quả cầu Kênh Khi lv6	7
+313	Quả cầu Kênh Khi lv7	7
+314	Hóa khỉ khổng lồ lv1	7
+315	Hóa khỉ khổng lồ lv2	7
+316	Hóa khỉ khổng lồ lv3	7
+317	Hóa khỉ khổng lồ lv4	7
+318	Hóa khỉ khổng lồ lv5	7
+319	Hóa khỉ khổng lồ lv6	7
+320	Hóa khỉ khổng lồ lv7	7
+321	Bom hi sinh lv1	7
+322	Bom hi sinh lv2	7
+323	Bom hi sinh lv3	7
+324	Bom hi sinh lv4	7
+325	Bom hi sinh lv5	7
+326	Bom hi sinh lv6	7
+327	Bom hi sinh lv7	7
+328	Makankosappo lv1	7
+329	Makankosappo lv2	7
+330	Makankosappo lv3	7
+331	Makankosappo lv4	7
+332	Makankosappo lv5	7
+333	Makankosappo lv6	7
+334	Makankosappo lv7	7
+335	Đẻ trứng lv1	7
+336	Đẻ trứng lv2	7
+337	Đẻ trứng lv3	7
+338	Đẻ trứng lv4	7
+339	Đẻ trứng lv5	7
+340	Đẻ trứng lv6	7
+341	Đẻ trứng lv7	7
+342	Vệ tinh trí lực	22
+343	Vệ tinh trí tuệ	22
+344	Vệ tinh phòng thủ	22
+345	Vệ tinh sinh lực	22
+346	Cân đẩu vân	23
+347	Phi Long	23
+348	Ván bay	23
+349	Cân đẩu vân VIP	24
+350	Phi Long VIP	24
+351	Ván bay VIP	24
+352	Đậu thần cấp 8	6
+353	Ngọc Rồng Namek 1 Sao	11
+354	Ngọc Rồng Namek 2 Sao	11
+355	Ngọc Rồng Namek 3 Sao	11
+356	Ngọc Rồng Namek 4 Sao	11
+357	Ngọc Rồng Namek 5 Sao	11
+358	Ngọc Rồng Namek 6 Sao	11
+359	Ngọc Rồng Namek 7 Sao	11
+360	Ngọc Rồng Namek	11
+361	Gói 10 Rađa dò ngọc	25
+362	Hóa thạch Ngọc Rồng	11
+363	Tháo cờ	28
+364	Cờ xanh	28
+365	Cờ đỏ	28
+366	Cờ tím	28
+367	Cờ vàng	28
+368	Cờ lục	28
+369	Cờ hồng	28
+370	Cờ cam	28
+371	Cờ xám	28
+372	Ngọc rồng 1 sao đen	11
+373	Ngọc rồng 2 sao đen	11
+374	Ngọc rồng 3 sao đen	11
+375	Ngọc rồng 4 sao đen	11
+376	Ngọc rồng 5 sao đen	11
+377	Ngọc rồng 6 sao đen	11
+378	Ngọc rồng 7 sao đen	11
+379	Máy dò Capsule kì bí	29
+380	Viên Capsule kì bí	27
+381	Cuồng nộ	29
+382	Bổ huyết	29
+383	Bổ khí	29
+384	Giáp Xên bọ hung	29
+385	Ẩn danh	29
+386	Nón Noel Xám	5
+387	Nón Noel Đỏ	5
+388	Nón Noel Xanh	5
+389	Nón Noel Xám	5
+390	Nón Noel Đỏ	5
+391	Nón Noel Xanh	5
+392	Nón Noel Xám	5
+393	Nón Noel Đỏ	5
+394	Nón Noel Xanh	5
+395	Nhân vật bí ẩn	27
+396	Thú cưỡi cực VIP	24
+397	Hộp quà tết	27
+398	Hộp quà tết	27
+399	Thiệp chúc tết	27
+400	Đặt tên đệ tử	27
+401	Đổi đệ tử	27
+402	Nâng kỹ năng 1 đệ tử	27
+403	Nâng kỹ năng 2 đệ tử	27
+404	Nâng kỹ năng 3 đệ tử	27
+405	Cải trang	5
+406	Cải trang	5
+407	Cải trang	5
+408	Cải trang	5
+409	Cải trang	5
+410	Cải trang	5
+411	Cải trang	5
+412	Avatar	5
+413	Avatar	5
+414	Avatar	5
+415	Avatar	5
+416	Avatar	5
+417	Avatar	5
+418	Avatar	5
+419	Avatar	5
+420	Avatar	5
+421	Cải trang	5
+422	Cải trang	5
+423	Cải trang	5
+424	Cải trang	5
+425	Cải trang	5
+426	Cải trang	5
+427	Cải trang	5
+428	Cải trang	5
+429	Cải trang	5
+430	Cải trang	5
+431	Cải trang	5
+432	Cải trang	5
+433	Cải trang	5
+434	Khiên năng lượng lv1	7
+435	Khiên năng lượng lv2	7
+436	Khiên năng lượng lv3	7
+437	Khiên năng lượng lv4	7
+438	Khiên năng lượng lv5	7
+439	Khiên năng lượng lv6	7
+440	Khiên năng lượng lv7	7
+441	Sao pha lê đỏ	30
+442	Sao pha lê lam	30
+443	Sao pha lê hồng	30
+444	Sao pha lê tím	30
+445	Sao pha lê cam	30
+446	Sao pha lê vàng	30
+447	Sao pha lê lục	30
+448	Cải trang	5
+449	Cải trang	5
+450	Cải trang	5
+451	Cải trang	5
+452	Cải trang	5
+453	Chiến thuyền Tennis	27
+454	Bông tai Porata	27
+455	Cải trang	5
+456	Bình nước	27
+457	Thỏi vàng	27
+458	Cải trang	5
+459	Phiếu giảm giá	27
+460	Cục xương	27
+461	Cải trang	5
+462	Củ cà rốt	27
+463	Cải trang	5
+464	Cải trang	5
+465	Bánh Trung Thu 1 trứng	31
+466	Bánh Trung Thu 2 trứng	31
+467	Lồng đèn Ông Sao	11
+468	Lồng đèn Cá chép	11
+469	Lồng đèn Kéo Quân	11
+470	Lồng đèn Ông trăng	11
+471	Lồng đèn Hội An	11
+472	Bánh Trung Thu Đặc Biệt	31
+473	Hộp bánh Trung Thu	31
+474	Sách Biến Sôcôla lv1	7
+475	Sách Biến Sôcôla lv2	7
+476	Sách Biến Sôcôla lv3	7
+477	Sách Biến Sôcôla lv4	7
+478	Sách Biến Sôcôla lv5	7
+479	Sách Biến Sôcôla lv6	7
+480	Sách Biến Sôcôla lv7	7
+481	Sách Liên hoàn lv1	7
+482	Sách Liên hoàn lv2	7
+483	Sách Liên hoàn lv3	7
+484	Sách Liên hoàn lv4	7
+485	Sách Liên hoàn lv5	7
+486	Sách Liên hoàn lv6	7
+487	Sách Liên hoàn lv7	7
+488	Sách Dịch Chuyển lv1	7
+489	Sách Dịch Chuyển lv2	7
+490	Sách Dịch Chuyển lv3	7
+491	Sách Dịch Chuyển lv4	7
+492	Sách Dịch Chuyển lv5	7
+493	Sách Dịch Chuyển lv6	7
+494	Sách Dịch Chuyển lv7	7
+495	Sách Thôi Miên lv1	7
+496	Sách Thôi Miên lv2	7
+497	Sách Thôi Miên lv3	7
+498	Sách Thôi Miên lv4	7
+499	Sách Thôi Miên lv5	7
+500	Sách Thôi Miên lv6	7
+501	Sách Thôi Miên lv7	7
+502	Sách Trói lv1	7
+503	Sách Trói lv2	7
+504	Sách Trói lv3	7
+505	Sách Trói lv4	7
+506	Sách Trói lv5	7
+507	Sách Trói lv6	7
+508	Sách Trói lv7	7
+509	Sách Huýt Sáo lv1	7
+510	Sách Huýt Sáo lv2	7
+511	Sách Huýt Sáo lv3	7
+512	Sách Huýt Sáo lv4	7
+513	Sách Huýt Sáo lv5	7
+514	Sách Huýt Sáo lv6	7
+515	Sách Huýt Sáo lv7	7
+516	Sôcôla	27
+517	Mở rộng hành trang	27
+518	Mở rộng rương đồ	27
+519	Cờ Kaiô	28
+520	Cờ Mabư	28
+521	Tự động luyện tập	27
+522	Bùa Đệ Tử	13
+523	Đậu thần cấp 9	6
+524	Cải trang	5
+525	Cải trang	5
+526	Cải trang	5
+527	Cải trang	5
+528	Cải trang	5
+529	Giáp tập luyện cấp 1	32
+530	Giáp tập luyện cấp 2	32
+531	Giáp tập luyện cấp 3	32
+532	Quỷ Chim	24
+533	Kẹo giáng sinh	27
+534	Giáp tập luyện cấp 1	32
+535	Giáp tập luyện cấp 2	32
+536	Giáp tập luyện cấp 3	32
+537	Chữ giải	27
+538	Chữ khai	27
+539	Chữ phong	27
+540	Chữ ấn	27
+541	Quả Hồng Đào	27
+542	Quả Hồng Đào Chín	27
+543	Vòng Kim Cô	27
+544	Cải trang	5
+545	Cải trang	5
+546	Cải trang	5
+547	Cải trang	5
+548	Cải trang	5
+549	Cải trang	5
+550	Cải trang	5
+551	Cải trang	5
+552	Cải trang	5
+553	Pháo bông	27
+554	Siêu Pháo bông x100	27
+555	Áo Thần Linh	0
+556	Quần Thần Linh	1
+557	Áo Thần Namếc	0
+558	Quần Thần namếc	1
+559	Áo Thần Xayda	0
+560	Quần Thần Xayda	1
+561	Nhẫn Thần Linh	4
+562	Găng Thần Linh	2
+563	Giầy Thần Linh	3
+564	Găng Thần Namếc	2
+565	Giầy Thần Namếc	3
+566	Găng Thần Xayda	2
+567	Giầy Thần Xayda	3
+568	Quả Trứng	27
+569	Dưa Hấu	27
+570	Rương Gỗ	27
+571	Rương Bạc	27
+572	Rương Vàng	27
+573	Capsule Bạc	27
+574	Capsule Vàng	27
+575	Cải trang	5
+576	Cải trang	5
+577	Cải trang	5
+578	Cải trang	5
+579	Đuôi khỉ	29
+580	Cải trang	5
+581	Cải trang	5
+582	Cải trang	5
+583	Cải trang Póc	5
+584	Cải trang	5
+585	Bí ngô	27
+586	Cải trang	5
+587	Cải trang	5
+588	Cải trang	5
+589	Bông hoa	27
+590	Bí kiếp	27
+591	Cải trang Siêu Thần	5
+592	Cải trang Yardrat	5
+593	Cải trang Yardrat	5
+594	Cải trang Yardrat	5
+595	Đậu thần cấp 10	6
+596	Gói 30 đậu thần cấp 8	27
+597	Gói 30 đậu thần cấp 9	27
+598	Avatar	5
+599	Avatar	5
+600	Avatar	5
+601	Cải trang Hợp Thể	5
+602	Cải trang Hợp Thể	5
+603	Cải trang Hợp Thể	5
+604	Cải trang VIP	5
+605	Cải trang VIP	5
+606	Cải trang VIP	5
+607	Cải trang Chan Xư	5
+608	Cải trang Lão Cận	5
+609	Cải trang Xayda	5
+610	Bông hoa	27
+611	Bản đồ kho báu	27
+612	Cải trang Arale	5
+613	Cải trang Gatchan	5
+614	Cải trang Obotchaman	5
+615	Cải trang	5
+616	Cải trang	5
+617	Cải trang	5
+618	Cải trang Luffy	5
+619	Cải trang Zoro	5
+620	Cải trang Sanji	5
+621	Cải trang Brook	5
+622	Cải trang Chopper	5
+623	Cải trang Nami	5
+624	Cải trang Franky	5
+625	Cải trang Usopp	5
+626	Cải trang Robin	5
+627	Capsule quà tặng	27
+628	Cải trang Hải Tặc	5
+629	Cải trang Fide vàng	5
+630	Cải trang Frost 1	5
+631	Cải trang Frost 2	5
+632	Cải trang Frost 3	5
+633	Cải trang Píc	5
+634	Cải trang King kong	5
+635	Cải trang Pi láp	5
+636	Cải trang Mai	5
+637	Cải trang Su	5
+638	Bình chứa Commeson	27
+639	Cải trang Hợp Thể	5
+640	Cải trang Hợp Thể	5
+641	Cải trang Hợp Thể	5
+642	Cải trang ma trơi	5
+643	Cải trang dơi nhí	5
+644	Cải trang bộ xương	5
+645	Cải trang bộ xương	5
+646	Cải trang bộ xương	5
+647	Cải trang Saibamen	5
+648	Hộp quà giáng sinh	27
+649	Tất,vớ giáng sinh	27
+650	Áo Hủy Diệt	0
+651	Quần Hủy Diệt	1
+652	Áo Hủy Diệt	0
+653	Quần Hủy Diệt	1
+654	Áo Hủy Diệt	0
+655	Quần Hủy Diệt	1
+656	Nhẫn Hủy Diệt	4
+657	Găng Hủy Diệt	2
+658	Giầy Hủy Diệt	3
+659	Găng Hủy Diệt	2
+660	Giầy Hủy Diệt	3
+661	Găng Hủy Diệt	2
+662	Giầy Hủy Diệt	3
+663	Bánh Pudding	29
+664	Xúc xích	29
+665	Kem dâu	29
+666	Mì ly	29
+667	Sushi	29
+668	Hộp quà Tết 2019	27
+669	Dưa Hấu	29
+670	Cà rốt	29
+671	Bùa Trí Tuệ x3	13
+672	Bùa Trí Tuệ x4	13
+673	abcd	27
+674	Đá ngũ sắc	27
+675	Cải trang	5
+676	Cải trang	5
+677	Cải trang	5
+678	Cải trang	5
+679	Cải trang	5
+680	Cải trang	5
+681	Cải trang	5
+682	Avatar	5
+683	Avatar	5
+684	Avatar	5
+685	Avatar	5
+686	Avatar	5
+687	Avatar	5
+688	Avatar	5
+689	Avatar	5
+690	Avatar	5
+691	Quần đi biển	1
+692	Quần đi biển	1
+693	Quần đi biển	1
+694	Trái dừa	29
+695	Vỏ ốc	27
+696	Vỏ sò	27
+697	Con cua	27
+698	Sao biển	27
+699	HP +400K	27
+700	Sức đánh +20K	27
+701	KI +400K	27
+702	Bí ngô 1 sao	12
+703	Bí ngô 2 sao	12
+704	Bí ngô 3 sao	12
+705	Bí ngô 4 sao	12
+706	Bí ngô 5 sao	12
+707	Bí ngô 6 sao	12
+708	Bí ngô 7 sao	12
+709	Bông hoa	27
+710	Cải trang	5
+711	Cải trang	5
+712	Truy	27
+713	Bắt	27
+714	Đại	27
+715	Vương	27
+716	Urôn	27
+717	Bao Lì Xì	27
+718	Vé tặng ngọc	27
+719	Cải trang	5
+720	Mảnh cải trang	27
+721	Phiếu giảm giá VIP	27
+722	Capsule hồng	27
+723	Bông hồng	27
+724	Cải trang	5
+725	Siêu thần thủy	27
+726	Mảnh giấy có chữ MA	27
+727	Siêu thần thủy	27
+728	Siêu thần thủy	27
+729	Cải trang Hatchiyack	5
+730	Cải trang Sói Basil	5
+731	Cải trang Sói Lavender	5
+732	Cải trang Sói Bergamo	5
+733	Cân đẩu vân ngũ sắc	23
+734	Ngọc Thố	23
+735	Lồng đèn cá chép	23
+736	Hộp quà 5 sao	27
+737	Capsule Trung Thu	27
+738	Cải trang Dr Lychee	5
+739	Cải trang Bill Bí Ngô	5
+740	Lưỡi hái Thần Chết	11
+741	Cánh dơi Dracula	11
+742	Cải trang Caufila Dơi	5
+743	Chổi bay Phù Thủy	23
+744	Cột nhà	23
+745	Bông tuyết	11
+746	Xe tuần lộc	23
+747	Cờ xanh dương	28
+748	Thịt heo	27
+749	Thúng nếp	27
+750	Thúng đậu xanh	27
+751	Lá dong	27
+752	Bánh tét	31
+753	Bánh chưng	31
+754	Nón Chuột may mắn	5
+755	Nón Chuột may mắn	5
+756	Nón Chuột may mắn	5
+757	Túi Canh Tý 2020	27
+758	Capsule Tết 2024	27
+759	Nâng kỹ năng 4 đệ tử	27
+760	Cải trang VIP	5
+761	Avatar đeo khẩu trang	5
+762	Avatar đeo khẩu trang	5
+763	Avatar đeo khẩu trang	5
+764	Khẩu trang	29
+765	Cải trang Gohan Bư	5
+766	Cờ xám	11
+767	Cờ đen	11
+768	Cờ xanh lá	11
+769	Cờ xanh biển	11
+770	Cờ hồng	11
+771	Cờ cam	11
+772	Cờ vàng	11
+773	Cờ tím	11
+774	Cờ xanh dạ	11
+775	Cờ đỏ	11
+776	Khăn xanh lá	11
+777	Khăn xanh dương	11
+778	Khăn vàng	11
+779	Khăn tím	11
+780	Khăn nâu	11
+781	Khăn xám	11
+782	Khăn đỏ	11
+783	Khăn hồng	11
+784	Khăn xanh dạ	11
+785	Ba lô	11
+786	Đao	11
+787	Gậy	11
+788	Mai rùa	11
+789	Giỏ bơ	11
+790	Giỏ dưa hấu	11
+791	Giỏ củ cải trắng	11
+792	Giỏ cà rốt	11
+793	Giỏ chuối	11
+794	Gậy phép	11
+795	Ghế bay	23
+796	Hộp Capsule	27
+797	Bùa Trí Tuệ	13
+798	Bùa Mạnh Mẽ	13
+799	Bùa Da Trâu	13
+800	Lồng đèn Cô Vy	11
+801	Lồng đèn Con tàu	11
+802	Lồng đèn Con gà	11
+803	Lồng đèn Con bướm	11
+804	Lồng đèn Đôrêmon	11
+805	Vòng sáng thiên thần	11
+806	Cải trang Đôrêmon	5
+807	Ngọc đen 1 sao	12
+808	Ngọc đen 2 sao	12
+809	Ngọc đen 3 sao	12
+810	Ngọc đen 4 sao	12
+811	Ngọc đen 5 sao	12
+812	Ngọc đen 6 sao	12
+813	Ngọc đen 7 sao	12
+814	Ma trơi	11
+815	Hồn ma Goku	11
+816	Hồn ma Ca đíc	11
+817	Hồn ma Pôcôlô	11
+818	Capsule Halloween	27
+819	Cải trang Xuka	5
+820	Vé quay ngọc đen	27
+821	Vé quay ngọc vàng	27
+822	Cây thông	11
+823	Túi quà	11
+824	Cải trang Noel	5
+825	Cải trang Noel	5
+826	Cải trang Noel	5
+827	Cải trang Noel	5
+828	Mảnh Khủng long	33
+829	Mảnh Lợn lòi	33
+830	Mảnh Quỷ đất	33
+831	Mảnh Khủng long mẹ	33
+832	Mảnh Lợn lòi mẹ	33
+833	Mảnh Quỷ đất mẹ	33
+834	Mảnh Thằn lằn bay	33
+835	Mảnh Phi long	33
+836	Mảnh Quỷ bay	33
+837	Mảnh Lính độc nhãn	33
+838	Mảnh Lính độc nhãn	33
+839	Mảnh Sói xám	33
+840	Mảnh Trung úy Trắng	33
+841	Mảnh Ninja Áo Tím	33
+842	Mảnh Trung úy Xanh Lơ	33
+843	Cải trang Trâu vàng	5
+844	Cải trang Trâu đen	5
+845	Cải trang Trâu trắng	5
+846	Nón Trâu may mắn	5
+847	Nón Trâu may mắn	5
+848	Nón Trâu may mắn	5
+849	Pháo Thăng Thiên	23
+850	Cỏ tươi	27
+851	Cỏ tươi	27
+852	Cây trúc	11
+853	Cải trang Trâu Nâu	5
+854	Cải trang Trâu Nâu	5
+855	Cải trang Trâu Nâu	5
+856	Cải trang Trâu Đốm	5
+857	Cải trang Trâu Đốm	5
+858	Cải trang Trâu Đốm	5
+859	Mảnh Độc Nhãn	33
+860	Cải trang Mị Nương	5
+861	Hồng ngọc	34
+862	Cải trang Nobita	5
+863	Cải trang Xekô	5
+864	Cải trang Chaien	5
+865	Kiếm Z	11
+866	Avatar	5
+867	Avatar	5
+868	Avatar	5
+869	Capsule 1 sao	27
+870	Capsule 2 sao	27
+871	Capsule 3 sao	27
+872	Avatar Gohan 1	5
+873	Avatar Gohan 2	5
+874	Rùa con	27
+875	Cải trang Cadic	5
+876	Cải trang Gohan	5
+877	Cải trang Pocolo	5
+878	Cải trang Cooler vàng	5
+879	Cải trang Thống Chế Kilo	5
+880	Cua rang me	29
+881	Bạch tuộc nướng	29
+882	Tôm tẩm bột chiên xù	29
+883	Cải trang Black Gohan Rose	5
+884	Cải trang Hit	5
+885	CT Lích Tên béo	5
+886	Trứng vịt muối	27
+887	Gà quay nguyên con	27
+888	Bột mì	27
+889	Đậu xanh	27
+890	Bánh trung thu Gà quay	27
+891	Bánh trung thu thập cẩm	27
+892	Thỏ xám	27
+893	Thỏ trắng	27
+894	Avatar	5
+895	Avatar	5
+896	Avatar	5
+897	Rùa bay	23
+898	Cải trang Zamasu	5
+899	Kẹo một mắt	29
+900	Súp bí hắc ám	29
+901	Kẹo bàn tay	27
+902	Bánh gato nhện	29
+903	Hamburger sâu	29
+904	Cải trang Black Goku SSJ White	5
+905	Cải trang Siêu Thần Trái Đất	5
+906	Cải trang Mighty Mask	5
+907	Cải trang Siêu thần Namếc	5
+908	Ma phong ba	27
+909	Thần chết cute	27
+910	Bí ngô nhí nhảnh	27
+911	Cải trang Siêu Thần Xayda	5
+912	Cải trang Gohan áo xanh	5
+913	Cải trang Póc áo đỏ	5
+914	Cải trang Búp bê Arale	5
+915	Capsule Squid Game	27
+916	Lính bảo vệ tam giác	27
+917	Lính bảo vệ vuông	27
+918	Lính bảo vệ tròn	27
+919	Búp bê	27
+920	Gậy như ý	23
+921	Bông tai Porata	27
+922	Cải trang Goku Noel	5
+923	Cải trang Pico Noel	5
+924	Cải trang Ca đíc Noel	5
+925	Ngọc rồng băng 1 sao	12
+926	Ngọc rồng băng 2 sao	12
+927	Ngọc rồng băng 3 sao	12
+928	Ngọc rồng băng 4 sao	12
+929	Ngọc rồng băng 5 sao	12
+930	Ngọc rồng băng 6 sao	12
+931	Ngọc rồng băng 7 sao	12
+932	Cải trang Uub	5
+933	Mảnh vỡ bông tai	27
+934	Mảnh hồn bông tai	27
+935	Đá xanh lam	27
+936	Tuần lộc nhí	27
+937	Cải trang Mabư Noel	5
+938	Cải trang Goku thời trang	5
+939	Cải trang Pôcôlô thời trang	5
+940	Cải trang Ca Đíc thời trang	5
+941	Nón Hổ vàng	5
+942	Hổ mặp vàng	27
+943	Hổ mặp trắng	27
+944	Hổ mặp xanh	27
+945	Cải trang Goku Tarzan	5
+946	Nón Hổ trắng	5
+947	Nón Hổ xanh	5
+948	Cải trang Hổ vàng	5
+949	Thịt tươi	27
+950	Thịt tươi	27
+951	Cải trang Siêu Goku Tarzan	5
+952	Cải trang Hổ trắng	5
+953	Cải trang Hổ xanh	5
+954	Bó Hoa Hồng	11
+955	Bó Hoa Vàng	11
+956	Mảnh Đội trưởng Vàng	33
+957	Cải trang Goku võ sĩ	5
+958	Cải trang Pôcôlô võ sĩ	5
+959	Cải trang Cađíc võ sĩ	5
+960	Cờ trắng	28
+961	Cờ đen	28
+962	Cap thời trang 5 ngày	27
+963	Cap thời trang 7 ngày	27
+964	Sao pha lê đen cấp 2	30
+965	Sao pha lê trắng cấp 2	30
+966	Trái bóng	11
+967	Sao la	27
+968	Số 7 Goku	5
+969	Số 11 Gohan	5
+970	Số 6 Cađíc	5
+971	Số 2 Krilin	5
+972	Số 4 Thên Xin Hăng	5
+973	Số 10 Pôcôlô	5
+974	Số 1 Mabư	5
+975	Số 8 Biden	5
+976	Số 9 Quy lão Kamê	5
+977	Số 3 Poc	5
+978	Số 5 Pic	5
+979	Huy chương đồng	27
+980	Huy chương bạc	27
+981	Huy chương vàng	27
+982	Cúp vàng	11
+983	Cờ cổ động	11
+984	Capsule SEA games	27
+985	Cải trang Chill	5
+986	Cải trang Chill cấp 2	5
+987	Đá bảo vệ	27
+988	Mở rộng túi vàng	27
+989	Cải trang Gohan Siêu Nhân	5
+990	Cải trang Biđen Siêu Nhân	5
+991	Cải trang Bản Cô Nương Siêu Nhân	5
+992	Nhẫn thời không sai lệch	27
+993	Giỏ thức ăn	27
+994	Vỏ ốc	11
+995	Cây kem	11
+996	Cá heo	11
+997	Con diều	11
+998	Diều rồng	11
+999	Mèo mun	11
+1000	Xiên cá	11
+1001	Phóng lợn	11
+1002	Cá nóc	27
+1003	Cá bảy màu	27
+1004	Cá diêu hồng	27
+1005	Xô cá xanh	27
+1006	Xô cá vàng	27
+1007	Ván lướt sóng	11
+1008	Cua đỏ	27
+1009	Rương Tranh ngọc Namếc	27
+1010	Cải trang Áo vịt cam	5
+1011	Cải trang Áo trắng hoa	5
+1012	Cải trang Nón rơm mùa hè	5
+1013	Kiếm ánh sáng	11
+1014	Rađa dò ngọc Namếc	27
+1015	Ngọc rồng Siêu Cấp	27
+1016	Thuốc mỡ Ipana	29
+1017	Thuốc mỡ Ipana đặc biệt	29
+1018	Cải trang Broly	5
+1019	Cải trang Broly	5
+1020	Cải trang Broly	5
+1021	Búa Mjolnir	11
+1022	Búa Stormbreaker	11
+1023	Quạt ba tiêu	11
+1024	Như Ý Kim Cô Bổng	11
+1025	Cửu Xỉ Đinh Ba	11
+1026	Nguyệt Nha Sản	11
+1027	Cửu Hoàn Thiên Tích Trượng	11
+1028	Dao răng cưa	11
+1029	Lọ nước phép	27
+1030	Cờ Hoa đăng	11
+1031	Cờ Hoa sen	11
+1032	Giấy màu	27
+1033	Lời chúc	27
+1034	Nến	27
+1035	Khung tre	27
+1036	Pháo hoa	27
+1037	Hoa đăng	27
+1038	Hoa đăng có lời chúc	27
+1039	Pet Thỏ ốm	27
+1040	Pet Thỏ mập	27
+1041	Thỏ hồng Bun ma	5
+1042	Thỏ đỏ Chi Chi	5
+1043	Thỏ đen Android 18	5
+1044	Sách tuyệt kỹ 1	25
+1045	Đuôi khỉ	27
+1046	Pet Khỉ Bong Bóng	27
+1047	Lồng đèn lon	11
+1048	Áo Thiên Sứ	0
+1049	Áo Thiên Sứ	0
+1050	Áo Thiên Sứ	0
+1051	Quần Thiên Sứ	1
+1052	Quần Thiên Sứ	1
+1053	Quần Thiên Sứ	1
+1054	Găng Thiên Sứ	2
+1055	Găng Thiên Sứ	2
+1056	Găng Thiên Sứ	2
+1057	Giầy Thiên Sứ	3
+1058	Giầy Thiên Sứ	3
+1059	Giầy Thiên Sứ	3
+1060	Nhẫn Thiên Sứ	4
+1061	Nhẫn Thiên Sứ	4
+1062	Nhẫn Thiên Sứ	4
+1063	Avatar Thiên Sứ	5
+1064	Avatar Thiên Sứ	5
+1065	Avatar Thiên Sứ	5
+1066	Mảnh áo	27
+1067	Mảnh quần	27
+1068	Mảnh giầy	27
+1069	Mảnh nhẫn	27
+1070	Mảnh găng tay	27
+1071	Công thức	27
+1072	Công thức	27
+1073	Công thức	27
+1074	Đá nâng cấp cấp 1	27
+1075	Đá nâng cấp cấp 2	27
+1076	Đá nâng cấp cấp 3	27
+1077	Đá nâng cấp cấp 4	27
+1078	Đá nâng cấp cấp 5	27
+1079	Đá may mắn cấp 1	27
+1080	Đá may mắn cấp 2	27
+1081	Đá may mắn cấp 3	27
+1082	Đá may mắn cấp 4	27
+1083	Đá may mắn cấp 5	27
+1084	Công thức VIP	27
+1085	Công thức VIP	27
+1086	Công thức VIP	27
+1087	Tanjiro	5
+1088	Inosuke Hashibira	5
+1089	Inosuke	5
+1090	Zenitsu	5
+1091	Nezuko	5
+1092	Gậy Quy Lão	23
+1093	Đất trồng cây	27
+1094	Phân bón	27
+1095	Hạt mầm	27
+1096	Thuốc tăng trưởng	27
+1097	Chậu sứ	27
+1098	Hoa hồng xanh	27
+1099	Chậu hoa hồng xanh	27
+1100	Chậu hoa ăn thịt	11
+1101	Lời chúc	27
+1102	Lời chúc VIP	27
+1103	Marron	5
+1104	Poc satan	5
+1105	Bun ma phù thủy	5
+1106	Biden dracula	5
+1107	Pet Bí Ma Vương	27
+1108	Đinh ba Satan	11
+1109	Chổi phù thủy	11
+1110	Cánh thiên thần	11
+1111	Cánh thiên thần 2	11
+1112	Cây nắp ấm	11
+1113	Cá Chà Bá	11
+1114	Pet Ma vàng phù thủy	27
+1115	Máy dò Ngọc rồng sự kiện	29
+1116	Hòm Halloween	27
+1117	Thiệp Halloween	27
+1118	W	27
+1119	O	27
+1120	R	27
+1121	L	27
+1122	D	27
+1123	C	27
+1124	U	27
+1125	P	27
+1126	20	27
+1127	22	27
+1128	Cờ logo Quatar 1	11
+1129	Cờ logo Quatar 2	11
+1130	Cờ giày vàng	11
+1131	Quả bóng siêu việt	23
+1132	Fan cuồng bóng đá	27
+1133	Fan gà nửa mùa	27
+1134	Thiệp World Cup	27
+1135	Capsule World Cup	27
+1136	Capsule World Cup VIP	27
+1137	Cờ GOAL	11
+1138	Cờ FIFA	11
+1139	Quả Bóng Vàng	11
+1140	Mèo mun đột biến	11
+1141	Phiếu giảm giá Black Friday	27
+1142	Bong bóng heo	11
+1143	Đá bảo vệ (Khóa)	27
+1144	Phượng hoàng lửa	23
+1145	Cải trang Black goku ssj 3 White	5
+1146	Avatar Gohan White	5
+1147	Avatar Gohan White	5
+1148	Avatar Gohan White	5
+1149	Cánh thiên sứ hắc ám	11
+1150	Cuồng nộ 2	29
+1151	Bổ khí 2	29
+1152	Bổ huyết 2	29
+1153	Giáp Xên bọ hung 2	29
+1154	Ẩn danh 2	29
+1155	Noel 2022 Goku	5
+1156	Noel 2022 Cađíc	5
+1157	Noel 2022 Pôcôlô	5
+1158	Chú lùn	11
+1159	Chú lùn	11
+1160	Chú lùn	11
+1161	Chú lùn	11
+1162	Chú lùn	11
+1163	Chú lùn	11
+1164	Chú lùn	11
+1165	Chuông đồng	27
+1166	Cá tuyết	27
+1167	Bánh quy	27
+1168	Kẹo đường	27
+1169	Kẹo người tuyết	27
+1170	Gói quà	27
+1171	Túi 7 chú lùn	27
+1172	Xe heo tuần lộc	23
+1173	Rương Mảnh Thiên Sứ	27
+1174	Kimono	5
+1175	Kimono	5
+1176	Kimono	5
+1177	Mãng cầu	27
+1178	Quả dừa	27
+1179	Đu đủ	27
+1180	Quả xoài	27
+1181	Trái sung	27
+1182	Mâm ngũ quả	27
+1183	Bao lì xì rồng	27
+1184	Gói quà đặc biệt	27
+1185	Cành mai	11
+1186	Cành đào	11
+1187	Hộp quà Tết 2024	27
+1188	Pet mèo đen đuôi vàng	27
+1189	Xúc xích xông khói	29
+1190	Dĩa thức ăn cho mèo	29
+1191	Thiệp chúc tết	27
+1192	Thiệp chúc tết	27
+1193	Thiệp chúc tết	27
+1194	Phiếu bé ngoan	27
+1195	Xí muội Hoa đào	29
+1196	Xí muội Hoa mai	29
+1197	Bóng Vịt Vàng	11
+1198	Nón mèo	5
+1199	Nón mèo	5
+1200	Nón mèo	5
+1201	Karin Kid Lân	5
+1202	Pet mèo trắng đuôi vàng	27
+1203	Pet mèo trắng đuôi vàng	27
+1204	Mảnh Rồng thần Namếc	33
+1205	Drabura Frost	5
+1206	Trái tim Valentine	11
+1207	Pet Minion	27
+1208	Bunma tóc xanh neon	5
+1209	Bunma tóc nâu băng đô	5
+1210	Bunma tóc tím thắt bím	5
+1211	Sách tuyệt kỹ 1	25
+1212	Sách tuyệt kỹ 1	25
+1213	Cờ mèo Hoàng Thượng	11
+1214	Cơm nếp	27
+1215	Ván cơm nếp	27
+1216	Tệp cơm nếp	27
+1217	Lá dong	27
+1218	Sợi Cói	27
+1219	Tệp bánh chưng	27
+1220	Ngà voi	27
+1221	Cựa gà	27
+1222	Hồng mao	27
+1223	Bóng khí Gas	11
+1224	Pet Voi Chín Ngà	27
+1225	Pet Gà Chín Cựa	27
+1226	Pet Ngựa Chín Hồng mao	27
+1227	Hộp quà thường	27
+1228	Hộp quà cao cấp	27
+1229	Bí kíp tuyệt kỹ	27
+1230	Hào Quang Rực Rỡ	11
+1231	Gậy thượng đế	11
+1232	Bình chứa nhỏ	29
+1233	Nồi cơm điện	29
+1234	Cải trang Pic Thợ Lặn	5
+1235	Cải trang Poc Bikini	5
+1236	Cải trang King Kong Sành Điệu	5
+1237	Cành khô	27
+1238	Nước Suối Tinh Khiết	27
+1239	Gỗ Lớn	27
+1240	Que đốt	27
+1241	Bồn tắm gỗ	27
+1242	Bồn tắm vàng	27
+1243	Pet bọ cánh cứng	27
+1244	Pet ngài đêm	27
+1245	Bọ Kiến Vương Hai Sừng	27
+1246	Bọ Hung Tê Giác	27
+1247	Bọ Kẹp Kìm	27
+1248	Bọ Cánh Cứng	27
+1249	Ngài Đêm	27
+1250	Hũ Mật Ong	27
+1251	Vợt Bắt Bọ	27
+1252	Ve Sầu Xên	23
+1253	Ve Sầu Xên Tiến Hóa	23
+1254	Búa hắc hường	11
+1255	Cải trang Mabư Còm	5
+1256	Pet heo bướm	27
+1257	Xe triều đình	5
+1258	Hồn ma	27
+1259	Bình phép	27
+1260	Lọ nước hồi sinh	27
+1261	Bùa hồi sinh	27
+1262	Lích Tên	27
+1263	Siêu Lích Tên	27
+1264	Máy dò linh hồn	29
+1265	Yajirobe Zoro	5
+1266	Avatar Gohan sẹo	5
+1267	Avatar Gohan sẹo	5
+1268	Avatar Gohan sẹo	5
+1269	Avatar Gohan Blue sẹo	5
+1270	Avatar Gohan Blue sẹo	5
+1271	Avatar Gohan Blue sẹo	5
+1272	Đài sen hồng	23
+1273	Đài sen vàng	23
+1274	Cải trang Cumber	5
+1275	Cải trang Cumber SSJ	5
+1276	Cải trang Nguyệt thần	5
+1277	Cải trang Nhật thần	5
+1278	Sách tuyệt kỹ 2	25
+1279	Sách tuyệt kỹ 2	25
+1280	Sách tuyệt kỹ 2	25
+1281	Trang sách cũ	27
+1282	Bìa sách	27
+1283	Cuốn sách cũ	27
+1284	Bùa giám định	27
+1285	Kìm bấm giấy	27
+1286	Kẻ thao túng sói	36
+1287	Nước anh bao	36
+1288	Chiến thần khóa nick	36
+1289	Đại gia mới nhú	36
+1290	Trùm ước rồng	36
+1291	Trùm săn Boss	36
+1292	Thánh đập đồ +7	36
+1293	Cao thủ siêu hạng	36
+1294	Nông dân chăm chỉ	36
+1295	Ông thần ve chai	36
+1296	Bị móc sạch túi	36
+1297	KOL	36
+1298	Chuyên gia lượm nhặt	36
+1299	Fan cứng	36
+1300	Thánh ở dơ	36
+1301	Cờ khỉ hoàng đế	11
+1302	Cải trang	5
+1303	Lồng đèn thỏ trắng	11
+1304	Kiếm gỗ	27
+1305	Ánh trăng tròn	27
+1306	Bánh dẻo thỏ trắng	31
+1307	Bánh dẻo thỏ xanh	31
+1308	Bánh dẻo thỏ hồng	31
+1309	Bunma Ả rập Xê út	5
+1310	Thỏ ngọc	27
+1311	Lồng đèn treo	27
+1312	Hạt sen	27
+1313	Bánh trung thu Hạt sen	27
+1314	Hộp giấy	27
+1315	Túi giấy	27
+1316	Giỏ bánh trung thu	27
+1317	Giỏ bánh trung thu độc đáo	27
+1318	Pet Mông Quỷ	27
+1319	Sách đấm Dragon	37
+1320	Sách Kamejoko	37
+1321	Thái Dương Hạ San	37
+1322	Kaioken	37
+1323	Quả cầu Kênh Khi	37
+1324	Sách Dịch Chuyển	37
+1325	Sách Thôi Miên	37
+1326	Sách đấm Demon	37
+1327	Sách Masenko	37
+1328	Sách học Trị thương	37
+1329	Makankosappo	37
+1330	Đẻ trứng	37
+1331	Sách Biến Sôcôla	37
+1332	Sách Liên hoàn	37
+1333	Sách đấm Galick	37
+1334	Sách Antomic	37
+1335	Tái tạo năng lượng	37
+1336	Hóa khỉ khổng lồ	37
+1337	Bom hi sinh	37
+1338	Sách Trói	37
+1339	Sách Huýt Sáo	37
+1340	Khiên năng lượng	37
+1341	Sách Super Kamejoko	37
+1342	Sách Ma phong ba	37
+1343	Sách Cađíc liên hoàn chưởng	37
+1344	Con Cat hường	11
+1345	Thú cưỡi mèo kéo xương	23
+1346	Thú cưỡi Xe bí ngô	23
+1347	Pet Mèo Phù Thủy	27
+1348	Giỏ đựng ngọc bí	27
+1349	Giỏ đựng	27
+1350	Kẹo não người	27
+1351	Dây buộc	27
+1352	Bó kẹo kinh dị	27
+1353	Giỏ kẹo kinh dị	27
+1354	Giấy trang trí Halloween	27
+1355	Giỏ đựng kẹo trái bí	27
+1356	Hộp Kẹo Ma Quỷ	27
+1357	Kẹo bí ngô	27
+1358	Cờ hồn Mabư	11
+1359	Cờ hồn Xên Bọ Hung	11
+1360	Cờ Ma đèn nhảy múa	11
+1361	Cờ Ma đèn hút hồn	11
+1362	Cải trang Thầy giáo Ca Lích	5
+1363	Thú cưỡi con Cat hường	23
+1364	Lá trà tươi	27
+1365	Nia tre	27
+1366	Que tre	27
+1367	Hoa cúc	27
+1368	Túi trà khô	27
+1369	Hộp trà	27
+1370	Hộp trà hoa cúc	27
+1371	Cải trang đệ tử Tí	5
+1372	Bao bì thiệp	27
+1373	Mảnh giấy	27
+1374	Keo dán	27
+1375	Lời chúc	27
+1376	Thiệp chúc thường	27
+1377	Thiệp chúc đặc biệt	27
+1378	Cải trang Thầy giáo Cađíc	5
+1379	Cải trang Thầy giáo Pô cô lô	5
+1380	Cải trang đệ tử Sửu	5
+1381	Cải trang đệ tử Dần	5
+1382	Kéo tỉa hoa đặc biệt	27
+1383	Cải trang Thầy giáo Raddit	5
+1384	Cải trang Thầy giáo Goku	5
+1385	Cải trang Thầy giáo Quy Lão	5
+1386	Bút chì hồng	11
+1387	Kéo tỉa hoa	27
+1388	Bó hoa hồng	27
+1389	Avatar Cử nhân	5
+1390	Avatar Cử nhân	5
+1391	Avatar Cử nhân	5
+1392	Gõ đầu trẻ	36
+1393	Gõ đầu trẻ	36
+1394	Gõ đầu trẻ	36
+1395	Đóa hoa hồng	27
+1396	Cải trang Super Píc	5
+1397	Rương radar	29
+1398	Rương giày	29
+1399	Rương nhẫn	29
+1400	Rương găng tay	29
+1401	Rương áo	29
+1402	Rương quần	29
+1403	Rương bí kíp tuyệt kỹ	29
+1404	Chí mạng 2	29
+1405	Chí mạng 3	29
+1406	Né đòn	29
+1407	Né đòn 2	29
+1408	Hồi skill	29
+1409	Phản sát thương	29
+1410	Phản sát thương 2	29
+1411	Phản sát thương 3	29
+1412	Kamejoko	29
+1413	Kamejoko 2	29
+1414	Pet Shiba	27
+1415	Cải trang Dr Myuu	5
+1416	Sao pha lê đỏ cấp 2	30
+1417	Sao pha lê lam cấp 2	30
+1418	Sao pha lê hồng cấp 2	30
+1419	Sao pha lê tím cấp 2	30
+1420	Sao pha lê cam cấp 2	30
+1421	Sao pha lê vàng cấp 2	30
+1422	Sao pha lê lục cấp 2	30
+1423	Hematite	27
+1424	Cải trang Goku Santa	5
+1425	Anti phong ấn	29
+1426	Sao pha lê đỏ lấp lánh	30
+1427	Sao pha lê lam lấp lánh	30
+1428	Sao pha lê hồng lấp lánh	30
+1429	Sao pha lê tím lấp lánh	30
+1430	Sao pha lê cam lấp lánh	30
+1431	Sao pha lê vàng lấp lánh	30
+1432	Sao pha lê lục lấp lánh	30
+1433	Sao pha lê đen lấp lánh	30
+1434	Sao pha lê trắng lấp lánh	30
+1435	Pet chim cánh cụt	27
+1436	Cải trang Chi Chi tuần lộc	5
+1437	Cải trang Bông Băng Vàng	5
+1438	Dùi đục	27
+1439	Đá mài	27
+1440	Rương sao pha lê	27
+1441	Hematite (khóa)	27
+1442	Cải trang Super Xayda God	5
+1443	Phượng hoàng băng	23
+1444	Mũi cà rốt	27
+1445	Tảng tuyết	27
+1446	Tay gỗ	27
+1447	Khăn choàng	27
+1448	Người tuyết	27
+1449	Người tuyết băng giá	27
+1450	Cải trang Broly Base	5
+1451	Nón Noel	27
+1452	Pet Ông già Noel	27
+1453	Rương sao pha lê VIP	27
+1454	Cải trang Super Black Goku Rose	5
+1455	Quả bóng tuyết	23
+1456	Kiếm Kitetsu	11
+1457	Danh hiệu X-mas	36
+1458	Pet Shiba đeo nơ	27
+1459	Chuông	27
+1460	Quả châu	27
+1461	Ngôi sao	27
+1462	Dây kim tuyến	27
+1463	Móc treo Noel	27
+1464	Kẹo giáng sinh	27
+1465	Máy bay trực thăng Noel	23
+1466	Tuần lộc Machine	23
+1467	Gấu bắc cực	11
+1468	Thú cưỡi Rồng PiLong	23
+1469	Avatar mũ rồng	5
+1470	Avatar mũ rồng	5
+1471	Avatar mũ rồng	5
+1472	Dây pháo	27
+1473	Câu đối	27
+1474	Dây treo bánh	27
+1475	Đèn lồng treo cây	27
+1476	Cải trang Bunma rực rỡ	5
+1477	Thỏi vàng bay	23
+1478	Cờ bao lì xì	11
+1479	Cờ dây pháo	11
+1480	Mì thanh long	29
+1481	Cơm gà quay	29
+1482	Pet rồng Pikachu thanh long	27
+1483	Cải trang Bunma thanh lịch	5
+1484	Cải trang Thần tài	5
+1485	Cải trang Thần tài	5
+1486	Cải trang Thần tài	5
+1487	Cá chép rồng	23
+1488	Vạn	27
+1489	Sự	27
+1490	Như	27
+1491	Ý	27
+1492	2024	27
+1493	Phong bì Tết 2024	27
+1494	Thiệp đỏ	27
+1495	Thiệp đỏ VIP	27
+1496	Thiệp chúc mừng	27
+1497	Pet rồng con thần tài	27
+1498	Cải trang Goku Dragon	5
+1499	Cải trang Pôcôlô Dragon	5
+1500	Cải trang Cađíc Dragon	5
+1501	Hộp quà Lucky 2024	27
+1502	Thanh Long Yển Nguyệt đao	11
+1503	CT Lý Tiểu Nương hầu gái xanh	5
+1504	CT Lý Tiểu Nương hầu gái hồng	5
+1505	Giấy màu	27
+1506	Hộp đựng quà	27
+1507	Sôcôla Trái Tim	27
+1508	Hoa hồng giấy	27
+1509	Nơ trang trí	27
+1510	Hộp quà nhẹ nhàng	27
+1511	Hộp quà chỉn chu	27
+1512	CT Lý Tiểu Nương Bikini	5
+1513	Song mã hoàng gia	23
+1514	Em xinh, em đẹp	36
+1515	Chậu hoa hồng	11
+1516	Hộp Mù Tình Yêu	27
+1517	Sát thương chuẩn	29
+1518	Sát thương chuẩn 2	29
+1519	Bong bóng thiên thần	11
+1520	Bong bóng hoa hồng	11
+1521	Thiệp mừng 8-3	27
+1522	Bùa Trí tuệ Đệ Tử	13
+1523	Tự động luyện tập 2	27
+1524	Tự động luyện tập 3	27
+1525	Túi hạt giống Hoa Hồng	27
+1526	Đất trồng cây	27
+1527	Ống tre nước	27
+1528	Chậu đất	27
+1529	Thuốc tăng trưởng	27
+1530	Bông hoa hồng	27
+1531	Cánh thiên thần 3	11
+1532	Rađa kho báu	29
+1533	Chuột mặp	27
+1534	Thuyền Âu Lạc	23
+1535	Thỏi vàng	27
+1536	Đệ Black Goku	29
+1537	Hộp thần linh	29
+1538	Hộp quà Set kích hoạt 5 sao	27
+1539	Bụi tre	11
+1540	Rađa phóng xạ	27
+1541	Môtô Bun ma	23
+1542	Bánh dầy	27
+1543	Bánh dầy	27
+1544	Chả lụa	27
+1545	Muối tiêu	27
+1546	Cơm nếp	27
+1547	Bột gạo	27
+1548	Đậu xanh	27
+1549	Thịt tươi	27
+1550	Pet Godzilla	27
+1551	Pet Kong	27
+1552	Xiên nướng	29
+1553	CT Goku SSJ4	5
+1554	Tàu ngầm 19 Cam	23
+1555	Tàu ngầm 19 Vàng	23
+1556	Bánh chưng Lang Liêu	27
+1557	Hắc Mị Nương	5
+1558	Tem chứng nhận Mai An Tiêm	27
+1559	Capsule 1 món kích hoạt	27
+1560	Rương ngọc rồng	27
+1561	Chìa khóa vàng	27
+1562	Mặt trời tí hon	11
+1563	Ván bay té nước	23
+1564	Pet Po	27
+1565	Bản đồ truyền thuyết	27
+1566	CT Lích Tên béo	5
+1567	CT Frieren	5
+1568	Pet Shimo	27
+1569	Kho báu hải tặc	27
+1570	Chìa khóa bạc	27
+1571	Gậy phép của Frieren	11
+1572	Goku bay	11
+1573	Xe tăng Santa	27
+1574	Cánh sấm sét	11
+1575	Pháo bông	27
+1576	Pháo bông VIP	27
+1577	Cánh sấm sét hoàng kim	11
+1578	Mây mưa	23
+1579	1 sao	11
+1580	2 sao	11
+1581	3 sao	11
+1582	4 sao	11
+1583	5 sao	11
+1584	6 sao	11
+1585	7 sao	11
+1586	Super 1 sao	11
+1587	CT Goku SSJ3	5
+1588	CT Goku	5
+1589	CT Goku SSJ	5
+1590	CT Goku SSJ Blue	5
+1591	Hộp quà Goku Day	27
+1592	Hộp quà Goku Day VIP	27
+1593	CT Goku SSJ God	5
+1594	Hộp quà Goku Day	27
+1595	CT Goku SSJ2	5
+1596	Pet Albart	27
+1597	Pet Albart Cup	27
+1598	Trực thăng thỏ đế	23
+1599	CT Fide nhí	5
+1600	CT Xên nhí	5
+1601	CT Mabư nhí	5
+1602	CT Android 21 kid	5
+1603	Tên lửa cá mập	23
+1604	CT Sư	5
+1605	Hộp quà thiếu nhi	27
+1606	Hộp quà thiếu nhi	27
+1607	Hộp quà thiếu nhi	27
+1608	Hộp quà thiếu nhi	27
+1609	Kem trái cây	27
+1610	Que kem	27
+1611	Pet Minion Otto	27
+1612	Khúc mía	27
+1613	Nước đá	27
+1614	Ly mía khổng lồ	29
+1615	Ly mía thơm	29
+1616	Ly mía sầu riêng	29
+1617	Cá nóc nâu	11
+1618	Cá nóc vàng	11
+1619	Túi nước mía	11
+1620	Pet Baby Shark	27
+1621	Pet Baby Shark	27
+1622	Pet Baby Shark	27
+1623	Trái bóng Euro	11
+1624	Cup Euro	11
+1625	Tivi bay	23
+1626	Thẻ trọng tài	11
+1627	TT	27
+1628	Bùa x2 tn,sm đệ tử	29
+1629	Pet Capybara đeo ba lô	27
+1630	Pet Capybara xì mũi	27
+1631	Pet Zịt vàng bối rối	27
+1632	CT Himmel	5
+1633	Pet Mini Desutoron Gas	27
+1634	Cápsule Vỡ	27
+1635	Cỏ bốn lá	29
+1636	Spain	27
+1637	Georgia	27
+1638	Germany	27
+1639	Denmark	27
+1640	Portugal	27
+1641	Slovenia	27
+1642	France	27
+1643	Belgium	27
+1644	Romania	27
+1645	Netherlands	27
+1646	Austria	27
+1647	Turkey	27
+1648	England	27
+1649	Slovakia	27
+1650	Switzerland	27
+1651	Italy	27
+1652	Loa to thế giới	27
+1653	Loa to liên vũ trụ	27
+1654	Pet Cerberus	27
+1655	Cápsule Kích hoạt 1 món tự chọn	27
+1656	Khoáng tái chế	27
+1657	CT Gohan đi biển	5
+1658	Đầu trâu	5
+1659	Đầu trâu	5
+1660	Đầu trâu	5
+1661	Mặt ngựa	5
+1662	Mặt ngựa	5
+1663	Mặt ngựa	5
+1664	Vỏ Xên bọ hung	27
+1665	Túi đựng vỏ Xên bọ hung	27
+1666	Rađa dò vỏ Xên	27
+1667	CT Gohan kính mát	5
+1668	Pet Capybara hồng	27
+1669	Balo Capybara	11
+1670	Balo Capybara hồng	11
+1671	Rương mùa hè	27
+1672	Sầu riêng 6 múi	29
+1673	Tay nhanh hơn não	36
+1674	CT Pikkon	5
+1675	Lồng đèn kéo quân NRO	11
+1676	Phong hỏa luân	23
+1677	Xe xanh Chi Chi	23
+1678	Xe đỏ Bun ma	23
+1679	Cờ Olympic	11
+1680	Hỏa tiêm thương	11
+1681	Cờ Hải Ly xe máy	11
+1682	Pet Hải Ly	27
+1683	Pet Hải Ly Ong Vàng	27
+1684	CT lân	5
+1685	CT rồng	5
+1686	Pet Thỏ Ú	27
+1687	Cờ Goku bay	11
+1688	Cờ Hắc Vô Thường	11
+1689	Cờ Bạch Vô Thường	11
+1690	Phiếu đổi Cápsule	27
+1691	Bùa bình an	27
+1692	Bùa may mắn	27
+1693	CT Cađíc SSJ4	5
+1694	Labubu	11
+1695	Hộp quà tháng 9	27
+1696	Hộp quà tháng 9 VIP	27
+1697	CT Gogeta	5
+1698	CT Urôn Trư Bát Giới	5
+1699	Bồ cào 9 răng	11
+1700	CT Hằng Nga	5
+1701	Hộp bánh Trung Thu đặc biệt	27
+1702	Lưỡi hái hồng	11
+1703	Gia hạn mầm	27
+1704	Bí Ngô Cánh Dơi	23
+1705	Cải Trang Chi Chi Võ Đài	5
+1706	Lưỡi hái	11
+1707	<Cập nhật phiên bản mới để xem>	27
+1708	CT Android 21 Thân Thiện	5
+1709	CT Android 21 Evil	5
+1710	CT Android 21 Tiến Sĩ	5
+1711	Cân Đẩu Vân Thơ Mộng	23
+1712	Pet Rồng xương	27
+1713	Khủng Long Thơ Mộng	11
+1714	Pet Giru	27
+1715	Đậu thần cấp 11	6
+1716	Giáp tập luyện cấp 4	32
+1717	Gia hạn mầm	27
+1718	Thiệp chúc VIP	27
+1719	Hộp quà 20/10	27
+1720	Hộp quà 20/10	27
+1721	Cá Koi zombie	11
+1722	Cánh Thiên thần - Ác quỷ	11
+1723	Cải trang Chan Xư	5
+1724	Ván bay Sọ Dừa	23
+1725	Gói quà Halloween	27
+1726	Kẹo mù Halloween	27
+1727	Pet Ma cầu mưa	27
+1728	Túi mù Halloween	27
+1729	Pet Rồng Xanh	27
+1730	Vé ước miễn phí	27
+1731	CT Black Goku Rose	5
+1732	CT Black Goku	5
+1733	Thú cưỡi Thích Kim Quy	23
+1734	Thú cưỡi Phong Xích Lan	23
+1735	Đeo lưng dụng cụ học tập	11
+1736	Hộp quà FA	27
+1737	Rađa dò Zombie	27
+1738	Hộp quà FA	27
+1739	Hộp quà 20-11	27
+1740	Sách giáo khoa	27
+1741	CT Cađíc	5
+1742	CT Cađíc SSJ	5
+1743	CT Cađíc SSJ2	5
+1744	CT Cađíc SSJ2 M	5
+1745	CT Cađíc SSJ3	5
+1746	CT Cađíc SSJ Blue	5
+1747	Hộp quà Black Friday	27
+1748	Pet tuần lộc	27
+1749	Thú cưỡi Cây thông	23
+1750	Pet Khủng Long ngok	27
+1751	Diều rồng băng	11
+1752	Đai lưng	17
+1753	Đai lưng	17
+1754	Đai lưng	17
+1755	Hộp quà Cađíc	27
+1756	Hộp quà Cađíc	27
+1757	Hộp quà Cađíc VIP	27
+1758	Phở Linh Lang	29
+1759	Phở Giải Phóng	29
+1760	Phở Công viên Hòa Bình	29
+1761	Mị Hoàng Kim	5
+1762	Hùng vương 	5
+1763	Sơn tinh 	5
+1764	Thủy Tinh 	5
+1765	Rổng 7 sao	27
+1766	Rồng 6 sao	27
+1767	Rổng 5 sao	27
+1768	Rổng 4 sao	27
+1769	Rồng 3 sao	27
+1770	Rồng 2 sao	27
+1771	Rồng 1 sao	27
+1772	Búa sơn tinh	11
+1773	Bút thủy tinh	11
+1774	Đệ Black Goku	29
+1775	Hộp thần linh	29
+1776	Hộp quà sự kiện	29
+1777	Hộp quà sự kiện VIP	29
+1778	Cuốn chả giò	27
+1779	Cải trang buma	5
+1780	Cải trang goku	5
+1781	Cải trang gohan	5
+1782	Cải trang chichi	5
+1783	Cải trang broly	5
+1784	Cải trang broly red	5
+1785	Cải trang baby	5
+1786	Cải trang vegeta baby	5
+1787	Vé riêng tư	75
+1788	Cải trang baby khỉ	5
+1789	Thỏ may mắn	27
+1790	Mẹ Rồng	75
+1791	Mảnh khỉ Oorazu	33
+1792	Mảnh khỉ Oorazu 1	33
+1793	Mảnh khỉ Oorazu 2	33
+1794	Con dấu	75
+1795	Bình hút năng lượng	75
+1796	Đệ tử vegeta	5
+1797	Cải trang Picolo	5
+1798	Tayaki	75
+1799	Kẹo táo	75
+1800	Kem que đôi	75
+1801	Mochi	75
+1802	Ramen	75
+1803	Cadic đi biển	5
+1804	Buma đi biển	5
+1805	Phiếu thức ăn	75
+1806	Kem que	11
+1807	Goku ssj 4 kid	5
+1808	Kid jiren	5
+1809	Super 2 sao	11
+1810	Super 3 sao	11
+1811	Super 4 sao	11
+1812	Guardian Angel	11
+1813	Fallen Angel	11
+1814	Eternal Hope	11
+1815	ct dep vcl	5
+1816	td	5
+1817	nm	5
+1818	xd	5
+1819	Bông tai Porata	27
+1820	Mảnh vỡ bông tai cấp 3	27
+1821	Trứng vàng rồng nhí	75
+1822	Rada ngọc rồng	75
+1823	Rada ngọc rồng Vip	75
+1824	Cậu Vàng	75
+1825	Vé Nhệm Vụ KOL Vip	75
+1826		75
+1827		75
+1828		75
+1829		75
+1830		75
+1831		75
+1832		75
+1833		75
+1834		75
+1835	Vé nhiệm vụ tháng Vip	75
+1836		75
+1837		75
+1838		75
+1839		75
+1840	Hộp quà Goku Day VIP	75
+1841	Cải trang Gốc	5
+1842	Cải trang Gốc	5
+1843	Cải trang Gốc	5
+1844	Cải trang Gốc	5
+1845	Cải trang Gốc	5
+1846	Cải trang Gốc	5
+1847	Cải trang Gốc	5
+1848	Cải trang Gốc	5
+1849	Cải trang Gốc	5
+1850	Cải trang Gốc	5
+1851	Broly Nes	5
+1852	Cải trang Gốc	5
+1853	Cải trang Gốc	5
+1854	Cải trang Gốc	5
+1855	Cải trang Gốc	5
+1856	Cải trang Gốc	5
+1857	Cải trang Gốc	5
+1858	Cải trang Gốc	5
+1859	Cải trang Gốc	5
+1860	Cải trang Gốc 1	5
+1861	Cải trang Gốc 2	5
+1862	Cải trang Gốc 3	5
+1863	Cải trang Gốc 4	5
+1864	Cải trang Gốc 5	5
+1865	Cải trang Gốc 6	5
+1866	Cải trang Gốc 7	5
+1867	Cải trang Gốc 8	5
+1868	Cải trang Gốc 9	5
+1869	Giáp tập luyện cấp 5	32
+1870	Goku cận vô cực	5
+1871		75
+1872		75
+1873		75
+1874		75
+1875		75
+1876		75
+1877		75
+1878		75
+1879		75
+1880		75
+1881		75
+1882		75
+1883		75
+1884		75
+1885		75
+1886		75
+1887		75
+1888		75
+1889		75
+1890		75
+1891		75
+1892		75
+1893		75
+1894		75
+1895		75
+1896		75
+1897		75
+1898		75
+1899		75
+1900	Ghost Rider	27
+1901		75
+1902		75
+1903		75
+1904		75
+1905		75
+1906		75
+1907		75
+1908		75
+1909		75
+1910		75
+1911		75
+1912		75
+1913		75
+1914		75
+1915		75
+1916		75
+1917		75
+1918		75
+1919		75
+1920		75
+1921		75
+1922		75
+1923		75
+1924		75
+1925		75
+1926		75
+1927		75
+1928		75
+1929		75
+1930		75
+1931		75
+1932		75
+1933		75
+1934		75
+1935		75
+1936		75
+1937		75
+1938		75
+1939		75
+1940		75
+1941		75
+1942		75
+1943		75
+1944		75
+1945		75
+1946		75
+1947		75
+1948		75
+1949		75
+1950		75
+1951		75
+1952		75
+1953		75
+1954		75
+1955		75
+1956		75
+1957		75
+1958		75
+1959		75
+1960		75
+1961		75
+1962		75
+1963		75
+1964		75
+1965		75
+1966		75
+1967		75
+1968		75
+1969		75
+1970		75
+1971		75
+1972		75
+1973		75
+1974		75
+1975		75
+1976		75
+1977		75
+1978		75
+1979		75
+1980		75
+1981		75
+1982		75
+1983		75
+1984		75
+1985		75
+1986		75
+1987		75
+1988		75
+1989		75
+1990		75
+1991		75
+1992		75
+1993		75
+1994		75
+1995		75
+1996		75

@@ -915,9 +915,6 @@ public final class Manager {
                 giftcode.code = rs.getString("code");
                 giftcode.id = rs.getInt("id");
                 giftcode.countLeft = rs.getInt("count_left");
-                if (giftcode.countLeft == -1) {
-                    giftcode.countLeft = 999999999;
-                }
                 giftcode.datecreate = rs.getTimestamp("datecreate");
                 giftcode.dateexpired = rs.getTimestamp("expired");
                 JSONArray jar = (JSONArray) JSONValue.parse(rs.getString("detail"));

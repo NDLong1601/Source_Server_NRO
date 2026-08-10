@@ -25,7 +25,7 @@ public class TaoDaHematite {
             if (saoPhaLe.template.id >= 441 && saoPhaLe.template.id <= 447 && saoPhaLe.quantity >= 5) {
                 // Nếu có đủ 5 sao pha lê trắng hoặc đen
                 player.combineNew.goldCombine = GOLD_TAO_DA;
-                player.combineNew.ratioCombine = RATIO_TAO_DA;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.hematiteRate", RATIO_TAO_DA);
 
                 String npcSay = "|2|Tạo đá Hematite từ sao pha lê\n";
                 npcSay += "|2|Cần 5 sao pha lê Cấp 2\n";

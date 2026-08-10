@@ -20,9 +20,7 @@ public class NangChiSoBongTai3 {
     private static final int HON_BONG_TAI_ID = 934;
     private static final int DA_XANH_LAM_ID = 935;
     private static final int REQUIRED_HON_BONG_TAI = 99;
-    private static final byte[] UPGRADE_OPTIONS = {77, 80, 81, 103, 50, 94, 5};
-    private static final byte PARAM_MIN = 5;
-    private static final byte PARAM_MAX = 15;
+    private static final int[] DEFAULT_UPGRADE_OPTIONS = {77, 80, 81, 103, 50, 94, 5};
 
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() == 3) {
@@ -39,7 +37,7 @@ public class NangChiSoBongTai3 {
 
             if (bongTai != null && honBongTai != null && daXanhLam != null) {
                 player.combineNew.gemCombine = GEM_NANG_BT;
-                player.combineNew.ratioCombine = RATIO_NANG_CAP;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("earring.level3.optionRate", RATIO_NANG_CAP);
 
                 int currentHon = InventoryService.gI().getParam(player, ITEM_PARAM_INDEX, HON_BONG_TAI_ID);
 
@@ -123,10 +121,21 @@ public class NangChiSoBongTai3 {
 
             boolean success = Util.isTrue(player.combineNew.ratioCombine, 100);
             if (success) {
-                byte opt1 = randomOpt();
-                byte opt2 = randomOpt();
-                byte p1 = (byte) Util.nextInt(PARAM_MIN, PARAM_MAX);
-                byte p2 = (byte) Util.nextInt(PARAM_MIN, PARAM_MAX);
+                int[] upgradeOptions = CombineConfig.getIntArray("earring.level3.options", DEFAULT_UPGRADE_OPTIONS);
+                int opt1 = randomOpt(upgradeOptions);
+                int opt2 = randomOpt(upgradeOptions);
+                if (!CombineConfig.getBoolean("earring.level3.allowDuplicate", true) && upgradeOptions.length > 1) {
+                    for (int option : upgradeOptions) {
+                        if (option != opt1) {
+                            opt2 = option;
+                            break;
+                        }
+                    }
+                }
+                int paramMin = CombineConfig.getInt("earring.level3.paramMin", 5, 0, 32767);
+                int paramMax = CombineConfig.getInt("earring.level3.paramMax", 15, paramMin, 32767);
+                int p1 = Util.nextInt(paramMin, paramMax);
+                int p2 = Util.nextInt(paramMin, paramMax);
                 bongTai.itemOptions.clear();
                 bongTai.itemOptions.add(new Item.ItemOption(opt1, p1));
                 bongTai.itemOptions.add(new Item.ItemOption(opt2, p2));
@@ -148,7 +157,7 @@ public class NangChiSoBongTai3 {
         }
     }
 
-    private static byte randomOpt() {
-        return UPGRADE_OPTIONS[Util.nextInt(0, UPGRADE_OPTIONS.length - 1)];
+    private static int randomOpt(int[] options) {
+        return options[Util.nextInt(0, options.length - 1)];
     }
 }

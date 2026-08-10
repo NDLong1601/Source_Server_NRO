@@ -21,23 +21,40 @@ public class GiftCodeManager {
         return instance;
     }
 
-    public GiftCode checkUseGiftCode(Player player, String code) {
+    public GiftCode findGiftCode(String code) {
         for (GiftCode giftCode : listGiftCode) {
             if (giftCode.code.equals(code)) {
-                if (giftCode.countLeft <= 0) {
+                return giftCode;
+            }
+        }
+        return null;
+    }
+
+    public synchronized GiftCode checkUseGiftCode(Player player, String code) {
+        for (GiftCode giftCode : listGiftCode) {
+            if (giftCode.code.equals(code)) {
+                if (giftCode.countLeft == 0) {
                     Service.gI().sendThongBaoOK(player, "Giftcode đã hết");
                     return null;
                 } else if (giftCode.isUsedGiftCode(player)) {
                     Service.gI().sendThongBaoOK(player, "Tham lam!");
                     return null;
                 }
-                if (InventoryService.gI().getCountEmptyBag(player) < giftCode.detail.size()) {
-                    Service.gI().sendThongBaoOK(player, "Cần tối thiểu " + giftCode.detail.size() + " ô hành trang trống");
+                int requiredSlots = 0;
+                for (Integer itemId : giftCode.detail.keySet()) {
+                    if (itemId > 0) {
+                        requiredSlots++;
+                    }
+                }
+                if (InventoryService.gI().getCountEmptyBag(player) < requiredSlots) {
+                    Service.gI().sendThongBaoOK(player, "Cần tối thiểu " + requiredSlots + " ô hành trang trống");
                     return null;
                 }
-                giftCode.countLeft -= 1;
+                if (giftCode.countLeft > 0) {
+                    giftCode.countLeft -= 1;
+                    updateGiftCode(giftCode);
+                }
                 player.giftCode.add(code);
-                updateGiftCode(giftCode);
                 return giftCode;
             }
         }
@@ -46,7 +63,7 @@ public class GiftCodeManager {
 
     public void updateGiftCode(GiftCode giftcode) {
         try {
-            LocalManager.executeUpdate("update giftcode set count_left = ? where id = ?", giftcode.countLeft, giftcode.id);
+            LocalManager.executeUpdate("update giftcode set count_left = ?, datecreate = datecreate where id = ?", giftcode.countLeft, giftcode.id);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,7 +72,8 @@ public class GiftCodeManager {
     public void checkInfomationGiftCode(Player p) {
         StringBuilder sb = new StringBuilder();
         for (GiftCode giftCode : listGiftCode) {
-            sb.append("Code: ").append(giftCode.code).append(", Số lượng còn lại: ").append(giftCode.countLeft).append("\b")
+            sb.append("Code: ").append(giftCode.code).append(", Số lượng còn lại: ")
+                    .append(giftCode.countLeft == -1 ? "Không giới hạn" : giftCode.countLeft).append("\b")
                     .append("Ngày tạo: ")
                     .append(giftCode.datecreate).append(", Ngày hết hạn: ").append(giftCode.dateexpired)
                     .append("\n");

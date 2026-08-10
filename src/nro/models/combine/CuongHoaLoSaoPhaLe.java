@@ -134,7 +134,7 @@ public class CuongHoaLoSaoPhaLe {
             return;
         }
 
-        boolean success = Util.isTrue(50, 200);
+        boolean success = CombineConfig.roll("equipment.socket.enhanceRate", 25);
         player.inventory.gold -= COST;
 
         if (star == 8) {

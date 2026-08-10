@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Action = "status",
     [string]$Output = "",
     [string]$Id = "",
@@ -32,6 +32,15 @@ param(
     [string]$Param = "0",
     [string]$EventValue = "",
     [string]$ExpRate = "",
+    [string]$ConfigKey = "",
+    [string]$ConfigValue = "",
+    [string]$GiftCode = "",
+    [string]$CountLeft = "0",
+    [string]$GiftDetail = "",
+    [string]$ExpiryMode = "days",
+    [string]$ValidDays = "30",
+    [string]$StartDate = "",
+    [string]$EndDate = "",
     [string]$Encoded = "0"
 )
 
@@ -53,7 +62,8 @@ foreach ($paramName in @(
         "Id", "Search", "Type", "Name", "Description", "Gender", "Level", "IconId", "Part",
         "IsUpToUp", "PowerRequire", "Gold", "Gem", "Head", "Body", "Leg", "NpcId", "ShopId",
         "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
-        "IconSpec", "OptionId", "Param", "EventValue", "ExpRate"
+        "IconSpec", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
+        "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -142,6 +152,132 @@ function Set-ConfigValue {
     }
 
     [System.IO.File]::WriteAllText($configPath, ($lines -join [Environment]::NewLine), [System.Text.Encoding]::UTF8)
+}
+
+function Get-CombineCatalog {
+    @(
+        [pscustomobject]@{ Key="equipment.upgrade.rates"; Category="Cường hóa trang bị"; Name="Tỉ lệ nâng cấp +0 đến +7"; Default="80,50,20,10,7,5,1,0.3"; Kind="rate-list"; Description="Danh sách phần trăm theo cấp hiện tại, bắt đầu từ +0." },
+        [pscustomobject]@{ Key="equipment.upgrade.statPercent"; Category="Cường hóa trang bị"; Name="Chỉ số tăng mỗi cấp"; Default="10"; Kind="int"; Description="Phần trăm tăng chỉ số gốc khi nâng cấp thành công." },
+        [pscustomobject]@{ Key="equipment.upgrade.failStatLossPercent"; Category="Cường hóa trang bị"; Name="Chỉ số giảm khi rớt cấp"; Default="11"; Kind="int"; Description="Phần trăm trừ chỉ số khi thất bại ở mốc bị rớt cấp." },
+        [pscustomobject]@{ Key="equipment.socket.rates"; Category="Đục lỗ / sao pha lê"; Name="Tỉ lệ đục lỗ 0 đến 8 sao"; Default="50,20,10,5,1,0.7,0.5,0.1,0.1"; Kind="rate-list"; Description="Tỉ lệ thật và tỉ lệ hiển thị dùng chung danh sách này." },
+        [pscustomobject]@{ Key="equipment.socket.enhanceRate"; Category="Đục lỗ / sao pha lê"; Name="Cường hóa lỗ sao 8-9"; Default="25"; Kind="rate"; Description="Tỉ lệ cường hóa lỗ sao pha lê bằng Hematite và dùi đục." },
+        [pscustomobject]@{ Key="earring.level2.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 2"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 1 lên cấp 2." },
+        [pscustomobject]@{ Key="earring.level3.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 3"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 2 lên cấp 3." },
+        [pscustomobject]@{ Key="earring.level2.optionRate"; Category="Bông tai"; Name="Mở chỉ số bông tai cấp 2"; Default="45"; Kind="rate"; Description="Tỉ lệ random thành công một dòng option cấp 2." },
+        [pscustomobject]@{ Key="earring.level2.options"; Category="Bông tai"; Name="Option có thể ra ở cấp 2"; Default="77,80,81,103,50,94,5"; Kind="option-list"; Description="Danh sách ID option, phân cách bằng dấu phẩy; mỗi option có xác suất như nhau." },
+        [pscustomobject]@{ Key="earring.level2.paramMin"; Category="Bông tai"; Name="Param nhỏ nhất cấp 2"; Default="5"; Kind="int"; Description="Giá trị option nhỏ nhất, có tính cả hai đầu mút." },
+        [pscustomobject]@{ Key="earring.level2.paramMax"; Category="Bông tai"; Name="Param lớn nhất cấp 2"; Default="15"; Kind="int"; Description="Giá trị option lớn nhất, có tính cả hai đầu mút." },
+        [pscustomobject]@{ Key="earring.level3.optionRate"; Category="Bông tai"; Name="Mở chỉ số bông tai cấp 3"; Default="30"; Kind="rate"; Description="Tỉ lệ random thành công hai dòng option cấp 3." },
+        [pscustomobject]@{ Key="earring.level3.options"; Category="Bông tai"; Name="Option có thể ra ở cấp 3"; Default="77,80,81,103,50,94,5"; Kind="option-list"; Description="Danh sách ID option cấp 3, phân cách bằng dấu phẩy." },
+        [pscustomobject]@{ Key="earring.level3.paramMin"; Category="Bông tai"; Name="Param nhỏ nhất cấp 3"; Default="5"; Kind="int"; Description="Giá trị nhỏ nhất cho cả hai dòng." },
+        [pscustomobject]@{ Key="earring.level3.paramMax"; Category="Bông tai"; Name="Param lớn nhất cấp 3"; Default="15"; Kind="int"; Description="Giá trị lớn nhất cho cả hai dòng." },
+        [pscustomobject]@{ Key="earring.level3.allowDuplicate"; Category="Bông tai"; Name="Cho phép trùng option cấp 3"; Default="true"; Kind="bool"; Description="true: hai dòng có thể trùng; false: luôn chọn hai ID khác nhau nếu đủ option." },
+        [pscustomobject]@{ Key="crystal.level2.upgradeRate"; Category="Sao pha lê"; Name="Nâng sao pha lê cấp 2"; Default="50"; Kind="rate"; Description="Tỉ lệ dùng Hematite nâng sao pha lê lên cấp 2." },
+        [pscustomobject]@{ Key="crystal.level2.polishRate"; Category="Sao pha lê"; Name="Đánh bóng sao pha lê"; Default="100"; Kind="rate"; Description="Tỉ lệ đánh bóng sao pha lê cấp 2." },
+        [pscustomobject]@{ Key="craft.mergeUpgradeStoneRate"; Category="Ghép / phân rã"; Name="Ghép đá nâng cấp"; Default="80"; Kind="rate"; Description="Tỉ lệ làm phép nhập mảnh đá vụn thành đá nâng cấp." },
+        [pscustomobject]@{ Key="craft.recycleActiveEquipmentRate"; Category="Ghép / phân rã"; Name="Phân rã đồ kích hoạt"; Default="100"; Kind="rate"; Description="Tỉ lệ phân rã trang bị kích hoạt." },
+        [pscustomobject]@{ Key="craft.rebuildActiveCapsuleRate"; Category="Ghép / phân rã"; Name="Tái tạo Capsule kích hoạt"; Default="100"; Kind="rate"; Description="Tỉ lệ tái tạo Capsule kích hoạt." },
+        [pscustomobject]@{ Key="craft.hematiteRate"; Category="Ghép / phân rã"; Name="Tạo đá Hematite"; Default="100"; Kind="rate"; Description="Tỉ lệ ghép sao pha lê thành Hematite." },
+        [pscustomobject]@{ Key="craft.anvilRate"; Category="Ghép / phân rã"; Name="Chế tạo dùi đục"; Default="100"; Kind="rate"; Description="Tỉ lệ chế tạo dùi đục." },
+        [pscustomobject]@{ Key="craft.grindStoneRate"; Category="Ghép / phân rã"; Name="Chế tạo đá mài"; Default="100"; Kind="rate"; Description="Tỉ lệ chế tạo đá mài." },
+        [pscustomobject]@{ Key="book.oldBookRate"; Category="Sách tuyệt kỹ"; Name="Chế tạo cuốn sách cũ"; Default="20"; Kind="rate"; Description="Tỉ lệ đóng trang và bìa thành cuốn sách cũ." },
+        [pscustomobject]@{ Key="book.exchangeRate"; Category="Sách tuyệt kỹ"; Name="Đổi sách tuyệt kỹ"; Default="20"; Kind="rate"; Description="Tỉ lệ đổi cuốn sách cũ khi không dùng con dấu." },
+        [pscustomobject]@{ Key="book.extraOptionRate"; Category="Sách tuyệt kỹ"; Name="Thêm dòng khi dùng con dấu"; Default="20"; Kind="rate"; Description="Tỉ lệ nhánh random thêm option của sách khi dùng con dấu." },
+        [pscustomobject]@{ Key="book.upgradeRate"; Category="Sách tuyệt kỹ"; Name="Nâng cấp sách tuyệt kỹ"; Default="10"; Kind="rate"; Description="Tỉ lệ nâng Sách Tuyệt Kỹ 1 lên cấp kế tiếp." },
+        [pscustomobject]@{ Key="angel.createBaseRate"; Category="Trang bị Thiên Sứ"; Name="Tỉ lệ chế tạo cơ bản"; Default="90"; Kind="rate"; Description="Tỉ lệ cơ bản trước phần cộng thêm của đá nâng cấp." },
+        [pscustomobject]@{ Key="angel.baseStatBonusPercent"; Category="Trang bị Thiên Sứ"; Name="Phần trăm cộng chỉ số gốc"; Default="100"; Kind="int"; Description="Mức cộng vào chỉ số gốc của đồ Thiên Sứ khi chế tạo thành công." },
+        [pscustomobject]@{ Key="angel.luckyBaseRate"; Category="Trang bị Thiên Sứ"; Name="May mắn cơ bản"; Default="5"; Kind="rate"; Description="Mốc may mắn cơ bản trước phần cộng của đá may mắn." },
+        [pscustomobject]@{ Key="angel.bonusOptions"; Category="Trang bị Thiên Sứ"; Name="Danh sách option phụ"; Default="50,77,103,94,5"; Kind="option-list"; Description="Các option phụ có thể được chọn ngẫu nhiên, không trùng nhau." },
+        [pscustomobject]@{ Key="angel.bonusParamMin"; Category="Trang bị Thiên Sứ"; Name="Param phụ nhỏ nhất"; Default="1"; Kind="int"; Description="Param nhỏ nhất của option phụ." },
+        [pscustomobject]@{ Key="angel.bonusParamMax"; Category="Trang bị Thiên Sứ"; Name="Param phụ lớn nhất"; Default="3"; Kind="int"; Description="Param lớn nhất của option phụ." }
+    )
+}
+
+function Get-PropertyMap {
+    param([string]$Path)
+    $map = @{}
+    if (Test-Path $Path) {
+        Get-Content -LiteralPath $Path -Encoding UTF8 | ForEach-Object {
+            if ($_ -match "^\s*([^#!][^=]+?)\s*=\s*(.*)\s*$") {
+                $map[$matches[1].Trim()] = $matches[2].Trim()
+            }
+        }
+    }
+    $map
+}
+
+function Set-PropertyValue {
+    param([string]$Path, [string]$Key, [string]$Value, [switch]$Remove)
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path $Path) {
+        foreach ($line in (Get-Content -LiteralPath $Path -Encoding UTF8)) { $lines.Add($line) }
+    }
+    $found = $false
+    for ($i = $lines.Count - 1; $i -ge 0; $i--) {
+        if ($lines[$i] -match "^\s*$([regex]::Escape($Key))\s*=") {
+            if ($Remove) { $lines.RemoveAt($i) } else { $lines[$i] = "$Key=$Value" }
+            $found = $true
+        }
+    }
+    if (-not $Remove -and -not $found) { $lines.Add("$Key=$Value") }
+    $tempPath = "$Path.tmp.$PID"
+    [System.IO.File]::WriteAllText($tempPath, ($lines -join [Environment]::NewLine) + [Environment]::NewLine, $Utf8NoBom)
+    Move-Item -LiteralPath $tempPath -Destination $Path -Force
+}
+
+function Get-CombineEntry {
+    param([string]$Key)
+    Get-CombineCatalog | Where-Object { $_.Key -eq $Key } | Select-Object -First 1
+}
+
+function Assert-CombineValue {
+    param($Entry, [string]$Value)
+    $Value = $Value.Trim()
+    if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
+    if ($Entry.Kind -eq "rate" -and $Value -notmatch '^\d+(\.\d+)?$') { throw "Tỉ lệ phải là số từ 0 đến 100, dùng dấu chấm cho số lẻ." }
+    if ($Entry.Kind -eq "rate" -and ([double]$Value -lt 0 -or [double]$Value -gt 100)) { throw "Tỉ lệ phải nằm trong khoảng 0 đến 100." }
+    if ($Entry.Kind -eq "int" -and $Value -notmatch '^\d+$') { throw "Giá trị phải là số nguyên không âm." }
+    if ($Entry.Kind -eq "bool" -and $Value -notmatch '^(true|false|0|1)$') { throw "Giá trị bật/tắt phải là true, false, 1 hoặc 0." }
+    if ($Entry.Kind -eq "option-list") {
+        $parts = $Value -split ','
+        if ($parts.Count -eq 0 -or @($parts | Where-Object { $_.Trim() -notmatch '^\d+$' }).Count -gt 0) { throw "Danh sách option chỉ gồm ID nguyên không âm, phân cách bằng dấu phẩy." }
+    }
+    if ($Entry.Kind -eq "rate-list") {
+        $parts = $Value -split ','
+        if ($parts.Count -eq 0) { throw "Danh sách tỉ lệ không được trống." }
+        foreach ($part in $parts) {
+            $number = $part.Trim()
+            if ($number -notmatch '^\d+(\.\d+)?$' -or [double]$number -lt 0 -or [double]$number -gt 100) { throw "Mỗi tỉ lệ phải từ 0 đến 100 và phân cách bằng dấu phẩy." }
+        }
+    }
+    $Value
+}
+
+function List-CombineConfig {
+    $path = Join-Path $Root "combine.properties"
+    $map = Get-PropertyMap $path
+    $rows = New-Object System.Collections.Generic.List[string]
+    $rows.Add("key`tcategory`tname`tvalue`tdefault`tkind`tdescription")
+    foreach ($entry in (Get-CombineCatalog)) {
+        $value = if ($map.ContainsKey($entry.Key)) { $map[$entry.Key] } else { $entry.Default }
+        $rows.Add("$($entry.Key)`t$($entry.Category)`t$($entry.Name)`t$value`t$($entry.Default)`t$($entry.Kind)`t$($entry.Description)")
+    }
+    $rows -join "`r`n"
+}
+
+function Save-CombineConfig {
+    $entry = Get-CombineEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa combine không hợp lệ: $ConfigKey" }
+    $validated = Assert-CombineValue $entry $ConfigValue
+    Set-PropertyValue -Path (Join-Path $Root "combine.properties") -Key $entry.Key -Value $validated
+    "OK`tĐã lưu $($entry.Name). Server tự áp dụng trong tối đa 1 giây."
+}
+
+function Reset-CombineConfig {
+    $entry = Get-CombineEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa combine không hợp lệ: $ConfigKey" }
+    Set-PropertyValue -Path (Join-Path $Root "combine.properties") -Key $entry.Key -Value "" -Remove
+    "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
 }
 
 function SqlString {
@@ -399,6 +535,179 @@ function Delete-ShopOption {
     "OK`tĐã xóa option ID $Id."
 }
 
+function List-GiftCodes {
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safeSearch = $Search.Replace("\", "\\").Replace("'", "''")
+        $where = "WHERE code LIKE '%$safeSearch%'"
+    }
+    Invoke-MySql @"
+SELECT
+  id,
+  code,
+  count_left,
+  REPLACE(REPLACE(detail, CHAR(13), ''), CHAR(10), '') AS detail,
+  DATE_FORMAT(datecreate, '%Y-%m-%d %H:%i:%s') AS datecreate,
+  DATE_FORMAT(expired, '%Y-%m-%d %H:%i:%s') AS expired,
+  CASE
+    WHEN count_left = 0 THEN 'empty'
+    WHEN NOW() < datecreate THEN 'waiting'
+    WHEN NOW() > expired THEN 'expired'
+    ELSE 'active'
+  END AS status
+FROM giftcode
+$where
+ORDER BY id DESC;
+"@
+}
+
+function List-GiftItems {
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safeSearch = $Search.Replace("\", "\\").Replace("'", "''")
+        if ($Search -match '^-?\d+$') {
+            $where = "WHERE id = $(SqlInt $Search) OR item_name LIKE '%$safeSearch%'"
+        } else {
+            $where = "WHERE item_name LIKE '%$safeSearch%'"
+        }
+    }
+    Invoke-MySql @"
+SELECT id, item_name, item_type
+FROM (
+  SELECT -1 AS id, 'Vàng' AS item_name, -1 AS item_type
+  UNION ALL SELECT -2, 'Ngọc', -1
+  UNION ALL SELECT -3, 'Ngọc khóa', -1
+  UNION ALL SELECT id, `NAME`, `TYPE` FROM item_template
+) gift_items
+$where
+ORDER BY CASE WHEN id < 0 THEN 0 ELSE 1 END, id
+LIMIT 2000;
+"@
+}
+
+function Convert-GiftDetail {
+    if ([string]::IsNullOrWhiteSpace($GiftDetail)) {
+        throw "Giftcode phải có ít nhất một phần quà."
+    }
+    try {
+        $rawItems = $GiftDetail | ConvertFrom-Json
+    } catch {
+        throw "Dữ liệu quà không đúng định dạng JSON."
+    }
+    if ($rawItems.Count -eq 0) {
+        throw "Giftcode phải có ít nhất một phần quà."
+    }
+
+    $seenItems = @{}
+    $validated = @()
+    foreach ($rawItem in $rawItems) {
+        $itemIdText = [string]$rawItem.id
+        $quantityText = [string]$rawItem.quantity
+        if ($itemIdText -notmatch '^-?\d+$' -or [int64]$itemIdText -lt -3 -or [int64]$itemIdText -gt 32767) {
+            throw "ID phần quà không hợp lệ: $itemIdText"
+        }
+        if ($quantityText -notmatch '^\d+$' -or [long]$quantityText -le 0 -or [long]$quantityText -gt 2000000000) {
+            throw "Số lượng quà phải từ 1 đến 2.000.000.000."
+        }
+        if ($seenItems.ContainsKey($itemIdText)) {
+            throw "Vật phẩm ID $itemIdText bị chọn trùng."
+        }
+        $seenItems[$itemIdText] = $true
+
+        $seenOptions = @{}
+        $options = @()
+        if ($null -ne $rawItem.options) {
+            foreach ($rawOption in $rawItem.options) {
+                $optionIdText = [string]$rawOption.id
+                $paramText = [string]$rawOption.param
+                if ($optionIdText -notmatch '^\d+$' -or [int64]$optionIdText -gt 2147483647) {
+                    throw "Option ID không hợp lệ: $optionIdText"
+                }
+                if ($paramText -notmatch '^-?\d+$' -or [int64]$paramText -lt -2147483648 -or [int64]$paramText -gt 2147483647) {
+                    throw "Param option $optionIdText phải nằm trong giới hạn số nguyên 32-bit."
+                }
+                if ($seenOptions.ContainsKey($optionIdText)) {
+                    throw "Option ID $optionIdText bị trùng trong vật phẩm $itemIdText."
+                }
+                $seenOptions[$optionIdText] = $true
+                $options += [ordered]@{ id = [int]$optionIdText; param = [int]$paramText }
+            }
+        }
+        $validated += [ordered]@{
+            id = [int]$itemIdText
+            quantity = [int64]$quantityText
+            options = $options
+        }
+    }
+    return (ConvertTo-Json -InputObject @($validated) -Compress -Depth 8)
+}
+
+function Get-GiftDateRange {
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
+    $style = [System.Globalization.DateTimeStyles]::None
+    if ($ExpiryMode -eq "days") {
+        if ($ValidDays -notmatch '^\d+$' -or [int]$ValidDays -lt 1 -or [int]$ValidDays -gt 3650) {
+            throw "Số ngày sử dụng phải từ 1 đến 3650."
+        }
+        return [pscustomobject]@{
+            StartSql = "NOW()"
+            EndSql = "DATE_ADD(NOW(), INTERVAL $([int]$ValidDays) DAY)"
+        }
+    }
+    if ($ExpiryMode -ne "range") {
+        throw "Kiểu hạn sử dụng không hợp lệ."
+    }
+    $start = [DateTime]::MinValue
+    $end = [DateTime]::MinValue
+    if (-not [DateTime]::TryParseExact($StartDate, "yyyy-MM-dd HH:mm:ss", $culture, $style, [ref]$start)) {
+        throw "Từ ngày phải theo định dạng YYYY-MM-DD HH:mm:ss."
+    }
+    if (-not [DateTime]::TryParseExact($EndDate, "yyyy-MM-dd HH:mm:ss", $culture, $style, [ref]$end)) {
+        throw "Đến ngày phải theo định dạng YYYY-MM-DD HH:mm:ss."
+    }
+    if ($end -le $start) {
+        throw "Đến ngày phải lớn hơn từ ngày."
+    }
+    return [pscustomobject]@{
+        StartSql = SqlString $start.ToString("yyyy-MM-dd HH:mm:ss")
+        EndSql = SqlString $end.ToString("yyyy-MM-dd HH:mm:ss")
+    }
+}
+
+function Save-GiftCode {
+    $giftId = SqlInt $Id
+    $normalizedCode = $GiftCode.Trim()
+    if ($normalizedCode -notmatch '^[A-Za-z0-9_-]{3,64}$') {
+        throw "Giftcode chỉ gồm 3-64 ký tự chữ, số, dấu gạch ngang hoặc gạch dưới."
+    }
+    if ($CountLeft -notmatch '^-?\d+$' -or ([int64]$CountLeft -lt 0 -and [int64]$CountLeft -ne -1) -or [int64]$CountLeft -gt 2000000000) {
+        throw "Số lượt còn lại phải là -1 (không giới hạn) hoặc từ 0 đến 2.000.000.000."
+    }
+    $duplicate = Invoke-MySql "SELECT COUNT(*) AS total FROM giftcode WHERE code=$(SqlString $normalizedCode) AND id<>$giftId;"
+    $duplicateLines = $duplicate -split "`r?`n"
+    if ($duplicateLines.Count -gt 1 -and [int]$duplicateLines[1] -gt 0) {
+        throw "Giftcode '$normalizedCode' đã tồn tại."
+    }
+
+    $detailJson = Convert-GiftDetail
+    $range = Get-GiftDateRange
+    if ($giftId -gt 0) {
+        Invoke-MySql "UPDATE giftcode SET code=$(SqlString $normalizedCode), count_left=$([int64]$CountLeft), detail=$(SqlString $detailJson), datecreate=$($range.StartSql), expired=$($range.EndSql) WHERE id=$giftId;" | Out-Null
+        return "OK`tĐã cập nhật Giftcode $normalizedCode. Restart server để áp dụng dữ liệu quà và thời gian mới."
+    }
+    Invoke-MySql "INSERT INTO giftcode (code, count_left, detail, datecreate, expired) VALUES ($(SqlString $normalizedCode), $([int64]$CountLeft), $(SqlString $detailJson), $($range.StartSql), $($range.EndSql));" | Out-Null
+    "OK`tĐã thêm Giftcode $normalizedCode. Restart server để nạp mã mới."
+}
+
+function Delete-GiftCode {
+    $giftId = SqlInt $Id
+    if ($giftId -le 0) {
+        throw "Chọn Giftcode cần xóa trước."
+    }
+    Invoke-MySql "DELETE FROM giftcode WHERE id=$giftId;" | Out-Null
+    "OK`tĐã xóa Giftcode ID $giftId. Restart server để xóa mã khỏi bộ nhớ chạy."
+}
+
 try {
     $result = switch ($Action.ToLowerInvariant()) {
         "status" {
@@ -423,6 +732,13 @@ try {
         "listshopoptions" { List-ShopOptions }
         "saveshopoption" { Save-ShopOption }
         "deleteshopoption" { Delete-ShopOption }
+        "listgiftcodes" { List-GiftCodes }
+        "listgiftitems" { List-GiftItems }
+        "savegiftcode" { Save-GiftCode }
+        "deletegiftcode" { Delete-GiftCode }
+        "listcombineconfig" { List-CombineConfig }
+        "savecombineconfig" { Save-CombineConfig }
+        "resetcombineconfig" { Reset-CombineConfig }
         "setevent" {
             if ([string]::IsNullOrWhiteSpace($EventValue)) { $EventValue = "none" }
             Set-ConfigValue -Key "server.event" -NewValue $EventValue

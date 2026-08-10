@@ -27,7 +27,7 @@ public class GiftCodeService {
     }
 
     public void giftCode(Player player, String code) {
-        GiftCode giftcode = GiftCodeManager.gI().checkUseGiftCode(player, code);
+        GiftCode giftcode = GiftCodeManager.gI().findGiftCode(code);
         if (giftcode == null) {
 //            int itemId = 190;
 //            Item item = ItemService.gI().createNewItem(((short) itemId));
@@ -38,9 +38,15 @@ public class GiftCodeService {
 //            InventoryService.gI().addItemBag(player, item);
 //            InventoryService.gI().sendItemBags(player);
             Service.gI().sendThongBao(player, "Code không chính xác!");
-        } else if (giftcode.timeCode()) {
+        } else if (!giftcode.hasStarted()) {
+            Service.gI().sendThongBao(player, "Code chưa đến thời gian sử dụng");
+        } else if (giftcode.hasExpired()) {
             Service.gI().sendThongBao(player, "Code đã hết hạn");
         } else {
+            giftcode = GiftCodeManager.gI().checkUseGiftCode(player, code);
+            if (giftcode == null) {
+                return;
+            }
             Set<Integer> keySet = giftcode.detail.keySet();
             String textGift = "|0|Bạn vừa nhận được:\b";
             for (Integer key : keySet) {
@@ -64,21 +70,13 @@ public class GiftCodeService {
                         Item itemGiftTemplate = ItemService.gI().createNewItem((short) idItem);
                         if (itemGiftTemplate != null) {
                             Item itemGift = new Item((short) idItem);
-
-                            if (itemGift.template.type == 0 || itemGift.template.type == 1 || itemGift.template.type == 2 || itemGift.template.type == 3
-                                    || itemGift.template.type == 4 || itemGift.template.type == 5) {
-                                if (itemGift.template.id == 457) {
-                                    itemGift.itemOptions.add(new Item.ItemOption(30, 0));
-                                } else {
-                                    itemGift.itemOptions = giftcode.option.get(key);
-                                    itemGift.quantity = quantity;
-                                    InventoryService.gI().addItemBag(player, itemGift);
-                                }
+                            if (itemGift.template.id == 457 && giftcode.option.get(key).isEmpty()) {
+                                itemGift.itemOptions.add(new Item.ItemOption(30, 0));
                             } else {
                                 itemGift.itemOptions = giftcode.option.get(key);
-                                itemGift.quantity = quantity;
-                                InventoryService.gI().addItemBag(player, itemGift);
                             }
+                            itemGift.quantity = quantity;
+                            InventoryService.gI().addItemBag(player, itemGift);
                             textGift += "|1|x" + quantity + " " + itemGift.template.name + "\b";
                         }
                     }

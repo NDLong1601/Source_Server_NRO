@@ -79,7 +79,9 @@ public class NangCapVatPham {
                                 || io.optionTemplate.id == 22
                                 || io.optionTemplate.id == 23) {
                             option = io.optionTemplate.name;
-                            param = io.param + (io.param * 10 / 100);
+                            int statIncreasePercent = CombineConfig.getInt("equipment.upgrade.statPercent", 10, 0, 1000);
+                            int increase = io.param * statIncreasePercent / 100;
+                            param = io.param + (statIncreasePercent > 0 && increase < 1 ? 1 : increase);
                             break;
                         }
                     }
@@ -182,6 +184,7 @@ public class NangCapVatPham {
                 }
                 if (level < MAX_LEVEL_ITEM) {
                     player.inventory.gold -= gold;
+                    int statIncreasePercent = CombineConfig.getInt("equipment.upgrade.statPercent", 10, 0, 1000);
                     Item.ItemOption option = null;
                     Item.ItemOption option2 = null;
                     for (Item.ItemOption io : itemDo.itemOptions) {
@@ -199,9 +202,11 @@ public class NangCapVatPham {
                         }
                     }
                     if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
-                        option.param += (option.param * 10 / 100) < 1 ? 1 : (option.param * 10 / 100);
+                        int optionIncrease = option.param * statIncreasePercent / 100;
+                        option.param += statIncreasePercent > 0 && optionIncrease < 1 ? 1 : optionIncrease;
                         if (option2 != null) {
-                            option2.param += (option2.param * 10 / 100) < 1 ? 1 : (option2.param * 10 / 100);
+                            int option2Increase = option2.param * statIncreasePercent / 100;
+                            option2.param += statIncreasePercent > 0 && option2Increase < 1 ? 1 : option2Increase;
                         }
                         if (optionLevel == null) {
                             itemDo.itemOptions.add(new Item.ItemOption(72, 1));
@@ -218,9 +223,12 @@ public class NangCapVatPham {
                         }
                     } else {
                         if ((level == 2 || level == 4 || level == 6) && (player.combineNew.itemsCombine.size() != 3)) {
-                            option.param -= (option.param * 11 / 100) < 1 ? 1 : (option.param * 11 / 100);
+                            int statLossPercent = CombineConfig.getInt("equipment.upgrade.failStatLossPercent", 11, 0, 1000);
+                            int optionLoss = option.param * statLossPercent / 100;
+                            option.param -= statLossPercent > 0 && optionLoss < 1 ? 1 : optionLoss;
                             if (option2 != null) {
-                                option2.param -= (option2.param * 11 / 100) < 1 ? 1 : (option2.param * 11 / 100);
+                                int option2Loss = option2.param * statLossPercent / 100;
+                                option2.param -= statLossPercent > 0 && option2Loss < 1 ? 1 : option2Loss;
                             }
                             optionLevel.param--;
 

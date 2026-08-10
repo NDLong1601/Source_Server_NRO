@@ -694,13 +694,13 @@ public class CombineService {
                 return "Vào hành trang\nChọn bông tai Porata\nChọn mảnh bông tai để nâng cấp, Số lượng 9999 cái"
                         + "\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI:
-                return "Vào hành trang\nChọn bông tai Porata\nChọn mảnh hồn porata số lượng 99"
+                return "Vào hành trang\nChọn bông tai Porata\nChọn mảnh hồn porata số lượng 200"
                         + "\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";
             case NANG_CAP_BONG_TAI3:
-                return "Vào hành trang\nChọn bông tai Porata cấp 2\nChọn mảnh bông tai để nâng cấp, Số lượng 19999 cái"
+                return "Vào hành trang\nChọn bông tai Porata cấp 2\nChọn mảnh bông tai để nâng cấp, Số lượng 20000 cái"
                         + "\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI3:
-                return "Vào hành trang\nChọn bông tai Porata Cấp 3\nChọn mảnh hồn porata số lượng 199"
+                return "Vào hành trang\nChọn bông tai Porata Cấp 3\nChọn mảnh hồn porata số lượng 99"
                         + "\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";    
             case NANG_CAP_SAO_PHA_LE:
                 return "Vào hành trang\nChọn đá Hematite\nChọn loại sao pha lê (cấp 1)\nSau đó chọn 'Nâng cấp'";

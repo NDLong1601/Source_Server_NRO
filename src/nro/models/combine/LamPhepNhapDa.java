@@ -34,9 +34,9 @@ public class LamPhepNhapDa {
         }
 
         player.combineNew.goldCombine = GOLD_TAO_DA;
-        player.combineNew.ratioCombine = RATIO_TAO_DA;
+        player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.mergeUpgradeStoneRate", RATIO_TAO_DA);
 
-        String npcSay = "|2|Tỉ lệ thành công: " + RATIO_TAO_DA + "%\n"
+        String npcSay = "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n"
                       + "|2|Cần: " + Util.numberToMoney(GOLD_TAO_DA) + " vàng\n";
 
         if (player.inventory.gold < GOLD_TAO_DA) {
@@ -78,7 +78,7 @@ public class LamPhepNhapDa {
         InventoryService.gI().subQuantityItemsBag(player, item2, 1);
 
         // Xác suất tạo đá mới
-        if (Util.isTrue(RATIO_TAO_DA, 100)) {
+        if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
             int randomId = Util.nextInt(220, 224);
             Item newItem = new Item();
             newItem.template = ItemService.gI().getTemplate(randomId);

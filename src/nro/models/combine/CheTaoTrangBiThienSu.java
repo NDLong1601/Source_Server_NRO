@@ -5,7 +5,6 @@ import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import nro.models.player.Player;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
@@ -59,8 +58,8 @@ public class CheTaoTrangBiThienSu {
                     }
                     player.inventory.gold -= 10000000;
 
-                    int tilemacdinh = 90;
-                    int tileLucky = 5;
+                    int tilemacdinh = (int) CombineConfig.getRate("angel.createBaseRate", 90);
+                    int tileLucky = (int) CombineConfig.getRate("angel.luckyBaseRate", 5);
                     if (daNC != null) {
                         tilemacdinh += (daNC.template.id - 1073);
                     }
@@ -68,12 +67,12 @@ public class CheTaoTrangBiThienSu {
                         tileLucky += tileLucky * (daMM.template.id - 1078);
                     }
 
-                    if (Util.nextInt(0, 100) < tilemacdinh) {
+                    if (Util.isTrue((float) Math.min(100, tilemacdinh), 100)) {
                         Item itemCtVip = player.combineNew.itemsCombine.stream().filter(item -> item.isNotNullItem() && item.isCongThucVip()).findFirst().get();
 
                         Item itemManh = player.combineNew.itemsCombine.stream().filter(item -> item.isNotNullItem() && item.isManhTS() && item.quantity >= 999).findFirst().get();
 
-                        tilemacdinh = 100;
+                        tilemacdinh = CombineConfig.getInt("angel.baseStatBonusPercent", 100, 0, 1000);
                         short[][] itemIds = {{1048, 1051, 1054, 1057, 1060}, {1049, 1052, 1055, 1058, 1061}, {1050, 1053, 1056, 1059, 1062}}; // thứ tự td - 0,nm - 1, xd - 2
 
                         Item itemTS = ItemService.gI().DoThienSu(itemIds[itemCtVip.template.gender > 2 ? player.gender : itemCtVip.template.gender][itemManh.typeIdManh()], itemCtVip.template.gender);
@@ -96,10 +95,18 @@ public class CheTaoTrangBiThienSu {
                                 tileLucky = 1;
                             }
                             itemTS.itemOptions.add(new ItemOption(15, tileLucky));
-                            ArrayList<Integer> listOptionBonus = new ArrayList<>(Arrays.asList(50, 77, 103, 94, 5));
+                            ArrayList<Integer> listOptionBonus = new ArrayList<>();
+                            for (int optionId : CombineConfig.getIntArray("angel.bonusOptions", 50, 77, 103, 94, 5)) {
+                                listOptionBonus.add(optionId);
+                            }
                             for (int j = 0; j < tileLucky; j++) {
+                                if (listOptionBonus.isEmpty()) {
+                                    break;
+                                }
                                 tilemacdinh = Util.nextInt(0, listOptionBonus.size() - 1);
-                                itemTS.itemOptions.add(new ItemOption(listOptionBonus.get(tilemacdinh), Util.nextInt(1, 3)));
+                                int paramMin = CombineConfig.getInt("angel.bonusParamMin", 1, 0, 32767);
+                                int paramMax = CombineConfig.getInt("angel.bonusParamMax", 3, paramMin, 32767);
+                                itemTS.itemOptions.add(new ItemOption(listOptionBonus.get(tilemacdinh), Util.nextInt(paramMin, paramMax)));
                                 listOptionBonus.remove(tilemacdinh);
                             }
                         }

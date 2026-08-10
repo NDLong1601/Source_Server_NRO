@@ -38,7 +38,8 @@ public class DoiSachTuyetKy {
 
         boolean hasAllMaterials = quantityCuonSachCu >= REQUIRED_CUON_SACH_CU && quantityKimBamGiay >= REQUIRED_KIM_BAM_GIAY;
         text.append(hasAllMaterials ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
-                .append("Tỉ lệ thành công: ").append(SUCCESS_RATE_PERCENT).append("%\n");
+                .append("Tỉ lệ thành công: ")
+                .append(CombineConfig.getRate("book.exchangeRate", SUCCESS_RATE_PERCENT)).append("%\n");
         text.append(formatNote("Nếu dùng con dấu tỷ lệ thành công là 100%\nvà X5 tỷ lệ ra thêm dòng cho sách"));
 
         if (!hasAllMaterials) {
@@ -80,7 +81,7 @@ public class DoiSachTuyetKy {
         if (useConDau) {
             processSuccess(player, cuonSachCu, kimBamGiay, conDau, true);
         } else {
-            if (Util.isTrue(SUCCESS_RATE_PERCENT, 100)) {
+            if (CombineConfig.roll("book.exchangeRate", SUCCESS_RATE_PERCENT)) {
                 processSuccess(player, cuonSachCu, kimBamGiay, null, false);
             } else {
                 processFailure(player, cuonSachCu, kimBamGiay);
@@ -134,7 +135,7 @@ public class DoiSachTuyetKy {
         sach.itemOptions.removeIf(opt -> opt.optionTemplate.id == 218);
 
         if (useConDau) {
-            if (Util.isTrue(EXTRA_OPTION_CHANCE, 100)) {
+            if (CombineConfig.roll("book.extraOptionRate", EXTRA_OPTION_CHANCE)) {
                 int optionCount = Util.nextInt(1, 3);
                 for (int i = 0; i < optionCount; i++) {
                     sach.itemOptions.add(new Item.ItemOption(217, 0));

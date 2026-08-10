@@ -37,9 +37,9 @@ public class PhanRaTrangBiKichHoat {
             }
 
             player.combineNew.goldCombine = GOLD_PHAN_RA;
-            player.combineNew.ratioCombine = RATIO_PHAN_RA;
+            player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.recycleActiveEquipmentRate", RATIO_PHAN_RA);
 
-            String npcSay = "|2|Tỉ lệ thành công: " + RATIO_PHAN_RA + "%\n"
+            String npcSay = "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n"
                     + "|2|Cần: " + Util.numberToMoney(GOLD_PHAN_RA) + " vàng\n";
 
             if (player.inventory.gold < GOLD_PHAN_RA) {
@@ -75,7 +75,7 @@ public class PhanRaTrangBiKichHoat {
             }
             player.inventory.gold -= GOLD_PHAN_RA;
             InventoryService.gI().subQuantityItemsBag(player, item1, 1);
-            if (Util.isTrue(RATIO_PHAN_RA, 100)) {
+            if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                 int itemId = 1656;
                 Item existingItem = InventoryService.gI().findItemBag(player, itemId);
                 if (existingItem != null) {

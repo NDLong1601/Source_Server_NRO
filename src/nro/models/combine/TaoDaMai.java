@@ -24,7 +24,7 @@ public class TaoDaMai {
             Item DuiDuc = player.combineNew.itemsCombine.get(0);
             if (DuiDuc.template.id == 1438 && DuiDuc.quantity >= 5) {
                 player.combineNew.goldCombine = GOLD_TAO_DA;
-                player.combineNew.ratioCombine = RATIO_TAO_DA;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.grindStoneRate", RATIO_TAO_DA);
 
                 String npcSay = "|2|Tạo Dùi Đục từ Đá Mài\n";
                 npcSay += "|2|Cần 5 Dùi Đục\n";

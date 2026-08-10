@@ -33,7 +33,7 @@ public class DanhBongSaoPhaLe {
 
             if (saoPhaLe != null && daMai != null && saoPhaLe.quantity >= 2) {
                 player.combineNew.goldCombine = GOLD_NANG_CAP;
-                player.combineNew.ratioCombine = RATIO_NANG_CAP;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.polishRate", RATIO_NANG_CAP);
 
                 String npcSay = "|2|Nâng cấp Sao Pha Lê từ cấp 2 lên Sao Pha Lê lấp lánh\n";
                 npcSay += "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n";

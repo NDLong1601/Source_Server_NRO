@@ -56,7 +56,7 @@ public class CheTaoCuonSachCu {
 
         CombineService.gI().sendAddItemCombine(player, ConstNpc.BA_HAT_MIT, trangSachCu, biaSach);
 
-        if (Util.isTrue(SUCCESS_RATE_PERCENT, 100)) {
+        if (CombineConfig.roll("book.oldBookRate", SUCCESS_RATE_PERCENT)) {
             processSuccess(player, trangSachCu, biaSach);
         } else {
             processFailure(player, trangSachCu, biaSach);
@@ -76,7 +76,8 @@ public class CheTaoCuonSachCu {
     private static String formatSuccessRate(int quantityTrangSachCu, int quantityBiaSach) {
         boolean canCombine = quantityTrangSachCu >= REQUIRED_TRANG_SACH_CU && quantityBiaSach >= REQUIRED_BIA_SACH;
         String color = canCombine ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED;
-        return String.format("%sTỉ lệ thành công: %d%%\n", color, SUCCESS_RATE_PERCENT);
+        return String.format("%sTỉ lệ thành công: %s%%\n", color,
+                CombineConfig.getRate("book.oldBookRate", SUCCESS_RATE_PERCENT));
     }
 
     private static boolean hasSufficientSpace(Player player) {

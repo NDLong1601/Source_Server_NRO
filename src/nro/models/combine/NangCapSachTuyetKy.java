@@ -44,8 +44,9 @@ public class NangCapSachTuyetKy {
 
         String statusColor = kimBamGiay.quantity >= REQUIRED_KIM_BAM_GIAY_QUANTITY ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED;
         String message = String.format(
-            "%sNâng cấp sách tuyệt kỹ\n%sCần 10 Kìm bấm giấy\n%sTỉ lệ thành công: %d%%\n%sNâng cấp thất bại sẽ mất 10 Kìm bấm giấy",
-            ConstFont.BOLD_BLUE, statusColor, ConstFont.BOLD_BLUE, SUCCESS_RATE_PERCENT, ConstFont.BOLD_BLUE
+            "%sNâng cấp sách tuyệt kỹ\n%sCần 10 Kìm bấm giấy\n%sTỉ lệ thành công: %s%%\n%sNâng cấp thất bại sẽ mất 10 Kìm bấm giấy",
+            ConstFont.BOLD_BLUE, statusColor, ConstFont.BOLD_BLUE,
+            CombineConfig.getRate("book.upgradeRate", SUCCESS_RATE_PERCENT), ConstFont.BOLD_BLUE
         );
 
         if (kimBamGiay.quantity < REQUIRED_KIM_BAM_GIAY_QUANTITY) {
@@ -78,7 +79,7 @@ public class NangCapSachTuyetKy {
             return;
         }
 
-        if (Util.isTrue(SUCCESS_RATE_PERCENT, 100)) {
+        if (CombineConfig.roll("book.upgradeRate", SUCCESS_RATE_PERCENT)) {
             switch (sachTuyetKy.template.id) {
                 case 1044 -> sachTuyetKy.template = ItemService.gI().getTemplate(1278);
                 case 1211 -> sachTuyetKy.template = ItemService.gI().getTemplate(1279);

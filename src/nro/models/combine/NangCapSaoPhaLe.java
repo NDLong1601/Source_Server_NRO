@@ -36,7 +36,7 @@ public class NangCapSaoPhaLe {
             if (saoPhaLe != null && hematite != null) {
                 player.combineNew.goldCombine = GOLD_NANG_CAP;
                 player.combineNew.gemCombine = GEM_NANG_CAP;
-                player.combineNew.ratioCombine = RATIO_NANG_CAP;
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.upgradeRate", RATIO_NANG_CAP);
 
                 String npcSay = "|2|Nâng cấp Sao Pha Lê từ cấp 1 lên cấp 2\n";
                 npcSay += "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n";
@@ -144,4 +144,3 @@ public class NangCapSaoPhaLe {
         }
     }
 }
-
