@@ -1294,7 +1294,7 @@ function Get-AuditSummary {
 function Get-AuditContext {
     param([string]$ActionName)
     $snapshots = New-Object System.Collections.Generic.List[object]
-    $configBase64 = ""
+    $fileSnapshots = New-Object System.Collections.Generic.List[object]
     switch ($ActionName) {
         "saveitem" { $snapshots.Add((New-DbAuditSnapshot "item_template" "id=$(SqlInt $Id)")) }
         "saveshop" {
@@ -1361,13 +1361,21 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "admin_mob_config" "id=$configId"))
             $snapshots.Add((New-DbAuditSnapshot "admin_spawn_drop" "owner_type='mob' AND owner_id=$configId"))
         }
-        { $_ -in @("savecombineconfig", "resetcombineconfig", "setevent", "setexp") } {
+        { $_ -in @("savecombineconfig", "resetcombineconfig") } {
+            $configPath = Join-Path $Root "combine.properties"
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="combine.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
+        { $_ -in @("setevent", "setexp") } {
             $configPath = Join-Path $Root "Config.properties"
-            if (Test-Path $configPath) { $configBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) }
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="Config.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
         }
         default { return $null }
     }
-    [pscustomobject]@{ action=$ActionName; summary=(Get-AuditSummary $ActionName); snapshots=$snapshots.ToArray(); configBase64=$configBase64 }
+    [pscustomobject]@{ action=$ActionName; summary=(Get-AuditSummary $ActionName); snapshots=$snapshots.ToArray(); fileSnapshots=$fileSnapshots.ToArray() }
 }
 
 function Write-AuditEntry {
@@ -1426,6 +1434,11 @@ function Undo-AuditEntry {
         }
         [void]$sql.AppendLine("COMMIT;")
         Invoke-MySql $sql.ToString() | Out-Null
+    }
+    foreach ($fileSnapshot in @($payload.fileSnapshots)) {
+        $relativePath = [string]$fileSnapshot.path
+        if ($relativePath -notin @("Config.properties", "combine.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
+        [IO.File]::WriteAllBytes((Join-Path $Root $relativePath), [Convert]::FromBase64String([string]$fileSnapshot.contentBase64))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$payload.configBase64)) {
         [IO.File]::WriteAllBytes((Join-Path $Root "Config.properties"), [Convert]::FromBase64String([string]$payload.configBase64))
