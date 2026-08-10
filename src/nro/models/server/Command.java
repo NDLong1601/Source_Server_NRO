@@ -7,6 +7,7 @@ import nro.models.managers.GiftCodeManager;
 import nro.models.item.Item;
 import java.util.ArrayList;
 import nro.models.player.Pet;
+import nro.models.player.PetConfig;
 import nro.models.player.Player;
 import nro.models.network.SessionManager;
 import nro.models.services.ItemService;
@@ -289,7 +290,8 @@ parameterizedCommands.put("upp", (player, text) -> {
                         for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
                             Item item = player.inventory.itemsBag.get(i);
                             if (item != null && item.isNotNullItem() && item.template.type == 25) {
-                                if (player.pet.nPoint != null && player.pet.nPoint.power >= 1500000) {
+                                long minPower = PetConfig.getLong("pet.equipment.minPower", 1_500_000L, 0L, Long.MAX_VALUE);
+                                if (player.pet.nPoint != null && player.pet.nPoint.power >= minPower) {
                                     Item old = InventoryService.gI().putItemBody(player.pet, item);
                                     player.inventory.itemsBag.set(i, old);
                                     InventoryService.gI().sendItemBags(player);
@@ -298,7 +300,7 @@ parameterizedCommands.put("upp", (player, text) -> {
                                     Service.gI().Send_Caitrang(player);
                                     Service.gI().sendThongBao(player, "Đã dùng " + item.template.name + " cho đệ tử");
                                 } else {
-                                    Service.gI().sendThongBaoOK(player, "Đệ tử cần đạt 1tr5 sức mạnh để trang bị.");
+                                    Service.gI().sendThongBaoOK(player, "Đệ tử chưa đủ sức mạnh để trang bị.");
                                 }
                                 break;
                             }

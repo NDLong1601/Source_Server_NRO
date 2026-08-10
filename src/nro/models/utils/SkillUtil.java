@@ -2,6 +2,7 @@ package nro.models.utils;
 
 import java.util.List;
 import nro.models.player.Player;
+import nro.models.player.PetConfig;
 import nro.models.skill.NClass;
 import nro.models.skill.Skill;
 import nro.models.player_system.Template.SkillTemplate;
@@ -176,7 +177,7 @@ public class SkillUtil {
     public static boolean upSkillPet(List<Skill> skills, int index) {
         int tempId = skills.get(index).template.id;
         int level = skills.get(index).point + 1;
-        if (level > 7) {
+        if (level > PetConfig.getSkillMaxLevel()) {
             return false;
         }
         Skill skill = null;
@@ -189,7 +190,7 @@ public class SkillUtil {
         }
         skill = new Skill(skill);
         if (index == 1) {
-            skill.coolDown = 1000;
+            skill.coolDown = PetConfig.getAttackSkillCooldownMs();
         }
         skills.set(index, skill);
         return true;

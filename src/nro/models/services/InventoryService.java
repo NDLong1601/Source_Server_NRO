@@ -6,6 +6,7 @@ import nro.models.npc.MabuEgg;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Pet;
+import nro.models.player.PetConfig;
 import nro.models.player.Player;
 import nro.models.network.Message;
 import nro.models.services.ItemService;
@@ -21,6 +22,7 @@ import nro.models.consts.ConstTaskBadges;
 import nro.models.services_dungeon.BlackBallWarService;
 import nro.models.map.service.ItemMapService;
 import nro.models.task.BadgesTaskService;
+import nro.models.utils.Util;
 
 /**
  *
@@ -362,7 +364,7 @@ public class InventoryService {
         }
         if (player.isPet && (item.template.type == 11 || item.template.type == 25)) {
             Pet pet = (Pet) player;
-            if (pet.type != 2 && pet.type != 3 && pet.type != 4) {
+            if (!PetConfig.isTypeAllowed("pet.equipment.vipTypes", pet.typePet, 2, 3, 4)) {
                 Player recipient = pet.master != null ? pet.master : player;
                 Service.gI().sendThongBaoOK(recipient, "Chỉ đệ tử vip mới sử dụng được vật phẩm này!");
                 return sItem;
@@ -437,7 +439,8 @@ public class InventoryService {
 
     public void itemBagToPetBody(Player player, int index) {
         try {
-            if (player.pet != null && player.pet.nPoint.power >= 1500000) {
+            long minPower = PetConfig.getLong("pet.equipment.minPower", 1_500_000L, 0L, Long.MAX_VALUE);
+            if (player.pet != null && player.pet.nPoint.power >= minPower) {
                 Item item = player.inventory.itemsBag.get(index);
                 if (item.isNotNullItem()) {
                     Item itemSwap = putItemBody(player.pet, item);
@@ -452,7 +455,8 @@ public class InventoryService {
                     Service.gI().Send_Caitrang(player);
                 }
             } else {
-                Service.gI().sendThongBao(player, "Đệ tử phải đạt 1tr5 sức mạnh mới có thể mặc");
+                Service.gI().sendThongBao(player, "Đệ tử phải đạt " + Util.numberToMoney(minPower)
+                        + " sức mạnh mới có thể mặc");
             }
         } catch (Exception E) {
             Service.gI().sendThongBao(player, "Không thể thực hiện");

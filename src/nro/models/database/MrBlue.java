@@ -18,6 +18,7 @@ import nro.models.player.Enemy;
 import nro.models.player.Friend;
 import nro.models.player.Fusion;
 import nro.models.player.Pet;
+import nro.models.player.PetConfig;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
 import nro.models.task.TaskMain;
@@ -813,7 +814,7 @@ public class MrBlue {
                 pet.name = String.valueOf(dataArray.get(2));
                 player.fusion.typeFusion = Byte.parseByte(String.valueOf(dataArray.get(3)));
                 player.fusion.lastTimeFusion = System.currentTimeMillis()
-                        - (Fusion.TIME_FUSION - Integer.parseInt(String.valueOf(dataArray.get(4))));
+                        - (PetConfig.getFusionDurationMs() - Integer.parseInt(String.valueOf(dataArray.get(4))));
                 pet.status = Byte.parseByte(String.valueOf(dataArray.get(5)));
 
                 // data chỉ số
@@ -902,14 +903,14 @@ public class MrBlue {
                     }
                     switch (skill.template.id) {
                         case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC ->
-                            skill.coolDown = 1000;
+                            skill.coolDown = PetConfig.getAttackSkillCooldownMs();
                     }
                     pet.playerSkill.skills.add(skill);
                 }
 
-                int maxSkillCount = 4;
-                if (pet.typePet == 3 || pet.typePet == 4) {
-                    maxSkillCount = 5;
+                int maxSkillCount = 5;
+                while (pet.playerSkill.skills.size() > maxSkillCount) {
+                    pet.playerSkill.skills.remove(pet.playerSkill.skills.size() - 1);
                 }
                 while (pet.playerSkill.skills.size() < maxSkillCount) {
                     pet.playerSkill.skills.add(SkillUtil.createSkillLevel0(-1));

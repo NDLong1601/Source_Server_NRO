@@ -1,5 +1,5 @@
 ﻿Trạng thái: Đang chạy
 PID: 25296
 Sự kiện: none
-TNSM: x1
+TNSM: x2
 Log cập nhật: 2026-08-10 19:36:06

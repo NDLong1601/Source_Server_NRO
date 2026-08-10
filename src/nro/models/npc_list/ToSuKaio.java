@@ -5,6 +5,7 @@ import nro.models.consts.ConstNpc;
 import nro.models.services_dungeon.TrainingService;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
+import nro.models.player.PetConfig;
 import nro.models.map.service.NpcService;
 import nro.models.player.NPoint;
 import nro.models.services.OpenPowerService;
@@ -124,20 +125,22 @@ public class ToSuKaio extends Npc {
             return;
         }
 
-        if (player.pet.nPoint.limitPower < 5 || player.pet.nPoint.limitPower >= 9) {
+        int kaioStartLevel = PetConfig.getInt("pet.openPower.kaioStartLevel", 5, 1, NPoint.MAX_LIMIT);
+        if (player.pet.nPoint.limitPower < kaioStartLevel || player.pet.nPoint.limitPower >= NPoint.MAX_LIMIT) {
             this.createOtherMenu(player, ConstNpc.IGNORE_MENU,
                     "Đệ tử của bạn cần đạt 50 tỷ sức mạnh!", "Đóng");
             return;
         }
 
-        if (player.inventory.gold >= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER) {
+        long petCost = PetConfig.getLong("pet.openPower.cost", 50_000_000L, 0L, Long.MAX_VALUE);
+        if (player.inventory.gold >= petCost) {
             if (OpenPowerService.gI().openPowerSpeed(player.pet)) {
-                player.inventory.gold -= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER;
+                player.inventory.gold -= petCost;
                 Service.gI().sendMoney(player);
             }
         } else {
             Service.gI().sendThongBao(player, "Bạn không đủ vàng để mở, còn thiếu "
-                    + Util.numberToMoney(OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER - player.inventory.gold) + " vàng");
+                    + Util.numberToMoney(petCost - player.inventory.gold) + " vàng");
         }
     }
 

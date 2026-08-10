@@ -3,14 +3,13 @@ package nro.models.npc;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services.PetService;
 import nro.models.player.Player;
+import nro.models.player.PetConfig;
 import nro.models.utils.Util;
 import nro.models.network.Message;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
 
 public class MabuEgg {
-
-    private static final long DEFAULT_TIME_DONE = 864000000L;
 
     private Player player;
     public long lastTimeCreate;
@@ -25,7 +24,8 @@ public class MabuEgg {
     }
 
     public static void createMabuEgg(Player player) {
-        player.mabuEgg = new MabuEgg(player, System.currentTimeMillis(), DEFAULT_TIME_DONE);
+        long duration = PetConfig.getLong("pet.mabuEgg.durationMs", 864_000_000L, 0L, Long.MAX_VALUE);
+        player.mabuEgg = new MabuEgg(player, System.currentTimeMillis(), duration);
     }
 
     public void sendMabuEgg() {

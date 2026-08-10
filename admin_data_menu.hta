@@ -856,18 +856,21 @@
 
     .player-config-tabs {
       margin: 0 0 10px;
-      padding: 4px;
-      height: 48px;
+      padding: 7px;
+      min-height: 48px;
+      max-height: 122px;
       box-sizing: border-box;
       border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: #f8fafc;
-      overflow-x: auto;
-      overflow-y: hidden;
-      white-space: nowrap;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      overflow-x: hidden;
+      overflow-y: auto;
+      white-space: normal;
     }
 
-    #panelPlayerConfig .columns {
+    #panelPlayerConfig .columns,
+    #panelPetConfig .columns {
       top: 58px;
     }
 
@@ -876,11 +879,11 @@
       width: auto;
       min-height: 32px;
       height: auto;
-      margin: 3px;
-      padding: 7px 11px;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      background: transparent;
+      margin: 3px 2px;
+      padding: 7px 12px;
+      border: 1px solid #dbe3ed;
+      border-radius: 16px;
+      background: #ffffff;
       color: #475569;
       line-height: 16px;
       vertical-align: top;
@@ -897,6 +900,72 @@
       background: #0f766e;
       color: #ffffff;
       box-shadow: 0 2px 5px rgba(15, 118, 110, 0.2);
+    }
+
+    .pet-skill-pool {
+      margin-top: 6px;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .pet-skill-summary {
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      border-left: 3px solid #0f766e;
+      background: #ecfeff;
+      color: #155e75;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .pet-skill-grid {
+      overflow: hidden;
+    }
+
+    .pet-skill-choice {
+      float: left;
+      width: 49%;
+      min-height: 38px;
+      margin: 0 1% 7px 0;
+      padding: 7px 8px;
+      box-sizing: border-box;
+      border: 1px solid #dbe3ed;
+      border-radius: 7px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .pet-skill-choice.checked {
+      border-color: #5eead4;
+      background: #f0fdfa;
+    }
+
+    .pet-skill-choice input {
+      width: auto;
+      height: auto;
+      margin: 2px 6px 0 0;
+      vertical-align: top;
+    }
+
+    .pet-skill-choice-name {
+      display: inline-block;
+      max-width: 72%;
+      color: #334155;
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .pet-skill-rate {
+      float: right;
+      margin-top: 1px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: #ccfbf1;
+      color: #0f766e;
+      font-size: 11px;
+      font-weight: 650;
     }
 
     @media screen and (max-width: 1100px) {
@@ -1092,6 +1161,7 @@
       <button id="navItems" class="nav-button active" onclick="ShowTab('items')">Vật phẩm</button>
       <button id="navEvents" class="nav-button" onclick="ShowTab('events')">Sự kiện</button>
       <button id="navPlayerConfig" class="nav-button" onclick="ShowTab('playerconfig')">Cấu hình Player</button>
+      <button id="navPetConfig" class="nav-button" onclick="ShowTab('petconfig')">Cấu hình Đệ tử</button>
       <button id="navPlayers" class="nav-button" onclick="ShowTab('players')">Quản lý Player</button>
       <button id="navEquip" class="nav-button" onclick="ShowTab('equip')">Chỉ số TB</button>
       <button id="navCombine" class="nav-button" onclick="ShowTab('combine')">Nâng cấp/ Cường hóa</button>
@@ -1734,6 +1804,48 @@
         </div>
       </div>
 
+      <div id="panelPetConfig" class="panel">
+        <div id="petConfigTabs" class="player-config-tabs"></div>
+        <div class="columns">
+          <div class="left-pane">
+            <div class="toolbar">
+              <input id="petConfigSearch" style="width:360px" placeholder="Tìm tên hoặc khóa trong nhóm đang chọn" onkeyup="FilterPetConfigRows()">
+              <button onclick="LoadPetConfig()">Tải lại</button>
+            </div>
+            <div class="table-wrap"><table id="petConfigTable"></table></div>
+          </div>
+          <div class="right-pane">
+            <div class="section-title">Cấu hình Đệ tử toàn server</div>
+            <input type="hidden" id="petConfigKey">
+            <div class="row">
+              <div class="cell"><label>Nhóm</label><input id="petConfigCategory" readonly></div>
+              <div class="cell"><label>Phạm vi áp dụng</label><input id="petConfigScope" readonly></div>
+            </div>
+            <label>Tên cấu hình</label><input id="petConfigName" readonly>
+            <div class="row">
+              <div class="cell"><label>Kiểu dữ liệu</label><input id="petConfigKind" readonly></div>
+              <div class="cell"><label>Giá trị mặc định</label><input id="petConfigDefault" readonly></div>
+            </div>
+            <div id="petConfigRawEditor"><label>Giá trị đang dùng</label><textarea id="petConfigValue" placeholder="Chọn cấu hình ở bảng bên trái"></textarea></div>
+            <div id="petSkillPoolEditor" style="display:none">
+              <label>Chọn kỹ năng được phép xuất hiện</label>
+              <div class="pet-skill-pool">
+                <div id="petSkillPoolSummary" class="pet-skill-summary"></div>
+                <div id="petSkillPoolChoices" class="pet-skill-grid"></div>
+              </div>
+            </div>
+            <label>Mô tả</label><textarea id="petConfigDescription" readonly></textarea>
+            <div class="actions">
+              <button class="primary" onclick="SavePetConfig()">Lưu cấu hình</button>
+              <button onclick="ResetPetConfig()">Về mặc định</button>
+            </div>
+            <div class="player-limit-note">Runtime: server tự đọc lại trong tối đa 1 giây. Khởi tạo: chỉ áp dụng khi tạo hoặc thay đệ tử.</div>
+            <div class="player-warning">typePet: 0 thường, 1 Mabư, 2 Uub, 3 Kid Beer, 4 Jiren. Các danh sách dùng dấu phẩy, không thêm ký tự khác.</div>
+            <div id="petConfigMessage" class="message"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="panelPlayers" class="panel">
         <div class="columns">
           <div class="left-pane">
@@ -1882,6 +1994,11 @@
     var filteredPlayerConfigRows = [];
     var selectedPlayerConfigKey = "";
     var selectedPlayerConfigCategory = "";
+    var petConfigRows = [];
+    var filteredPetConfigRows = [];
+    var selectedPetConfigKey = "";
+    var selectedPetConfigCategory = "";
+    var selectedPetConfigRow = null;
     var playerRows = [];
     var selectedPlayerId = "";
     var selectedPlayerDetail = null;
@@ -1944,7 +2061,22 @@
           if (h < 56) h = 56;
           next.style.top = h + "px";
         }
+        UpdateConfigColumnsOffset("panelPlayerConfig", "playerConfigTabs");
+        UpdateConfigColumnsOffset("panelPetConfig", "petConfigTabs");
       } catch (e) {
+      }
+    }
+
+    function UpdateConfigColumnsOffset(panelId, tabsId) {
+      var panel = document.getElementById(panelId);
+      var tabs = document.getElementById(tabsId);
+      if (!panel || !tabs) return;
+      var columns = panel.getElementsByTagName("div");
+      for (var i = 0; i < columns.length; i++) {
+        if ((" " + columns[i].className + " ").indexOf(" columns ") >= 0) {
+          columns[i].style.top = (tabs.offsetHeight + 10) + "px";
+          return;
+        }
       }
     }
 
@@ -1953,6 +2085,7 @@
       document.getElementById("panelItems").className = tab == "items" ? "panel active" : "panel";
       document.getElementById("panelEvents").className = tab == "events" ? "panel active" : "panel";
       document.getElementById("panelPlayerConfig").className = tab == "playerconfig" ? "panel active" : "panel";
+      document.getElementById("panelPetConfig").className = tab == "petconfig" ? "panel active" : "panel";
       document.getElementById("panelPlayers").className = tab == "players" ? "panel active" : "panel";
       document.getElementById("panelEquip").className = tab == "equip" ? "panel active" : "panel";
       document.getElementById("panelCombine").className = tab == "combine" ? "panel active" : "panel";
@@ -1964,6 +2097,7 @@
       document.getElementById("navItems").className = tab == "items" ? "nav-button active" : "nav-button";
       document.getElementById("navEvents").className = tab == "events" ? "nav-button active" : "nav-button";
       document.getElementById("navPlayerConfig").className = tab == "playerconfig" ? "nav-button active" : "nav-button";
+      document.getElementById("navPetConfig").className = tab == "petconfig" ? "nav-button active" : "nav-button";
       document.getElementById("navPlayers").className = tab == "players" ? "nav-button active" : "nav-button";
       document.getElementById("navEquip").className = tab == "equip" ? "nav-button active" : "nav-button";
       document.getElementById("navCombine").className = tab == "combine" ? "nav-button active" : "nav-button";
@@ -1984,6 +2118,10 @@
         document.getElementById("pageTitle").innerText = "Cấu hình Player toàn server";
         document.getElementById("pageSub").innerText = "Chỉ số khởi tạo, tiền tệ, sức chứa và giới hạn 10 cấp";
         LoadPlayerConfig();
+      } else if (tab == "petconfig") {
+        document.getElementById("pageTitle").innerText = "Cấu hình Đệ tử toàn server";
+        document.getElementById("pageSub").innerText = "Khởi tạo, kỹ năng, AI, trang bị, thu nhận và hợp thể";
+        LoadPetConfig();
       } else if (tab == "players") {
         document.getElementById("pageTitle").innerText = "Quản lý Player";
         document.getElementById("pageSub").innerText = "Tìm và sửa chỉ số, tài sản, hành trang/rương của player offline";
@@ -2030,6 +2168,7 @@
       if (currentTab == "items") LoadItems();
       if (currentTab == "events") LoadStatus();
       if (currentTab == "playerconfig") LoadPlayerConfig();
+      if (currentTab == "petconfig") LoadPetConfig();
       if (currentTab == "players") LoadPlayers();
       if (currentTab == "equip") LoadEquipItems();
       if (currentTab == "combine") LoadCombineConfig();
@@ -2979,9 +3118,9 @@
           "<td>" + Html(row[0] || "") + "</td>" +
           "<td>" + Html(row[1] || "") + "</td>" +
           "<td>" + Html(GiftRewardSummary(row[3])) + "</td>" +
-          "<td>" + Html(row[2] == "-1" ? "Không giới hạn" : (row[2] || "0")) + "</td>" +
-          "<td>" + Html(row[4] || "") + "</td>" +
-          "<td>" + Html(row[5] || "") + "</td>" +
+          "<td>" + Html(row[2] == "-1" ? "Không giới hạn" : FormatNumber(row[2] || "0")) + "</td>" +
+          "<td>" + Html(FormatDateTime(row[4] || "")) + "</td>" +
+          "<td>" + Html(FormatDateTime(row[5] || "")) + "</td>" +
           '<td class="gift-status-' + Html(row[6] || "expired") + '">' + status + "</td></tr>";
       }
       document.getElementById("giftCodesTable").innerHTML = html + "</tbody>";
@@ -4086,6 +4225,7 @@
         html += '<button class="player-config-tab' + active + '" onclick="SelectPlayerConfigCategory(' + c + ')">' + Html(categories[c]) + '</button>';
       }
       document.getElementById("playerConfigTabs").innerHTML = html;
+      UpdateConfigColumnsOffset("panelPlayerConfig", "playerConfigTabs");
     }
 
     function SelectPlayerConfigCategory(index) {
@@ -4111,7 +4251,7 @@
       var html = "<thead><tr><th>Cấu hình</th><th>Giá trị</th><th>Phạm vi</th></tr></thead><tbody>";
       for (var r = 1; r < filteredPlayerConfigRows.length; r++) {
         var row = filteredPlayerConfigRows[r];
-        html += '<tr onclick="PickFilteredPlayerConfig(' + r + ')"><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(row[6]) + '</td></tr>';
+        html += '<tr onclick="PickFilteredPlayerConfig(' + r + ')"><td>' + Html(row[2]) + '</td><td title="' + HtmlAttr(FormatAdminValue(row[3], row[5], row[0])) + '">' + Html(FormatAdminValue(row[3], row[5], row[0])) + '</td><td>' + Html(row[6]) + '</td></tr>';
       }
       document.getElementById("playerConfigTable").innerHTML = html + "</tbody>";
     }
@@ -4132,7 +4272,7 @@
           FilterPlayerConfigRows();
         }
         Set("playerConfigKey", row[0]); Set("playerConfigCategory", row[1]); Set("playerConfigName", row[2]);
-        Set("playerConfigValue", row[3]); Set("playerConfigDefault", row[4]); Set("playerConfigKind", row[5]);
+        Set("playerConfigValue", FormatConfigEditValue(row[3], row[5])); Set("playerConfigDefault", FormatAdminValue(row[4], row[5], row[0])); Set("playerConfigKind", ConfigKindLabel(row[5]));
         Set("playerConfigScope", row[6]); Set("playerConfigDescription", row[7]);
         return;
       }
@@ -4146,7 +4286,9 @@
 
     function SavePlayerConfig() {
       if (!V("playerConfigKey")) { Msg("playerConfigMessage", "Chọn một cấu hình trước."); return; }
-      var result = RunAdmin("saveplayerconfig", { ConfigKey: V("playerConfigKey"), ConfigValue: Trim(V("playerConfigValue")) });
+      var row = FindConfigRow(playerConfigRows, V("playerConfigKey"));
+      var kind = row ? row[5] : "";
+      var result = RunAdmin("saveplayerconfig", { ConfigKey: V("playerConfigKey"), ConfigValue: NormalizeConfigEditValue(V("playerConfigValue"), kind) });
       Msg("playerConfigMessage", StatusText(result));
       if (!IsAdminError(result)) LoadPlayerConfig();
     }
@@ -4157,6 +4299,215 @@
       var result = RunAdmin("resetplayerconfig", { ConfigKey: V("playerConfigKey") });
       Msg("playerConfigMessage", StatusText(result));
       if (!IsAdminError(result)) LoadPlayerConfig();
+    }
+
+    function LoadPetConfig() {
+      petConfigRows = ParseTsv(RunAdmin("listpetconfig", {}));
+      RenderPetConfigTabs();
+      FilterPetConfigRows();
+      var restored = false;
+      if (selectedPetConfigKey) {
+        for (var i = 1; i < petConfigRows.length; i++) {
+          if (petConfigRows[i][0] == selectedPetConfigKey) { PickPetConfigByKey(selectedPetConfigKey); restored = true; break; }
+        }
+      }
+      if (!restored && filteredPetConfigRows.length > 1) PickFilteredPetConfig(1);
+      Msg("petConfigMessage", petConfigRows.length > 1 ? "Đã tải " + (petConfigRows.length - 1) + " cấu hình Đệ tử." : "Không tải được cấu hình Đệ tử.");
+      AdjustTableOffsets();
+    }
+
+    function PetSkillCatalog() {
+      return [
+        [0, "Đấm Dragon", "Tấn công"], [1, "Kamejoko", "Tấn công"], [2, "Đấm Demon", "Tấn công"],
+        [3, "Masenko", "Tấn công"], [4, "Galick", "Tấn công"], [5, "Antomic", "Tấn công"],
+        [6, "Thái Dương Hạ San", "Hỗ trợ"], [7, "Trị Thương", "Hỗ trợ"], [8, "Tái Tạo Năng Lượng", "Hỗ trợ"],
+        [9, "Kaioken", "Tấn công"], [10, "Quả Cầu Kênh Khí", "Tấn công"], [11, "Makankosappo", "Tấn công"],
+        [12, "Đẻ Trứng", "Hỗ trợ"], [13, "Biến Khỉ", "Hỗ trợ"], [14, "Tự Sát", "Hỗ trợ"],
+        [17, "Liên Hoàn", "Tấn công"], [18, "Socola", "Khống chế"], [19, "Khiên Năng Lượng", "Hỗ trợ"],
+        [20, "Dịch Chuyển Tức Thời", "Khống chế"], [21, "Huýt Sáo", "Hỗ trợ"], [22, "Thôi Miên", "Khống chế"],
+        [23, "Trói", "Khống chế"], [24, "Super Kame", "Tuyệt kỹ"], [25, "Liên Hoàn Chưởng", "Tuyệt kỹ"],
+        [26, "Ma Phong Ba", "Tuyệt kỹ"]
+      ];
+    }
+
+    function PetSkillOptions(key) {
+      var catalog = PetSkillCatalog();
+      var result = [];
+      for (var i = 0; i < catalog.length; i++) {
+        var id = catalog[i][0];
+        var allowed = key == "pet.skill.slot5Pool" ? id >= 24 :
+          (key == "pet.skill.slot2Pool" ? (catalog[i][2] == "Tấn công" || catalog[i][2] == "Khống chế") : id < 24);
+        if (allowed) result.push(catalog[i]);
+      }
+      return result;
+    }
+
+    function PetSkillName(id) {
+      var catalog = PetSkillCatalog();
+      for (var i = 0; i < catalog.length; i++) if (catalog[i][0] == id) return catalog[i][1];
+      return "Skill #" + id;
+    }
+
+    function ParsePetSkillPool(value) {
+      var result = [];
+      var parts = ("" + value).split(",");
+      for (var i = 0; i < parts.length; i++) {
+        var id = parseInt(Trim(parts[i]), 10);
+        if (!isNaN(id) && !ArrayContains(result, id)) result.push(id);
+      }
+      return result;
+    }
+
+    function BalancedSkillRate(index, count) {
+      if (count < 1) return 0;
+      return Math.round((100 / count) * 100) / 100;
+    }
+
+    function FormatSkillRate(value) {
+      return ("" + value).replace(".", ",") + "%";
+    }
+
+    function FormatPetSkillPool(value) {
+      var ids = ParsePetSkillPool(value);
+      if (!ids.length) return "Chưa chọn kỹ năng";
+      var labels = [];
+      for (var i = 0; i < ids.length; i++) labels.push(PetSkillName(ids[i]) + " " + FormatSkillRate(BalancedSkillRate(i, ids.length)));
+      return labels.join("  •  ");
+    }
+
+    function RenderPetConfigValueEditor(row) {
+      var isSkillPool = row && row[5] == "skill-pool";
+      document.getElementById("petConfigRawEditor").style.display = isSkillPool ? "none" : "block";
+      document.getElementById("petSkillPoolEditor").style.display = isSkillPool ? "block" : "none";
+      if (!isSkillPool) return;
+      RenderPetSkillPoolChoices();
+    }
+
+    function RenderPetSkillPoolChoices() {
+      if (!selectedPetConfigRow || selectedPetConfigRow[5] != "skill-pool") return;
+      var ids = ParsePetSkillPool(V("petConfigValue"));
+      var options = PetSkillOptions(selectedPetConfigRow[0]);
+      var html = "";
+      for (var i = 0; i < options.length; i++) {
+        var selectedIndex = ArrayIndexOf(ids, options[i][0]);
+        var checked = selectedIndex >= 0;
+        var rate = checked ? BalancedSkillRate(selectedIndex, ids.length) : 0;
+        html += '<label class="pet-skill-choice' + (checked ? ' checked' : '') + '">' +
+          '<input type="checkbox" ' + (checked ? 'checked ' : '') + 'onclick="TogglePetSkill(' + options[i][0] + ',this.checked)">' +
+          '<span class="pet-skill-choice-name">' + Html(options[i][1]) + '<br><small>' + Html(options[i][2]) + '</small></span>' +
+          (checked ? '<span class="pet-skill-rate">' + FormatSkillRate(rate) + '</span>' : '') + '</label>';
+      }
+      document.getElementById("petSkillPoolChoices").innerHTML = html;
+      document.getElementById("petSkillPoolSummary").innerText = ids.length ?
+        "Đã chọn " + ids.length + " kỹ năng · Tỉ lệ được tự cân bằng: " + FormatPetSkillPool(V("petConfigValue")) :
+        "Hãy chọn ít nhất một kỹ năng.";
+    }
+
+    function TogglePetSkill(skillId, checked) {
+      var ids = ParsePetSkillPool(V("petConfigValue"));
+      var index = ArrayIndexOf(ids, skillId);
+      if (checked && index < 0) ids.push(skillId);
+      if (!checked && index >= 0) ids.splice(index, 1);
+      var ordered = [];
+      var options = PetSkillOptions(selectedPetConfigRow ? selectedPetConfigRow[0] : "");
+      for (var i = 0; i < options.length; i++) if (ArrayContains(ids, options[i][0])) ordered.push(options[i][0]);
+      Set("petConfigValue", ordered.join(","));
+      RenderPetSkillPoolChoices();
+    }
+
+    function PetConfigCategories() {
+      var categories = [];
+      var seen = {};
+      for (var i = 1; i < petConfigRows.length; i++) {
+        var category = petConfigRows[i][1];
+        if (category && !seen[category]) { seen[category] = true; categories.push(category); }
+      }
+      return categories;
+    }
+
+    function RenderPetConfigTabs() {
+      var categories = PetConfigCategories();
+      var categoryExists = false;
+      for (var i = 0; i < categories.length; i++) if (categories[i] == selectedPetConfigCategory) categoryExists = true;
+      if (!categoryExists) selectedPetConfigCategory = categories.length ? categories[0] : "";
+      var html = "";
+      for (var c = 0; c < categories.length; c++) {
+        var active = categories[c] == selectedPetConfigCategory ? " active" : "";
+        html += '<button class="player-config-tab' + active + '" onclick="SelectPetConfigCategory(' + c + ')">' + Html(categories[c]) + '</button>';
+      }
+      document.getElementById("petConfigTabs").innerHTML = html;
+      UpdateConfigColumnsOffset("panelPetConfig", "petConfigTabs");
+    }
+
+    function SelectPetConfigCategory(index) {
+      var categories = PetConfigCategories();
+      if (!categories[index]) return;
+      selectedPetConfigCategory = categories[index];
+      selectedPetConfigKey = "";
+      selectedPetConfigRow = null;
+      Set("petConfigKey", ""); Set("petConfigCategory", selectedPetConfigCategory);
+      Set("petConfigName", ""); Set("petConfigValue", ""); Set("petConfigDefault", "");
+      Set("petConfigKind", ""); Set("petConfigScope", ""); Set("petConfigDescription", "");
+      RenderPetConfigValueEditor(null);
+      RenderPetConfigTabs();
+      FilterPetConfigRows();
+      if (filteredPetConfigRows.length > 1) PickFilteredPetConfig(1);
+    }
+
+    function FilterPetConfigRows() {
+      var q = Trim(V("petConfigSearch")).toLowerCase();
+      filteredPetConfigRows = [petConfigRows[0] || []];
+      for (var i = 1; i < petConfigRows.length; i++) {
+        if (petConfigRows[i][1] != selectedPetConfigCategory) continue;
+        if (!q || petConfigRows[i].join(" ").toLowerCase().indexOf(q) >= 0) filteredPetConfigRows.push(petConfigRows[i]);
+      }
+      var html = "<thead><tr><th>Cấu hình</th><th>Giá trị</th><th>Phạm vi</th></tr></thead><tbody>";
+      for (var r = 1; r < filteredPetConfigRows.length; r++) {
+        var row = filteredPetConfigRows[r];
+        var displayValue = FormatAdminValue(row[3], row[5], row[0]);
+        html += '<tr onclick="PickFilteredPetConfig(' + r + ')"><td>' + Html(row[2]) + '</td><td title="' + HtmlAttr(displayValue) + '">' + Html(displayValue) + '</td><td>' + Html(row[6]) + '</td></tr>';
+      }
+      document.getElementById("petConfigTable").innerHTML = html + "</tbody>";
+    }
+
+    function PickFilteredPetConfig(index) {
+      if (!filteredPetConfigRows[index]) return;
+      PickPetConfigByKey(filteredPetConfigRows[index][0]);
+    }
+
+    function PickPetConfigByKey(key) {
+      for (var i = 1; i < petConfigRows.length; i++) {
+        var row = petConfigRows[i];
+        if (row[0] != key) continue;
+        selectedPetConfigKey = key;
+        selectedPetConfigRow = row;
+        if (selectedPetConfigCategory != row[1]) {
+          selectedPetConfigCategory = row[1];
+          RenderPetConfigTabs();
+          FilterPetConfigRows();
+        }
+        Set("petConfigKey", row[0]); Set("petConfigCategory", row[1]); Set("petConfigName", row[2]);
+        Set("petConfigValue", FormatConfigEditValue(row[3], row[5])); Set("petConfigDefault", FormatAdminValue(row[4], row[5], row[0])); Set("petConfigKind", ConfigKindLabel(row[5]));
+        Set("petConfigScope", row[6]); Set("petConfigDescription", row[7]);
+        RenderPetConfigValueEditor(row);
+        return;
+      }
+    }
+
+    function SavePetConfig() {
+      if (!V("petConfigKey")) { Msg("petConfigMessage", "Chọn một cấu hình trước."); return; }
+      var kind = selectedPetConfigRow ? selectedPetConfigRow[5] : "";
+      var result = RunAdmin("savepetconfig", { ConfigKey: V("petConfigKey"), ConfigValue: NormalizeConfigEditValue(V("petConfigValue"), kind) });
+      Msg("petConfigMessage", StatusText(result));
+      if (!IsAdminError(result)) LoadPetConfig();
+    }
+
+    function ResetPetConfig() {
+      if (!V("petConfigKey")) { Msg("petConfigMessage", "Chọn một cấu hình trước."); return; }
+      if (!window.confirm("Đưa " + V("petConfigName") + " về mặc định " + V("petConfigDefault") + "?")) return;
+      var result = RunAdmin("resetpetconfig", { ConfigKey: V("petConfigKey") });
+      Msg("petConfigMessage", StatusText(result));
+      if (!IsAdminError(result)) LoadPetConfig();
     }
 
     function PlayerGenderLabel(value) {
@@ -4175,7 +4526,7 @@
       for (var i = 1; i < playerRows.length; i++) {
         var row = playerRows[i];
         var state = row[9] == "ONLINE?" ? "ONLINE?" : (row[7] == "1" ? "BỊ KHÓA" : (row[8] == "1" ? "OFFLINE" : "CHƯA ACTIVE"));
-        html += '<tr onclick="PickPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(PlayerGenderLabel(row[3])) + '</td><td>' + Html(row[4]) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td><td>' + Html(state) + '</td></tr>';
+        html += '<tr onclick="PickPlayer(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(PlayerGenderLabel(row[3])) + '</td><td>' + Html(FormatNumber(row[4])) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td><td>' + Html(state) + '</td></tr>';
       }
       document.getElementById("playersTable").innerHTML = html + "</tbody>";
       Msg("playerMessage", playerRows.length > 1 ? "Đã tải " + (playerRows.length - 1) + " player." : "Không tìm thấy player phù hợp.");
@@ -4203,17 +4554,17 @@
       Set("playerId", r[0]); Set("playerVersion", r[38]); Set("playerName", r[2]); Set("playerUsername", r[3]);
       Set("playerIdentity", r[0] + " / " + r[1]); Set("playerGender", PlayerGenderLabel(r[4]) + " (" + r[4] + ")");
       Set("playerClanId", r[6]); Set("playerLocation", "Map " + r[35] + " / " + r[36] + ", " + r[37]);
-      document.getElementById("playerLoginMeta").innerText = "Tạo: " + r[7] + " | Login: " + r[8] + " | Logout: " + r[9] + (r[13] == "1" ? " | Tài khoản admin" : "");
+      document.getElementById("playerLoginMeta").innerText = "Tạo: " + FormatDateTime(r[7]) + " | Login: " + FormatDateTime(r[8]) + " | Logout: " + FormatDateTime(r[9]) + (r[13] == "1" ? " | Tài khoản admin" : "");
       var badge = document.getElementById("playerOnlineBadge");
       badge.innerText = r[10]; badge.className = "player-state " + (r[10] == "ONLINE?" ? "online" : "offline");
-      Set("playerLimitPower", r[14]); Set("playerPower", r[15]); Set("playerPotential", r[16]);
-      Set("playerStamina", r[17]); Set("playerMaxStamina", r[18]); Set("playerHpG", r[19]); Set("playerMpG", r[20]);
-      Set("playerDamageG", r[21]); Set("playerDefenseG", r[22]); Set("playerCriticalG", r[23]); Set("playerCriticalDragon", r[24]);
-      Set("playerGold", r[27]); Set("playerGem", r[28]); Set("playerRuby", r[29]); Set("playerCoupon", r[30]);
+      Set("playerLimitPower", r[14]); Set("playerPower", FormatNumber(r[15])); Set("playerPotential", FormatNumber(r[16]));
+      Set("playerStamina", FormatNumber(r[17])); Set("playerMaxStamina", FormatNumber(r[18])); Set("playerHpG", FormatNumber(r[19])); Set("playerMpG", FormatNumber(r[20]));
+      Set("playerDamageG", FormatNumber(r[21])); Set("playerDefenseG", FormatNumber(r[22])); Set("playerCriticalG", FormatNumber(r[23])); Set("playerCriticalDragon", FormatNumber(r[24]));
+      Set("playerGold", FormatNumber(r[27])); Set("playerGem", FormatNumber(r[28])); Set("playerRuby", FormatNumber(r[29])); Set("playerCoupon", FormatNumber(r[30]));
       Set("playerBagSlots", r[31]); Set("playerBagUsed", r[32] + " / " + r[31]); Set("playerBoxSlots", r[33]); Set("playerBoxUsed", r[34] + " / " + r[33]);
       Set("playerBan", r[11]); Set("playerActive", r[12]); document.getElementById("playerForceOffline").checked = false;
       UpdatePlayerTierNote();
-      document.getElementById("playerAssetNote").innerText = "Giới hạn: vàng " + r[44] + ", ngọc " + r[45] + ", ruby " + r[46] + ", coupon " + r[47] + ", hành trang " + r[48] + " ô, rương " + r[49] + " ô.";
+      document.getElementById("playerAssetNote").innerText = "Giới hạn: vàng " + FormatNumber(r[44]) + ", ngọc " + FormatNumber(r[45]) + ", ruby " + FormatNumber(r[46]) + ", coupon " + FormatNumber(r[47]) + ", hành trang " + FormatNumber(r[48]) + " ô, rương " + FormatNumber(r[49]) + " ô.";
       Msg("playerMessage", "Đã tải player " + r[2] + ".");
     }
 
@@ -4224,16 +4575,16 @@
 
     function UpdatePlayerTierNote() {
       var level = parseInt(V("playerLimitPower") || "0", 10);
-      document.getElementById("playerTierNote").innerText = "Trần cấp " + level + ": sức mạnh " + PlayerLimitAt("player.limit.power", level) + ", HP/KI " + PlayerLimitAt("player.limit.hpMp", level) + ", sức đánh " + PlayerLimitAt("player.limit.damage", level) + ", giáp " + PlayerLimitAt("player.limit.defense", level) + ", chí mạng " + PlayerLimitAt("player.limit.critical", level) + ".";
+      document.getElementById("playerTierNote").innerText = "Trần cấp " + level + ": sức mạnh " + FormatNumber(PlayerLimitAt("player.limit.power", level)) + ", HP/KI " + FormatNumber(PlayerLimitAt("player.limit.hpMp", level)) + ", sức đánh " + FormatNumber(PlayerLimitAt("player.limit.damage", level)) + ", giáp " + FormatNumber(PlayerLimitAt("player.limit.defense", level)) + ", chí mạng " + FormatNumber(PlayerLimitAt("player.limit.critical", level)) + ".";
     }
 
     function PlayerPayload() {
       return {
         version: V("playerVersion"), forceOffline: document.getElementById("playerForceOffline").checked ? "1" : "0",
-        limitPower: V("playerLimitPower"), power: Trim(V("playerPower")), potential: Trim(V("playerPotential")),
-        stamina: Trim(V("playerStamina")), maxStamina: Trim(V("playerMaxStamina")), hpg: Trim(V("playerHpG")), mpg: Trim(V("playerMpG")),
-        damage: Trim(V("playerDamageG")), defense: Trim(V("playerDefenseG")), critical: Trim(V("playerCriticalG")), criticalDragon: Trim(V("playerCriticalDragon")),
-        gold: Trim(V("playerGold")), gem: Trim(V("playerGem")), ruby: Trim(V("playerRuby")), coupon: Trim(V("playerCoupon")),
+        limitPower: V("playerLimitPower"), power: NormalizeInteger(V("playerPower")), potential: NormalizeInteger(V("playerPotential")),
+        stamina: NormalizeInteger(V("playerStamina")), maxStamina: NormalizeInteger(V("playerMaxStamina")), hpg: NormalizeInteger(V("playerHpG")), mpg: NormalizeInteger(V("playerMpG")),
+        damage: NormalizeInteger(V("playerDamageG")), defense: NormalizeInteger(V("playerDefenseG")), critical: NormalizeInteger(V("playerCriticalG")), criticalDragon: NormalizeInteger(V("playerCriticalDragon")),
+        gold: NormalizeInteger(V("playerGold")), gem: NormalizeInteger(V("playerGem")), ruby: NormalizeInteger(V("playerRuby")), coupon: NormalizeInteger(V("playerCoupon")),
         bagSlots: Trim(V("playerBagSlots")), boxSlots: Trim(V("playerBoxSlots")), ban: V("playerBan"), active: V("playerActive")
       };
     }
@@ -4263,7 +4614,7 @@
         var row = auditRows[i];
         var status = row[4] == "success" ? "Thành công" : (row[4] == "failed" ? "Thất bại" : row[4]);
         var undo = row[6] ? "Đã hoàn tác" : (row[7] == "1" ? "Có thể hoàn tác" : (row[5] == "1" ? "Đang khóa" : "Không hỗ trợ"));
-        html += '<tr onclick="PickAuditEntry(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(row[1]) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(status) + '</td><td>' + Html(undo) + '</td></tr>';
+        html += '<tr onclick="PickAuditEntry(' + i + ')"><td>' + Html(row[0]) + '</td><td>' + Html(FormatDateTime(row[1])) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(status) + '</td><td>' + Html(undo) + '</td></tr>';
       }
       document.getElementById("auditTable").innerHTML = html + "</tbody>";
       ClearAuditDetail();
@@ -4273,9 +4624,9 @@
 
     function PickAuditEntry(index) {
       var row = auditRows[index]; selectedAuditIndex = index;
-      Set("auditId", row[0]); Set("auditCanUndo", row[7]); Set("auditDetailId", row[0]); Set("auditDetailTime", row[1]);
+      Set("auditId", row[0]); Set("auditCanUndo", row[7]); Set("auditDetailId", row[0]); Set("auditDetailTime", FormatDateTime(row[1]));
       Set("auditDetailAction", row[2]); Set("auditDetailSummary", row[3]); Set("auditDetailResult", row[8]);
-      var state = row[6] ? "Đã hoàn tác lúc " + row[6] : (row[7] == "1" ? "Có thể hoàn tác ngay" : (row[5] == "1" ? "Phải hoàn tác các thay đổi mới hơn trước" : "Thao tác này không hỗ trợ hoàn tác"));
+      var state = row[6] ? "Đã hoàn tác lúc " + FormatDateTime(row[6]) : (row[7] == "1" ? "Có thể hoàn tác ngay" : (row[5] == "1" ? "Phải hoàn tác các thay đổi mới hơn trước" : "Thao tác này không hỗ trợ hoàn tác"));
       Set("auditUndoState", state);
       document.getElementById("auditUndoButton").disabled = row[7] != "1";
       Msg("auditMessage", "Đang xem lịch sử #" + row[0] + ".");
@@ -4293,6 +4644,125 @@
       var text = RunAdmin("undoaudit", { Id: V("auditId") });
       Msg("auditMessage", StatusText(text));
       LoadAuditHistory();
+    }
+
+    function ArrayIndexOf(values, target) {
+      for (var i = 0; i < values.length; i++) if (values[i] == target) return i;
+      return -1;
+    }
+
+    function ArrayContains(values, target) {
+      return ArrayIndexOf(values, target) >= 0;
+    }
+
+    function FindConfigRow(rows, key) {
+      for (var i = 1; i < rows.length; i++) if (rows[i][0] == key) return rows[i];
+      return null;
+    }
+
+    function IsIntegerConfigKind(kind) {
+      return ArrayContains(["int", "positive-int", "long", "positive-long", "milliseconds", "stamina",
+        "limit-level", "limit-level-positive", "skill-level", "slot", "percent", "wide-percent", "critical"], kind);
+    }
+
+    function IsIntegerListConfigKind(kind) {
+      return ArrayContains(["long-list", "long-list-4", "int-list", "critical-list"], kind);
+    }
+
+    function NormalizeInteger(value) {
+      var text = Trim(value).replace(/\s/g, "");
+      if (/^-?[\d.]+$/.test(text)) text = text.replace(/\./g, "");
+      return text;
+    }
+
+    function FormatNumber(value) {
+      var text = NormalizeInteger(value);
+      if (!/^-?\d+$/.test(text)) return "" + value;
+      var sign = text.charAt(0) == "-" ? "-" : "";
+      var digits = sign ? text.substring(1) : text;
+      return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function FormatNumberList(value) {
+      var parts = ("" + value).split(",");
+      for (var i = 0; i < parts.length; i++) parts[i] = FormatNumber(Trim(parts[i]));
+      return parts.join(", ");
+    }
+
+    function NormalizeNumberList(value) {
+      var parts = ("" + value).split(",");
+      for (var i = 0; i < parts.length; i++) parts[i] = NormalizeInteger(parts[i]);
+      return parts.join(",");
+    }
+
+    function FormatDurationMs(value) {
+      var raw = NormalizeInteger(value);
+      if (!/^\d+$/.test(raw)) return "";
+      var totalSeconds = Math.floor(parseInt(raw, 10) / 1000);
+      if (totalSeconds < 1) return raw + " ms";
+      var days = Math.floor(totalSeconds / 86400); totalSeconds %= 86400;
+      var hours = Math.floor(totalSeconds / 3600); totalSeconds %= 3600;
+      var minutes = Math.floor(totalSeconds / 60); var seconds = totalSeconds % 60;
+      var parts = [];
+      if (days) parts.push(days + " ngày");
+      if (hours) parts.push(hours + " giờ");
+      if (minutes) parts.push(minutes + " phút");
+      if (seconds && parts.length < 2) parts.push(seconds + " giây");
+      return parts.join(" ");
+    }
+
+    function FormatDateTime(value) {
+      var text = Trim(value);
+      var match = /^(\d{4})-(\d{2})-(\d{2})(?:[T\s]+(\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(text);
+      if (!match) return text;
+      return match[3] + "/" + match[2] + "/" + match[1] + (match[4] ? " " + match[4] + ":" + match[5] + ":" + (match[6] || "00") : "");
+    }
+
+    function ConfigKindLabel(kind) {
+      var labels = {
+        "bool": "Bật / tắt", "int": "Số nguyên", "positive-int": "Số nguyên dương", "long": "Số nguyên lớn",
+        "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm",
+        "long-list-4": "Danh sách 4 mốc", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
+        "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option"
+      };
+      return labels[kind] || kind;
+    }
+
+    function FormatPetTypes(value) {
+      var names = ["Đệ tử thường", "Mabư", "Uub", "Kid Beer", "Jiren"];
+      var parts = ("" + value).split(",");
+      for (var i = 0; i < parts.length; i++) {
+        var id = parseInt(Trim(parts[i]), 10);
+        parts[i] = id >= 0 && id < names.length ? names[id] : Trim(parts[i]);
+      }
+      return parts.join(", ");
+    }
+
+    function FormatAdminValue(value, kind, key) {
+      if (kind == "skill-pool") return FormatPetSkillPool(value);
+      if (kind == "bool") return IsTrueValue(("" + value).toLowerCase()) ? "Bật" : "Tắt";
+      if (kind == "type-list") return FormatPetTypes(value);
+      if (kind == "milliseconds") {
+        var duration = FormatDurationMs(value);
+        return duration == NormalizeInteger(value) + " ms" ? FormatNumber(value) + " ms" : FormatNumber(value) + " ms · " + duration;
+      }
+      if (kind == "percent" || kind == "wide-percent") return FormatNumber(value) + "%";
+      if (kind == "weights-3") return ("" + value).split(",").join(" : ");
+      if (IsIntegerConfigKind(kind)) return FormatNumber(value);
+      if (IsIntegerListConfigKind(kind)) return FormatNumberList(value);
+      return "" + value;
+    }
+
+    function FormatConfigEditValue(value, kind) {
+      if (IsIntegerConfigKind(kind)) return FormatNumber(value);
+      if (IsIntegerListConfigKind(kind)) return FormatNumberList(value);
+      return "" + value;
+    }
+
+    function NormalizeConfigEditValue(value, kind) {
+      if (IsIntegerConfigKind(kind)) return NormalizeInteger(value);
+      if (IsIntegerListConfigKind(kind)) return NormalizeNumberList(value);
+      return Trim(value);
     }
 
     function CheckedValue(id) { return document.getElementById(id).checked ? "1" : "0"; }

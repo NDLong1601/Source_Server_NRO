@@ -12,8 +12,6 @@ import nro.models.utils.Util;
 
 public class Fusion {
 
-    public static final int TIME_FUSION = 600000;
-
     @Setter
     private Player player;
     public byte typeFusion;
@@ -23,7 +21,8 @@ public class Fusion {
     }
 
     public void update() {
-        if (typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE && Util.canDoWithTime(lastTimeFusion, TIME_FUSION)) {
+        if (typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE
+                && Util.canDoWithTime(lastTimeFusion, PetConfig.getFusionDurationMs())) {
             this.player.pet.unFusion();
         }
     }

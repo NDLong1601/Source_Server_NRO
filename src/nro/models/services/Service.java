@@ -20,6 +20,7 @@ import nro.models.item.Item;
 import nro.models.map.ItemMap;
 import nro.models.mob.Mob;
 import nro.models.player.Pet;
+import nro.models.player.PetConfig;
 import nro.models.item.Item.ItemOption;
 import java.io.DataOutputStream;
 import java.util.concurrent.Executors;
@@ -1609,29 +1610,29 @@ public class Service {
                 msg.writer().writeShort(pl.pet.nPoint.maxStamina); //stamina full
                 msg.writer().writeByte(pl.pet.nPoint.crit); //crit
                 msg.writer().writeShort(pl.pet.nPoint.def); //def
-                int sizeSkill = pl.pet.playerSkill.skills.size();
                 msg.writer().writeByte(5); //count pet skill
-                for (int i = 0; i < sizeSkill; i++) {
-                    if (pl.pet.playerSkill.skills.get(i).skillId != -1) {
-                        msg.writer().writeShort(pl.pet.playerSkill.skills.get(i).skillId);
+                for (int i = 0; i < 5; i++) {
+                    Skill petSkill = i < pl.pet.playerSkill.skills.size() ? pl.pet.playerSkill.skills.get(i) : null;
+                    if (petSkill != null && petSkill.skillId != -1) {
+                        msg.writer().writeShort(petSkill.skillId);
                     } else {
                         switch (i) {
                             case 1:
                                 msg.writer().writeShort(-1);
-                                msg.writer().writeUTF("Cần đạt sức mạnh 150tr để mở");
+                                msg.writer().writeUTF("Cần đạt sức mạnh " + Util.numberToMoney(PetConfig.getSkillUnlockPower(2)) + " để mở");
                                 break;
                             case 2:
                                 msg.writer().writeShort(-1);
-                                msg.writer().writeUTF("Cần đạt sức mạnh 1tỷ5 để mở");
+                                msg.writer().writeUTF("Cần đạt sức mạnh " + Util.numberToMoney(PetConfig.getSkillUnlockPower(3)) + " để mở");
                                 break;
                             case 3:
                                 msg.writer().writeShort(-1);
-                                msg.writer().writeUTF("Cần đạt sức mạnh 20tỷ để mở");
+                                msg.writer().writeUTF("Cần đạt sức mạnh " + Util.numberToMoney(PetConfig.getSkillUnlockPower(4)) + " để mở");
                                 break;
                             case 4:
                                 msg.writer().writeShort(-1);
-                                if (pl.pet.typePet == 2 || pl.pet.typePet == 3 || pl.pet.typePet == 4) {
-                                    msg.writer().writeUTF("Cần đạt sức mạnh 40tỷ để mở");
+                                if (PetConfig.isTypeAllowed("pet.skill.fifthAllowedTypes", pl.pet.typePet, 2, 3, 4)) {
+                                    msg.writer().writeUTF("Cần đạt sức mạnh " + Util.numberToMoney(PetConfig.getSkillUnlockPower(5)) + " để mở");
                                 } else {
                                     msg.writer().writeUTF("Không thể mở kỹ năng này");
                                 }

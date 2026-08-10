@@ -775,6 +775,16 @@ public class NPoint {
         this.mpHoi += (((long) this.mpMax * this.tlMpHoiBanThanVaDongDoi) / 100);
     }
 
+    private boolean isPetMasterUsingPorata(Pet pet) {
+        if (pet == null || pet.master == null || pet.master.fusion == null) {
+            return false;
+        }
+        byte fusionType = pet.master.fusion.typeFusion;
+        return fusionType == ConstPlayer.HOP_THE_PORATA
+                || fusionType == ConstPlayer.HOP_THE_PORATA2
+                || fusionType == ConstPlayer.HOP_THE_PORATA3;
+    }
+
     private void setHpMax() {
         long hpMax = this.hpg + this.hpAdd;
 
@@ -822,22 +832,8 @@ public class NPoint {
                 hpMax += (hpMax * percent / 100L);
             }
         }
-        // Xử lý pet mabư
-        if (this.player.isPet && ((Pet) this.player).typePet == 1 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            hpMax += (hpMax * 0 / 100L);
-        }
-
-        // Xử lý pet Uub
-        if (this.player.isPet && ((Pet) this.player).typePet == 2 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            hpMax += (hpMax * 20 / 100L);
-        }
-        // Xử lý pet vageta
-        if (this.player.isPet && ((Pet) this.player).typePet == 3 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            hpMax += (hpMax * 20 / 100L);
-        }
-        // Xử lý pet jiren
-        if (this.player.isPet && ((Pet) this.player).typePet == 4 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            hpMax += (hpMax * 20 / 100L);
+        if (this.player.isPet && isPetMasterUsingPorata((Pet) this.player)) {
+            hpMax += hpMax * PetConfig.getFusionTypeBonus(((Pet) this.player).typePet, "hp") / 100L;
         }
 
         // Xử lý phù
@@ -861,8 +857,8 @@ public class NPoint {
         }
 
         // Xử lý +hp đệ
-        if (this.player.fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            hpMax += this.player.pet.nPoint.hpMax;
+        if (this.player.fusion.typeFusion != ConstPlayer.NON_FUSION && this.player.pet != null) {
+            hpMax += this.player.pet.nPoint.hpMax * PetConfig.getFusionContributionPercent() / 100L;
         }
 
         // Xử lý bổ huyết
@@ -948,27 +944,9 @@ public class NPoint {
         if (this.player.setClothes.worldcup
                 == 2) {
             mpMax += (this.mpMax * 10 / 100L);
-            // xử lý pet mabu
-            if (this.player.isPet && ((Pet) this.player).typePet == 1
-                    && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-                mpMax += (this.mpMax * 0 / 100L);
-            }
         }
-
-        // Xử lý pet Uub
-        if (this.player.isPet && ((Pet) this.player).typePet == 2
-                && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            mpMax += (this.mpMax * 20 / 100L);
-        }
-        // xử lý pet beer
-        if (this.player.isPet && ((Pet) this.player).typePet == 3
-                && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            mpMax += (this.mpMax * 20 / 100L);
-        }
-        // Xử lý pet jiren
-        if (this.player.isPet && ((Pet) this.player).typePet == 4
-                && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            mpMax += (this.mpMax * 20 / 100L);
+        if (this.player.isPet && isPetMasterUsingPorata((Pet) this.player)) {
+            mpMax += mpMax * PetConfig.getFusionTypeBonus(((Pet) this.player).typePet, "mp") / 100L;
         }
 
         // Xử lý phù
@@ -994,9 +972,8 @@ public class NPoint {
         }
 
         // Xử lý hợp thể
-        if (this.player.fusion.typeFusion
-                != 0) {
-            mpMax += this.player.pet.nPoint.mpMax;
+        if (this.player.fusion.typeFusion != 0 && this.player.pet != null) {
+            mpMax += this.player.pet.nPoint.mpMax * PetConfig.getFusionContributionPercent() / 100L;
         }
 
         // Xử lý bổ khí
@@ -1064,27 +1041,8 @@ public class NPoint {
                 }
             }
         }
-        // Xử lý pet pic
-        if (this.player.isPet && ((Pet) this.player).typePet == 3 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            dame += (dame * 20 / 100L);
-        }
-
-        // Xử lý pet mabư
-        if (this.player.isPet && ((Pet) this.player).typePet == 1 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            dame += (dame * 0 / 100L);
-        }
-
-        // Xử lý pet Uub
-        if (this.player.isPet && ((Pet) this.player).typePet == 2 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            dame += (dame * 20 / 100L);
-        }
-        // Xử lý pet beer
-        if (this.player.isPet && ((Pet) this.player).typePet == 3 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            dame += (dame * 20 / 100L);
-        }
-        // Xử lý pet jiren
-        if (this.player.isPet && ((Pet) this.player).typePet == 4 && (((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3)) {
-            dame += (dame * 20 / 100L);
+        if (this.player.isPet && isPetMasterUsingPorata((Pet) this.player)) {
+            dame += dame * PetConfig.getFusionTypeBonus(((Pet) this.player).typePet, "damage") / 100L;
         }
 
         // Xử lý set tinh ấn
@@ -1158,8 +1116,8 @@ public class NPoint {
         }
 
         // Xử lý hợp thể
-        if (this.player.fusion.typeFusion != 0) {
-            dame += this.player.pet.nPoint.dame;
+        if (this.player.fusion.typeFusion != 0 && this.player.pet != null) {
+            dame += this.player.pet.nPoint.dame * PetConfig.getFusionContributionPercent() / 100L;
         }
 
         // Lấy tất cả option danh hiệu

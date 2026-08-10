@@ -3,6 +3,7 @@ package nro.models.services;
 import nro.models.consts.ConstPlayer;
 import nro.models.player.NewPet;
 import nro.models.player.Pet;
+import nro.models.player.PetConfig;
 import nro.models.player.Player;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.SkillUtil;
@@ -156,28 +157,24 @@ public class PetService {
     }
 
     public void changeUubPet(Player player) {
-        byte limitPower = player.pet.nPoint.limitPower;
-        if (player.fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            player.pet.unFusion();
-        }
-        ChangeMapService.gI().exitMap(player.pet);
-        player.pet.dispose();
-        player.pet = null;
-        createUubPet(player, player.pet.gender, limitPower);
+        byte limitPower = removeCurrentPet(player);
+        createUubPet(player, limitPower);
     }
 
     public void changeKidBeerPet(Player player) {
-        byte limitPower = player.pet.nPoint.limitPower;
-        if (player.fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            player.pet.unFusion();
-        }
-        ChangeMapService.gI().exitMap(player.pet);
-        player.pet.dispose();
-        player.pet = null;
-        createKidBeerPet(player, player.pet.gender, limitPower);
+        byte limitPower = removeCurrentPet(player);
+        createKidBeerPet(player, limitPower);
     }
     
     public void changeJirenPet(Player player) {
+        byte limitPower = removeCurrentPet(player);
+        createJirenPet(player, limitPower);
+    }
+
+    private byte removeCurrentPet(Player player) {
+        if (player.pet == null) {
+            return (byte) PetConfig.getStartLimitPower();
+        }
         byte limitPower = player.pet.nPoint.limitPower;
         if (player.fusion.typeFusion != ConstPlayer.NON_FUSION) {
             player.pet.unFusion();
@@ -185,7 +182,7 @@ public class PetService {
         ChangeMapService.gI().exitMap(player.pet);
         player.pet.dispose();
         player.pet = null;
-        createKidBeerPet(player, player.pet.gender, limitPower);
+        return limitPower;
     }
 
     public void changeMabuPet(Player player, int gender) {
@@ -201,19 +198,21 @@ public class PetService {
 
     public void changeNamePet(Player player, String name) {
         try {
-            if (!InventoryService.gI().isExistItemBag(player, 400)) {
+            int renameItemId = PetConfig.getInt("pet.rename.itemId", 400, 0, Short.MAX_VALUE);
+            int maxLength = PetConfig.getInt("pet.rename.maxLength", 10, 1, 100);
+            if (!InventoryService.gI().isExistItemBag(player, renameItemId)) {
                 Service.gI().sendThongBao(player, "Bạn cần thẻ đặt tên đệ tử, mua tại Santa");
                 return;
             } else if (Util.haveSpecialCharacter(name)) {
                 Service.gI().sendThongBao(player, "Tên không được chứa ký tự đặc biệt");
                 return;
-            } else if (name.length() > 10) {
+            } else if (name.length() > maxLength) {
                 Service.gI().sendThongBao(player, "Tên quá dài");
                 return;
             }
             ChangeMapService.gI().exitMap(player.pet);
             player.pet.name = "$" + name.toLowerCase().trim();
-            InventoryService.gI().subQuantityItemsBag(player, InventoryService.gI().findItemBag(player, 400), 1);
+            InventoryService.gI().subQuantityItemsBag(player, InventoryService.gI().findItemBag(player, renameItemId), 1);
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -226,70 +225,19 @@ public class PetService {
         }
     }
 
-    private int[] getDataPetNormal() {
+    private int[] getDataPet(int typePet) {
         int[] petData = new int[5];
-        petData[0] = Util.nextInt(40, 105) * 20; //hp
-        petData[1] = Util.nextInt(40, 105) * 20; //mp
-        petData[2] = Util.nextInt(20, 45); //dame
-        petData[3] = Util.nextInt(9, 50); //def
-        petData[4] = Util.nextInt(0, 2); //crit
-        return petData;
-    }
-
-    private int[] getDataPetMabu() {
-        int[] petData = new int[5];
-        petData[0] = Util.nextInt(40, 105) * 20; //hp
-        petData[1] = Util.nextInt(40, 105) * 20; //mp
-        petData[2] = Util.nextInt(50, 120); //dame
-        petData[3] = Util.nextInt(9, 50); //def
-        petData[4] = Util.nextInt(0, 2); //crit
-        return petData;
-    }
-
-    private int[] getDataPetUub() {
-        int[] petData = new int[5];
-        petData[0] = 400_000; // hp
-        petData[1] = 400_000; // mp
-        petData[2] = 20_000;  // dame
-        petData[3] = Util.nextInt(9, 50); //def
-        petData[4] = Util.nextInt(0, 2); //crit
-        return petData;
-    }
-
-    private int[] getDataPetKidBeer() {
-        int[] petData = new int[5];
-        petData[0] = 400_000; // hp
-        petData[1] = 400_000; // mp
-        petData[2] = 20_000;  // dame
-        petData[3] = Util.nextInt(9, 50); //def
-        petData[4] = Util.nextInt(0, 2); //crit
-        return petData;
-    }
-    
-    private int[] getDataPetJiren() {
-        int[] petData = new int[5];
-        petData[0] = 400_000; // hp
-        petData[1] = 400_000; // mp
-        petData[2] = 20_000;  // dame
-        petData[3] = Util.nextInt(9, 50); //def
-        petData[4] = Util.nextInt(0, 2); //crit
+        String[] stats = {"hp", "mp", "damage", "defense", "critical"};
+        for (int i = 0; i < stats.length; i++) {
+            petData[i] = Util.nextInt(PetConfig.getStartStatMin(typePet, stats[i]),
+                    PetConfig.getStartStatMax(typePet, stats[i]));
+        }
         return petData;
     }
 
     private void createNewPet(Player player, boolean isMabu, boolean isUub, boolean isKidBeer, boolean isJiren, byte... gender) {
-        int[] data;
-
-        if (isMabu) {
-            data = getDataPetMabu();
-        } else if (isUub) {
-            data = getDataPetUub();
-        } else if (isKidBeer) {
-            data = getDataPetKidBeer();
-        } else if (isJiren) {
-            data = getDataPetJiren();
-        } else {
-            data = getDataPetNormal();
-        }
+        int typePet = isMabu ? 1 : isUub ? 2 : isKidBeer ? 3 : isJiren ? 4 : 0;
+        int[] data = getDataPet(typePet);
 
         Pet pet = new Pet(player);
 
@@ -299,12 +247,14 @@ public class PetService {
 
         pet.id = player.isPl() ? -player.id : -Math.abs(player.id) - 100000;
 
-        pet.nPoint.power = isUub ? 40000000000L : isMabu ? 1500000L : isKidBeer ? 40000000000L : isJiren ? 40000000000L : 2000L;
+        pet.nPoint.power = PetConfig.getStartPower(typePet);
+        pet.nPoint.limitPower = (byte) PetConfig.getStartLimitPower();
 
-        pet.typePet = (byte) (isMabu ? 1 : isUub ? 2 : isKidBeer ? 3 : isJiren ? 4 : 0);
+        pet.typePet = (byte) typePet;
+        pet.type = pet.typePet;
 
-        pet.nPoint.stamina = 1000;
-        pet.nPoint.maxStamina = 1000;
+        pet.nPoint.stamina = (short) PetConfig.getStartStamina();
+        pet.nPoint.maxStamina = pet.nPoint.stamina;
         pet.nPoint.hpg = data[0];
         pet.nPoint.mpg = data[1];
         pet.nPoint.dameg = data[2];
@@ -320,7 +270,7 @@ public class PetService {
         }
 
         pet.playerSkill.skills.add(SkillUtil.createSkill(Util.nextInt(0, 2) * 2, 1));
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             pet.playerSkill.skills.add(SkillUtil.createEmptySkill());
         }
 

@@ -27,6 +27,7 @@ import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
+import nro.models.player.PetConfig;
 import nro.models.map.service.NpcService;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
@@ -882,9 +883,9 @@ public class UseItem {
                             case 1758: {
                                 Player player = pl;
                                 if (player.pet != null) {
-                                    InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     if (player.pet.playerSkill.skills.get(1).skillId != -1) {
                                         player.pet.openSkill2();
+                                        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     } else {
                                         Service.gI().sendThongBao(player, "Ít nhất đệ tử ngươi phải có chiêu 2 chứ!");
                                         return;
@@ -898,9 +899,9 @@ public class UseItem {
                             case 1759: {
                                 Player player = pl;
                                 if (player.pet != null) {
-                                    InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     if (player.pet.playerSkill.skills.get(2).skillId != -1) {
                                         player.pet.openSkill3();
+                                        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     } else {
                                         Service.gI().sendThongBao(player, "Ít nhất đệ tử ngươi phải có chiêu 3 chứ!");
                                         return;
@@ -917,9 +918,9 @@ public class UseItem {
                             case 1760: {
                                 Player player = pl;
                                 if (player.pet != null) {
-                                    InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     if (player.pet.playerSkill.skills.get(3).skillId != -1) {
                                         player.pet.openSkill4();
+                                        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                                     } else {
                                         Service.gI().sendThongBao(player, "Ít nhất đệ tử ngươi phải có chiêu 4 chứ!");
                                         return;
@@ -1265,27 +1266,49 @@ public class UseItem {
             return;
         }
 
-        if (!item.hasOption(250, 3000)) {
-            Service.gI().sendThongBao(player, "Cần ít nhất 3000 sức mạnh Kilis để mở!");
+        int optionId = PetConfig.getInt("pet.exchange.optionId", 250, 0, 255);
+        int optionParam = PetConfig.getInt("pet.exchange.optionParam", 3_000, 0, Short.MAX_VALUE);
+        if (!item.hasOption(optionId, optionParam)) {
+            Service.gI().sendThongBao(player, "Cần ít nhất " + optionParam + " sức mạnh Kilis để mở!");
             return;
         }
 
-        if (player.pet == null || player.pet.typePet != 1 || player.pet.nPoint.power < 40_000_000_000L) {
-            Service.gI().sendThongBao(player, "Cần có đệ Mabư đạt 40 tỷ sức mạnh để thực hiện!");
+        int requiredType = PetConfig.getInt("pet.exchange.requiredType", 1, 0, 4);
+        long requiredPower = PetConfig.getLong("pet.exchange.requiredPower", 40_000_000_000L, 0L, Long.MAX_VALUE);
+        if (player.pet == null || player.pet.typePet != requiredType || player.pet.nPoint.power < requiredPower) {
+            Service.gI().sendThongBao(player, "Đệ tử hiện tại cần đạt " + Util.numberToMoney(requiredPower)
+                    + " sức mạnh để thực hiện!");
             return;
         }
 
         int[] petTypes = {2, 3, 4};
-        int randomType = petTypes[rand.nextInt(petTypes.length)];
+        int[] weights = PetConfig.getIntArray("pet.exchange.typeWeights", 1, 1, 1);
+        int totalWeight = weights.length == 3
+                ? Math.max(0, weights[0]) + Math.max(0, weights[1]) + Math.max(0, weights[2]) : 0;
+        if (totalWeight <= 0) {
+            weights = new int[]{1, 1, 1};
+            totalWeight = 3;
+        }
+        int roll = rand.nextInt(totalWeight) + 1;
+        int selectedIndex = 0;
+        int accumulated = 0;
+        for (int i = 0; i < 3; i++) {
+            accumulated += Math.max(0, weights[i]);
+            if (roll <= accumulated) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        int randomType = petTypes[selectedIndex];
         switch (randomType) {
             case 2:
-                PetService.gI().createUubPet(player);
+                PetService.gI().changeUubPet(player);
                 break;
             case 3:
-                PetService.gI().createKidBeerPet(player);
+                PetService.gI().changeKidBeerPet(player);
                 break;
             case 4:
-                PetService.gI().createJirenPet(player);
+                PetService.gI().changeJirenPet(player);
                 break;
         }
 

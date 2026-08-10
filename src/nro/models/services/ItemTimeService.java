@@ -4,6 +4,7 @@ import nro.models.consts.ConstPlayer;
 import nro.models.item.Item;
 import static nro.models.item.ItemTime.*;
 import nro.models.player.Fusion;
+import nro.models.player.PetConfig;
 import nro.models.player.Player;
 import nro.models.network.Message;
 import java.io.IOException;
@@ -37,7 +38,8 @@ public class ItemTimeService {
         ItemTimeService.gI().sendTextTimePickDoanhTrai(player);
         if (player.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
             sendItemTime(player, player.gender == ConstPlayer.NAMEC ? 3901 : 3790,
-                    (int) ((Fusion.TIME_FUSION - (System.currentTimeMillis() - player.fusion.lastTimeFusion)) / 1000));
+                    (int) ((PetConfig.getFusionDurationMs()
+                    - (System.currentTimeMillis() - player.fusion.lastTimeFusion)) / 1000));
         }
         if (player.itemTime.isUseBoHuyet) {
             sendItemTime(player, 2755, (int) ((TIME_ITEM - (System.currentTimeMillis() - player.itemTime.lastTimeBoHuyet)) / 1000));

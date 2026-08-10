@@ -5,6 +5,7 @@ import nro.models.item.Item;
 import nro.models.npc.Npc;
 import nro.models.player.NPoint;
 import nro.models.player.Player;
+import nro.models.player.PetConfig;
 import nro.models.services.OpenPowerService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
@@ -47,11 +48,13 @@ public class QuocVuong extends Npc {
 
                     case 1 -> {
                         if (player.pet != null) {
-                            if (player.pet.nPoint.limitPower < MAX_LIMIT_CUSTOM) {
+                            int kaioStartLevel = PetConfig.getInt("pet.openPower.kaioStartLevel", 5, 1, NPoint.MAX_LIMIT);
+                            if (player.pet.nPoint.limitPower < kaioStartLevel) {
+                                long petCost = PetConfig.getLong("pet.openPower.cost", 50_000_000L, 0L, Long.MAX_VALUE);
                                 this.createOtherMenu(player, ConstNpc.OPEN_POWER_PET,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh của đệ tử lên "
                                         + Util.numberToMoney(player.pet.nPoint.getPowerNextLimit()),
-                                        "Nâng ngay\n" + Util.numberToMoney(OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER) + " ngọc", "Đóng");
+                                        "Nâng ngay\n" + Util.numberToMoney(petCost) + " vàng", "Đóng");
                             } else {
                                 this.createOtherMenu(player, ConstNpc.IGNORE_MENU,
                                         "Sức mạnh của đệ con đã đạt tới giới hạn hiện tại",
@@ -90,16 +93,18 @@ public class QuocVuong extends Npc {
                 }
             } else if (player.idMark.getIndexMenu() == ConstNpc.OPEN_POWER_PET) {
                 if (select == 0) {
-                    if (player.pet.nPoint.limitPower < MAX_LIMIT_CUSTOM) {
-                        if (player.inventory.gold >= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER) {
+                    int kaioStartLevel = PetConfig.getInt("pet.openPower.kaioStartLevel", 5, 1, NPoint.MAX_LIMIT);
+                    long petCost = PetConfig.getLong("pet.openPower.cost", 50_000_000L, 0L, Long.MAX_VALUE);
+                    if (player.pet.nPoint.limitPower < kaioStartLevel) {
+                        if (player.inventory.gold >= petCost) {
                             if (OpenPowerService.gI().openPowerSpeed(player.pet)) {
-                                player.inventory.gold -= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER;
+                                player.inventory.gold -= petCost;
                                 Service.gI().sendMoney(player);
                             }
                         } else {
                             Service.gI().sendThongBao(player,
                                     "Bạn không đủ vàng để mở, còn thiếu "
-                                    + Util.numberToMoney((OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER - player.inventory.gold)) + " ngọc");
+                                    + Util.numberToMoney((petCost - player.inventory.gold)) + " vàng");
                         }
                     } else {
                         Service.gI().sendThongBao(player, "Giới hạn sức mạnh của đệ tử đã đạt tới mức tối đa hiện tại");

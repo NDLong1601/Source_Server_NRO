@@ -417,6 +417,184 @@ function Reset-PlayerConfig {
     "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
 }
 
+function Get-PetConfigCatalog {
+    $rows = New-Object System.Collections.Generic.List[object]
+    $rows.Add([pscustomobject]@{ Key="pet.start.stamina"; Category="Khởi tạo - Chung"; Name="Thể lực ban đầu"; Default="1000"; Kind="stamina"; Scope="Đệ tử mới"; Description="Thể lực hiện tại và tối đa khi tạo hoặc thay đệ tử." })
+    $rows.Add([pscustomobject]@{ Key="pet.start.limitPower"; Category="Khởi tạo - Chung"; Name="Cấp giới hạn ban đầu"; Default="0"; Kind="limit-level"; Scope="Đệ tử mới"; Description="Áp dụng nếu nơi tạo đệ tử không truyền cấp giới hạn cũ." })
+
+    $types = @(
+        @{ Key="normal"; Name="Đệ tử thường"; Power="2000"; HpMin="800"; HpMax="2100"; MpMin="800"; MpMax="2100"; DamageMin="20"; DamageMax="45" },
+        @{ Key="mabu"; Name="Mabư"; Power="1500000"; HpMin="800"; HpMax="2100"; MpMin="800"; MpMax="2100"; DamageMin="50"; DamageMax="120" },
+        @{ Key="uub"; Name="Uub"; Power="40000000000"; HpMin="400000"; HpMax="400000"; MpMin="400000"; MpMax="400000"; DamageMin="20000"; DamageMax="20000" },
+        @{ Key="kidbeer"; Name="Kid Beer"; Power="40000000000"; HpMin="400000"; HpMax="400000"; MpMin="400000"; MpMax="400000"; DamageMin="20000"; DamageMax="20000" },
+        @{ Key="jiren"; Name="Kid Jiren"; Power="40000000000"; HpMin="400000"; HpMax="400000"; MpMin="400000"; MpMax="400000"; DamageMin="20000"; DamageMax="20000" }
+    )
+    foreach ($type in $types) {
+        $category = "Khởi tạo - $($type.Name)"
+        $prefix = "pet.start.$($type.Key)"
+        $rows.Add([pscustomobject]@{ Key="$prefix.power"; Category=$category; Name="Sức mạnh ban đầu"; Default=$type.Power; Kind="long"; Scope="Đệ tử mới"; Description="Sức mạnh khi tạo loại $($type.Name)." })
+        foreach ($stat in @(
+            @{ Suffix="hpMin"; Name="HP gốc nhỏ nhất"; Default=$type.HpMin }, @{ Suffix="hpMax"; Name="HP gốc lớn nhất"; Default=$type.HpMax },
+            @{ Suffix="mpMin"; Name="KI gốc nhỏ nhất"; Default=$type.MpMin }, @{ Suffix="mpMax"; Name="KI gốc lớn nhất"; Default=$type.MpMax },
+            @{ Suffix="damageMin"; Name="Sức đánh nhỏ nhất"; Default=$type.DamageMin }, @{ Suffix="damageMax"; Name="Sức đánh lớn nhất"; Default=$type.DamageMax },
+            @{ Suffix="defenseMin"; Name="Giáp nhỏ nhất"; Default="9" }, @{ Suffix="defenseMax"; Name="Giáp lớn nhất"; Default="50" },
+            @{ Suffix="criticalMin"; Name="Chí mạng nhỏ nhất"; Default="0" }, @{ Suffix="criticalMax"; Name="Chí mạng lớn nhất"; Default="2" }
+        )) {
+            $rows.Add([pscustomobject]@{ Key="$prefix.$($stat.Suffix)"; Category=$category; Name=$stat.Name; Default=$stat.Default; Kind="int"; Scope="Đệ tử mới"; Description="Khoảng random chỉ số khi tạo loại $($type.Name); giá trị Max không được nhỏ hơn Min." })
+        }
+    }
+
+    foreach ($entry in @(
+        @{ Key="pet.skill.autoUnlock"; Category="Kỹ năng"; Name="Tự mở kỹ năng khi đủ sức mạnh"; Default="true"; Kind="bool"; Scope="Runtime"; Description="Nếu tắt, hệ thống không tự mở skill 2-5 theo sức mạnh." },
+        @{ Key="pet.skill.unlockPower"; Category="Kỹ năng"; Name="Mốc mở skill 2-5"; Default="150000000,1500000000,20000000000,40000000000"; Kind="long-list-4"; Scope="Runtime"; Description="Đúng 4 số tăng dần tương ứng skill 2, 3, 4 và 5." },
+        @{ Key="pet.skill.slot2Pool"; Category="Kỹ năng"; Name="Danh sách kỹ năng ô 2"; Default="1,3,5"; Kind="skill-pool"; Scope="Lần mở/đổi skill mới"; Description="Chọn bằng checklist; mọi kỹ năng được chọn có tỉ lệ xuất hiện cân bằng." },
+        @{ Key="pet.skill.slot3Pool"; Category="Kỹ năng"; Name="Danh sách kỹ năng ô 3"; Default="6,8,9"; Kind="skill-pool"; Scope="Lần mở/đổi skill mới"; Description="Chọn bằng checklist; mọi kỹ năng được chọn có tỉ lệ xuất hiện cân bằng." },
+        @{ Key="pet.skill.slot4Pool"; Category="Kỹ năng"; Name="Danh sách kỹ năng ô 4"; Default="13,12,19"; Kind="skill-pool"; Scope="Lần mở/đổi skill mới"; Description="Chọn bằng checklist; mọi kỹ năng được chọn có tỉ lệ xuất hiện cân bằng." },
+        @{ Key="pet.skill.slot5Pool"; Category="Kỹ năng"; Name="Danh sách kỹ năng ô 5"; Default="24,26,25"; Kind="skill-pool"; Scope="Lần mở/đổi skill mới"; Description="Chọn bằng checklist; mọi tuyệt kỹ được chọn có tỉ lệ xuất hiện cân bằng." },
+        @{ Key="pet.skill.maxLevel"; Category="Kỹ năng"; Name="Cấp skill tối đa"; Default="7"; Kind="skill-level"; Scope="Runtime"; Description="Giới hạn nâng skill đệ tử, từ 1 đến 7." },
+        @{ Key="pet.skill.attackCooldownMs"; Category="Kỹ năng"; Name="Hồi chiêu chưởng (ms)"; Default="1000"; Kind="milliseconds"; Scope="Skill mới/đăng nhập lại"; Description="Cooldown ép cho Kamejoko, Masenko và Antomic." },
+        @{ Key="pet.skill.fifthAllowedTypes"; Category="Kỹ năng"; Name="Loại được mở skill 5"; Default="2,3,4"; Kind="type-list"; Scope="Runtime"; Description="typePet: 0 thường, 1 Mabư, 2 Uub, 3 Kid Beer, 4 Jiren." },
+
+        @{ Key="pet.ai.attackRange"; Category="AI chiến đấu"; Name="Phạm vi tìm mục tiêu"; Default="300"; Kind="positive-int"; Scope="Runtime"; Description="Khoảng cách tối đa tìm mob hoặc người chơi." },
+        @{ Key="pet.ai.meleeRange"; Category="AI chiến đấu"; Name="Khoảng cách đánh cận chiến"; Default="50"; Kind="positive-int"; Scope="Runtime"; Description="Trong khoảng này đệ tử ưu tiên skill 1." },
+        @{ Key="pet.ai.followIdleDistance"; Category="AI chiến đấu"; Name="Khoảng cách đi theo khi Follow"; Default="60"; Kind="positive-int"; Scope="Runtime"; Description="Khoảng cách bám sư phụ ở trạng thái đi theo." },
+        @{ Key="pet.ai.followCombatDistance"; Category="AI chiến đấu"; Name="Khoảng cách đi theo khi chiến đấu"; Default="500"; Kind="positive-int"; Scope="Runtime"; Description="Khoảng cách quay về sư phụ và giới hạn truy đuổi player." },
+        @{ Key="pet.ai.reviveDelayMs"; Category="AI chiến đấu"; Name="Thời gian hồi sinh (ms)"; Default="120000"; Kind="milliseconds"; Scope="Runtime"; Description="Thời gian đệ tử nằm chết trước khi tự hồi sinh." },
+        @{ Key="pet.ai.peaCooldownMs"; Category="AI chiến đấu"; Name="Thời gian xin đậu (ms)"; Default="10000"; Kind="milliseconds"; Scope="Runtime"; Description="Khoảng cách giữa hai lần xin hoặc dùng đậu." },
+        @{ Key="pet.ai.regenThresholdPercent"; Category="AI chiến đấu"; Name="Ngưỡng dùng Tái Tạo Năng Lượng (%)"; Default="20"; Kind="percent"; Scope="Runtime"; Description="Dùng skill khi HP hoặc KI xuống bằng hay dưới ngưỡng." },
+        @{ Key="pet.ai.regenChargeMin"; Category="AI chiến đấu"; Name="Số nhịp vận công nhỏ nhất"; Default="3"; Kind="positive-int"; Scope="Runtime"; Description="Khoảng nhịp duy trì Tái Tạo Năng Lượng." },
+        @{ Key="pet.ai.regenChargeMax"; Category="AI chiến đấu"; Name="Số nhịp vận công lớn nhất"; Default="5"; Kind="positive-int"; Scope="Runtime"; Description="Không được nhỏ hơn số nhịp nhỏ nhất." },
+        @{ Key="pet.ai.autoStatIntervalMs"; Category="AI tăng trưởng"; Name="Chu kỳ tự cộng chỉ số (ms)"; Default="0"; Kind="milliseconds"; Scope="Runtime"; Description="0 giữ hành vi cũ: thử cộng ở mỗi vòng update." },
+        @{ Key="pet.ai.autoStatAttempts"; Category="AI tăng trưởng"; Name="Số lần thử cộng mỗi chu kỳ"; Default="20"; Kind="int"; Scope="Runtime"; Description="Đặt 0 để tắt tự phân phối tiềm năng." },
+        @{ Key="pet.ai.playerAttackAllowedTypes"; Category="AI chiến đấu"; Name="Loại được đánh người chơi"; Default="2,4"; Kind="type-list"; Scope="Runtime"; Description="Danh sách typePet được phép chọn player làm mục tiêu." },
+        @{ Key="pet.ai.hakaiEnabled"; Category="AI Hakai"; Name="Bật Hakai"; Default="true"; Kind="bool"; Scope="Runtime"; Description="Cho phép xử tử tức thời mục tiêu thỏa điều kiện." },
+        @{ Key="pet.ai.hakaiRatePercent"; Category="AI Hakai"; Name="Tỉ lệ Hakai (%)"; Default="20"; Kind="percent"; Scope="Runtime"; Description="Tỉ lệ kiểm tra khi đệ tử bảo vệ gặp player địch." },
+        @{ Key="pet.ai.hakaiMaxTargetHp"; Category="AI Hakai"; Name="HP mục tiêu tối đa"; Default="1000000000"; Kind="positive-int"; Scope="Runtime"; Description="Mục tiêu phải có HP hiện tại nhỏ hơn giá trị này." },
+        @{ Key="pet.ai.hakaiAllowedTypes"; Category="AI Hakai"; Name="Loại được dùng Hakai"; Default="2,4"; Kind="type-list"; Scope="Runtime"; Description="Danh sách typePet được phép Hakai." },
+
+        @{ Key="pet.equipment.minPower"; Category="Trang bị & đổi tên"; Name="Sức mạnh tối thiểu để mặc đồ"; Default="1500000"; Kind="long"; Scope="Runtime"; Description="Áp dụng cho trang bị thường và sách tuyệt kỹ." },
+        @{ Key="pet.equipment.vipTypes"; Category="Trang bị & đổi tên"; Name="Loại được dùng đồ VIP"; Default="2,3,4"; Kind="type-list"; Scope="Runtime"; Description="Các loại được mặc item type 11 và 25." },
+        @{ Key="pet.rename.itemId"; Category="Trang bị & đổi tên"; Name="Item đổi tên"; Default="400"; Kind="item-id"; Scope="Runtime"; Description="Template ID vật phẩm bị trừ khi dùng lệnh đặt tên." },
+        @{ Key="pet.rename.maxLength"; Category="Trang bị & đổi tên"; Name="Độ dài tên tối đa"; Default="10"; Kind="positive-int"; Scope="Runtime"; Description="Số ký tự tối đa của tên đệ tử do người chơi đặt." },
+
+        @{ Key="pet.mabuEgg.durationMs"; Category="Thu nhận & giới hạn"; Name="Thời gian nở trứng Mabư (ms)"; Default="864000000"; Kind="long"; Scope="Trứng mới"; Description="Mặc định 10 ngày; trứng đã tạo giữ thời gian cũ." },
+        @{ Key="pet.exchange.optionId"; Category="Thu nhận & giới hạn"; Name="Option Kilis yêu cầu"; Default="250"; Kind="option-id"; Scope="Runtime"; Description="Option được kiểm tra trên vật phẩm đổi đệ đặc biệt." },
+        @{ Key="pet.exchange.optionParam"; Category="Thu nhận & giới hạn"; Name="Số Kilis yêu cầu"; Default="3000"; Kind="int"; Scope="Runtime"; Description="Param tối thiểu của option Kilis." },
+        @{ Key="pet.exchange.requiredType"; Category="Thu nhận & giới hạn"; Name="Loại đệ tử dùng để đổi"; Default="1"; Kind="pet-type"; Scope="Runtime"; Description="Mặc định yêu cầu Mabư typePet 1." },
+        @{ Key="pet.exchange.requiredPower"; Category="Thu nhận & giới hạn"; Name="Sức mạnh yêu cầu để đổi"; Default="40000000000"; Kind="long"; Scope="Runtime"; Description="Sức mạnh tối thiểu của đệ tử hiện tại." },
+        @{ Key="pet.exchange.typeWeights"; Category="Thu nhận & giới hạn"; Name="Trọng số Uub/Kid Beer/Jiren"; Default="1,1,1"; Kind="weights-3"; Scope="Lần đổi mới"; Description="Ba trọng số nhận type 2, 3 và 4." },
+        @{ Key="pet.openPower.cost"; Category="Thu nhận & giới hạn"; Name="Giá mở giới hạn nhanh"; Default="50000000"; Kind="long"; Scope="Runtime"; Description="Số vàng trừ khi mở giới hạn cho đệ tử." },
+        @{ Key="pet.openPower.kaioStartLevel"; Category="Thu nhận & giới hạn"; Name="Cấp bắt đầu mở tại Kaio"; Default="5"; Kind="limit-level-positive"; Scope="Runtime"; Description="Cấp thấp hơn mở tại Quốc Vương, từ cấp này mở tại Tổ Sư Kaio." },
+
+        @{ Key="pet.fusion.durationMs"; Category="Hợp thể - Chung"; Name="Thời gian Lưỡng Long (ms)"; Default="600000"; Kind="positive-int"; Scope="Runtime/lần hợp thể mới"; Description="Thời lượng hợp thể có giới hạn thời gian." },
+        @{ Key="pet.fusion.unfusionCooldownMs"; Category="Hợp thể - Chung"; Name="Chờ sau khi tách (ms)"; Default="5000"; Kind="milliseconds"; Scope="Runtime"; Description="Thời gian phải chờ trước khi hợp thể lại." },
+        @{ Key="pet.fusion.contributionPercent"; Category="Hợp thể - Chung"; Name="Tỉ lệ cộng chỉ số đệ vào sư phụ (%)"; Default="100"; Kind="wide-percent"; Scope="Runtime"; Description="Áp dụng đồng thời cho HP, KI và sức đánh." }
+    )) { $rows.Add([pscustomobject]$entry) }
+
+    foreach ($type in $types) {
+        $category = "Hợp thể - $($type.Name)"
+        foreach ($stat in @(@{ Suffix="hp"; Name="HP" }, @{ Suffix="mp"; Name="KI" }, @{ Suffix="damage"; Name="Sức đánh" })) {
+            $default = if ($type.Key -in @("uub", "kidbeer", "jiren")) { "20" } else { "0" }
+            $rows.Add([pscustomobject]@{ Key="pet.fusion.$($type.Key).$($stat.Suffix)BonusPercent"; Category=$category; Name="Thưởng $($stat.Name) khi Porata (%)"; Default=$default; Kind="wide-percent"; Scope="Runtime"; Description="Tăng chỉ số của đệ trước khi cộng vào sư phụ." })
+        }
+    }
+    $rows.ToArray()
+}
+
+function Get-PetConfigEntry {
+    param([string]$Key)
+    Get-PetConfigCatalog | Where-Object { $_.Key -eq $Key } | Select-Object -First 1
+}
+
+function Assert-PetConfigValue {
+    param($Entry, [string]$Value)
+    $Value = $Value.Trim()
+    if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
+    if ($Entry.Kind -eq "bool") {
+        if ($Value -notmatch '^(true|false|0|1)$') { throw "Giá trị phải là true, false, 1 hoặc 0." }
+        return $Value.ToLowerInvariant()
+    }
+    if ($Entry.Kind -in @("int", "positive-int", "milliseconds", "stamina", "limit-level", "limit-level-positive", "skill-level", "percent", "wide-percent", "item-id", "option-id", "pet-type")) {
+        if ($Value -notmatch '^\d+$' -or [decimal]$Value -gt 2147483647) { throw "Giá trị phải là số nguyên không âm trong giới hạn int." }
+        $number = [long]$Value
+        if ($Entry.Kind -eq "positive-int" -and $number -lt 1) { throw "Giá trị phải lớn hơn 0." }
+        if ($Entry.Kind -eq "stamina" -and ($number -lt 1 -or $number -gt 32767)) { throw "Thể lực phải từ 1 đến 32.767." }
+        if ($Entry.Kind -eq "limit-level" -and $number -gt 9) { throw "Cấp giới hạn phải từ 0 đến 9." }
+        if ($Entry.Kind -eq "limit-level-positive" -and ($number -lt 1 -or $number -gt 9)) { throw "Cấp phải từ 1 đến 9." }
+        if ($Entry.Kind -eq "skill-level" -and ($number -lt 1 -or $number -gt 7)) { throw "Cấp skill phải từ 1 đến 7." }
+        if ($Entry.Kind -eq "percent" -and $number -gt 100) { throw "Tỉ lệ phải từ 0 đến 100." }
+        if ($Entry.Kind -eq "wide-percent" -and $number -gt 10000) { throw "Tỉ lệ không được vượt 10.000%." }
+        if ($Entry.Kind -in @("item-id", "option-id") -and $number -gt 32767) { throw "ID phải từ 0 đến 32.767." }
+        if ($Entry.Kind -eq "pet-type" -and $number -gt 4) { throw "typePet phải từ 0 đến 4." }
+    } elseif ($Entry.Kind -eq "long") {
+        $parsed = 0L
+        if (-not [long]::TryParse($Value, [ref]$parsed) -or $parsed -lt 0) { throw "Giá trị phải là số nguyên 64-bit không âm." }
+    } elseif ($Entry.Kind -in @("weights-3", "long-list-4", "type-list", "skill-pool")) {
+        $parts = @($Value -split ',')
+        $expected = if ($Entry.Kind -eq "long-list-4") { 4 } elseif ($Entry.Kind -eq "weights-3") { 3 } else { 0 }
+        if ($expected -gt 0 -and $parts.Count -ne $expected) { throw "Danh sách phải có đúng $expected giá trị." }
+        if ($Entry.Kind -eq "type-list" -and $parts.Count -lt 1) { throw "Chọn ít nhất một loại đệ tử." }
+        if ($Entry.Kind -eq "skill-pool" -and $parts.Count -lt 1) { throw "Chọn ít nhất một kỹ năng." }
+        $numbers = New-Object System.Collections.Generic.List[decimal]
+        foreach ($part in $parts) {
+            $numberText = $part.Trim()
+            if ($numberText -notmatch '^\d+$') { throw "Danh sách chỉ gồm số nguyên không âm, phân cách bằng dấu phẩy." }
+            $number = [decimal]$numberText
+            if ($Entry.Kind -eq "type-list" -and $number -gt 4) { throw "typePet chỉ từ 0 đến 4." }
+            if ($Entry.Kind -eq "skill-pool" -and ($number -gt 26 -or $number -in @(15,16))) { throw "Skill template ID không hợp lệ." }
+            $numbers.Add($number)
+        }
+        if ($Entry.Kind -eq "weights-3" -and ($numbers | Measure-Object -Sum).Sum -le 0) { throw "Tổng trọng số phải lớn hơn 0." }
+        if ($Entry.Kind -eq "long-list-4") {
+            for ($i = 1; $i -lt $numbers.Count; $i++) { if ($numbers[$i] -lt $numbers[$i - 1]) { throw "Mốc sau không được nhỏ hơn mốc trước." } }
+        }
+        if ($Entry.Kind -eq "type-list" -and @($numbers | Select-Object -Unique).Count -ne $numbers.Count) { throw "Danh sách typePet không được trùng." }
+        if ($Entry.Kind -eq "skill-pool" -and @($numbers | Select-Object -Unique).Count -ne $numbers.Count) { throw "Danh sách kỹ năng không được trùng." }
+        $Value = ($parts | ForEach-Object { $_.Trim() }) -join ','
+    } else { throw "Kiểu cấu hình Đệ tử không được hỗ trợ: $($Entry.Kind)" }
+
+    if ($Entry.Key -match '^(.*)(Min|Max)$') {
+        $baseKey = $matches[1]
+        $isMin = $matches[2] -eq "Min"
+        $otherKey = $baseKey + $(if ($isMin) { "Max" } else { "Min" })
+        $otherEntry = Get-PetConfigEntry $otherKey
+        if ($null -ne $otherEntry) {
+            $map = Get-PropertyMap (Join-Path $Root "pet.properties")
+            $otherValue = if ($map.ContainsKey($otherKey)) { [decimal]$map[$otherKey] } else { [decimal]$otherEntry.Default }
+            if ($isMin -and [decimal]$Value -gt $otherValue) { throw "Giá trị nhỏ nhất không được lớn hơn giá trị lớn nhất ($otherValue)." }
+            if (-not $isMin -and [decimal]$Value -lt $otherValue) { throw "Giá trị lớn nhất không được nhỏ hơn giá trị nhỏ nhất ($otherValue)." }
+        }
+    }
+    $Value
+}
+
+function List-PetConfig {
+    $path = Join-Path $Root "pet.properties"
+    $map = Get-PropertyMap $path
+    $rows = New-Object System.Collections.Generic.List[string]
+    $rows.Add("key`tcategory`tname`tvalue`tdefault`tkind`tscope`tdescription")
+    foreach ($entry in (Get-PetConfigCatalog)) {
+        $value = if ($map.ContainsKey($entry.Key)) { $map[$entry.Key] } else { $entry.Default }
+        $rows.Add("$($entry.Key)`t$($entry.Category)`t$($entry.Name)`t$value`t$($entry.Default)`t$($entry.Kind)`t$($entry.Scope)`t$($entry.Description)")
+    }
+    $rows -join "`r`n"
+}
+
+function Save-PetConfig {
+    $entry = Get-PetConfigEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa cấu hình Đệ tử không hợp lệ: $ConfigKey" }
+    $validated = Assert-PetConfigValue $entry $ConfigValue
+    Set-PropertyValue -Path (Join-Path $Root "pet.properties") -Key $entry.Key -Value $validated
+    "OK`tĐã lưu $($entry.Name). Runtime áp dụng trong tối đa 1 giây; giá trị khởi tạo chỉ áp dụng cho đệ tử mới."
+}
+
+function Reset-PetConfig {
+    $entry = Get-PetConfigEntry $ConfigKey
+    if ($null -eq $entry) { throw "Khóa cấu hình Đệ tử không hợp lệ: $ConfigKey" }
+    Set-PropertyValue -Path (Join-Path $Root "pet.properties") -Key $entry.Key -Value "" -Remove
+    "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
+}
+
 function SqlString {
     param([string]$Value)
     if ($null -eq $Value) {
@@ -1734,6 +1912,8 @@ function Get-AuditSummary {
         "setexp" { "Đổi tỉ lệ TNSM thành $ExpRate" }
         "saveplayerconfig" { "Đổi cấu hình Player $ConfigKey = $ConfigValue" }
         "resetplayerconfig" { "Khôi phục cấu hình Player $ConfigKey về mặc định" }
+        "savepetconfig" { "Đổi cấu hình Đệ tử $ConfigKey = $ConfigValue" }
+        "resetpetconfig" { "Khôi phục cấu hình Đệ tử $ConfigKey về mặc định" }
         "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
         "rescueplayer" { "Cứu hộ Player ID $Id về map nhà" }
         default { $ActionName }
@@ -1836,6 +2016,12 @@ function Get-AuditContext {
                 $fileSnapshots.Add([pscustomobject]@{ path="player.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
             }
         }
+        { $_ -in @("savepetconfig", "resetpetconfig") } {
+            $configPath = Join-Path $Root "pet.properties"
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="pet.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
         "saveplayercore" {
             $playerId = SqlInt $Id
             $snapshots.Add((New-DbAuditSnapshot "player" "id=$playerId"))
@@ -1930,7 +2116,7 @@ $mutationActions = @(
     "saveshopoption", "saveshopoptions", "deleteshopoption", "savegiftcode", "deletegiftcode",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
-    "saveplayerconfig", "resetplayerconfig", "saveplayercore", "rescueplayer"
+    "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer"
 )
 $isAuditedMutation = $mutationActions -contains $actionLower
 $auditContext = $null
@@ -1991,6 +2177,9 @@ try {
         "listplayerconfig" { List-PlayerConfig }
         "saveplayerconfig" { Save-PlayerConfig }
         "resetplayerconfig" { Reset-PlayerConfig }
+        "listpetconfig" { List-PetConfig }
+        "savepetconfig" { Save-PetConfig }
+        "resetpetconfig" { Reset-PetConfig }
         "listplayers" { List-Players }
         "getplayerdetail" { Get-PlayerDetail }
         "saveplayercore" { Save-PlayerCore }

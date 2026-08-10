@@ -5,6 +5,7 @@ import nro.models.item.Item;
 import nro.models.item.ItemTime;
 import nro.models.player.Friend;
 import nro.models.player.Fusion;
+import nro.models.player.PetConfig;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
@@ -718,7 +719,8 @@ public class PlayerDAO {
                     dataArray.add(player.pet.gender);
                     dataArray.add(player.pet.name);
                     dataArray.add(player.fusion.typeFusion);
-                    int timeLeftFusion = (int) (Fusion.TIME_FUSION - (System.currentTimeMillis() - player.fusion.lastTimeFusion));
+                    int timeLeftFusion = (int) (PetConfig.getFusionDurationMs()
+                            - (System.currentTimeMillis() - player.fusion.lastTimeFusion));
                     dataArray.add(timeLeftFusion < 0 ? 0 : timeLeftFusion);
                     dataArray.add(player.pet.status);
                     petInfo = dataArray.toJSONString();
@@ -768,9 +770,11 @@ public class PlayerDAO {
                     petBody = items.toJSONString();
 
                     JSONArray petSkills = new JSONArray();
-                    for (Skill s : player.pet.playerSkill.skills) {
+                    for (int skillIndex = 0; skillIndex < 5; skillIndex++) {
+                        Skill s = skillIndex < player.pet.playerSkill.skills.size()
+                                ? player.pet.playerSkill.skills.get(skillIndex) : null;
                         JSONArray pskill = new JSONArray();
-                        if (s.skillId != -1) {
+                        if (s != null && s.skillId != -1) {
                             pskill.add(s.template.id);
                             pskill.add(s.point);
                             pskill.add(s.lastTimeUseThisSkill);
