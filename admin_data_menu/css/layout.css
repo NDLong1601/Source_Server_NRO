@@ -1,0 +1,139 @@
+#main {
+  position: absolute;
+  left: 250px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  padding: 18px 20px 16px;
+}
+
+.topbar {
+  position: absolute;
+  left: 20px;
+  top: 18px;
+  right: 20px;
+  height: 54px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.top-title {
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 26px;
+}
+
+.top-sub {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.top-actions {
+  position: absolute;
+  right: 0;
+  top: 4px;
+  white-space: nowrap;
+}
+
+.panel {
+  position: absolute;
+  left: 20px;
+  top: 92px;
+  right: 20px;
+  bottom: 16px;
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.columns {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.left-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.right-pane {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 14px;
+}
+
+.toolbar {
+  position: relative;
+  z-index: 3;
+  min-height: 56px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 10px 8px;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow: visible;
+}
+
+.table-wrap {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 56px;
+  bottom: 0;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #edf2f7;
+  color: #475569;
+  font-size: 11px;
+  text-transform: uppercase;
+  height: 32px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+td {
+  height: 31px;
+  border-bottom: 1px solid #eef2f7;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1f2937;
+}
+
+tr:hover td {
+  background: #ecfeff;
+  cursor: pointer;
+}

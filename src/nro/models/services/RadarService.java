@@ -35,7 +35,9 @@ public class RadarService {
             for (RadarCard radar : RadarService.gI().RADAR_TEMPLATE) {
                 Card card = cards.stream().filter(c -> c.Id == radar.Id).findFirst().orElse(null);
                 if (card == null) {
-                    card = new Card(radar.Max, radar.Options);
+                    card = new Card(radar.getRequiredAmountForLevel(1), radar.Options);
+                } else {
+                    card.MaxAmount = radar.getNextRequiredAmount(card.Level);
                 }
                 m.writer().writeShort(radar.Id);
                 m.writer().writeShort(radar.IconId);

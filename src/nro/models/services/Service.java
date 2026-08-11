@@ -1573,6 +1573,7 @@ public class Service {
         if (pl != null && pl.pet != null) {
             Message msg;
             try {
+                pl.pet.nPoint.calPoint();
                 msg = new Message(-107);
                 msg.writer().writeByte(2);
                 msg.writer().writeShort(pl.pet.getAvatar());
@@ -1644,6 +1645,11 @@ public class Service {
                         }
                     }
                 }
+                msg.writer().writeInt(pl.pet.nPoint.hpg);
+                msg.writer().writeInt(pl.pet.nPoint.mpg);
+                msg.writer().writeInt(pl.pet.nPoint.dameg);
+                msg.writer().writeShort(pl.pet.nPoint.defg);
+                msg.writer().writeByte(pl.pet.nPoint.critg);
                 pl.sendMessage(msg);
                 msg.cleanup();
 

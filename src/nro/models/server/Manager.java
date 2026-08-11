@@ -870,6 +870,10 @@ public final class Manager {
                 Logger.success(Logger.RED + "Successfully loaded map template (" + MAP_TEMPLATES.length + ")\n");
             }
 
+            try {
+                LocalManager.executeUpdate("ALTER TABLE radar ADD COLUMN IF NOT EXISTS milestones TEXT NOT NULL DEFAULT ('[]') AFTER options");
+            } catch (Exception ignored) {
+            }
             ps = ConnectionDatabase.prepareStatement("select * from radar");
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -900,6 +904,7 @@ public final class Manager {
                         rd.Options.add(new OptionCard(Integer.parseInt(ob.get("id").toString()), Short.parseShort(ob.get("param").toString()), Byte.parseByte(ob.get("activeCard").toString())));
                     }
                 }
+                rd.Milestones = parseRadarMilestones(getRadarMilestones(rs), rd.Max);
                 rd.Require = rs.getShort("require");
                 rd.RequireLevel = rs.getShort("require_level");
                 rd.AuraId = rs.getShort("aura_id");
@@ -1160,6 +1165,36 @@ public final class Manager {
             return Byte.parseByte(String.valueOf(n));
         } else {
             return 0;
+        }
+    }
+
+    private static String getRadarMilestones(ResultSet rs) {
+        try {
+            return rs.getString("milestones");
+        } catch (Exception ignored) {
+            return "[]";
+        }
+    }
+
+    private static byte[] parseRadarMilestones(String json, byte defaultMax) {
+        byte safeMax = defaultMax > 0 ? defaultMax : 1;
+        byte[] fallback = new byte[]{1, safeMax, safeMax};
+        try {
+            Object parsed = JSONValue.parse(json == null || json.isBlank() ? "[]" : json);
+            if (!(parsed instanceof JSONArray arr) || arr.isEmpty()) {
+                return fallback;
+            }
+            int size = Math.max(3, arr.size());
+            byte[] milestones = new byte[size];
+            milestones[0] = 1;
+            for (int i = 1; i < size; i++) {
+                Object value = i < arr.size() ? arr.get(i) : null;
+                int amount = value == null ? safeMax : Integer.parseInt(value.toString());
+                milestones[i] = (byte) Math.max(1, Math.min(127, amount));
+            }
+            return milestones;
+        } catch (Exception ignored) {
+            return fallback;
         }
     }
 

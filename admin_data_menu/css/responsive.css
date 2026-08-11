@@ -1,0 +1,183 @@
+@media screen and (max-width: 1100px) {
+  #app {
+    min-width: 760px;
+    min-height: 980px;
+  }
+
+  #sidebar {
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: 142px;
+    border-right: 0;
+    border-bottom: 1px solid #0f172a;
+    padding: 14px;
+  }
+
+  h1 {
+    display: inline-block;
+    margin-right: 16px;
+    vertical-align: top;
+  }
+
+  .sub {
+    display: inline-block;
+    margin: 7px 0 0;
+    vertical-align: top;
+  }
+
+  .nav-button {
+    display: inline-block;
+    width: 15.6%;
+    height: 34px;
+    margin: 6px 0.7% 0 0;
+    text-align: center;
+    padding: 0 5px;
+  }
+
+  .status-card {
+    display: none;
+  }
+
+  #main {
+    left: 0;
+    top: 142px;
+  }
+
+  .topbar {
+    height: 62px;
+  }
+
+  .top-actions {
+    top: 0;
+  }
+
+  .panel {
+    top: 100px;
+  }
+
+  .left-pane {
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: 43%;
+  }
+
+  .right-pane {
+    left: 0;
+    top: 46%;
+    width: auto;
+  }
+
+  #panelGift .gift-left-pane,
+  #panelGift .gift-right-pane,
+  #panelPlayers .left-pane,
+  #panelPlayers .right-pane {
+    width: auto;
+  }
+
+  .single-pane {
+    top: 0 !important;
+  }
+
+  .combo.toolbar-combo {
+    width: 230px;
+  }
+
+  #itemSearch {
+    width: 220px !important;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  #app {
+    min-width: 620px;
+  }
+
+  #sidebar {
+    height: 188px;
+  }
+
+  .nav-button {
+    width: 19.1%;
+    margin-right: 0.5%;
+  }
+
+  #main {
+    top: 188px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .topbar {
+    left: 12px;
+    right: 12px;
+    height: 86px;
+  }
+
+  .top-actions {
+    left: 0;
+    right: auto;
+    top: 48px;
+  }
+
+  .panel {
+    left: 12px;
+    right: 12px;
+    top: 124px;
+  }
+
+  .combo.toolbar-combo,
+  #itemSearch,
+  #equipSearch,
+  #playerSearch,
+  #playerConfigSearch {
+    width: 100% !important;
+    margin: 0 0 6px;
+  }
+
+  .item-toolbar {
+    height: 132px;
+    min-height: 132px;
+  }
+
+  .item-toolbar + .table-wrap {
+    top: 132px;
+  }
+
+  .equip-toolbar {
+    height: 184px;
+    min-height: 184px;
+  }
+
+  .equip-toolbar + .table-wrap {
+    top: 184px;
+  }
+
+  .segmented {
+    display: block;
+    margin: 0 0 6px;
+    white-space: normal;
+  }
+
+  .toolbar button {
+    margin-bottom: 5px;
+  }
+
+  .row {
+    display: block;
+  }
+
+  .cell {
+    display: block;
+    padding-right: 0;
+  }
+
+  .option-picker-item {
+    width: 100%;
+  }
+
+  .gift-reward-meta .gift-count-cell {
+    width: auto;
+  }
+}

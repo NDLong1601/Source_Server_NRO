@@ -1,0 +1,41 @@
+<div id="panelPetConfig" class="panel">
+  <div id="petConfigTabs" class="player-config-tabs"></div>
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input id="petConfigSearch" style="width:360px" placeholder="Tìm tên hoặc khóa trong nhóm đang chọn" onkeyup="FilterPetConfigRows()" />
+        <button onclick="LoadPetConfig()">Tải lại</button>
+      </div>
+      <div class="table-wrap"><table id="petConfigTable"></table></div>
+    </div>
+    <div class="right-pane">
+      <div class="section-title">Cấu hình Đệ tử toàn server</div>
+      <input type="hidden" id="petConfigKey" />
+      <div class="row">
+        <div class="cell"><label>Nhóm</label><input id="petConfigCategory" readonly="readonly" /></div>
+        <div class="cell"><label>Phạm vi áp dụng</label><input id="petConfigScope" readonly="readonly" /></div>
+      </div>
+      <label>Tên cấu hình</label><input id="petConfigName" readonly="readonly" />
+      <div class="row">
+        <div class="cell"><label>Kiểu dữ liệu</label><input id="petConfigKind" readonly="readonly" /></div>
+        <div class="cell"><label>Giá trị mặc định</label><input id="petConfigDefault" readonly="readonly" /></div>
+      </div>
+      <div id="petConfigRawEditor"><label>Giá trị đang dùng</label><textarea id="petConfigValue" placeholder="Chọn cấu hình ở bảng bên trái"></textarea></div>
+      <div id="petSkillPoolEditor" style="display:none">
+        <label>Chọn kỹ năng được phép xuất hiện</label>
+        <div class="pet-skill-pool">
+          <div id="petSkillPoolSummary" class="pet-skill-summary"></div>
+          <div id="petSkillPoolChoices" class="pet-skill-grid"></div>
+        </div>
+      </div>
+      <label>Mô tả</label><textarea id="petConfigDescription" readonly="readonly"></textarea>
+      <div class="actions">
+        <button class="primary" onclick="SavePetConfig()">Lưu cấu hình</button>
+        <button onclick="ResetPetConfig()">Về mặc định</button>
+      </div>
+      <div class="player-limit-note">Runtime: server tự đọc lại trong tối đa 1 giây. Khởi tạo: chỉ áp dụng khi tạo hoặc thay đệ tử.</div>
+      <div class="player-warning">typePet: 0 thường, 1 Mabư, 2 Uub, 3 Kid Beer, 4 Jiren. Các danh sách dùng dấu phẩy, không thêm ký tự khác.</div>
+      <div id="petConfigMessage" class="message"></div>
+    </div>
+  </div>
+</div>

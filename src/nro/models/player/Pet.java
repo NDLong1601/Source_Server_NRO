@@ -739,7 +739,7 @@ public class Pet extends Player {
                 PetConfig.getInt("pet.ai.autoStatIntervalMs", 0, 0, Integer.MAX_VALUE))) {
             int attempts = PetConfig.getInt("pet.ai.autoStatAttempts", 20, 0, 10_000);
             for (int i = 0; i < attempts; i++) {
-                this.nPoint.increasePoint((byte) Util.nextInt(0, 4), (short) 1);
+                this.nPoint.increasePoint((byte) Util.nextInt(0, 4), (short) 1, false);
             }
             lastTimeIncreasePoint = System.currentTimeMillis();
         }

@@ -64,6 +64,7 @@ public class Controller implements IMessageHandler {
     private int errors;
 
     private static Controller instance;
+    private static final long PET_POINT_REQUEST_WINDOW_MS = 60_000L;
 
     public static Controller gI() {
         if (instance == null) {
@@ -262,6 +263,7 @@ public class Controller implements IMessageHandler {
                     break;
                 case -107:
                     if (player != null) {
+                        player.lastTimeOpenPetInfo = System.currentTimeMillis();
                         Service.gI().showInfoPet(player);
                     }
                     break;
@@ -828,7 +830,11 @@ public class Controller implements IMessageHandler {
                     case 16:
                         byte type = _msg.reader().readByte();
                         short point = _msg.reader().readShort();
-                        if (player != null && player.nPoint != null) {
+                        if (isPetPointRequest(player)) {
+                            player.pet.nPoint.increasePoint(type, point);
+                            player.lastTimeOpenPetInfo = System.currentTimeMillis();
+                            Service.gI().showInfoPet(player);
+                        } else if (player != null && player.nPoint != null) {
                             player.nPoint.increasePoint(type, point);
                         }
                         break;
@@ -844,6 +850,13 @@ public class Controller implements IMessageHandler {
                 Logger.logException(Controller.class, e);
             }
         }
+    }
+
+    private boolean isPetPointRequest(Player player) {
+        return player != null
+                && player.pet != null
+                && player.pet.nPoint != null
+                && System.currentTimeMillis() - player.lastTimeOpenPetInfo <= PET_POINT_REQUEST_WINDOW_MS;
     }
 
     private void sendThongBaoServer(Player player) {

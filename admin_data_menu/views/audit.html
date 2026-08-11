@@ -1,0 +1,30 @@
+<div id="panelAudit" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input id="auditSearch" style="width:320px" placeholder="Tìm thao tác hoặc nội dung thay đổi" />
+        <button onclick="LoadAuditHistory()">Tìm</button>
+      </div>
+      <div class="table-wrap"><table id="auditTable"></table></div>
+    </div>
+    <div class="right-pane">
+      <div class="section-title">Chi tiết thao tác</div>
+      <input type="hidden" id="auditId" />
+      <input type="hidden" id="auditCanUndo" />
+      <div class="row">
+        <div class="cell"><label>ID lịch sử</label><input id="auditDetailId" readonly="readonly" /></div>
+        <div class="cell"><label>Thời gian</label><input id="auditDetailTime" readonly="readonly" /></div>
+      </div>
+      <label>Hành động</label><input id="auditDetailAction" readonly="readonly" />
+      <label>Nội dung thay đổi</label><textarea id="auditDetailSummary" readonly="readonly"></textarea>
+      <label>Kết quả</label><textarea id="auditDetailResult" readonly="readonly"></textarea>
+      <label>Trạng thái hoàn tác</label><input id="auditUndoState" readonly="readonly" />
+      <div class="actions">
+        <button id="auditUndoButton" class="danger" onclick="UndoAuditEntry()" disabled="disabled">Hoàn tác thay đổi này</button>
+        <button onclick="LoadAuditHistory()">Làm mới lịch sử</button>
+      </div>
+      <div class="split-small">Để bảo vệ dữ liệu, chỉ thay đổi thành công gần nhất chưa hoàn tác mới có thể quay lại. Sau khi hoàn tác, thay đổi liền trước sẽ được mở khóa.</div>
+      <div id="auditMessage" class="message"></div>
+    </div>
+  </div>
+</div>

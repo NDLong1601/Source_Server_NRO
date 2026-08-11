@@ -1,0 +1,70 @@
+<div id="panelEquip" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar equip-toolbar">
+        <div class="segmented">
+          <button id="equipGenderAll" class="seg-button active" onclick="SetEquipGender('')">Tất cả</button>
+          <button id="equipGender0" class="seg-button" onclick="SetEquipGender('0')">Trái Đất</button>
+          <button id="equipGender1" class="seg-button" onclick="SetEquipGender('1')">Namek</button>
+          <button id="equipGender2" class="seg-button" onclick="SetEquipGender('2')">Xayda</button>
+          <button id="equipGender3" class="seg-button" onclick="SetEquipGender('3')">Chung</button>
+        </div>
+        <input id="equipTypeFilter" class="hidden-value" value="" />
+        <div id="combo_equipTypeFilter" class="combo toolbar-combo" onclick="ToggleCombo('equipTypeFilter'); event.cancelBubble = true;">
+          <span id="combo_equipTypeFilter_text" class="combo-text">Tất cả group</span>
+          <span class="combo-button"><span class="combo-caret"></span></span>
+          <div id="combo_equipTypeFilter_menu" class="combo-menu"></div>
+        </div>
+        <input id="equipSearch" style="width:220px" placeholder="Tìm ID hoặc tên trang bị" />
+        <button onclick="LoadEquipItems()">Tìm</button>
+      </div>
+      <div class="table-wrap">
+        <table id="equipItemsTable"></table>
+      </div>
+    </div>
+
+    <div class="right-pane">
+      <div class="section-title">Option trang bị bán trong shop</div>
+      <div class="row">
+        <div class="cell"><label>Item shop ID</label><input id="equipShopItemId" /></div>
+        <div class="cell"><label>Item ID</label><input id="equipTempId" /></div>
+      </div>
+      <label>Tên trang bị</label><input id="equipItemName" />
+      <div class="row">
+        <div class="cell"><label>Type</label><input id="equipTypeLabel" /></div>
+        <div class="cell"><label>Gender</label><input id="equipGenderLabel" /></div>
+      </div>
+      <label>Shop/NPC</label><input id="equipShopLabel" />
+
+      <div class="split-small">
+        <div class="section-title">Thêm / sửa option</div>
+        <div class="row">
+          <div class="cell"><label>Option row</label><input id="equipOptionRowId" /></div>
+          <div class="cell"><label>Param</label><input id="equipOptionParam" /></div>
+        </div>
+        <input id="equipOptionId" type="hidden" value="" />
+        <div class="option-picker-box">
+          <div class="section-title">Chọn option cho dòng này</div>
+          <div class="option-picker-toolbar">
+            <input id="equipOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderEquipOptionPicker()" />
+          </div>
+          <div id="equipOptionSummary" class="option-picker-summary">Chưa chọn option</div>
+          <div id="equipOptionList" class="option-picker-list"></div>
+        </div>
+        <div class="actions">
+          <button onclick="NewEquipOption()">Option mới</button>
+          <button class="primary" onclick="SaveEquipOption()">Lưu option</button>
+          <button class="danger" onclick="DeleteEquipOption()">Xóa option</button>
+          <button onclick="LoadEquipOptions()">Tải lại</button>
+        </div>
+        <div class="mini-table"><table id="equipOptionsTable"></table></div>
+      </div>
+
+      <div class="split-small">
+        <div class="section-title">Option thường dùng</div>
+        <div class="mini-table"><table id="equipPresetTable"></table></div>
+      </div>
+      <div id="equipMessage" class="message"></div>
+    </div>
+  </div>
+</div>

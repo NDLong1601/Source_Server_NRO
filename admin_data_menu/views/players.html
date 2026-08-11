@@ -1,0 +1,88 @@
+<div id="panelPlayers" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input id="playerSearch" style="width:300px" placeholder="Tên player, username, player/account ID" onkeyup="PlayerSearchKey(event)" />
+        <button onclick="LoadPlayers()">Tìm</button>
+      </div>
+      <div class="table-wrap"><table id="playersTable"></table></div>
+    </div>
+    <div class="right-pane">
+      <div class="section-title">Chi tiết Player <span id="playerOnlineBadge" class="player-state">Chưa chọn</span></div>
+      <input type="hidden" id="playerId" />
+      <input type="hidden" id="playerVersion" />
+
+      <div class="player-card">
+        <div class="section-title">Tổng quan</div>
+        <div class="row">
+          <div class="cell"><label>Tên nhân vật</label><input id="playerName" readonly="readonly" /></div>
+          <div class="cell"><label>Username</label><input id="playerUsername" readonly="readonly" /></div>
+          <div class="cell"><label>Player / Account ID</label><input id="playerIdentity" readonly="readonly" /></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Hành tinh</label><input id="playerGender" readonly="readonly" /></div>
+          <div class="cell"><label>Clan ID</label><input id="playerClanId" readonly="readonly" /></div>
+          <div class="cell"><label>Map / tọa độ</label><input id="playerLocation" readonly="readonly" /></div>
+        </div>
+        <div id="playerLoginMeta" class="player-meta"></div>
+      </div>
+
+      <div class="player-card">
+        <div class="section-title">Sức mạnh và chỉ số gốc</div>
+        <div class="row">
+          <div class="cell"><label>Cấp giới hạn</label><input type="hidden" id="playerLimitPower" value="0" /><div id="combo_playerLimitPower" class="combo" onclick="ToggleCombo('playerLimitPower'); event.cancelBubble = true;"><span id="combo_playerLimitPower_text" class="combo-text">Cấp 0</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_playerLimitPower_menu" class="combo-menu"></div></div></div>
+          <div class="cell"><label>Sức mạnh</label><input id="playerPower" /></div>
+          <div class="cell"><label>Tiềm năng</label><input id="playerPotential" /></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>HP gốc</label><input id="playerHpG" /></div>
+          <div class="cell"><label>KI gốc</label><input id="playerMpG" /></div>
+          <div class="cell"><label>Sức đánh gốc</label><input id="playerDamageG" /></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Giáp gốc</label><input id="playerDefenseG" /></div>
+          <div class="cell"><label>Chí mạng gốc</label><input id="playerCriticalG" /></div>
+          <div class="cell"><label>Chí mạng rồng</label><input id="playerCriticalDragon" /></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Thể lực</label><input id="playerStamina" /></div>
+          <div class="cell"><label>Thể lực tối đa</label><input id="playerMaxStamina" /></div>
+        </div>
+        <div id="playerTierNote" class="player-limit-note"></div>
+      </div>
+
+      <div class="player-card">
+        <div class="section-title">Tài sản và sức chứa</div>
+        <div class="row">
+          <div class="cell"><label>Vàng</label><input id="playerGold" /></div>
+          <div class="cell"><label>Ngọc xanh</label><input id="playerGem" /></div>
+          <div class="cell"><label>Hồng ngọc</label><input id="playerRuby" /></div>
+          <div class="cell"><label>Coupon</label><input id="playerCoupon" /></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Ô hành trang</label><input id="playerBagSlots" /></div>
+          <div class="cell"><label>Đang dùng</label><input id="playerBagUsed" readonly="readonly" /></div>
+          <div class="cell"><label>Ô rương</label><input id="playerBoxSlots" /></div>
+          <div class="cell"><label>Đang dùng</label><input id="playerBoxUsed" readonly="readonly" /></div>
+        </div>
+        <div id="playerAssetNote" class="player-limit-note"></div>
+      </div>
+
+      <div class="player-card">
+        <div class="section-title">Tài khoản và thao tác</div>
+        <div class="row">
+          <div class="cell"><label>Khóa tài khoản</label><input type="hidden" id="playerBan" value="0" /><div id="combo_playerBan" class="combo" onclick="ToggleCombo('playerBan'); event.cancelBubble = true;"><span id="combo_playerBan_text" class="combo-text">Không khóa</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_playerBan_menu" class="combo-menu"></div></div></div>
+          <div class="cell"><label>Kích hoạt</label><input type="hidden" id="playerActive" value="1" /><div id="combo_playerActive" class="combo" onclick="ToggleCombo('playerActive'); event.cancelBubble = true;"><span id="combo_playerActive_text" class="combo-text">Đã kích hoạt</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_playerActive_menu" class="combo-menu"></div></div></div>
+        </div>
+        <div class="player-inline-check"><input type="checkbox" id="playerForceOffline" /><label for="playerForceOffline">Tôi xác nhận player đã logout hoặc server đã dừng (dùng khi trạng thái ONLINE? bị treo).</label></div>
+        <div class="actions">
+          <button class="primary" onclick="SavePlayerCore()">Lưu Player</button>
+          <button onclick="ReloadSelectedPlayer()">Tải lại</button>
+          <button class="danger" onclick="RescuePlayer()">Cứu hộ về map nhà</button>
+        </div>
+        <div class="player-warning">Không sửa trực tiếp player đang online. Khi thu nhỏ hành trang/rương, mọi ô bị cắt phải rỗng.</div>
+      </div>
+      <div id="playerMessage" class="message"></div>
+    </div>
+  </div>
+</div>

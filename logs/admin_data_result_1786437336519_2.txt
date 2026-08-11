@@ -1,0 +1,6 @@
+﻿key	value
+server.event	halloween
+server.expserver	2
+server.running	1
+server.restart_pending	0
+server.started_at	2026-08-11 15:14:54

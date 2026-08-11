@@ -1,0 +1,34 @@
+<div id="panelPlayerConfig" class="panel">
+  <div id="playerConfigTabs" class="player-config-tabs"></div>
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input id="playerConfigSearch" style="width:360px" placeholder="Tìm tên hoặc khóa trong nhóm đang chọn" onkeyup="FilterPlayerConfigRows()" />
+        <button onclick="LoadPlayerConfig()">Tải lại</button>
+      </div>
+      <div class="table-wrap"><table id="playerConfigTable"></table></div>
+    </div>
+    <div class="right-pane">
+      <div class="section-title">Cấu hình Player toàn server</div>
+      <input type="hidden" id="playerConfigKey" />
+      <div class="row">
+        <div class="cell"><label>Nhóm</label><input id="playerConfigCategory" readonly="readonly" /></div>
+        <div class="cell"><label>Phạm vi áp dụng</label><input id="playerConfigScope" readonly="readonly" /></div>
+      </div>
+      <label>Tên cấu hình</label><input id="playerConfigName" readonly="readonly" />
+      <div class="row">
+        <div class="cell"><label>Kiểu dữ liệu</label><input id="playerConfigKind" readonly="readonly" /></div>
+        <div class="cell"><label>Giá trị mặc định</label><input id="playerConfigDefault" readonly="readonly" /></div>
+      </div>
+      <label>Giá trị đang dùng</label><textarea id="playerConfigValue" placeholder="Chọn cấu hình ở bảng bên trái"></textarea>
+      <label>Mô tả</label><textarea id="playerConfigDescription" readonly="readonly"></textarea>
+      <div class="actions">
+        <button class="primary" onclick="SavePlayerConfig()">Lưu cấu hình</button>
+        <button onclick="ResetPlayerConfig()">Về mặc định</button>
+      </div>
+      <div class="player-limit-note">Runtime: server tự đọc lại trong tối đa 1 giây. Nhân vật mới: chỉ có tác dụng với player được tạo sau khi lưu.</div>
+      <div class="player-warning">Danh sách giới hạn cấp phải có đúng 10 số theo cấp 0 đến 9. Ô hành trang/rương không vượt 127 vì giao thức gửi kích thước bằng một byte.</div>
+      <div id="playerConfigMessage" class="message"></div>
+    </div>
+  </div>
+</div>

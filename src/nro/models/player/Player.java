@@ -182,6 +182,7 @@ public class Player implements Runnable {
     public List<Zone> mapCapsule;
     public Pet pet;
     public NewPet newPet;
+    public long lastTimeOpenPetInfo;
     public MobMe mobMe;
     public Location location;
     public SetClothes setClothes;

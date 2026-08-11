@@ -9541,6 +9541,7 @@ CREATE TABLE `radar` (
   `name` varchar(500) DEFAULT '',
   `info` varchar(2000) DEFAULT '',
   `options` varchar(2000) DEFAULT '[]',
+  `milestones` text NOT NULL DEFAULT ('[]'),
   `require` int(11) DEFAULT -1,
   `require_level` int(11) DEFAULT 0,
   `aura_id` smallint(6) DEFAULT -1

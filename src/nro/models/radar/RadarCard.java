@@ -27,6 +27,7 @@ public class RadarCard {
     public short Require;
     public short RequireLevel;
     public short AuraId;
+    public byte[] Milestones;
 
     public RadarCard() {
         Id = -1;
@@ -41,5 +42,33 @@ public class RadarCard {
         Require = -1;
         RequireLevel = 0;
         AuraId = -1;
+        Milestones = new byte[]{1, 0, 0};
+    }
+
+    public byte getRequiredAmountForLevel(int level) {
+        if (level <= 0) {
+            return 1;
+        }
+        if (Milestones != null && level < Milestones.length && Milestones[level] > 0) {
+            return Milestones[level];
+        }
+        return Max;
+    }
+
+    public byte getNextRequiredAmount(byte currentLevel) {
+        int nextLevel = currentLevel < 0 ? 1 : currentLevel + 1;
+        return getRequiredAmountForLevel(nextLevel);
+    }
+
+    public byte getMaxLevel() {
+        byte maxLevel = 2;
+        if (Milestones != null) {
+            for (int i = 1; i < Milestones.length; i++) {
+                if (Milestones[i] > 0) {
+                    maxLevel = (byte) i;
+                }
+            }
+        }
+        return maxLevel;
     }
 }

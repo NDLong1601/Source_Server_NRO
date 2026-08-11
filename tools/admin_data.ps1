@@ -43,6 +43,17 @@
     [string]$EndDate = "",
     [string]$OwnerId = "",
     [string]$TemplateId = "",
+    [string]$RadarRank = "0",
+    [string]$RadarMax = "120",
+    [string]$RadarType = "0",
+    [string]$RadarMobId = "-1",
+    [string]$RequireId = "-1",
+    [string]$RequireLevel = "0",
+    [string]$AuraId = "-1",
+    [string]$OptionsJson = "[]",
+    [string]$MilestonesJson = "[]",
+    [string]$MobDropsJson = "[]",
+    [string]$BossDropsJson = "[]",
     [string]$Enabled = "1",
     [string]$UseTimeRange = "0",
     [string]$TimeStart = "",
@@ -94,7 +105,7 @@ foreach ($paramName in @(
         "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
         "IconSpec", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
-        "OwnerId", "TemplateId", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
+        "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "PayloadJson"
     )) {
@@ -1429,6 +1440,281 @@ TYPE=VALUES(TYPE), gender=VALUES(gender), NAME=VALUES(NAME), description=VALUES(
     "OK`tĐã lưu vật phẩm ID $itemId. Restart server để client/server nhận template mới."
 }
 
+function Assert-RadarOptionsJson {
+    param([string]$Json)
+    try {
+        $rawOptions = @($Json | ConvertFrom-Json)
+    } catch {
+        throw "Danh sách option sổ sưu tầm không đúng JSON."
+    }
+
+    $validated = New-Object System.Collections.Generic.List[object]
+    foreach ($raw in $rawOptions) {
+        if ($null -eq $raw) { continue }
+        $optionId = SqlInt ([string]$raw.id)
+        $paramValue = SqlInt ([string]$raw.param)
+        $activeValue = if ($null -ne $raw.activeCard) { SqlInt ([string]$raw.activeCard) } else { SqlInt ([string]$raw.active) }
+        if ($optionId -lt 0 -or $optionId -gt 255) { throw "ID option radar phải từ 0 đến 255." }
+        if ($paramValue -lt -32768 -or $paramValue -gt 32767) { throw "Param option radar phải nằm trong khoảng short (-32768..32767)." }
+        if ($activeValue -lt 0 -or $activeValue -gt 2) { throw "Mốc kích hoạt activeCard chỉ nhận 0, 1 hoặc 2." }
+        $validated.Add([pscustomobject]@{ id=$optionId; param=$paramValue; activeCard=$activeValue })
+    }
+    ConvertTo-Json -InputObject $validated.ToArray() -Compress -Depth 4
+}
+
+function Ensure-RadarSchema {
+    Invoke-MySql "ALTER TABLE radar ADD COLUMN IF NOT EXISTS milestones TEXT NOT NULL DEFAULT ('[]') AFTER options;" | Out-Null
+}
+
+function Assert-RadarMilestonesJson {
+    param([string]$Json, [int]$DefaultMax)
+    try {
+        $rawMilestones = @($Json | ConvertFrom-Json)
+    } catch {
+        throw "Danh sách số lượng mốc không đúng JSON."
+    }
+    $safeMax = if ($DefaultMax -gt 0) { $DefaultMax } else { 1 }
+    $values = New-Object System.Collections.Generic.List[int]
+    $values.Add(1)
+    for ($i = 1; $i -le 2; $i++) {
+        $rawValue = if ($rawMilestones.Count -gt $i) { [string]$rawMilestones[$i] } else { [string]$safeMax }
+        if ($rawValue -notmatch '^\d+$') { throw "Số lượng thẻ ở mốc $i phải là số nguyên dương." }
+        $amount = [int]$rawValue
+        if ($amount -lt 1 -or $amount -gt 127) { throw "Số lượng thẻ ở mốc $i phải từ 1 đến 127." }
+        $values.Add($amount)
+    }
+    ConvertTo-Json -InputObject $values.ToArray() -Compress
+}
+
+function Get-RadarBodyJson {
+    $headValue = SqlInt $Head -1
+    $bodyValue = SqlInt $Body -1
+    $legValue = SqlInt $Leg -1
+    $bagValue = SqlInt $Part -1
+    ConvertTo-Json -InputObject @([pscustomobject]@{ head=$headValue; body=$bodyValue; leg=$legValue; bag=$bagValue }) -Compress
+}
+
+function List-RadarCards {
+    Ensure-RadarSchema
+    $where = New-Object System.Collections.Generic.List[string]
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safeSearch = $Search.Replace("\", "\\").Replace("'", "''")
+        if ($Search -match "^\d+$") {
+            $where.Add("(r.id=$(SqlInt $Search) OR r.iconId=$(SqlInt $Search) OR r.name LIKE '%$safeSearch%')")
+        } else {
+            $where.Add("r.name LIKE '%$safeSearch%'")
+        }
+    }
+    if ($RadarRank -match "^-?\d+$" -and (SqlInt $RadarRank -1) -ge 0) {
+        $where.Add("r.rank=$(SqlInt $RadarRank)")
+    }
+    $whereSql = if ($where.Count -gt 0) { "WHERE " + ($where -join " AND ") } else { "" }
+    Invoke-MySql @"
+SELECT r.id,r.iconId,r.rank,r.max,r.type,r.mob_id,
+       REPLACE(REPLACE(REPLACE(COALESCE(r.name,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS name,
+       REPLACE(REPLACE(REPLACE(COALESCE(r.info,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS info,
+       r.``require``,r.require_level,r.aura_id,
+       COALESCE(JSON_LENGTH(r.options),0) AS option_count
+FROM radar r
+$whereSql
+ORDER BY r.rank,r.id
+LIMIT 500;
+"@
+}
+
+function Get-RadarCard {
+    Ensure-RadarSchema
+    $radarId = SqlInt $Id
+    Invoke-MySql @"
+SELECT id,iconId,rank,max,type,mob_id,
+       REPLACE(REPLACE(REPLACE(COALESCE(body,'[{""head"":-1,""body"":-1,""leg"":-1,""bag"":-1}]'),CHAR(9),' '),CHAR(13),''),CHAR(10),'') AS body_json,
+       REPLACE(REPLACE(REPLACE(COALESCE(name,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS name,
+       REPLACE(REPLACE(REPLACE(COALESCE(info,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS info,
+       REPLACE(REPLACE(REPLACE(COALESCE(options,'[]'),CHAR(9),' '),CHAR(13),''),CHAR(10),'') AS options_json,
+       ``require``,require_level,aura_id,
+       REPLACE(REPLACE(REPLACE(COALESCE(milestones,'[]'),CHAR(9),' '),CHAR(13),''),CHAR(10),'') AS milestones_json
+FROM radar
+WHERE id=$radarId
+LIMIT 1;
+"@
+}
+
+function Save-RadarCard {
+    Ensure-RadarSchema
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0 -or $radarId -gt 32767) { throw "ID thẻ sưu tầm không hợp lệ." }
+    $iconValue = SqlInt $IconId
+    if ($iconValue -lt -1 -or $iconValue -gt 32767) { throw "Icon ID không hợp lệ." }
+    $rankValue = SqlInt $RadarRank
+    if ($rankValue -lt 0 -or $rankValue -gt 127) { throw "Rank phải từ 0 đến 127." }
+    $maxValue = SqlInt $RadarMax
+    if ($maxValue -lt 1 -or $maxValue -gt 127) { throw "Max thẻ phải từ 1 đến 127." }
+    $typeValue = SqlInt $RadarType
+    if ($typeValue -lt 0 -or $typeValue -gt 1) { throw "Type radar chỉ hỗ trợ 0=mob hoặc 1=nhân vật." }
+    $mobValue = SqlInt $RadarMobId -1
+    $requireValue = SqlInt $RequireId -1
+    $requireLevelValue = SqlInt $RequireLevel
+    if ($requireLevelValue -lt 0 -or $requireLevelValue -gt 2) { throw "Require level phải từ 0 đến 2." }
+    $auraValue = SqlInt $AuraId -1
+    $bodyJson = Get-RadarBodyJson
+    $optionsValue = Assert-RadarOptionsJson $OptionsJson
+    $milestonesValue = Assert-RadarMilestonesJson $MilestonesJson $maxValue
+    $sql = @"
+INSERT INTO radar (id, iconId, rank, max, type, mob_id, body, name, info, options, milestones, ``require``, require_level, aura_id)
+VALUES ($radarId,$iconValue,$rankValue,$maxValue,$typeValue,$mobValue,$(SqlString $bodyJson),$(SqlString $Name),$(SqlString $Description),$(SqlString $optionsValue),$(SqlString $milestonesValue),$requireValue,$requireLevelValue,$auraValue)
+ON DUPLICATE KEY UPDATE
+iconId=VALUES(iconId), rank=VALUES(rank), max=VALUES(max), type=VALUES(type), mob_id=VALUES(mob_id), body=VALUES(body),
+name=VALUES(name), info=VALUES(info), options=VALUES(options), milestones=VALUES(milestones), ``require``=VALUES(``require``), require_level=VALUES(require_level), aura_id=VALUES(aura_id);
+"@
+    Invoke-MySql $sql | Out-Null
+    "OK`tĐã lưu thẻ sưu tầm ID $radarId. Restart server để áp dụng template radar mới."
+}
+
+function Delete-RadarCard {
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0) { throw "ID thẻ sưu tầm không hợp lệ." }
+    Invoke-MySql "DELETE FROM radar WHERE id=$radarId;" | Out-Null
+    "OK`tĐã xóa thẻ sưu tầm ID $radarId. Restart server để áp dụng."
+}
+
+function List-RadarMobDrops {
+    Ensure-SpawnSchema
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0) { throw "ID thẻ sưu tầm không hợp lệ." }
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safe = $Search.Replace("\", "\\").Replace("'", "''")
+        $where = if ($Search -match '^\d+$') { "WHERE t.id=$(SqlInt $Search) OR t.NAME LIKE '%$safe%'" } else { "WHERE t.NAME LIKE '%$safe%'" }
+    }
+    Invoke-MySql @"
+SELECT COALESCE(c.id,0) AS config_id,t.id AS template_id,t.NAME,
+       COALESCE(c.enabled,1) AS enabled,
+       CASE WHEN d.id IS NULL THEN 0 ELSE 1 END AS has_drop,
+       COALESCE(d.quantity_min,1) AS quantity_min,
+       COALESCE(d.quantity_max,1) AS quantity_max,
+       COALESCE(d.drop_rate,0) AS drop_rate
+FROM mob_template t
+LEFT JOIN admin_mob_config c ON c.mob_template_id=t.id
+LEFT JOIN admin_spawn_drop d ON d.owner_type='mob' AND d.owner_id=c.id AND d.item_id=$radarId
+$where
+ORDER BY has_drop DESC,t.id
+LIMIT 500;
+"@
+}
+
+function Save-RadarMobDrops {
+    Ensure-SpawnSchema
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0 -or $radarId -gt 32767) { throw "ID thẻ sưu tầm không hợp lệ." }
+    try {
+        $rawDrops = @($MobDropsJson | ConvertFrom-Json)
+    } catch {
+        throw "Danh sách Mob rơi thẻ không đúng JSON."
+    }
+    $templateIds = New-Object System.Collections.Generic.List[int]
+    $values = New-Object System.Collections.Generic.List[string]
+    foreach ($drop in $rawDrops) {
+        $templateIdText = if ($null -ne $drop.templateId) { [string]$drop.templateId } elseif ($null -ne $drop.mobId) { [string]$drop.mobId } else { "" }
+        $templateId = SqlInt -Value $templateIdText -Default -1
+        if ($templateId -lt 0) { throw "ID Mob không hợp lệ." }
+        if (-not $templateIds.Contains($templateId)) { $templateIds.Add($templateId) }
+        $quantityMin = Assert-PositiveInt ([string]$drop.quantityMin) "Số lượng nhỏ nhất" 2000000000
+        $quantityMax = Assert-PositiveInt ([string]$drop.quantityMax) "Số lượng lớn nhất" 2000000000
+        if ($quantityMin -gt $quantityMax) { throw "Số lượng nhỏ nhất không được lớn hơn số lượng lớn nhất." }
+        $rateText = ([string]$drop.dropRate).Replace(',', '.')
+        $rateNumber = 0.0
+        if (-not [double]::TryParse($rateText, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$rateNumber) -or $rateNumber -lt 0 -or $rateNumber -gt 100) {
+            throw "Tỉ lệ rơi phải từ 0 đến 100."
+        }
+        $rateSql = $rateNumber.ToString('0.####', [Globalization.CultureInfo]::InvariantCulture)
+        $values.Add("('mob',(SELECT id FROM admin_mob_config WHERE mob_template_id=$templateId LIMIT 1),$radarId,$quantityMin,$quantityMax,$rateSql,'[]')")
+    }
+    $existingText = Invoke-MySql "SELECT DISTINCT c.mob_template_id FROM admin_mob_config c JOIN admin_spawn_drop d ON d.owner_type='mob' AND d.owner_id=c.id AND d.item_id=$radarId;"
+    foreach ($line in @($existingText -split "`r?`n")) {
+        if ($line -match '^\d+$' -and -not $templateIds.Contains([int]$line)) { $templateIds.Add([int]$line) }
+    }
+    if ($templateIds.Count -eq 0) {
+        return "OK`tKhông có Mob nào cần cập nhật drop thẻ ID $radarId."
+    }
+    $idList = ($templateIds.ToArray() -join ',')
+    $insertConfigs = "INSERT INTO admin_mob_config (mob_template_id,enabled,use_time_range,use_interval,interval_minutes) SELECT t.id,1,0,0,1 FROM mob_template t WHERE t.id IN ($idList) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(admin_mob_config.id);"
+    $insertDrops = if ($values.Count -gt 0) { "INSERT INTO admin_spawn_drop (owner_type,owner_id,item_id,quantity_min,quantity_max,drop_rate,options_json) VALUES " + ($values -join ',') + ";" } else { "" }
+    Invoke-MySql "START TRANSACTION; $insertConfigs DELETE d FROM admin_spawn_drop d JOIN admin_mob_config c ON c.id=d.owner_id WHERE d.owner_type='mob' AND d.item_id=$radarId AND c.mob_template_id IN ($idList); $insertDrops COMMIT;" | Out-Null
+    "OK`tĐã lưu " + $rawDrops.Count + " Mob rơi thẻ sưu tầm ID $radarId. Restart server để áp dụng drop."
+}
+
+function List-RadarBossDrops {
+    Ensure-SpawnSchema
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0) { throw "ID thẻ sưu tầm không hợp lệ." }
+    $dropByBoss = @{}
+    $dropText = Invoke-MySql "SELECT owner_id,quantity_min,quantity_max,drop_rate FROM admin_spawn_drop WHERE owner_type='serverboss' AND item_id=$radarId ORDER BY id;"
+    $dropLines = @($dropText -split "`r?`n")
+    for ($i = 1; $i -lt $dropLines.Count; $i++) {
+        $parts = $dropLines[$i] -split "`t", 4
+        if ($parts.Count -ge 4) { $dropByBoss[$parts[0]] = $parts }
+    }
+    $searchLower = $Search.ToLowerInvariant()
+    $rows = New-Object System.Collections.Generic.List[string]
+    $rows.Add("boss_id`tboss_key`tname`tclass`tdefault_maps`thas_drop`tquantity_min`tquantity_max`tdrop_rate")
+    foreach ($boss in (Get-ExistingBossCatalog)) {
+        if (-not [string]::IsNullOrWhiteSpace($searchLower) -and
+            ([string]$boss.Id -ne $Search) -and
+            (-not $boss.Key.ToLowerInvariant().Contains($searchLower)) -and
+            (-not $boss.Name.ToLowerInvariant().Contains($searchLower)) -and
+            (-not $boss.Class.ToLowerInvariant().Contains($searchLower))) { continue }
+        $drop = $dropByBoss[[string]$boss.Id]
+        $hasDrop = if ($drop) { 1 } else { 0 }
+        $quantityMin = if ($drop) { $drop[1] } else { 1 }
+        $quantityMax = if ($drop) { $drop[2] } else { 1 }
+        $dropRate = if ($drop) { $drop[3] } else { 0 }
+        $rows.Add("$($boss.Id)`t$($boss.Key)`t$($boss.Name)`t$($boss.Class)`t$($boss.Maps)`t$hasDrop`t$quantityMin`t$quantityMax`t$dropRate")
+    }
+    $rows -join "`r`n"
+}
+
+function Save-RadarBossDrops {
+    Ensure-SpawnSchema
+    $radarId = SqlInt $Id
+    if ($radarId -lt 0 -or $radarId -gt 32767) { throw "ID thẻ sưu tầm không hợp lệ." }
+    try {
+        $rawDrops = @($BossDropsJson | ConvertFrom-Json)
+    } catch {
+        throw "Danh sách Boss rơi thẻ không đúng JSON."
+    }
+    $validBossIds = @{}
+    foreach ($boss in (Get-ExistingBossCatalog)) { $validBossIds[[string]$boss.Id] = $true }
+    $bossIds = New-Object System.Collections.Generic.List[int]
+    $values = New-Object System.Collections.Generic.List[string]
+    foreach ($drop in $rawDrops) {
+        $bossIdText = if ($null -ne $drop.bossId) { [string]$drop.bossId } elseif ($null -ne $drop.ownerId) { [string]$drop.ownerId } else { "" }
+        $bossId = SqlInt -Value $bossIdText -Default 0
+        if ($bossId -ge 0 -or -not $validBossIds.ContainsKey([string]$bossId)) { throw "ID Boss không hợp lệ hoặc chưa có trong BossesData." }
+        if (-not $bossIds.Contains($bossId)) { $bossIds.Add($bossId) }
+        $quantityMin = Assert-PositiveInt ([string]$drop.quantityMin) "Số lượng nhỏ nhất" 2000000000
+        $quantityMax = Assert-PositiveInt ([string]$drop.quantityMax) "Số lượng lớn nhất" 2000000000
+        if ($quantityMin -gt $quantityMax) { throw "Số lượng nhỏ nhất không được lớn hơn số lượng lớn nhất." }
+        $rateText = ([string]$drop.dropRate).Replace(',', '.')
+        $rateNumber = 0.0
+        if (-not [double]::TryParse($rateText, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$rateNumber) -or $rateNumber -lt 0 -or $rateNumber -gt 100) {
+            throw "Tỉ lệ rơi phải từ 0 đến 100."
+        }
+        $rateSql = $rateNumber.ToString('0.####', [Globalization.CultureInfo]::InvariantCulture)
+        $values.Add("('serverboss',$bossId,$radarId,$quantityMin,$quantityMax,$rateSql,'[]')")
+    }
+    $existingText = Invoke-MySql "SELECT DISTINCT owner_id FROM admin_spawn_drop WHERE owner_type='serverboss' AND item_id=$radarId;"
+    foreach ($line in @($existingText -split "`r?`n")) {
+        if ($line -match '^-?\d+$' -and -not $bossIds.Contains([int]$line)) { $bossIds.Add([int]$line) }
+    }
+    if ($bossIds.Count -eq 0) {
+        return "OK`tKhông có Boss nào cần cập nhật drop thẻ ID $radarId."
+    }
+    $idList = ($bossIds.ToArray() -join ',')
+    $insertDrops = if ($values.Count -gt 0) { "INSERT INTO admin_spawn_drop (owner_type,owner_id,item_id,quantity_min,quantity_max,drop_rate,options_json) VALUES " + ($values -join ',') + ";" } else { "" }
+    Invoke-MySql "START TRANSACTION; DELETE FROM admin_spawn_drop WHERE owner_type='serverboss' AND item_id=$radarId AND owner_id IN ($idList); $insertDrops COMMIT;" | Out-Null
+    "OK`tĐã lưu " + $rawDrops.Count + " Boss rơi thẻ sưu tầm ID $radarId. Restart server để áp dụng drop."
+}
+
 function List-Shops {
     Invoke-MySql "SELECT s.id, s.npc_id, COALESCE(n.`NAME`, '') AS npc_name, s.tag_name, s.type_shop FROM shop s LEFT JOIN npc_template n ON n.id = s.npc_id ORDER BY s.npc_id, s.id;"
 }
@@ -2364,6 +2650,10 @@ function Get-AuditSummary {
         "deleteshopoption" { "Xóa option shop ID $Id" }
         "savegiftcode" { "Lưu Giftcode $GiftCode, lượt $CountLeft, $(Get-JsonArrayCount $GiftDetail) phần quà" }
         "deletegiftcode" { "Xóa Giftcode ID $Id" }
+        "saveradarcard" { "Lưu thẻ sưu tầm ID $Id - $Name, $(Get-JsonArrayCount $OptionsJson) option" }
+        "deleteradarcard" { "Xóa thẻ sưu tầm ID $Id" }
+        "saveradarmobdrops" { "Lưu Mob rơi thẻ sưu tầm ID $Id, $(Get-JsonArrayCount $MobDropsJson) Mob" }
+        "saveradarbossdrops" { "Lưu Boss rơi thẻ sưu tầm ID $Id, $(Get-JsonArrayCount $BossDropsJson) Boss" }
         "savebossoverride" { "Lưu Boss $Name ($OwnerId): $(Get-JsonArrayCount $MapIdsJson) map, $(Get-JsonArrayCount $SkillsJson) skill, $(Get-JsonArrayCount $DropsJson) drop, chu kỳ $(if ($UseInterval -eq '1') { "$IntervalMinutes phút" } else { 'mặc định' })" }
         "deletebossoverride" { "Trả Boss $OwnerId về mặc định" }
         "saveadminboss" { "Lưu Boss tùy chỉnh $Name" }
@@ -2442,6 +2732,18 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "giftcode" $where))
         }
         "deletegiftcode" { $snapshots.Add((New-DbAuditSnapshot "giftcode" "id=$(SqlInt $Id)")) }
+        { $_ -in @("saveradarcard", "deleteradarcard") } { $snapshots.Add((New-DbAuditSnapshot "radar" "id=$(SqlInt $Id)")) }
+        "saveradarmobdrops" {
+            Ensure-SpawnSchema
+            $radarId = SqlInt $Id
+            $snapshots.Add((New-DbAuditSnapshot "admin_mob_config" "id IN (SELECT owner_id FROM admin_spawn_drop WHERE owner_type='mob' AND item_id=$radarId)"))
+            $snapshots.Add((New-DbAuditSnapshot "admin_spawn_drop" "owner_type='mob' AND item_id=$radarId"))
+        }
+        "saveradarbossdrops" {
+            Ensure-SpawnSchema
+            $radarId = SqlInt $Id
+            $snapshots.Add((New-DbAuditSnapshot "admin_spawn_drop" "owner_type='serverboss' AND item_id=$radarId"))
+        }
         { $_ -in @("savebossoverride", "deletebossoverride") } {
             $bossId = SqlInt $OwnerId
             $snapshots.Add((New-DbAuditSnapshot "admin_boss_override" "boss_id=$bossId"))
@@ -2597,6 +2899,7 @@ $actionLower = $Action.ToLowerInvariant()
 $mutationActions = @(
     "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
     "saveshopoption", "saveshopoptions", "deleteshopoption", "savegiftcode", "deletegiftcode",
+    "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
@@ -2657,6 +2960,14 @@ try {
         "listgiftitems" { List-GiftItems }
         "savegiftcode" { Save-GiftCode }
         "deletegiftcode" { Delete-GiftCode }
+        "listradarcards" { List-RadarCards }
+        "getradarcard" { Get-RadarCard }
+        "saveradarcard" { Save-RadarCard }
+        "deleteradarcard" { Delete-RadarCard }
+        "listradarmobdrops" { List-RadarMobDrops }
+        "saveradarmobdrops" { Save-RadarMobDrops }
+        "listradarbossdrops" { List-RadarBossDrops }
+        "saveradarbossdrops" { Save-RadarBossDrops }
         "listspawnmaps" { List-SpawnMaps }
         "listspawnitems" { List-SpawnItems }
         "listbossskills" { List-BossSkillCatalog }

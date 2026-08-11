@@ -1,0 +1,82 @@
+<div id="panelItems" class="panel active">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar item-toolbar">
+        <input id="itemTypeFilter" class="hidden-value" value="27" />
+        <div id="combo_itemTypeFilter" class="combo toolbar-combo" onclick="ToggleCombo('itemTypeFilter'); event.cancelBubble = true;">
+          <span id="combo_itemTypeFilter_text" class="combo-text">27 - Pet đeo lưng / follow</span>
+          <span class="combo-button"><span class="combo-caret"></span></span>
+          <div id="combo_itemTypeFilter_menu" class="combo-menu"></div>
+        </div>
+        <input id="itemSearch" style="width:260px" placeholder="Tìm theo ID hoặc tên" />
+        <button onclick="LoadItems()">Tìm</button>
+        <button onclick="NewItem()">Thêm mới</button>
+      </div>
+      <div class="table-wrap">
+        <table id="itemsTable"></table>
+      </div>
+    </div>
+
+    <div class="right-pane">
+      <div class="section-title">Chi tiết vật phẩm</div>
+      <div class="row">
+        <div class="cell"><label>ID</label><input id="itemId" /></div>
+        <div class="cell">
+          <label>Type / group</label>
+          <input id="itemType" class="hidden-value" value="27" />
+          <div id="combo_itemType" class="combo" onclick="ToggleCombo('itemType'); event.cancelBubble = true;">
+            <span id="combo_itemType_text" class="combo-text">27 - Pet đeo lưng / follow</span>
+            <span class="combo-button"><span class="combo-caret"></span></span>
+            <div id="combo_itemType_menu" class="combo-menu"></div>
+          </div>
+        </div>
+        <div class="cell">
+          <label>Gender</label>
+          <input id="itemGender" class="hidden-value" value="3" />
+          <div id="combo_itemGender" class="combo" onclick="ToggleCombo('itemGender'); event.cancelBubble = true;">
+            <span id="combo_itemGender_text" class="combo-text">Dùng chung</span>
+            <span class="combo-button"><span class="combo-caret"></span></span>
+            <div id="combo_itemGender_menu" class="combo-menu"></div>
+          </div>
+        </div>
+      </div>
+      <label>Tên</label><input id="itemName" />
+      <label>Mô tả</label><textarea id="itemDesc"></textarea>
+      <div class="row">
+        <div class="cell"><label>Level</label><input id="itemLevel" /></div>
+        <div class="cell"><label>Icon</label><input id="itemIcon" /></div>
+        <div class="cell"><label>Part</label><input id="itemPart" /></div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          <label>Up to up</label>
+          <input id="itemUp" class="hidden-value" value="0" />
+          <div id="combo_itemUp" class="combo" onclick="ToggleCombo('itemUp'); event.cancelBubble = true;">
+            <span id="combo_itemUp_text" class="combo-text">Không cho nâng cấp</span>
+            <span class="combo-button"><span class="combo-caret"></span></span>
+            <div id="combo_itemUp_menu" class="combo-menu"></div>
+          </div>
+        </div>
+        <div class="cell"><label>Power</label><input id="itemPower" /></div>
+      </div>
+      <div class="row">
+        <div class="cell"><label>Gold</label><input id="itemGold" /></div>
+        <div class="cell"><label>Gem</label><input id="itemGem" /></div>
+      </div>
+      <div class="row">
+        <div class="cell"><label>Head</label><input id="itemHead" /></div>
+        <div class="cell"><label>Body</label><input id="itemBody" /></div>
+        <div class="cell"><label>Leg</label><input id="itemLeg" /></div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="SaveItem()">Lưu vật phẩm</button>
+      </div>
+      <div class="split-small">
+        <div class="section-title">Mẫu option</div>
+        <input id="optionSearch" placeholder="Lọc nhanh trên bảng option" onkeyup="FilterOptionRows()" />
+        <div class="mini-table"><table id="optionsTable"></table></div>
+      </div>
+      <div id="itemMessage" class="message"></div>
+    </div>
+  </div>
+</div>

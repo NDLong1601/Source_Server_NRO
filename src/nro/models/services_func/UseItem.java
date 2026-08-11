@@ -2789,14 +2789,15 @@ public class UseItem {
         }
         Card card = pl.Cards.stream().filter(r -> r.Id == item.template.id).findFirst().orElse(null);
         if (card == null) {
-            Card newCard = new Card(item.template.id, (byte) 1, radarTemplate.Max, (byte) -1, radarTemplate.Options);
+            Card newCard = new Card(item.template.id, (byte) 1, radarTemplate.getRequiredAmountForLevel(1), (byte) -1, radarTemplate.Options);
             pl.Cards.add(newCard);
             RadarService.gI().RadarSetAmount(pl, newCard.Id, newCard.Amount, newCard.MaxAmount);
             RadarService.gI().RadarSetLevel(pl, newCard.Id, newCard.Level);
             InventoryService.gI().subQuantityItemsBag(pl, item, 1);
             InventoryService.gI().sendItemBags(pl);
         } else {
-            if (card.Level >= 2) {
+            card.MaxAmount = radarTemplate.getNextRequiredAmount(card.Level);
+            if (card.Level >= radarTemplate.getMaxLevel()) {
                 Service.gI().sendThongBao(pl, "Thẻ này đã đạt cấp tối đa");
                 return;
             }
@@ -2808,6 +2809,7 @@ public class UseItem {
                 } else {
                     card.Level++;
                 }
+                card.MaxAmount = radarTemplate.getNextRequiredAmount(card.Level);
                 Service.gI().point(pl);
             }
             RadarService.gI().RadarSetAmount(pl, card.Id, card.Amount, card.MaxAmount);
