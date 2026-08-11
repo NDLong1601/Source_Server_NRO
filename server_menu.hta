@@ -298,6 +298,8 @@
     var rootDir = GetRootDir();
     var currentLog = "server";
     var viewCleared = false;
+    var lastReadError = "";
+    var lastStatusRequestTime = 0;
 
     window.onload = function () {
       window.resizeTo(1120, 680);
@@ -350,6 +352,7 @@
 
     function RefreshAll() {
       viewCleared = false;
+      RequestStatusRefresh(true);
       DoRefresh();
     }
 
@@ -358,11 +361,20 @@
     }
 
     function DoRefresh() {
-      RunBat("status", "", true);
       ReadStatus();
       if (!viewCleared) {
         ReadLogs();
       }
+      RequestStatusRefresh(false);
+    }
+
+    function RequestStatusRefresh(force) {
+      var now = new Date().getTime();
+      if (!force && now - lastStatusRequestTime < 7000) {
+        return;
+      }
+      lastStatusRequestTime = now;
+      RunBat("status", "", false);
     }
 
     function ReadStatus() {
@@ -412,9 +424,13 @@
         path = rootDir + "\\logs\\server.log";
       }
 
-      var text = TailFile(path, 18000);
+      var text = TailFile(path, 60000);
       if (text.length == 0) {
-        text = "Chưa có log cho mục này.";
+        if (fso.FileExists(path) && fso.GetFile(path).Size > 0) {
+          text = "Không đọc được file log:\r\n" + path + "\r\n" + lastReadError;
+        } else {
+          text = "Chưa có log cho mục này.";
+        }
       }
 
       text = StripAnsi(text);
@@ -428,6 +444,16 @@
     }
 
     function ReadFile(path) {
+      lastReadError = "";
+      var text = ReadFileUtf8(path);
+      if (text.length > 0) {
+        return text;
+      }
+
+      return ReadFileSystemDefault(path);
+    }
+
+    function ReadFileUtf8(path) {
       try {
         if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) {
           return "";
@@ -442,6 +468,27 @@
         stream.Close();
         return text;
       } catch (e) {
+        lastReadError = "UTF-8 reader: " + e.message;
+        return "";
+      }
+    }
+
+    function ReadFileSystemDefault(path) {
+      var file = null;
+      try {
+        if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) {
+          return "";
+        }
+
+        file = fso.OpenTextFile(path, 1, false, -2);
+        var text = file.ReadAll();
+        file.Close();
+        return text;
+      } catch (e) {
+        if (file) {
+          try { file.Close(); } catch (closeError) {}
+        }
+        lastReadError = lastReadError + "\r\nSystem reader: " + e.message;
         return "";
       }
     }

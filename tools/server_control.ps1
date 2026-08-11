@@ -7,7 +7,6 @@ $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $LogDir = Join-Path $Root "logs"
 $StatusPath = Join-Path $LogDir "menu_status.txt"
-$ControlLog = Join-Path $LogDir "control.log"
 $ServerLog = Join-Path $LogDir "server.log"
 $ServerErrorLog = Join-Path $LogDir "server-error.log"
 $PidPath = Join-Path $LogDir "server.pid"
@@ -84,13 +83,6 @@ function Write-FileAtomic {
 
 function Write-ControlLog {
     param([string]$Message)
-
-    $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
-    Invoke-WithRetry -Script {
-        Add-Content -Path $ControlLog -Value $line -Encoding UTF8
-        $recentLines = @(Get-Content -LiteralPath $ControlLog -Encoding UTF8 | Select-Object -Last 20)
-        Write-FileAtomic -Path $ControlLog -Text (($recentLines -join [Environment]::NewLine) + [Environment]::NewLine)
-    }
 }
 
 function Get-ServerProcessIds {
@@ -387,7 +379,7 @@ function Build-Server {
     Push-Location $Root
     try {
         if ($ant) {
-            & ant clean jar 2>&1 | Tee-Object -FilePath $ControlLog -Append
+            & ant clean jar 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 Write-ControlLog "Build bằng Ant thất bại với mã lỗi $LASTEXITCODE."
                 return
@@ -411,7 +403,7 @@ function Build-Server {
 
             $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
             Copy-Item -Path $targetJar -Destination $backup -Force
-            & $jar.Source uf $targetJar -C $builtClasses . 2>&1 | Tee-Object -FilePath $ControlLog -Append
+            & $jar.Source uf $targetJar -C $builtClasses . 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 Copy-Item -Path $backup -Destination $targetJar -Force
                 Write-ControlLog "Cập nhật class vào 20.jar thất bại; đã khôi phục backup."
@@ -449,8 +441,7 @@ function Build-Server {
         ) -join ";"
 
         $processorPath = Join-Path $Root "lib\lombok.jar"
-        & javac --release 17 -encoding UTF-8 -cp $classpath -processorpath $processorPath -d $tempClasses "@$sourceList" 2>&1 |
-            Tee-Object -FilePath $ControlLog -Append
+        & javac --release 17 -encoding UTF-8 -cp $classpath -processorpath $processorPath -d $tempClasses "@$sourceList" 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             Write-ControlLog "Build bằng javac thất bại với mã lỗi $LASTEXITCODE."
             return
@@ -459,7 +450,7 @@ function Build-Server {
         $targetJar = Join-Path $Root "20.jar"
         $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
         Copy-Item -Path $targetJar -Destination $backup -Force
-        & jar uf $targetJar -C $tempClasses . 2>&1 | Tee-Object -FilePath $ControlLog -Append
+        & jar uf $targetJar -C $tempClasses . 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             Write-ControlLog "Cập nhật 20.jar thất bại với mã lỗi $LASTEXITCODE."
             return

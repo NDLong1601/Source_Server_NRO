@@ -1,5 +1,0 @@
-﻿id	item_shop_id	option_id	option_name	param
-1807	100003	50	Sức đánh+#%	21
-1808	100003	48	HP, KI+#	21
-1809	100003	17	Né đòn: +#	10
-1810	100003	81	KI+#%/30s	20

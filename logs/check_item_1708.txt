@@ -1,2 +1,0 @@
-﻿id	TYPE	gender	NAME	description	level	icon_id	part	is_up_to_up	power_require	gold	gem	head	body	leg
-1708	5	3	CT Android 21 Thân Thiện	Đi cùng Android  21 Evil+5% giảm sát thương	0	14186	-1	0	0	0	0	-1	-1	-1

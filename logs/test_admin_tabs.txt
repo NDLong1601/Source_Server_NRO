@@ -1,4 +1,0 @@
-﻿id	shop_id	NAME
-1	1	Áo<>Quần
-2	1	Phụ<>kiện
-3	1	Đặc<>biệt

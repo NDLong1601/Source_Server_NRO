@@ -1,2 +1,2 @@
 ﻿id	name	COALESCE(a.username,'')	event_point	online_state
-1367	admin	1	9063	ONLINE?
+1367	admin	1	9063	OFFLINE
