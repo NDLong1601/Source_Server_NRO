@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { execFileSync } = require("child_process");
 
 const rootDir = path.resolve(__dirname, "..");
 const htaPath = path.join(rootDir, "admin_data_menu.hta");
@@ -9,6 +10,10 @@ const scriptSources = [];
 const functionOwners = new Map();
 const variableOwners = new Map();
 const viewSources = [];
+
+execFileSync(process.execPath, [path.join(__dirname, "fix_admin_views.js"), "--check"], {
+  stdio: "inherit"
+});
 
 function resolveAsset(relativePath) {
   return path.resolve(rootDir, relativePath.replace(/\//g, path.sep));

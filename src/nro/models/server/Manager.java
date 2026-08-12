@@ -524,7 +524,7 @@ public final class Manager {
             ps = ConnectionDatabase.prepareStatement("SELECT id, task_main_template.name, detail, "
                     + "task_sub_template.name AS 'sub_name', max_count, notify, npc_id, map "
                     + "FROM task_main_template JOIN task_sub_template ON task_main_template.id = "
-                    + "task_sub_template.task_main_id");
+                    + "task_sub_template.task_main_id ORDER BY task_main_template.id, task_sub_template.ducvupro");
             rs = ps.executeQuery();
             int taskId = -1;
             TaskMain task = null;
@@ -549,7 +549,7 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded task (" + TASKS.size() + ")\n");
 
             //load side task
-            ps = ConnectionDatabase.prepareStatement("select * from side_task_template");
+            ps = ConnectionDatabase.prepareStatement("select * from side_task_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 SideTaskTemplate sideTask = new SideTaskTemplate();
@@ -575,7 +575,7 @@ public final class Manager {
             Logger.success(Logger.RED + "Successfully loaded side task (" + SIDE_TASKS_TEMPLATE.size() + ")\n");
 
             // load task badges
-            ps = ConnectionDatabase.prepareStatement("select * from task_badges_template");
+            ps = ConnectionDatabase.prepareStatement("select * from task_badges_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 BadgesTaskTemplate badgesTaskTemplate = new BadgesTaskTemplate();
@@ -588,7 +588,7 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded task badges (" + TASKS_BADGES_TEMPLATE.size() + ")\n");
 
             //load clan task
-            ps = ConnectionDatabase.prepareStatement("select * from clan_task_template");
+            ps = ConnectionDatabase.prepareStatement("select * from clan_task_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 ClanTaskTemplate clanTask = new ClanTaskTemplate();

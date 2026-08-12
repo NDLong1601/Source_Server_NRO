@@ -1,6 +1,6 @@
 <div id="panelEvents" class="panel">
   <div class="right-pane single-pane event-pane">
-    <input id="eventValue" class="hidden-value" value="none" />
+    <input type="text" id="eventValue" class="hidden-value" value="none">
     <div id="eventSummary" class="event-summary"></div>
     <div class="event-layout">
       <div class="event-main">
@@ -11,7 +11,7 @@
         <div class="event-side-card">
           <div class="section-title">Áp dụng cấu hình</div>
           <label>Tỉ lệ TNSM toàn server</label>
-          <input type="hidden" id="expRate" value="1" />
+          <input type="hidden" id="expRate" value="1">
           <div id="combo_expRate" class="combo" onclick="ToggleCombo('expRate'); event.cancelBubble = true;">
             <span id="combo_expRate_text" class="combo-text">x1</span>
             <span class="combo-button"><span class="combo-caret"></span></span>
@@ -19,32 +19,32 @@
           </div>
           <div id="eventSelection" class="event-selection">Chưa chọn sự kiện.</div>
           <div class="actions">
-            <button class="primary" onclick="SaveEvent()">Lưu cấu hình</button>
-            <button onclick="LoadEvents()">Tải lại</button>
-            <button onclick="RestartServer()">Restart server</button>
+            <button type="button" class="primary" onclick="SaveEvent()">Lưu cấu hình</button>
+            <button type="button" onclick="LoadEvents()">Tải lại</button>
+            <button type="button" onclick="RestartServer()">Restart server</button>
           </div>
           <div id="eventMessage" class="message"></div>
         </div>
         <div id="eventConfigEditor" class="event-side-card">
           <div class="section-title">Cấu hình riêng: <span id="eventConfigTitle" class="event-config-title">Chọn sự kiện</span></div>
-          <input type="hidden" id="eventConfigCode" />
+          <input type="hidden" id="eventConfigCode">
           <label>Mô tả vận hành</label>
           <textarea id="eventConfigDescription" placeholder="Mô tả boss, NPC, cách chơi và lưu ý vận hành"></textarea>
-          <label>Buff tỉ lệ drop cấu hình (x)</label><input id="eventDropMultiplier" value="1" />
+          <label>Buff tỉ lệ drop cấu hình (x)</label><input type="text" id="eventDropMultiplier" value="1">
           <div class="actions">
-            <button class="primary" onclick="SaveEventConfig()">Lưu cấu hình riêng</button>
+            <button type="button" class="primary" onclick="SaveEventConfig()">Lưu cấu hình riêng</button>
           </div>
           <div class="event-help">Drop multiplier chỉ áp dụng các item nguồn Mob/Boss bên dưới.</div>
 
           <div class="split-small">
             <div class="section-title">Buff điểm cho player</div>
             <div class="row">
-              <div class="cell"><label>ID hoặc tên player</label><input id="eventPlayerSearch" placeholder="Nhập ID hoặc tên chính xác" /></div>
-              <div class="cell"><label>Số điểm cộng</label><input id="eventPlayerPoints" value="1" /></div>
+              <div class="cell"><label>ID hoặc tên player</label><input type="text" id="eventPlayerSearch" placeholder="Nhập ID hoặc tên chính xác"></div>
+              <div class="cell"><label>Số điểm cộng</label><input type="text" id="eventPlayerPoints" value="1"></div>
             </div>
             <div class="actions">
-              <button onclick="SearchEventPlayers()">Tìm player</button>
-              <button class="primary" onclick="GrantEventPoints()">Buff điểm</button>
+              <button type="button" onclick="SearchEventPlayers()">Tìm player</button>
+              <button type="button" class="primary" onclick="GrantEventPoints()">Buff điểm</button>
             </div>
             <div class="mini-table event-config-table"><table id="eventPlayerTable"></table></div>
             <div class="event-help">Click player trong kết quả để chọn chính xác. Player online được cập nhật ngay trong game và nhận thông báo.</div>
@@ -55,46 +55,46 @@
           <div class="split-small">
             <div class="section-title">Boss của sự kiện <span id="eventBossCountBadge" class="event-badge configured">0</span></div>
             <div class="mini-table event-config-table"><table id="eventBossTable"></table></div>
-            <input type="hidden" id="eventBossOriginalId" />
+            <input type="hidden" id="eventBossOriginalId">
             <div class="row">
-              <div class="cell"><label>Boss ID</label><input id="eventBossId" placeholder="-351" /></div>
-              <div class="cell"><label>Tên boss</label><input id="eventBossName" placeholder="Bí ma" /></div>
-              <div class="cell"><label>Số lượng</label><input id="eventBossQuantity" value="1" /></div>
-              <div class="cell event-inline-check"><input type="checkbox" id="eventBossEnabled" checked="checked" /> Bật</div>
+              <div class="cell"><label>Boss ID</label><input type="text" id="eventBossId" placeholder="-351"></div>
+              <div class="cell"><label>Tên boss</label><input type="text" id="eventBossName" placeholder="Bí ma"></div>
+              <div class="cell"><label>Số lượng</label><input type="text" id="eventBossQuantity" value="1"></div>
+              <div class="cell event-inline-check"><input type="checkbox" id="eventBossEnabled" checked> Bật</div>
             </div>
-            <label>Ghi chú boss</label><input id="eventBossNotes" placeholder="Boss con xuất hiện cùng, lưu ý map..." />
+            <label>Ghi chú boss</label><input type="text" id="eventBossNotes" placeholder="Boss con xuất hiện cùng, lưu ý map...">
             <label>Map xuất hiện</label>
-            <input id="eventBossMapSearch" placeholder="Tìm ID hoặc tên map" onkeyup="RenderEventBossMapChecklist()" />
+            <input type="text" id="eventBossMapSearch" placeholder="Tìm ID hoặc tên map" onkeyup="RenderEventBossMapChecklist()">
             <div id="eventBossMapChecklist" class="option-picker-list event-map-list"></div>
             <div id="eventBossMapSummary" class="option-picker-summary"></div>
             <div class="actions">
-              <button class="primary" onclick="SaveEventBoss()">Lưu boss</button>
-              <button onclick="ClearEventBossForm()">Thêm mới</button>
-              <button class="danger" onclick="DeleteEventBoss()">Xóa</button>
+              <button type="button" class="primary" onclick="SaveEventBoss()">Lưu boss</button>
+              <button type="button" onclick="ClearEventBossForm()">Thêm mới</button>
+              <button type="button" class="danger" onclick="DeleteEventBoss()">Xóa</button>
             </div>
           </div>
 
           <div class="split-small">
             <div class="section-title">Vật phẩm sự kiện <span id="eventItemCountBadge" class="event-badge configured">0</span></div>
             <div class="mini-table event-config-table"><table id="eventItemTable"></table></div>
-            <input type="hidden" id="eventItemRowId" />
+            <input type="hidden" id="eventItemRowId">
             <div class="row">
-              <div class="cell"><label>Item ID</label><input id="eventItemId" placeholder="585" /></div>
-              <div class="cell"><label>Nguồn</label><input type="hidden" id="eventItemSource" value="mob" /><div id="combo_eventItemSource" class="combo" onclick="ToggleCombo('eventItemSource'); event.cancelBubble = true;"><span id="combo_eventItemSource_text" class="combo-text">Mob (tự động rơi)</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_eventItemSource_menu" class="combo-menu"></div></div></div>
-              <div class="cell"><label>ID nguồn (-1 = tất cả)</label><input id="eventItemSourceId" value="-1" /></div>
+              <div class="cell"><label>Item ID</label><input type="text" id="eventItemId" placeholder="585"></div>
+              <div class="cell"><label>Nguồn</label><input type="hidden" id="eventItemSource" value="mob"><div id="combo_eventItemSource" class="combo" onclick="ToggleCombo('eventItemSource'); event.cancelBubble = true;"><span id="combo_eventItemSource_text" class="combo-text">Mob (tự động rơi)</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_eventItemSource_menu" class="combo-menu"></div></div></div>
+              <div class="cell"><label>ID nguồn (-1 = tất cả)</label><input type="text" id="eventItemSourceId" value="-1"></div>
             </div>
             <div class="row">
-              <div class="cell"><label>Số lượng min</label><input id="eventItemMin" value="1" /></div>
-              <div class="cell"><label>Số lượng max</label><input id="eventItemMax" value="1" /></div>
-              <div class="cell"><label>Tỉ lệ rơi (%)</label><input id="eventItemRate" value="100" /></div>
-              <div class="cell event-inline-check"><input type="checkbox" id="eventItemEnabled" checked="checked" /> Bật</div>
+              <div class="cell"><label>Số lượng min</label><input type="text" id="eventItemMin" value="1"></div>
+              <div class="cell"><label>Số lượng max</label><input type="text" id="eventItemMax" value="1"></div>
+              <div class="cell"><label>Tỉ lệ rơi (%)</label><input type="text" id="eventItemRate" value="100"></div>
+              <div class="cell event-inline-check"><input type="checkbox" id="eventItemEnabled" checked> Bật</div>
             </div>
-            <label>Ghi chú vật phẩm</label><input id="eventItemNotes" placeholder="Nguyên liệu chơi, vật phẩm đổi thưởng..." />
+            <label>Ghi chú vật phẩm</label><input type="text" id="eventItemNotes" placeholder="Nguyên liệu chơi, vật phẩm đổi thưởng...">
             <div class="event-help">Nguồn Mob/Boss hoạt động tự động. ID nguồn là mob template ID hoặc boss ID; dùng -1 cho mọi mob/boss.</div>
             <div class="actions">
-              <button class="primary" onclick="SaveEventItem()">Lưu vật phẩm</button>
-              <button onclick="ClearEventItemForm()">Gắn mới</button>
-              <button class="danger" onclick="DeleteEventItem()">Xóa</button>
+              <button type="button" class="primary" onclick="SaveEventItem()">Lưu vật phẩm</button>
+              <button type="button" onclick="ClearEventItemForm()">Gắn mới</button>
+              <button type="button" class="danger" onclick="DeleteEventItem()">Xóa</button>
             </div>
           </div>
           <div id="eventConfigMessage" class="message"></div>
@@ -102,10 +102,10 @@
         <div class="event-side-card">
           <div class="section-title">Nguyên tắc vận hành</div>
           <div class="event-card-detail">
-            Màu xanh: sẵn sàng hoặc đang chạy.<br />
-            Màu tím: đã lưu và đang chờ restart.<br />
-            Màu vàng: chạy được nhưng còn hạng mục cần kiểm tra.<br />
-            Màu đỏ: thiếu dependency, không nên bật.<br /><br />
+            Màu xanh: sẵn sàng hoặc đang chạy.<br >
+            Màu tím: đã lưu và đang chờ restart.<br >
+            Màu vàng: chạy được nhưng còn hạng mục cần kiểm tra.<br >
+            Màu đỏ: thiếu dependency, không nên bật.<br ><br >
             Buff điểm player được xử lý ngay. Boss, map, NPC và drop được áp dụng sau khi server khởi động lại.
           </div>
         </div>

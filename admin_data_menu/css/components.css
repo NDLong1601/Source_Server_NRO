@@ -52,6 +52,67 @@ input.hidden-value {
   vertical-align: top;
 }
 
+#auditSearch {
+  width: 320px;
+}
+
+#bossSearch,
+#playerSearch {
+  width: 300px;
+}
+
+#combineSearch,
+#petConfigSearch,
+#playerConfigSearch {
+  width: 360px;
+}
+
+#equipSearch,
+#radarSearch,
+#radarMobDropSearch,
+#radarBossDropSearch {
+  width: 220px;
+}
+
+#giftSearch,
+#itemSearch,
+#mobSearch {
+  width: 260px;
+}
+
+#combo_radarRankFilter {
+  width: 130px;
+}
+
+#giftReloadCell {
+  width: 90px;
+}
+
+#combineOptionBox,
+#giftRangeConfig,
+#giftRewardEditor,
+#petSkillPoolEditor {
+  display: none;
+}
+
+#combineDuplicateBox {
+  display: none;
+  margin-top: 10px;
+}
+
+#radarOptionActiveContainer {
+  display: inline-block;
+  width: 120px;
+  vertical-align: top;
+}
+
+.radar-drop-toolbar {
+  min-height: 44px;
+  padding: 0 0 8px;
+  border-bottom: 0;
+  background: transparent;
+}
+
 .combo:hover {
   border-color: #94a3b8;
   background: #f8fafc;
@@ -970,4 +1031,8 @@ tr:hover td.gift-status-waiting {
   color: #0f766e;
   font-size: 11px;
   font-weight: 650;
+}
+
+.admin-hidden {
+  display: none;
 }

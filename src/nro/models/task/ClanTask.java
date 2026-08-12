@@ -51,12 +51,12 @@ public class ClanTask {
     }
 
     public ClanTask() {
-        this.leftTask = ConstTask.MAX_CLAN_TASK;
+        this.leftTask = TaskConfig.getMaxClanTask();
     }
 
     public void renew() {
         if (Util.isAfterMidnight(receivedTime)) {
-            this.leftTask = ConstTask.MAX_CLAN_TASK;
+            this.leftTask = TaskConfig.getMaxClanTask();
             this.receivedTime = System.currentTimeMillis();
         }
     }

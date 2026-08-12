@@ -5,18 +5,18 @@ function FindConfigRow(rows, key) {
 
 function IsIntegerConfigKind(kind) {
   return ArrayContains(["int", "positive-int", "long", "positive-long", "milliseconds", "stamina",
-    "limit-level", "limit-level-positive", "skill-level", "slot", "percent", "wide-percent", "critical"], kind);
+    "limit-level", "limit-level-positive", "skill-level", "slot", "percent", "wide-percent", "critical", "item-id"], kind);
 }
 
 function IsIntegerListConfigKind(kind) {
-  return ArrayContains(["long-list", "long-list-4", "int-list", "critical-list"], kind);
+  return ArrayContains(["long-list", "long-list-4", "int-list", "int-list-5", "critical-list"], kind);
 }
 
 function ConfigKindLabel(kind) {
   var labels = {
     "bool": "Bật / tắt", "int": "Số nguyên", "positive-int": "Số nguyên dương", "long": "Số nguyên lớn",
     "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm",
-    "long-list-4": "Danh sách 4 mốc", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
+    "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sach 5 gia tri", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
     "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option"
   };
   return labels[kind] || kind;

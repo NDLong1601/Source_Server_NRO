@@ -81,6 +81,7 @@
     [string]$DropRate = "100",
     [string]$Points = "0",
     [string]$Notes = "",
+    [string]$Notify = "",
     [string]$PayloadJson = "{}",
     [string]$Encoded = "0"
 )
@@ -107,7 +108,7 @@ foreach ($paramName in @(
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
-        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "PayloadJson"
+        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -642,6 +643,8 @@ function Reset-PetConfig {
     Set-PropertyValue -Path (Join-Path $Root "pet.properties") -Key $entry.Key -Value "" -Remove
     "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
 }
+
+. (Join-Path $PSScriptRoot "admin_task_data.ps1")
 
 function SqlString {
     param([string]$Value)
@@ -2673,6 +2676,12 @@ function Get-AuditSummary {
         "resetplayerconfig" { "Khôi phục cấu hình Player $ConfigKey về mặc định" }
         "savepetconfig" { "Đổi cấu hình Đệ tử $ConfigKey = $ConfigValue" }
         "resetpetconfig" { "Khôi phục cấu hình Đệ tử $ConfigKey về mặc định" }
+        "savetaskmain" { "Luu nhiem vu chinh ID $Id - $Name" }
+        "savetasksub" { "Luu buoc nhiem vu ID $Id thuoc nhiem vu $OwnerId" }
+        "savetasktemplate" { "Luu template $(Get-TaskTemplateLabel) ID $Id - $Name" }
+        "savebadgestask" { "Luu nhiem vu danh hieu ID $Id - $Name" }
+        "savetaskconfig" { "Doi cau hinh nhiem vu $ConfigKey = $ConfigValue" }
+        "resettaskconfig" { "Khoi phuc cau hinh nhiem vu $ConfigKey ve mac dinh" }
         "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
         "rescueplayer" { "Cứu hộ Player ID $Id về map nhà" }
         default { $ActionName }
@@ -2807,6 +2816,19 @@ function Get-AuditContext {
                 $fileSnapshots.Add([pscustomobject]@{ path="pet.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
             }
         }
+        "savetaskmain" { $snapshots.Add((New-DbAuditSnapshot "task_main_template" "id=$(SqlInt $Id)")) }
+        "savetasksub" { $snapshots.Add((New-DbAuditSnapshot "task_sub_template" "ducvupro=$(SqlInt $Id)")) }
+        "savetasktemplate" {
+            $table = Get-TaskTemplateTable
+            $snapshots.Add((New-DbAuditSnapshot $table "id=$(SqlInt $Id)"))
+        }
+        "savebadgestask" { $snapshots.Add((New-DbAuditSnapshot "task_badges_template" "id=$(SqlInt $Id)")) }
+        { $_ -in @("savetaskconfig", "resettaskconfig") } {
+            $configPath = Join-Path $Root "task.properties"
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="task.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
         "saveplayercore" {
             $playerId = SqlInt $Id
             $snapshots.Add((New-DbAuditSnapshot "player" "id=$playerId"))
@@ -2877,7 +2899,7 @@ function Undo-AuditEntry {
     }
     foreach ($fileSnapshot in @($payload.fileSnapshots)) {
         $relativePath = [string]$fileSnapshot.path
-        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
+        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties", "pet.properties", "task.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
         [IO.File]::WriteAllBytes((Join-Path $Root $relativePath), [Convert]::FromBase64String([string]$fileSnapshot.contentBase64))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$payload.configBase64)) {
@@ -2992,6 +3014,17 @@ try {
         "listpetconfig" { List-PetConfig }
         "savepetconfig" { Save-PetConfig }
         "resetpetconfig" { Reset-PetConfig }
+        "listtaskconfig" { List-TaskConfig }
+        "savetaskconfig" { Save-TaskConfig }
+        "resettaskconfig" { Reset-TaskConfig }
+        "listtaskmains" { List-TaskMains }
+        "listtasksubs" { List-TaskSubs }
+        "savetaskmain" { Save-TaskMain }
+        "savetasksub" { Save-TaskSub }
+        "listtasktemplates" { List-TaskTemplates }
+        "savetasktemplate" { Save-TaskTemplate }
+        "listbadgestasks" { List-BadgesTasks }
+        "savebadgestask" { Save-BadgesTask }
         "listplayers" { List-Players }
         "getplayerdetail" { Get-PlayerDetail }
         "saveplayercore" { Save-PlayerCore }

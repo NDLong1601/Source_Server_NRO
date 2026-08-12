@@ -2,8 +2,8 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
-        <input id="combineSearch" style="width:360px" placeholder="Tìm chức năng hoặc nhóm" onkeyup="FilterCombineRows()" />
-        <button onclick="LoadCombineConfig()">Tải lại</button>
+        <input type="text" id="combineSearch" placeholder="Tìm chức năng hoặc nhóm" onkeyup="FilterCombineRows()">
+        <button type="button" onclick="LoadCombineConfig()">Tải lại</button>
       </div>
       <div class="table-wrap">
         <table id="combineTable"></table>
@@ -12,36 +12,36 @@
 
     <div class="right-pane">
       <div class="section-title">Cấu hình chức năng combine</div>
-      <input type="hidden" id="combineKey" />
-      <label>Nhóm</label><input id="combineCategory" readonly="readonly" />
-      <label>Chức năng</label><input id="combineName" readonly="readonly" />
+      <input type="hidden" id="combineKey">
+      <label>Nhóm</label><input type="text" id="combineCategory" readonly>
+      <label>Chức năng</label><input type="text" id="combineName" readonly>
       <div class="row">
-        <div class="cell"><label>Kiểu dữ liệu</label><input id="combineKind" readonly="readonly" /></div>
-        <div class="cell"><label>Giá trị mặc định</label><input id="combineDefault" readonly="readonly" /></div>
+        <div class="cell"><label>Kiểu dữ liệu</label><input type="text" id="combineKind" readonly></div>
+        <div class="cell"><label>Giá trị mặc định</label><input type="text" id="combineDefault" readonly></div>
       </div>
       <div id="combineValueBox">
         <label>Giá trị đang dùng</label><textarea id="combineValue" placeholder="Chọn một cấu hình ở bảng bên trái"></textarea>
       </div>
-      <div id="combineOptionBox" class="option-picker-box" style="display:none">
+      <div id="combineOptionBox" class="option-picker-box">
         <div class="section-title">Danh sách option được phép random</div>
         <div class="option-picker-toolbar">
-          <input id="combineOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderCombineOptionPicker()" />
+          <input type="text" id="combineOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderCombineOptionPicker()">
         </div>
         <div id="combineOptionSummary" class="option-picker-summary"></div>
         <div id="combineOptionList" class="option-picker-list"></div>
         <div class="row">
-          <div class="cell"><label>Param nhỏ nhất</label><input id="combineParamMin" /></div>
-          <div class="cell"><label>Param lớn nhất</label><input id="combineParamMax" /></div>
+          <div class="cell"><label>Param nhỏ nhất</label><input type="text" id="combineParamMin"></div>
+          <div class="cell"><label>Param lớn nhất</label><input type="text" id="combineParamMax"></div>
         </div>
-        <div id="combineDuplicateBox" class="inline-check" style="display:none; margin-top:10px">
-          <input type="checkbox" id="combineAllowDuplicate" />
+        <div id="combineDuplicateBox" class="inline-check">
+          <input type="checkbox" id="combineAllowDuplicate">
           <label for="combineAllowDuplicate">Cho phép hai dòng option bông tai cấp 3 bị trùng nhau</label>
         </div>
       </div>
-      <label>Mô tả</label><textarea id="combineDescription" readonly="readonly"></textarea>
+      <label>Mô tả</label><textarea id="combineDescription" readonly></textarea>
       <div class="actions">
-        <button class="primary" onclick="SaveCombineConfig()">Lưu &amp; áp dụng</button>
-        <button onclick="ResetCombineConfig()">Về mặc định</button>
+        <button type="button" class="primary" onclick="SaveCombineConfig()">Lưu &amp; áp dụng</button>
+        <button type="button" onclick="ResetCombineConfig()">Về mặc định</button>
       </div>
       <div class="split-small">
         <div class="section-title">Quy tắc nhập</div>

@@ -29,6 +29,7 @@ import java.util.List;
 import nro.models.server.Client;
 import nro.models.task.BadgesTaskService;
 import nro.models.task.ClanTaskTemplate;
+import nro.models.task.TaskConfig;
 
 /**
  *
@@ -1245,7 +1246,11 @@ public class TaskService {
     //========================SIDE TASK========================
     public SideTaskTemplate getSideTaskTemplateById(int id) {
         if (id != -1) {
-            return Manager.SIDE_TASKS_TEMPLATE.get(id);
+            for (SideTaskTemplate template : Manager.SIDE_TASKS_TEMPLATE) {
+                if (template.id == id) {
+                    return template;
+                }
+            }
         }
         return null;
     }
@@ -1276,35 +1281,35 @@ public class TaskService {
         if (player.playerTask.sideTask.template != null) {
             if (player.playerTask.sideTask.isDone()) {
                 int goldReward = 0;
-                int ngocBi = 708;
+                int ngocBi = TaskConfig.getSideItemReward(ConstTask.EASY);
                 int cayThong = -1;
                 switch (player.playerTask.sideTask.level) {
                     case ConstTask.EASY:
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
-                        goldReward = ConstTask.GOLD_EASY;
-                        ngocBi = 708;
+                        goldReward = TaskConfig.getSideGoldReward(ConstTask.EASY);
+                        ngocBi = TaskConfig.getSideItemReward(ConstTask.EASY);
                         break;
                     case ConstTask.NORMAL:
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
-                        goldReward = ConstTask.GOLD_NORMAL;
-                        ngocBi = 707;
+                        goldReward = TaskConfig.getSideGoldReward(ConstTask.NORMAL);
+                        ngocBi = TaskConfig.getSideItemReward(ConstTask.NORMAL);
                         break;
                     case ConstTask.HARD:
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
-                        goldReward = ConstTask.GOLD_HARD;
-                        ngocBi = 706;
+                        goldReward = TaskConfig.getSideGoldReward(ConstTask.HARD);
+                        ngocBi = TaskConfig.getSideItemReward(ConstTask.HARD);
                         break;
                     case ConstTask.VERY_HARD:
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
-                        goldReward = ConstTask.GOLD_VERY_HARD;
-                        ngocBi = 705;
+                        goldReward = TaskConfig.getSideGoldReward(ConstTask.VERY_HARD);
+                        ngocBi = TaskConfig.getSideItemReward(ConstTask.VERY_HARD);
                         break;
                     case ConstTask.HELL:
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
-                        goldReward = ConstTask.GOLD_HELL;
-                        ngocBi = 704;
-                        if (player.playerTask.sideTask.leftTask < 15) {
-                            cayThong = 822;
+                        goldReward = TaskConfig.getSideGoldReward(ConstTask.HELL);
+                        ngocBi = TaskConfig.getSideItemReward(ConstTask.HELL);
+                        if (player.playerTask.sideTask.leftTask < TaskConfig.getSideHellTreeLeftThreshold()) {
+                            cayThong = TaskConfig.getSideHellTreeItemId();
                         }
                         break;
                 }
@@ -1471,7 +1476,11 @@ public class TaskService {
     //========================CLAN TASK========================
     public ClanTaskTemplate getClanTaskTemplateById(int id) {
         if (id != -1) {
-            return Manager.CLAN_TASKS_TEMPLATE.get(id);
+            for (ClanTaskTemplate template : Manager.CLAN_TASKS_TEMPLATE) {
+                if (template.id == id) {
+                    return template;
+                }
+            }
         }
         return null;
     }
@@ -1500,7 +1509,7 @@ public class TaskService {
     public void payClanTask(Player player) {
         if (player.playerTask.clanTask.template != null) {
             if (player.playerTask.clanTask.isDone()) {
-                int capsuleClan = (player.playerTask.clanTask.level + 1) * 10;
+                int capsuleClan = TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level);
                 player.playerTask.clanTask.leftTask--;
                 player.playerTask.clanTask.reset();
                 Service.gI().sendThongBao(player, "Bạn vừa nhận được "

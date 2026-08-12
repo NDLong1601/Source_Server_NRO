@@ -2,9 +2,9 @@
   <div class="columns">
     <div class="left-pane gift-left-pane">
       <div class="toolbar">
-        <input id="giftSearch" style="width:260px" placeholder="Tìm mã Giftcode" />
-        <button onclick="LoadGiftCodes()">Tìm</button>
-        <button onclick="NewGiftCode()">Thêm mới</button>
+        <input type="text" id="giftSearch" placeholder="Tìm mã Giftcode">
+        <button type="button" onclick="LoadGiftCodes()">Tìm</button>
+        <button type="button" onclick="NewGiftCode()">Thêm mới</button>
       </div>
       <div class="table-wrap">
         <table id="giftCodesTable"></table>
@@ -14,28 +14,28 @@
     <div class="right-pane gift-right-pane">
       <div class="section-title">Cấu hình Giftcode</div>
       <div class="row">
-        <div class="cell"><label>ID</label><input id="giftId" readonly="readonly" /></div>
-        <div class="cell"><label>Mã Giftcode</label><input id="giftCode" maxlength="64" placeholder="Ví dụ: TAN_THU_2026" /></div>
+        <div class="cell"><label>ID</label><input type="text" id="giftId" readonly></div>
+        <div class="cell"><label>Mã Giftcode</label><input type="text" id="giftCode" maxlength="64" placeholder="Ví dụ: TAN_THU_2026"></div>
       </div>
       <div class="row">
-        <div class="cell"><label>Số lượt còn lại</label><input id="giftCount" value="100" /></div>
+        <div class="cell"><label>Số lượt còn lại</label><input type="text" id="giftCount" value="100"></div>
         <div class="cell">
           <label>Giới hạn lượt</label>
-          <div class="inline-check"><input type="checkbox" id="giftUnlimited" onclick="ToggleGiftUnlimited()" /><label for="giftUnlimited">Không giới hạn</label></div>
+          <div class="inline-check"><input type="checkbox" id="giftUnlimited" onclick="ToggleGiftUnlimited()"><label for="giftUnlimited">Không giới hạn</label></div>
         </div>
       </div>
 
       <label>Hạn sử dụng</label>
       <div class="gift-expiry-mode">
-        <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryDays" value="days" checked="checked" onclick="SetGiftExpiryMode('days')" /><label for="giftExpiryDays">Trong bao nhiêu ngày</label></div>
-        <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryRange" value="range" onclick="SetGiftExpiryMode('range')" /><label for="giftExpiryRange">Từ ngày đến ngày</label></div>
+        <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryDays" value="days" checked onclick="SetGiftExpiryMode('days')"><label for="giftExpiryDays">Trong bao nhiêu ngày</label></div>
+        <div class="inline-check"><input type="radio" name="giftExpiry" id="giftExpiryRange" value="range" onclick="SetGiftExpiryMode('range')"><label for="giftExpiryRange">Từ ngày đến ngày</label></div>
         <div id="giftDaysConfig">
-          <label>Số ngày hiệu lực tính từ lúc lưu</label><input id="giftDays" value="30" />
+          <label>Số ngày hiệu lực tính từ lúc lưu</label><input type="text" id="giftDays" value="30">
         </div>
-        <div id="giftRangeConfig" style="display:none">
+        <div id="giftRangeConfig">
           <div class="row">
-            <div class="cell"><label>Từ ngày (YYYY-MM-DD HH:mm:ss)</label><input id="giftStart" placeholder="2026-08-10 00:00:00" /></div>
-            <div class="cell"><label>Đến ngày (YYYY-MM-DD HH:mm:ss)</label><input id="giftEnd" placeholder="2026-09-10 23:59:59" /></div>
+            <div class="cell"><label>Từ ngày (YYYY-MM-DD HH:mm:ss)</label><input type="text" id="giftStart" placeholder="2026-08-10 00:00:00"></div>
+            <div class="cell"><label>Đến ngày (YYYY-MM-DD HH:mm:ss)</label><input type="text" id="giftEnd" placeholder="2026-09-10 23:59:59"></div>
           </div>
         </div>
       </div>
@@ -44,8 +44,8 @@
         <div class="section-title">Danh sách quà</div>
         <div class="option-picker-box">
           <div class="option-picker-toolbar row">
-            <div class="cell"><input id="giftItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="FilterGiftItems()" /></div>
-            <div class="cell" style="width:90px"><button onclick="LoadGiftItems(true)">Tải lại</button></div>
+            <div class="cell"><input type="text" id="giftItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="FilterGiftItems()"></div>
+            <div id="giftReloadCell" class="cell"><button type="button" onclick="LoadGiftItems(true)">Tải lại</button></div>
           </div>
           <div id="giftItemSummary" class="option-picker-summary">Chưa chọn phần quà</div>
           <div id="giftItemList" class="option-picker-list gift-item-list"></div>
@@ -53,14 +53,14 @@
         <div class="mini-table gift-reward-table"><table id="giftRewardsTable"></table></div>
       </div>
 
-      <div id="giftRewardEditor" class="split-small" style="display:none">
+      <div id="giftRewardEditor" class="split-small">
         <div class="section-title" id="giftRewardTitle">Cấu hình phần quà</div>
         <div class="row gift-reward-meta">
-          <div class="cell"><label>Số lượng</label><input id="giftRewardQuantity" value="1" onchange="SetGiftRewardQuantity()" /></div>
-          <div class="cell gift-count-cell"><label>Đã chọn option</label><input id="giftRewardOptionCount" value="0" readonly="readonly" /></div>
+          <div class="cell"><label>Số lượng</label><input type="text" id="giftRewardQuantity" value="1" onchange="SetGiftRewardQuantity()"></div>
+          <div class="cell gift-count-cell"><label>Đã chọn option</label><input type="text" id="giftRewardOptionCount" value="0" readonly></div>
         </div>
         <div class="option-picker-box">
-          <div class="option-picker-toolbar"><input id="giftOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="FilterGiftOptions()" /></div>
+          <div class="option-picker-toolbar"><input type="text" id="giftOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="FilterGiftOptions()"></div>
           <div class="option-param-columns"><span>Option áp dụng cho vật phẩm</span><span class="option-param-heading">Param</span></div>
           <div id="giftOptionList" class="option-picker-list param-option-list"></div>
         </div>
@@ -68,9 +68,9 @@
 
       <div class="gift-note">Giftcode được server nạp vào bộ nhớ khi khởi động. Sau khi thêm, sửa hoặc xóa, hãy Restart server để áp dụng an toàn.</div>
       <div class="actions">
-        <button onclick="NewGiftCode()">Mã mới</button>
-        <button class="primary" onclick="SaveGiftCode()">Lưu Giftcode</button>
-        <button class="danger" onclick="DeleteGiftCode()">Xóa Giftcode</button>
+        <button type="button" onclick="NewGiftCode()">Mã mới</button>
+        <button type="button" class="primary" onclick="SaveGiftCode()">Lưu Giftcode</button>
+        <button type="button" class="danger" onclick="DeleteGiftCode()">Xóa Giftcode</button>
       </div>
       <div id="giftMessage" class="message"></div>
     </div>

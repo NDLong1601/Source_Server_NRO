@@ -2,48 +2,48 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
-        <input id="mobSearch" style="width:260px" placeholder="Tìm ID hoặc tên Mob" />
-        <button onclick="LoadAdminMobs()">Tìm</button>
+        <input type="text" id="mobSearch" placeholder="Tìm ID hoặc tên Mob">
+        <button type="button" onclick="LoadAdminMobs()">Tìm</button>
       </div>
       <div class="table-wrap"><table id="mobTable"></table></div>
     </div>
     <div class="right-pane">
       <div class="section-title">Lịch và drop của Mob</div>
-      <input type="hidden" id="mobConfigId" /><input type="hidden" id="mobTemplateId" />
+      <input type="hidden" id="mobConfigId"><input type="hidden" id="mobTemplateId">
       <div class="row">
-        <div class="cell"><label>Mob template</label><input id="mobName" readonly="readonly" /></div>
-        <div class="cell"><label>HP gốc</label><input id="mobBaseHp" readonly="readonly" /></div>
-        <div class="cell"><label>% sát thương</label><input id="mobBaseDamage" readonly="readonly" /></div>
+        <div class="cell"><label>Mob template</label><input type="text" id="mobName" readonly></div>
+        <div class="cell"><label>HP gốc</label><input type="text" id="mobBaseHp" readonly></div>
+        <div class="cell"><label>% sát thương</label><input type="text" id="mobBaseDamage" readonly></div>
       </div>
-      <div class="inline-check"><input type="checkbox" id="mobEnabled" checked="checked" /><label for="mobEnabled">Cho phép Mob xuất hiện (tắt sẽ ẩn toàn bộ Mob cùng template)</label></div>
+      <div class="inline-check"><input type="checkbox" id="mobEnabled" checked><label for="mobEnabled">Cho phép Mob xuất hiện (tắt sẽ ẩn toàn bộ Mob cùng template)</label></div>
       <div class="split-small">
         <div class="section-title">Lịch xuất hiện (có thể bật đồng thời)</div>
         <div class="row">
-          <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseRange" onclick="ToggleSpawnSchedule('mob')" /><label for="mobUseRange">Chỉ trong khoảng giờ</label></div></div>
-          <div class="cell"><label>Từ (HH:mm)</label><input id="mobTimeStart" value="08:00" disabled="disabled" /></div>
-          <div class="cell"><label>Đến (HH:mm)</label><input id="mobTimeEnd" value="22:00" disabled="disabled" /></div>
+          <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseRange" onclick="ToggleSpawnSchedule('mob')"><label for="mobUseRange">Chỉ trong khoảng giờ</label></div></div>
+          <div class="cell"><label>Từ (HH:mm)</label><input type="text" id="mobTimeStart" value="08:00" disabled></div>
+          <div class="cell"><label>Đến (HH:mm)</label><input type="text" id="mobTimeEnd" value="22:00" disabled></div>
         </div>
         <div class="row">
-          <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseInterval" onclick="ToggleSpawnSchedule('mob')" /><label for="mobUseInterval">Hồi sinh theo chu kỳ</label></div></div>
-          <div class="cell"><label>Số phút / lần</label><input id="mobInterval" value="1" disabled="disabled" /></div>
+          <div class="cell"><div class="inline-check"><input type="checkbox" id="mobUseInterval" onclick="ToggleSpawnSchedule('mob')"><label for="mobUseInterval">Hồi sinh theo chu kỳ</label></div></div>
+          <div class="cell"><label>Số phút / lần</label><input type="text" id="mobInterval" value="1" disabled></div>
         </div>
       </div>
       <div class="split-small">
         <div class="section-title">Vật phẩm có thể rơi từ Mob</div>
         <div class="row">
-          <div class="cell"><label>Item ID</label><input id="mobDropItem" onkeyup="ShowSpawnItemName('mob')" /></div>
-          <div class="cell"><label>Tên vật phẩm</label><input id="mobDropItemName" readonly="readonly" /></div>
+          <div class="cell"><label>Item ID</label><input type="text" id="mobDropItem" onkeyup="ShowSpawnItemName('mob')"></div>
+          <div class="cell"><label>Tên vật phẩm</label><input type="text" id="mobDropItemName" readonly></div>
         </div>
         <div class="row">
-          <div class="cell"><label>Số lượng min</label><input id="mobDropMin" value="1" /></div>
-          <div class="cell"><label>Số lượng max</label><input id="mobDropMax" value="1" /></div>
-          <div class="cell"><label>Tỉ lệ (%)</label><input id="mobDropRate" value="100" /></div>
+          <div class="cell"><label>Số lượng min</label><input type="text" id="mobDropMin" value="1"></div>
+          <div class="cell"><label>Số lượng max</label><input type="text" id="mobDropMax" value="1"></div>
+          <div class="cell"><label>Tỉ lệ (%)</label><input type="text" id="mobDropRate" value="100"></div>
         </div>
-        <label>Chỉ số (optionId:param, phân cách dấu phẩy)</label><input id="mobDropOptions" placeholder="Ví dụ: 77:15,103:15,30:1" />
-        <div class="actions"><button onclick="AddSpawnDrop('mob')">Thêm / cập nhật drop</button><button onclick="ClearSpawnDropEditor('mob')">Nhập dòng mới</button></div>
+        <label>Chỉ số (optionId:param, phân cách dấu phẩy)</label><input type="text" id="mobDropOptions" placeholder="Ví dụ: 77:15,103:15,30:1">
+        <div class="actions"><button type="button" onclick="AddSpawnDrop('mob')">Thêm / cập nhật drop</button><button type="button" onclick="ClearSpawnDropEditor('mob')">Nhập dòng mới</button></div>
         <div class="mini-table"><table id="mobDropsTable"></table></div>
       </div>
-      <div class="actions"><button class="primary" onclick="SaveAdminMob()">Lưu cấu hình Mob</button><button class="danger" onclick="DeleteAdminMob()">Gỡ cấu hình tùy chỉnh</button></div>
+      <div class="actions"><button type="button" class="primary" onclick="SaveAdminMob()">Lưu cấu hình Mob</button><button type="button" class="danger" onclick="DeleteAdminMob()">Gỡ cấu hình tùy chỉnh</button></div>
       <div class="split-small">Gỡ cấu hình không xóa mob_template: Mob sẽ trở lại lịch hồi sinh 3 giây và drop mặc định của server.</div>
       <div id="mobMessage" class="message"></div>
     </div>

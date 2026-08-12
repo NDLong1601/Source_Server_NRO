@@ -51,12 +51,12 @@ public class SideTask {
     }
 
     public SideTask() {
-        this.leftTask = ConstTask.MAX_SIDE_TASK;
+        this.leftTask = TaskConfig.getMaxSideTask();
     }
 
     public void renew() {
         if (Util.isAfterMidnight(receivedTime)) {
-            this.leftTask = ConstTask.MAX_SIDE_TASK;
+            this.leftTask = TaskConfig.getMaxSideTask();
             this.receivedTime = System.currentTimeMillis();
         }
     }

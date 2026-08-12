@@ -2,15 +2,15 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
-        <input id="radarSearch" style="width:220px" placeholder="T&#236;m ID, icon ho&#7863;c t&#234;n th&#7867;" />
-        <input id="radarRankFilter" class="hidden-value" value="-1" />
-        <div id="combo_radarRankFilter" class="combo toolbar-combo" style="width:130px" onclick="ToggleCombo('radarRankFilter'); event.cancelBubble = true;">
+        <input type="text" id="radarSearch" placeholder="T&#236;m ID, icon ho&#7863;c t&#234;n th&#7867;">
+        <input type="text" id="radarRankFilter" class="hidden-value" value="-1">
+        <div id="combo_radarRankFilter" class="combo toolbar-combo" onclick="ToggleCombo('radarRankFilter'); event.cancelBubble = true;">
           <span id="combo_radarRankFilter_text" class="combo-text">T&#7845;t c&#7843; rank</span>
           <span class="combo-button"><span class="combo-caret"></span></span>
           <div id="combo_radarRankFilter_menu" class="combo-menu"></div>
         </div>
-        <button onclick="LoadRadarCards()">T&#236;m</button>
-        <button onclick="NewRadarCard()">Th&#234;m m&#7899;i</button>
+        <button type="button" onclick="LoadRadarCards()">T&#236;m</button>
+        <button type="button" onclick="NewRadarCard()">Th&#234;m m&#7899;i</button>
       </div>
       <div class="table-wrap">
         <table id="radarCardsTable"></table>
@@ -21,45 +21,45 @@
       <div class="section-title">Th&#244;ng tin th&#7867; s&#432;u t&#7847;m</div>
       <div class="radar-preview" id="radarPreview"></div>
       <div class="row">
-        <div class="cell"><label>ID th&#7867; / item</label><input id="radarId" /></div>
-        <div class="cell"><label>ID icon</label><input id="radarIconId" onkeyup="UpdateRadarPreview()" /></div>
+        <div class="cell"><label>ID th&#7867; / item</label><input type="text" id="radarId"></div>
+        <div class="cell"><label>ID icon</label><input type="text" id="radarIconId" onkeyup="UpdateRadarPreview()"></div>
         <div class="cell">
           <label>H&#7841;ng</label>
-          <input id="radarRank" class="hidden-value" value="0" />
+          <input type="text" id="radarRank" class="hidden-value" value="0">
           <div id="combo_radarRank" class="combo" onclick="ToggleCombo('radarRank'); event.cancelBubble = true;">
             <span id="combo_radarRank_text" class="combo-text">Rank 0</span>
             <span class="combo-button"><span class="combo-caret"></span></span>
             <div id="combo_radarRank_menu" class="combo-menu"></div>
           </div>
         </div>
-        <div class="cell"><label>S&#7889; th&#7867; m&#7863;c &#273;&#7883;nh</label><input id="radarMax" /></div>
+        <div class="cell"><label>S&#7889; th&#7867; m&#7863;c &#273;&#7883;nh</label><input type="text" id="radarMax"></div>
       </div>
-      <label>T&#234;n th&#7867;</label><input id="radarName" />
+      <label>T&#234;n th&#7867;</label><input type="text" id="radarName">
       <label>M&#244; t&#7843;</label><textarea id="radarInfo"></textarea>
       <div class="row">
         <div class="cell">
           <label>Ki&#7875;u th&#7867;</label>
-          <input id="radarType" class="hidden-value" value="0" />
+          <input type="text" id="radarType" class="hidden-value" value="0">
           <div id="combo_radarType" class="combo" onclick="ToggleCombo('radarType'); event.cancelBubble = true;">
             <span id="combo_radarType_text" class="combo-text">Qu&#225;i / Mob</span>
             <span class="combo-button"><span class="combo-caret"></span></span>
             <div id="combo_radarType_menu" class="combo-menu"></div>
           </div>
         </div>
-        <div class="cell"><label>ID qu&#225;i hi&#7875;n th&#7883;</label><input id="radarMobId" onkeyup="UpdateRadarMetaHints()" /><div id="radarMobHint" class="radar-meta-note"></div></div>
-        <div class="cell"><label>H&#224;o quang</label><input id="radarAuraId" onkeyup="UpdateRadarMetaHints()" /><div id="radarAuraHint" class="radar-meta-note"></div></div>
+        <div class="cell"><label>ID qu&#225;i hi&#7875;n th&#7883;</label><input type="text" id="radarMobId" onkeyup="UpdateRadarMetaHints()"><div id="radarMobHint" class="radar-meta-note"></div></div>
+        <div class="cell"><label>H&#224;o quang</label><input type="text" id="radarAuraId" onkeyup="UpdateRadarMetaHints()"><div id="radarAuraHint" class="radar-meta-note"></div></div>
       </div>
       <div class="row">
-        <div class="cell"><label>&#272;&#7847;u</label><input id="radarHead" /></div>
-        <div class="cell"><label>Th&#226;n</label><input id="radarBody" /></div>
-        <div class="cell"><label>Ch&#226;n</label><input id="radarLeg" /></div>
-        <div class="cell"><label>T&#250;i</label><input id="radarBag" onkeyup="UpdateRadarMetaHints()" /><div id="radarBagHint" class="radar-meta-note"></div></div>
+        <div class="cell"><label>&#272;&#7847;u</label><input type="text" id="radarHead"></div>
+        <div class="cell"><label>Th&#226;n</label><input type="text" id="radarBody"></div>
+        <div class="cell"><label>Ch&#226;n</label><input type="text" id="radarLeg"></div>
+        <div class="cell"><label>T&#250;i</label><input type="text" id="radarBag" onkeyup="UpdateRadarMetaHints()"><div id="radarBagHint" class="radar-meta-note"></div></div>
       </div>
       <div class="row">
-        <div class="cell"><label>Y&#234;u c&#7847;u th&#7867; ID</label><input id="radarRequireId" onkeyup="UpdateRadarMetaHints()" /><div id="radarRequireHint" class="radar-meta-note"></div></div>
+        <div class="cell"><label>Y&#234;u c&#7847;u th&#7867; ID</label><input type="text" id="radarRequireId" onkeyup="UpdateRadarMetaHints()"><div id="radarRequireHint" class="radar-meta-note"></div></div>
         <div class="cell">
           <label>Y&#234;u c&#7847;u m&#7889;c</label>
-          <input id="radarRequireLevel" class="hidden-value" value="0" />
+          <input type="text" id="radarRequireLevel" class="hidden-value" value="0">
           <div id="combo_radarRequireLevel" class="combo" onclick="ToggleCombo('radarRequireLevel'); event.cancelBubble = true;">
             <span id="combo_radarRequireLevel_text" class="combo-text">M&#7889;c 0</span>
             <span class="combo-button"><span class="combo-caret"></span></span>
@@ -71,9 +71,9 @@
       <div class="split-small">
         <div class="section-title">S&#7889; th&#7867; k&#237;ch ho&#7841;t m&#7889;c</div>
         <div class="row">
-          <div class="cell"><label>M&#7889;c 0</label><input id="radarMilestone0" value="1" readonly="readonly" /><div class="radar-meta-note">S&#7903; h&#7919;u th&#7867;</div></div>
-          <div class="cell"><label>M&#7889;c 1</label><input id="radarMilestone1" value="120" /></div>
-          <div class="cell"><label>M&#7889;c 2</label><input id="radarMilestone2" value="120" /></div>
+          <div class="cell"><label>M&#7889;c 0</label><input type="text" id="radarMilestone0" value="1" readonly><div class="radar-meta-note">S&#7903; h&#7919;u th&#7867;</div></div>
+          <div class="cell"><label>M&#7889;c 1</label><input type="text" id="radarMilestone1" value="120"></div>
+          <div class="cell"><label>M&#7889;c 2</label><input type="text" id="radarMilestone2" value="120"></div>
         </div>
       </div>
 
@@ -81,11 +81,11 @@
         <div class="section-title">Option theo m&#7889;c k&#237;ch ho&#7841;t</div>
         <div class="option-picker-box">
           <div class="option-picker-toolbar radar-option-toolbar">
-            <input id="radarOptionSearch" placeholder="T&#236;m option" onkeyup="RenderRadarOptionPicker()" />
-            <input id="radarOptionId" placeholder="ID option" onkeyup="UpdateRadarOptionSummary()" />
-            <input id="radarOptionParam" placeholder="Param" />
-            <div style="display:inline-block;width:120px;vertical-align:top">
-              <input id="radarOptionActive" class="hidden-value" value="0" />
+            <input type="text" id="radarOptionSearch" placeholder="T&#236;m option" onkeyup="RenderRadarOptionPicker()">
+            <input type="text" id="radarOptionId" placeholder="ID option" onkeyup="UpdateRadarOptionSummary()">
+            <input type="text" id="radarOptionParam" placeholder="Param">
+            <div id="radarOptionActiveContainer">
+              <input type="text" id="radarOptionActive" class="hidden-value" value="0">
               <div id="combo_radarOptionActive" class="combo" onclick="ToggleCombo('radarOptionActive'); event.cancelBubble = true;">
                 <span id="combo_radarOptionActive_text" class="combo-text">M&#7889;c 0</span>
                 <span class="combo-button"><span class="combo-caret"></span></span>
@@ -97,57 +97,57 @@
           <div id="radarOptionList" class="option-picker-list"></div>
         </div>
         <div class="actions">
-          <button onclick="NewRadarOption()">Option m&#7899;i</button>
-          <button class="primary" onclick="SaveRadarOption()">L&#432;u option</button>
-          <button class="danger" onclick="DeleteRadarOption()">X&#243;a option</button>
+          <button type="button" onclick="NewRadarOption()">Option m&#7899;i</button>
+          <button type="button" class="primary" onclick="SaveRadarOption()">L&#432;u option</button>
+          <button type="button" class="danger" onclick="DeleteRadarOption()">X&#243;a option</button>
         </div>
         <div class="mini-table"><table id="radarOptionsTable"></table></div>
       </div>
       <div class="actions">
-        <button class="primary" onclick="SaveRadarCard()">L&#432;u th&#7867; s&#432;u t&#7847;m</button>
-        <button class="danger" onclick="DeleteRadarCard()">X&#243;a th&#7867;</button>
-        <button onclick="RestartServer()">Restart &#273;&#7875; &#225;p d&#7909;ng</button>
+        <button type="button" class="primary" onclick="SaveRadarCard()">L&#432;u th&#7867; s&#432;u t&#7847;m</button>
+        <button type="button" class="danger" onclick="DeleteRadarCard()">X&#243;a th&#7867;</button>
+        <button type="button" onclick="RestartServer()">Restart &#273;&#7875; &#225;p d&#7909;ng</button>
       </div>
 
       <div class="split-small">
         <div class="section-title">Ngu&#7891;n r&#417;i th&#7867;</div>
         <div class="event-help">Mob ph&#249; h&#7907;p th&#7867; ki&#7875;u Qu&#225;i / Mob; Boss ph&#249; h&#7907;p th&#7867; ki&#7875;u Nh&#226;n v&#7853;t / part. C&#243; th&#7875; c&#7845;u h&#236;nh c&#7843; hai n&#7871;u c&#7847;n.</div>
         <div class="section-title">Mob r&#417;i th&#7867;</div>
-        <div class="toolbar" style="min-height:44px;padding:0 0 8px;border-bottom:0;background:transparent">
-          <input id="radarMobDropSearch" style="width:220px" placeholder="T&#236;m ID ho&#7863;c t&#234;n Mob" />
-          <button onclick="LoadRadarMobDrops()">T&#236;m Mob</button>
+        <div class="toolbar radar-drop-toolbar">
+          <input type="text" id="radarMobDropSearch" placeholder="T&#236;m ID ho&#7863;c t&#234;n Mob">
+          <button type="button" onclick="LoadRadarMobDrops()">T&#236;m Mob</button>
         </div>
         <div class="row">
-          <div class="cell"><label>Mob &#273;ang ch&#7885;n</label><input id="radarDropMobLabel" readonly="readonly" /></div>
-          <div class="cell"><label>T&#7881; l&#7879; r&#417;i (%)</label><input id="radarDropRate" value="1" /></div>
+          <div class="cell"><label>Mob &#273;ang ch&#7885;n</label><input type="text" id="radarDropMobLabel" readonly></div>
+          <div class="cell"><label>T&#7881; l&#7879; r&#417;i (%)</label><input type="text" id="radarDropRate" value="1"></div>
         </div>
         <div class="row">
-          <div class="cell"><label>S&#7889; l&#432;&#7907;ng min</label><input id="radarDropMin" value="1" /></div>
-          <div class="cell"><label>S&#7889; l&#432;&#7907;ng max</label><input id="radarDropMax" value="1" /></div>
+          <div class="cell"><label>S&#7889; l&#432;&#7907;ng min</label><input type="text" id="radarDropMin" value="1"></div>
+          <div class="cell"><label>S&#7889; l&#432;&#7907;ng max</label><input type="text" id="radarDropMax" value="1"></div>
         </div>
         <div class="actions">
-          <button onclick="UpdateRadarMobDrop()">Th&#234;m / c&#7853;p nh&#7853;t Mob</button>
-          <button class="danger" onclick="RemoveRadarMobDrop()">G&#7905; Mob n&#224;y</button>
-          <button class="primary" onclick="SaveRadarMobDrops()">L&#432;u Mob r&#417;i th&#7867;</button>
+          <button type="button" onclick="UpdateRadarMobDrop()">Th&#234;m / c&#7853;p nh&#7853;t Mob</button>
+          <button type="button" class="danger" onclick="RemoveRadarMobDrop()">G&#7905; Mob n&#224;y</button>
+          <button type="button" class="primary" onclick="SaveRadarMobDrops()">L&#432;u Mob r&#417;i th&#7867;</button>
         </div>
         <div class="mini-table"><table id="radarMobDropsTable"></table></div>
         <div class="section-title">Boss r&#417;i th&#7867;</div>
-        <div class="toolbar" style="min-height:44px;padding:0 0 8px;border-bottom:0;background:transparent">
-          <input id="radarBossDropSearch" style="width:220px" placeholder="T&#236;m ID, m&#227; ho&#7863;c t&#234;n Boss" />
-          <button onclick="LoadRadarBossDrops()">T&#236;m Boss</button>
+        <div class="toolbar radar-drop-toolbar">
+          <input type="text" id="radarBossDropSearch" placeholder="T&#236;m ID, m&#227; ho&#7863;c t&#234;n Boss">
+          <button type="button" onclick="LoadRadarBossDrops()">T&#236;m Boss</button>
         </div>
         <div class="row">
-          <div class="cell"><label>Boss &#273;ang ch&#7885;n</label><input id="radarBossDropLabel" readonly="readonly" /></div>
-          <div class="cell"><label>T&#7881; l&#7879; r&#417;i (%)</label><input id="radarBossDropRate" value="1" /></div>
+          <div class="cell"><label>Boss &#273;ang ch&#7885;n</label><input type="text" id="radarBossDropLabel" readonly></div>
+          <div class="cell"><label>T&#7881; l&#7879; r&#417;i (%)</label><input type="text" id="radarBossDropRate" value="1"></div>
         </div>
         <div class="row">
-          <div class="cell"><label>S&#7889; l&#432;&#7907;ng min</label><input id="radarBossDropMin" value="1" /></div>
-          <div class="cell"><label>S&#7889; l&#432;&#7907;ng max</label><input id="radarBossDropMax" value="1" /></div>
+          <div class="cell"><label>S&#7889; l&#432;&#7907;ng min</label><input type="text" id="radarBossDropMin" value="1"></div>
+          <div class="cell"><label>S&#7889; l&#432;&#7907;ng max</label><input type="text" id="radarBossDropMax" value="1"></div>
         </div>
         <div class="actions">
-          <button onclick="UpdateRadarBossDrop()">Th&#234;m / c&#7853;p nh&#7853;t Boss</button>
-          <button class="danger" onclick="RemoveRadarBossDrop()">G&#7905; Boss n&#224;y</button>
-          <button class="primary" onclick="SaveRadarBossDrops()">L&#432;u Boss r&#417;i th&#7867;</button>
+          <button type="button" onclick="UpdateRadarBossDrop()">Th&#234;m / c&#7853;p nh&#7853;t Boss</button>
+          <button type="button" class="danger" onclick="RemoveRadarBossDrop()">G&#7905; Boss n&#224;y</button>
+          <button type="button" class="primary" onclick="SaveRadarBossDrops()">L&#432;u Boss r&#417;i th&#7867;</button>
         </div>
         <div class="mini-table"><table id="radarBossDropsTable"></table></div>
       </div>

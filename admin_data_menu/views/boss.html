@@ -2,41 +2,41 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
-        <input id="bossSearch" style="width:300px" placeholder="Tìm BossID, tên hoặc class" />
-        <button onclick="LoadAdminBosses()">Tìm</button>
+        <input type="text" id="bossSearch" placeholder="Tìm BossID, tên hoặc class">
+        <button type="button" onclick="LoadAdminBosses()">Tìm</button>
       </div>
       <div class="table-wrap"><table id="bossTable"></table></div>
     </div>
     <div class="right-pane">
       <div class="section-title">Boss đã đăng ký trong server</div>
-      <input type="hidden" id="bossId" />
-      <input type="hidden" id="bossKey" />
-      <input type="hidden" id="bossHasOverride" />
+      <input type="hidden" id="bossId">
+      <input type="hidden" id="bossKey">
+      <input type="hidden" id="bossHasOverride">
       <div class="row">
-        <div class="cell"><label>Boss ID</label><input id="bossServerId" readonly="readonly" /></div>
-        <div class="cell"><label>Mã Boss</label><input id="bossServerKey" readonly="readonly" /></div>
+        <div class="cell"><label>Boss ID</label><input type="text" id="bossServerId" readonly></div>
+        <div class="cell"><label>Mã Boss</label><input type="text" id="bossServerKey" readonly></div>
       </div>
       <div class="row">
-        <div class="cell"><label>Tên trong BossesData</label><input id="bossServerName" readonly="readonly" /></div>
-        <div class="cell"><label>Class khởi tạo</label><input id="bossServerClass" readonly="readonly" /></div>
+        <div class="cell"><label>Tên trong BossesData</label><input type="text" id="bossServerName" readonly></div>
+        <div class="cell"><label>Class khởi tạo</label><input type="text" id="bossServerClass" readonly></div>
       </div>
-      <label>Map mặc định</label><input id="bossDefaultMaps" readonly="readonly" />
-      <div class="inline-check"><input type="checkbox" id="bossEnabled" checked="checked" /><label for="bossEnabled">Cho phép hệ thống khởi tạo Boss này</label></div>
+      <label>Map mặc định</label><input type="text" id="bossDefaultMaps" readonly>
+      <div class="inline-check"><input type="checkbox" id="bossEnabled" checked><label for="bossEnabled">Cho phép hệ thống khởi tạo Boss này</label></div>
 
       <div class="split-small">
         <div class="section-title">Map và lịch xuất hiện</div>
         <label>Map ghi đè (có thể chọn nhiều)</label>
-        <input id="bossMapSearch" placeholder="Tìm theo ID hoặc tên map" onkeyup="RenderBossMapChecklist()" />
+        <input type="text" id="bossMapSearch" placeholder="Tìm theo ID hoặc tên map" onkeyup="RenderBossMapChecklist()">
         <div id="bossMapSummary" class="option-picker-summary">Chưa chọn map — dùng map mặc định trong BossesData</div>
         <div id="bossMapChecklist" class="option-picker-list"></div>
         <div class="row">
-          <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseRange" onclick="ToggleSpawnSchedule('boss')" /><label for="bossUseRange">Chỉ trong khoảng giờ</label></div></div>
-          <div class="cell"><label>Từ (HH:mm)</label><input id="bossTimeStart" value="08:00" disabled="disabled" /></div>
-          <div class="cell"><label>Đến (HH:mm)</label><input id="bossTimeEnd" value="22:00" disabled="disabled" /></div>
+          <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseRange" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseRange">Chỉ trong khoảng giờ</label></div></div>
+          <div class="cell"><label>Từ (HH:mm)</label><input type="text" id="bossTimeStart" value="08:00" disabled></div>
+          <div class="cell"><label>Đến (HH:mm)</label><input type="text" id="bossTimeEnd" value="22:00" disabled></div>
         </div>
         <div class="row">
-          <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseInterval" onclick="ToggleSpawnSchedule('boss')" /><label for="bossUseInterval">Xuất hiện theo chu kỳ</label></div></div>
-          <div class="cell"><label>Số phút / lần</label><input id="bossInterval" value="10" disabled="disabled" /></div>
+          <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseInterval" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseInterval">Xuất hiện theo chu kỳ</label></div></div>
+          <div class="cell"><label>Số phút / lần</label><input type="text" id="bossInterval" value="10" disabled></div>
         </div>
       </div>
 
@@ -47,43 +47,43 @@
       <div class="split-small">
         <div class="section-title">Bộ skill sẽ áp dụng</div>
         <div class="row">
-          <div class="cell"><label>Skill</label><input type="hidden" id="bossSkillId" value="" /><div id="combo_bossSkillId" class="combo" onclick="ToggleCombo('bossSkillId'); event.cancelBubble = true;"><span id="combo_bossSkillId_text" class="combo-text">Chọn skill</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_bossSkillId_menu" class="combo-menu"></div></div></div>
-          <div class="cell"><label>Cấp skill (1–7)</label><input id="bossSkillLevel" value="7" /></div>
+          <div class="cell"><label>Skill</label><input type="hidden" id="bossSkillId" value=""><div id="combo_bossSkillId" class="combo" onclick="ToggleCombo('bossSkillId'); event.cancelBubble = true;"><span id="combo_bossSkillId_text" class="combo-text">Chọn skill</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_bossSkillId_menu" class="combo-menu"></div></div></div>
+          <div class="cell"><label>Cấp skill (1–7)</label><input type="text" id="bossSkillLevel" value="7"></div>
         </div>
         <div class="row">
-          <div class="cell"><label>Hồi chiêu (ms)</label><input id="bossSkillCooldown" value="1000" /></div>
-          <div class="cell"><label>Gợi ý</label><input id="bossSkillHint" value="1000 ms = 1 giây" readonly="readonly" /></div>
+          <div class="cell"><label>Hồi chiêu (ms)</label><input type="text" id="bossSkillCooldown" value="1000"></div>
+          <div class="cell"><label>Gợi ý</label><input type="text" id="bossSkillHint" value="1000 ms = 1 giây" readonly></div>
         </div>
         <div class="actions">
-          <button onclick="AddBossSkill()">Thêm / cập nhật skill</button>
-          <button onclick="ClearBossSkillEditor()">Nhập dòng mới</button>
-          <button onclick="ResetBossSkillsToDefault()">Nạp lại skill gốc</button>
+          <button type="button" onclick="AddBossSkill()">Thêm / cập nhật skill</button>
+          <button type="button" onclick="ClearBossSkillEditor()">Nhập dòng mới</button>
+          <button type="button" onclick="ResetBossSkillsToDefault()">Nạp lại skill gốc</button>
         </div>
         <div class="mini-table"><table id="bossConfiguredSkillsTable"></table></div>
       </div>
       <div class="split-small">
         <div class="section-title">Vật phẩm rơi thêm từ Boss</div>
-        <label>Tìm và chọn vật phẩm</label><input id="bossItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="RenderBossItemChecklist()" />
+        <label>Tìm và chọn vật phẩm</label><input type="text" id="bossItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="RenderBossItemChecklist()">
         <div id="bossItemSummary" class="option-picker-summary">Chưa chọn vật phẩm rơi thêm</div>
         <div id="bossItemChecklist" class="option-picker-list"></div>
         <div class="row">
-          <div class="cell"><label>Item ID đang chỉnh</label><input id="bossDropItem" readonly="readonly" /></div>
-          <div class="cell"><label>Tên vật phẩm</label><input id="bossDropItemName" readonly="readonly" /></div>
+          <div class="cell"><label>Item ID đang chỉnh</label><input type="text" id="bossDropItem" readonly></div>
+          <div class="cell"><label>Tên vật phẩm</label><input type="text" id="bossDropItemName" readonly></div>
         </div>
         <div class="row">
-          <div class="cell"><label>Số lượng min</label><input id="bossDropMin" value="1" /></div>
-          <div class="cell"><label>Số lượng max</label><input id="bossDropMax" value="1" /></div>
-          <div class="cell"><label>Tỉ lệ (%)</label><input id="bossDropRate" value="100" /></div>
+          <div class="cell"><label>Số lượng min</label><input type="text" id="bossDropMin" value="1"></div>
+          <div class="cell"><label>Số lượng max</label><input type="text" id="bossDropMax" value="1"></div>
+          <div class="cell"><label>Tỉ lệ (%)</label><input type="text" id="bossDropRate" value="100"></div>
         </div>
-        <label>Option và khoảng chỉ số random</label><input id="bossOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderBossOptionChecklist()" />
+        <label>Option và khoảng chỉ số random</label><input type="text" id="bossOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderBossOptionChecklist()">
         <div id="bossOptionSummary" class="option-picker-summary">Chọn một vật phẩm để cấu hình option</div>
         <div id="bossOptionChecklist" class="option-picker-list"></div>
-        <div class="actions"><button onclick="UpdateBossDrop()">Cập nhật vật phẩm đang chọn</button><button onclick="ClearBossDropSelection()">Bỏ chọn dòng chỉnh sửa</button></div>
+        <div class="actions"><button type="button" onclick="UpdateBossDrop()">Cập nhật vật phẩm đang chọn</button><button type="button" onclick="ClearBossDropSelection()">Bỏ chọn dòng chỉnh sửa</button></div>
         <div class="mini-table"><table id="bossDropsTable"></table></div>
       </div>
       <div class="actions">
-        <button class="primary" onclick="SaveBossOverride()">Lưu cấu hình Boss</button>
-        <button class="danger" onclick="DeleteBossOverride()">Trả về mặc định</button>
+        <button type="button" class="primary" onclick="SaveBossOverride()">Lưu cấu hình Boss</button>
+        <button type="button" class="danger" onclick="DeleteBossOverride()">Trả về mặc định</button>
       </div>
       <div class="split-small">Cấu hình tác động lên class Boss khi được tạo hoặc hồi sinh; danh sách này không phụ thuộc Boss đang online.</div>
       <div id="bossMessage" class="message"></div>

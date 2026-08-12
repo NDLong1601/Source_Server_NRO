@@ -3,8 +3,8 @@ package nro.models.npc_list;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import nro.models.consts.ConstNpc;
-import nro.models.consts.ConstTask;
 import nro.models.item.Item;
+import nro.models.task.TaskConfig;
 import nro.models.services.AchievementService;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
@@ -51,7 +51,7 @@ public class BoMong extends Npc {
                                         + "\nHiện tại đã hoàn thành: " + player.playerTask.sideTask.count + "/"
                                         + player.playerTask.sideTask.maxCount + " ("
                                         + player.playerTask.sideTask.getPercentProcess() + "%)\nSố nhiệm vụ còn lại trong ngày: "
-                                        + player.playerTask.sideTask.leftTask + "/" + ConstTask.MAX_SIDE_TASK;
+                                        + player.playerTask.sideTask.leftTask + "/" + TaskConfig.getMaxSideTask();
                                 this.createOtherMenu(player, ConstNpc.MENU_OPTION_PAY_SIDE_TASK,
                                         npcSay, "Trả nhiệm\nvụ", "Hủy nhiệm\nvụ");
                             } else {

@@ -5,7 +5,7 @@ import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
-import nro.models.consts.ConstTask;
+
 import java.util.ArrayList;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
@@ -14,6 +14,7 @@ import nro.models.services.ClanService;
 import nro.models.map.service.NpcService;
 import nro.models.services.Service;
 import nro.models.services.TaskService;
+import nro.models.task.TaskConfig;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services_func.Input;
 import nro.models.utils.Util;
@@ -45,7 +46,7 @@ public class DrDrief extends Npc {
                     if (clan.isLeader(pl)) {
                         menu.add("Chức năng\nbang hội");
                     }
-                    menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + ConstTask.MAX_CLAN_TASK + "]");
+                    menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + TaskConfig.getMaxClanTask() + "]");
                 }
                 menu.add("Đảo Kame");
                 menu.add("Từ chối");
@@ -82,7 +83,7 @@ public class DrDrief extends Npc {
                                     case 1 -> {
                                         if (player.playerTask.clanTask.template != null) {
                                             if (player.playerTask.clanTask.isDone()) {
-                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + ((player.playerTask.clanTask.level + 1) * 10) + " capsule bang", "Nhận\nthưởng", "Đóng");
+                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level) + " capsule bang", "Nhận\nthưởng", "Đóng");
                                                 break;
                                             }
                                             createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName() + ". Đã hạ được " + player.playerTask.clanTask.count, "OK", "Hủy bỏ\nNhiệm vụ\nnày");
@@ -100,7 +101,7 @@ public class DrDrief extends Npc {
                                     case 0 -> {
                                         if (player.playerTask.clanTask.template != null) {
                                             if (player.playerTask.clanTask.isDone()) {
-                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + ((player.playerTask.clanTask.level + 1) * 10) + " capsule bang", "Nhận\nthưởng", "Đóng");
+                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level) + " capsule bang", "Nhận\nthưởng", "Đóng");
                                                 break;
                                             }
                                             createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName() + ". Đã hạ được " + player.playerTask.clanTask.count, "OK", "Hủy bỏ\nNhiệm vụ\nnày");

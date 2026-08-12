@@ -2,9 +2,9 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
-        <button onclick="LoadShops()">Danh sách shop</button>
-        <button onclick="LoadNpcs()">Danh sách NPC</button>
-        <button onclick="NewShop()">Thêm shop</button>
+        <button type="button" onclick="LoadShops()">Danh sách shop</button>
+        <button type="button" onclick="LoadNpcs()">Danh sách NPC</button>
+        <button type="button" onclick="NewShop()">Thêm shop</button>
       </div>
       <div class="table-wrap">
         <table id="shopsTable"></table>
@@ -14,27 +14,27 @@
     <div class="right-pane">
       <div class="section-title">Shop NPC</div>
       <div class="row">
-        <div class="cell"><label>Shop ID</label><input id="shopId" /></div>
-        <div class="cell"><label>NPC ID</label><input id="shopNpcId" /></div>
-        <div class="cell"><label>Type shop</label><input id="shopType" /></div>
+        <div class="cell"><label>Shop ID</label><input type="text" id="shopId"></div>
+        <div class="cell"><label>NPC ID</label><input type="text" id="shopNpcId"></div>
+        <div class="cell"><label>Type shop</label><input type="text" id="shopType"></div>
       </div>
-      <label>Tag name</label><input id="shopTag" />
+      <label>Tag name</label><input type="text" id="shopTag">
       <div class="actions">
-        <button class="primary" onclick="SaveShop()">Lưu shop</button>
-        <button onclick="LoadTabs()">Tải tab</button>
+        <button type="button" class="primary" onclick="SaveShop()">Lưu shop</button>
+        <button type="button" onclick="LoadTabs()">Tải tab</button>
       </div>
 
       <div class="split-small">
         <div class="section-title">Tab shop</div>
         <div class="row">
-          <div class="cell"><label>Tab ID</label><input id="tabId" /></div>
-          <div class="cell"><label>Tên tab</label><input id="tabName" /></div>
+          <div class="cell"><label>Tab ID</label><input type="text" id="tabId"></div>
+          <div class="cell"><label>Tên tab</label><input type="text" id="tabName"></div>
         </div>
         <div class="actions">
-          <button onclick="NewTab()">Tab mới</button>
-          <button class="primary" onclick="SaveTab()">Lưu tab</button>
-          <button class="danger" onclick="DeleteTab()">Xóa tab</button>
-          <button onclick="LoadShopItems()">Tải item</button>
+          <button type="button" onclick="NewTab()">Tab mới</button>
+          <button type="button" class="primary" onclick="SaveTab()">Lưu tab</button>
+          <button type="button" class="danger" onclick="DeleteTab()">Xóa tab</button>
+          <button type="button" onclick="LoadShopItems()">Tải item</button>
         </div>
         <div class="mini-table"><table id="tabsTable"></table></div>
       </div>
@@ -42,19 +42,19 @@
       <div class="split-small">
         <div class="section-title">Vật phẩm bán</div>
         <div class="row">
-          <div class="cell"><label>ID dòng đang sửa</label><input id="shopItemId" readonly="readonly" placeholder="Tự tạo khi thêm mới" /></div>
-          <input id="shopTempId" type="hidden" value="" />
+          <div class="cell"><label>ID dòng đang sửa</label><input type="text" id="shopItemId" readonly placeholder="Tự tạo khi thêm mới"></div>
+          <input id="shopTempId" type="hidden" value="">
         </div>
         <div class="option-picker-box">
-          <div class="option-picker-toolbar"><input id="shopItemSearch" placeholder="Tìm theo ID, tên hoặc phụ đề vật phẩm" onkeyup="RenderShopItemPicker()" /></div>
+          <div class="option-picker-toolbar"><input type="text" id="shopItemSearch" placeholder="Tìm theo ID, tên hoặc phụ đề vật phẩm" onkeyup="RenderShopItemPicker()"></div>
           <div id="shopItemSummary" class="option-picker-summary">Chưa chọn vật phẩm</div>
           <div id="shopItemList" class="option-picker-list"></div>
         </div>
         <div class="row">
-          <div class="cell"><label>Giá</label><input id="shopCost" /></div>
+          <div class="cell"><label>Giá</label><input type="text" id="shopCost"></div>
           <div class="cell">
             <label>Loại tiền</label>
-            <input id="shopTypeSell" class="hidden-value" value="0" />
+            <input type="text" id="shopTypeSell" class="hidden-value" value="0">
             <div id="combo_shopTypeSell" class="combo" onclick="ToggleCombo('shopTypeSell'); event.cancelBubble = true;">
               <span id="combo_shopTypeSell_text" class="combo-text">Vàng</span>
               <span class="combo-button"><span class="combo-caret"></span></span>
@@ -63,7 +63,7 @@
           </div>
           <div class="cell">
             <label>New</label>
-            <input id="shopIsNew" class="hidden-value" value="1" />
+            <input type="text" id="shopIsNew" class="hidden-value" value="1">
             <div id="combo_shopIsNew" class="combo" onclick="ToggleCombo('shopIsNew'); event.cancelBubble = true;">
               <span id="combo_shopIsNew_text" class="combo-text">Bật</span>
               <span class="combo-button"><span class="combo-caret"></span></span>
@@ -74,19 +74,19 @@
         <div class="row">
           <div class="cell">
             <label>Đang bán</label>
-            <input id="shopIsSell" class="hidden-value" value="1" />
+            <input type="text" id="shopIsSell" class="hidden-value" value="1">
             <div id="combo_shopIsSell" class="combo" onclick="ToggleCombo('shopIsSell'); event.cancelBubble = true;">
               <span id="combo_shopIsSell_text" class="combo-text">Bật</span>
               <span class="combo-button"><span class="combo-caret"></span></span>
               <div id="combo_shopIsSell_menu" class="combo-menu"></div>
             </div>
           </div>
-          <div class="cell"><label>Icon spec</label><input id="shopIconSpec" /></div>
+          <div class="cell"><label>Icon spec</label><input type="text" id="shopIconSpec"></div>
         </div>
         <div class="actions">
-          <button onclick="NewShopItem()">Chọn nhóm mới</button>
-          <button class="primary" onclick="SaveShopItem()">Lưu vật phẩm đã chọn</button>
-          <button class="danger" onclick="DeleteShopItem()">Xóa item</button>
+          <button type="button" onclick="NewShopItem()">Chọn nhóm mới</button>
+          <button type="button" class="primary" onclick="SaveShopItem()">Lưu vật phẩm đã chọn</button>
+          <button type="button" class="danger" onclick="DeleteShopItem()">Xóa item</button>
         </div>
         <div class="mini-table"><table id="shopItemsTable"></table></div>
       </div>
@@ -94,17 +94,17 @@
       <div class="split-small">
         <div class="section-title">Option item shop</div>
         <div class="row gift-reward-meta">
-          <div class="cell"><label>Vật phẩm đang cấu hình</label><input id="shopOptionItemLabel" readonly="readonly" placeholder="Chọn một dòng vật phẩm trong bảng shop" /></div>
-          <div class="cell gift-count-cell"><label>Đã chọn option</label><input id="shopOptionCount" class="option-count-input" value="0" readonly="readonly" /></div>
+          <div class="cell"><label>Vật phẩm đang cấu hình</label><input type="text" id="shopOptionItemLabel" readonly placeholder="Chọn một dòng vật phẩm trong bảng shop"></div>
+          <div class="cell gift-count-cell"><label>Đã chọn option</label><input type="text" id="shopOptionCount" class="option-count-input" value="0" readonly></div>
         </div>
         <div class="option-picker-box">
-          <div class="option-picker-toolbar"><input id="shopOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderShopOptionPicker()" /></div>
+          <div class="option-picker-toolbar"><input type="text" id="shopOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderShopOptionPicker()"></div>
           <div class="option-param-columns"><span>Option áp dụng cho vật phẩm</span><span class="option-param-heading">Param</span></div>
           <div id="shopOptionList" class="option-picker-list param-option-list"></div>
         </div>
         <div class="actions">
-          <button class="primary" onclick="SaveShopOptions()">Lưu danh sách option</button>
-          <button onclick="LoadShopOptions()">Tải lại</button>
+          <button type="button" class="primary" onclick="SaveShopOptions()">Lưu danh sách option</button>
+          <button type="button" onclick="LoadShopOptions()">Tải lại</button>
         </div>
         <div class="mini-table"><table id="shopOptionsTable"></table></div>
       </div>

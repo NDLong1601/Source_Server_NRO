@@ -1,0 +1,303 @@
+var taskConfigRows = [];
+var filteredTaskRows = [];
+var selectedTaskMode = "runtime";
+var selectedTaskRuntimeKey = "";
+var selectedTaskMainId = "";
+var selectedTaskRangeType = "side";
+
+function TaskModes() {
+  return [
+    ["runtime", "Cau hinh"],
+    ["main", "Nhiem vu chinh"],
+    ["sub", "Buoc nhiem vu"],
+    ["side", "Nhiem vu ngay"],
+    ["clan", "Nhiem vu bang"],
+    ["badges", "Danh hieu"]
+  ];
+}
+
+function RenderTaskModeTabs() {
+  var modes = TaskModes();
+  var html = "";
+  for (var i = 0; i < modes.length; i++) {
+    var active = modes[i][0] == selectedTaskMode ? " active" : "";
+    html += '<button class="player-config-tab' + active + '" onclick="SelectTaskMode(\'' + modes[i][0] + '\')">' + Html(modes[i][1]) + '</button>';
+  }
+  document.getElementById("taskConfigTabs").innerHTML = html;
+  UpdateConfigColumnsOffset("panelTaskConfig", "taskConfigTabs");
+}
+
+function SelectTaskMode(mode) {
+  selectedTaskMode = mode;
+  Set("taskConfigSearch", "");
+  RenderTaskModeTabs();
+  LoadTaskMode();
+}
+
+function ShowTaskEditor(id) {
+  var editors = ["taskConfigEditor", "taskMainEditor", "taskSubEditor", "taskRangeEditor", "taskBadgesEditor"];
+  for (var i = 0; i < editors.length; i++) document.getElementById(editors[i]).style.display = editors[i] == id ? "block" : "none";
+  document.getElementById("taskSubMainSelect").style.display = selectedTaskMode == "sub" ? "inline-block" : "none";
+}
+
+function LoadTaskConfig() {
+  RenderTaskModeTabs();
+  LoadTaskMode();
+}
+
+function LoadTaskMode() {
+  if (selectedTaskMode == "runtime") LoadTaskRuntimeConfig();
+  else if (selectedTaskMode == "main") LoadTaskMains();
+  else if (selectedTaskMode == "sub") LoadTaskSubMains();
+  else if (selectedTaskMode == "side" || selectedTaskMode == "clan") LoadTaskRangeTemplates(selectedTaskMode);
+  else if (selectedTaskMode == "badges") LoadTaskBadgesTemplates();
+  AdjustTableOffsets();
+}
+
+function TaskText(value) {
+  return ("" + value).replace(/\\r/g, "\r").replace(/\\n/g, "\n");
+}
+
+function LoadTaskRuntimeConfig() {
+  ShowTaskEditor("taskConfigEditor");
+  taskConfigRows = ParseTsv(RunAdmin("listtaskconfig", {}));
+  FilterTaskRows();
+  var restored = false;
+  if (selectedTaskRuntimeKey) {
+    for (var i = 1; i < taskConfigRows.length; i++) {
+      if (taskConfigRows[i][0] == selectedTaskRuntimeKey) { PickTaskRuntimeByKey(selectedTaskRuntimeKey); restored = true; break; }
+    }
+  }
+  if (!restored && filteredTaskRows.length > 1) PickTaskRuntimeRow(1);
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " cau hinh nhiem vu." : "Khong co cau hinh nhiem vu.");
+}
+
+function FilterTaskRows() {
+  if (selectedTaskMode == "runtime") return FilterTaskRuntimeRows();
+  if (selectedTaskMode == "main") return FilterTaskMainRows();
+  if (selectedTaskMode == "sub") return FilterTaskSubRows();
+  if (selectedTaskMode == "side" || selectedTaskMode == "clan") return FilterTaskRangeRows();
+  if (selectedTaskMode == "badges") return FilterTaskBadgesRows();
+}
+
+function FilterTaskRuntimeRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>Cau hinh</th><th>Gia tri</th><th>Pham vi</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    var displayValue = FormatAdminValue(row[3], row[5], row[0]);
+    html += '<tr onclick="PickTaskRuntimeRow(' + (filteredTaskRows.length - 1) + ')"><td>' + Html(row[2]) + '<br><small>' + Html(row[0]) + '</small></td><td title="' + HtmlAttr(displayValue) + '">' + Html(displayValue) + '</td><td>' + Html(row[6]) + '</td></tr>';
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function PickTaskRuntimeRow(index) {
+  if (!filteredTaskRows[index]) return;
+  PickTaskRuntimeByKey(filteredTaskRows[index][0]);
+}
+
+function PickTaskRuntimeByKey(key) {
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (row[0] != key) continue;
+    selectedTaskRuntimeKey = key;
+    Set("taskRuntimeKey", row[0]); Set("taskRuntimeCategory", row[1]); Set("taskRuntimeName", row[2]);
+    Set("taskRuntimeValue", FormatConfigEditValue(row[3], row[5])); Set("taskRuntimeDefault", FormatAdminValue(row[4], row[5], row[0]));
+    Set("taskRuntimeKind", ConfigKindLabel(row[5])); Set("taskRuntimeScope", row[6]); Set("taskRuntimeDescription", row[7]);
+    return;
+  }
+}
+
+function SaveTaskRuntimeConfig() {
+  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chon mot cau hinh truoc."); return; }
+  var row = FindConfigRow(taskConfigRows, V("taskRuntimeKey"));
+  var kind = row ? row[5] : "";
+  var text = RunAdmin("savetaskconfig", { ConfigKey: V("taskRuntimeKey"), ConfigValue: NormalizeConfigEditValue(V("taskRuntimeValue"), kind) });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskRuntimeConfig();
+}
+
+function ResetTaskRuntimeConfig() {
+  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chon mot cau hinh truoc."); return; }
+  if (!window.confirm("Dua " + V("taskRuntimeName") + " ve mac dinh " + V("taskRuntimeDefault") + "?")) return;
+  var text = RunAdmin("resettaskconfig", { ConfigKey: V("taskRuntimeKey") });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskRuntimeConfig();
+}
+
+function LoadTaskMains() {
+  ShowTaskEditor("taskMainEditor");
+  taskConfigRows = ParseTsv(RunAdmin("listtaskmains", { Search: V("taskConfigSearch") }));
+  FilterTaskMainRows();
+  if (filteredTaskRows.length > 1) PickTaskMainRow(1); else ClearTaskMainEditor();
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " nhiem vu chinh." : "Khong co nhiem vu chinh.");
+}
+
+function FilterTaskMainRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>ID</th><th>Ten</th><th>So buoc</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    html += '<tr onclick="PickTaskMainRow(' + (filteredTaskRows.length - 1) + ')"><td>' + Html(row[0]) + '</td><td>' + Html(TaskText(row[1])) + '</td><td>' + Html(row[3]) + '</td></tr>';
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function PickTaskMainRow(index) {
+  var row = filteredTaskRows[index];
+  if (!row) return;
+  selectedTaskMainId = row[0];
+  Set("taskMainId", row[0]); Set("taskMainName", TaskText(row[1])); Set("taskMainDetail", TaskText(row[2]));
+}
+
+function ClearTaskMainEditor() {
+  Set("taskMainId", ""); Set("taskMainName", ""); Set("taskMainDetail", "");
+}
+
+function SaveTaskMainTemplate() {
+  var text = RunAdmin("savetaskmain", { Id: V("taskMainId"), Name: V("taskMainName"), Description: V("taskMainDetail") });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskMains();
+}
+
+function LoadTaskSubMains() {
+  ShowTaskEditor("taskSubEditor");
+  var mains = ParseTsv(RunAdmin("listtaskmains", {}));
+  var html = "";
+  for (var i = 1; i < mains.length; i++) html += '<option value="' + HtmlAttr(mains[i][0]) + '">' + Html(mains[i][0] + " - " + TaskText(mains[i][1])) + '</option>';
+  document.getElementById("taskSubMainSelect").innerHTML = html;
+  if (selectedTaskMainId) document.getElementById("taskSubMainSelect").value = selectedTaskMainId;
+  if (!document.getElementById("taskSubMainSelect").value && mains.length > 1) document.getElementById("taskSubMainSelect").value = mains[1][0];
+  LoadTaskSubsForSelectedMain();
+}
+
+function LoadTaskSubsForSelectedMain() {
+  selectedTaskMainId = document.getElementById("taskSubMainSelect").value;
+  taskConfigRows = ParseTsv(RunAdmin("listtasksubs", { Id: selectedTaskMainId }));
+  FilterTaskSubRows();
+  if (filteredTaskRows.length > 1) PickTaskSubRow(1); else ClearTaskSubEditor();
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " buoc nhiem vu." : "Nhiem vu nay chua co buoc.");
+}
+
+function FilterTaskSubRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>ID</th><th>Ten buoc</th><th>Can lam</th><th>NPC/Map</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    html += '<tr onclick="PickTaskSubRow(' + (filteredTaskRows.length - 1) + ')"><td>' + Html(row[0]) + '</td><td>' + Html(TaskText(row[2])) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(row[5] + "/" + row[6]) + '</td></tr>';
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function PickTaskSubRow(index) {
+  var row = filteredTaskRows[index];
+  if (!row) return;
+  Set("taskSubId", row[0]); Set("taskSubOwnerId", row[1]); Set("taskSubName", TaskText(row[2])); Set("taskSubCount", row[3]);
+  Set("taskSubNotify", TaskText(row[4])); Set("taskSubNpcId", row[5]); Set("taskSubMapId", row[6]);
+}
+
+function ClearTaskSubEditor() {
+  Set("taskSubId", ""); Set("taskSubOwnerId", selectedTaskMainId); Set("taskSubName", ""); Set("taskSubCount", "");
+  Set("taskSubNotify", ""); Set("taskSubNpcId", ""); Set("taskSubMapId", "");
+}
+
+function SaveTaskSubTemplate() {
+  var text = RunAdmin("savetasksub", { Id: V("taskSubId"), OwnerId: V("taskSubOwnerId"), Name: V("taskSubName"), CountLeft: V("taskSubCount"), Notify: V("taskSubNotify"), NpcId: V("taskSubNpcId"), MapId: V("taskSubMapId") });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskSubsForSelectedMain();
+}
+
+function LoadTaskRangeTemplates(type) {
+  selectedTaskRangeType = type;
+  ShowTaskEditor("taskRangeEditor");
+  document.getElementById("taskRangeTitle").innerText = type == "clan" ? "Template nhiem vu bang" : "Template nhiem vu ngay";
+  taskConfigRows = ParseTsv(RunAdmin("listtasktemplates", { Type: type }));
+  FilterTaskRangeRows();
+  if (filteredTaskRows.length > 1) PickTaskRangeRow(1); else ClearTaskRangeEditor();
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " template." : "Khong co template.");
+}
+
+function FilterTaskRangeRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>ID</th><th>Ten</th><th>De</th><th>Binh thuong</th><th>Kho</th><th>Rat kho</th><th>Dia nguc</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    html += '<tr onclick="PickTaskRangeRow(' + (filteredTaskRows.length - 1) + ')"><td>' + Html(row[0]) + (row[7] == "1" ? '<br><small>core</small>' : '') + '</td><td>' + Html(TaskText(row[1])) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3]) + '</td><td>' + Html(row[4]) + '</td><td>' + Html(row[5]) + '</td><td>' + Html(row[6]) + '</td></tr>';
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function PickTaskRangeRow(index) {
+  var row = filteredTaskRows[index];
+  if (!row) return;
+  Set("taskRangeId", row[0]); Set("taskRangeName", TaskText(row[1])); Set("taskRangeLv1", row[2]); Set("taskRangeLv2", row[3]);
+  Set("taskRangeLv3", row[4]); Set("taskRangeLv4", row[5]); Set("taskRangeLv5", row[6]);
+}
+
+function ClearTaskRangeEditor() {
+  Set("taskRangeId", ""); Set("taskRangeName", ""); Set("taskRangeLv1", ""); Set("taskRangeLv2", ""); Set("taskRangeLv3", ""); Set("taskRangeLv4", ""); Set("taskRangeLv5", "");
+}
+
+function SaveTaskRangeTemplate() {
+  var payload = { lv1: V("taskRangeLv1"), lv2: V("taskRangeLv2"), lv3: V("taskRangeLv3"), lv4: V("taskRangeLv4"), lv5: V("taskRangeLv5") };
+  var text = RunAdmin("savetasktemplate", { Type: selectedTaskRangeType, Id: V("taskRangeId"), Name: V("taskRangeName"), PayloadJson: JSON.stringify(payload) });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskRangeTemplates(selectedTaskRangeType);
+}
+
+function LoadTaskBadgesTemplates() {
+  ShowTaskEditor("taskBadgesEditor");
+  taskConfigRows = ParseTsv(RunAdmin("listbadgestasks", {}));
+  FilterTaskBadgesRows();
+  if (filteredTaskRows.length > 1) PickTaskBadgesRow(1); else ClearTaskBadgesEditor();
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " nhiem vu danh hieu." : "Khong co nhiem vu danh hieu.");
+}
+
+function FilterTaskBadgesRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>ID</th><th>Ten</th><th>Can lam</th><th>Danh hieu</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    html += '<tr onclick="PickTaskBadgesRow(' + (filteredTaskRows.length - 1) + ')"><td>' + Html(row[0]) + '</td><td>' + Html(TaskText(row[1])) + '</td><td>' + Html(row[2]) + '</td><td>' + Html(row[3] + " - " + TaskText(row[4])) + '</td></tr>';
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function PickTaskBadgesRow(index) {
+  var row = filteredTaskRows[index];
+  if (!row) return;
+  Set("taskBadgesId", row[0]); Set("taskBadgesName", TaskText(row[1])); Set("taskBadgesCount", row[2]); Set("taskBadgesRewardId", row[3]); Set("taskBadgesRewardName", TaskText(row[4]));
+}
+
+function ClearTaskBadgesEditor() {
+  Set("taskBadgesId", ""); Set("taskBadgesName", ""); Set("taskBadgesCount", ""); Set("taskBadgesRewardId", ""); Set("taskBadgesRewardName", "");
+}
+
+function SaveTaskBadgesTemplate() {
+  var text = RunAdmin("savebadgestask", { Id: V("taskBadgesId"), Name: V("taskBadgesName"), CountLeft: V("taskBadgesCount"), RequireId: V("taskBadgesRewardId") });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskBadgesTemplates();
+}
+
+RegisterTab({
+  id: "taskconfig", view: "task-config.html", panelId: "panelTaskConfig", navId: "navTaskConfig",
+  title: "Cấu hình Nhiệm vụ", subtitle: "Runtime task.properties và template nhiệm vụ trong database",
+  onOpen: function () { LoadTaskConfig(); },
+  onRefresh: function () { LoadTaskConfig(); },
+  onLayout: function () { UpdateConfigColumnsOffset("panelTaskConfig", "taskConfigTabs"); }
+});
