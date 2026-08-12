@@ -3,97 +3,97 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar" id="taskConfigToolbar">
-        <input type="text" id="taskConfigSearch" placeholder="Tim ID, ten hoac noi dung" onkeyup="FilterTaskRows()">
+        <input type="text" id="taskConfigSearch" placeholder="Tìm ID, tên hoặc nội dung" onkeyup="FilterTaskRows()">
         <select id="taskSubMainSelect" onchange="LoadTaskSubsForSelectedMain()" class="admin-hidden"></select>
-        <button type="button" onclick="LoadTaskMode()">Tai lai</button>
+        <button type="button" onclick="LoadTaskMode()">Tải lại</button>
       </div>
       <div class="table-wrap"><table id="taskConfigTable"></table></div>
     </div>
     <div class="right-pane">
       <div id="taskConfigEditor">
-        <div class="section-title">Cau hinh runtime</div>
+        <div class="section-title">Cấu hình runtime</div>
         <input type="hidden" id="taskRuntimeKey">
         <div class="row">
-          <div class="cell"><label>Nhom</label><input type="text" id="taskRuntimeCategory" readonly></div>
-          <div class="cell"><label>Pham vi</label><input type="text" id="taskRuntimeScope" readonly></div>
+          <div class="cell"><label>Nhóm</label><input type="text" id="taskRuntimeCategory" readonly></div>
+          <div class="cell"><label>Phạm vi</label><input type="text" id="taskRuntimeScope" readonly></div>
         </div>
-        <label>Ten cau hinh</label><input type="text" id="taskRuntimeName" readonly>
+        <label>Tên cấu hình</label><input type="text" id="taskRuntimeName" readonly>
         <div class="row">
-          <div class="cell"><label>Kieu du lieu</label><input type="text" id="taskRuntimeKind" readonly></div>
-          <div class="cell"><label>Mac dinh</label><input type="text" id="taskRuntimeDefault" readonly></div>
+          <div class="cell"><label>Kiểu dữ liệu</label><input type="text" id="taskRuntimeKind" readonly></div>
+          <div class="cell"><label>Mặc định</label><input type="text" id="taskRuntimeDefault" readonly></div>
         </div>
-        <label>Gia tri dang dung</label><textarea id="taskRuntimeValue"></textarea>
-        <label>Mo ta</label><textarea id="taskRuntimeDescription" readonly></textarea>
+        <label>Giá trị đang dùng</label><textarea id="taskRuntimeValue"></textarea>
+        <label>Mô tả</label><textarea id="taskRuntimeDescription" readonly></textarea>
         <div class="actions">
-          <button type="button" class="primary" onclick="SaveTaskRuntimeConfig()">Luu cau hinh</button>
-          <button type="button" onclick="ResetTaskRuntimeConfig()">Ve mac dinh</button>
+          <button type="button" class="primary" onclick="SaveTaskRuntimeConfig()">Lưu cấu hình</button>
+          <button type="button" onclick="ResetTaskRuntimeConfig()">Về mặc định</button>
         </div>
       </div>
 
       <div id="taskMainEditor" class="admin-hidden">
-        <div class="section-title">Nhiem vu chinh</div>
-        <label>ID nhiem vu</label><input type="text" id="taskMainId">
-        <label>Ten nhiem vu</label><input type="text" id="taskMainName">
-        <label>Noi dung hien thi</label><textarea id="taskMainDetail"></textarea>
+        <div class="section-title">Nhiệm vụ chính</div>
+        <label>ID nhiệm vụ</label><input type="text" id="taskMainId">
+        <label>Tên nhiệm vụ</label><input type="text" id="taskMainName">
+        <label>Nội dung hiển thị</label><textarea id="taskMainDetail"></textarea>
         <div class="actions">
-          <button type="button" class="primary" onclick="SaveTaskMainTemplate()">Luu nhiem vu chinh</button>
-          <button type="button" onclick="ClearTaskMainEditor()">Nhap moi</button>
+          <button type="button" class="primary" onclick="SaveTaskMainTemplate()">Lưu nhiệm vụ chính</button>
+          <button type="button" onclick="ClearTaskMainEditor()">Nhập mới</button>
         </div>
       </div>
 
       <div id="taskSubEditor" class="admin-hidden">
-        <div class="section-title">Buoc nhiem vu</div>
+        <div class="section-title">Bước nhiệm vụ</div>
         <div class="row">
-          <div class="cell"><label>ID buoc</label><input type="text" id="taskSubId" readonly></div>
-          <div class="cell"><label>ID nhiem vu chinh</label><input type="text" id="taskSubOwnerId"></div>
+          <div class="cell"><label>ID bước</label><input type="text" id="taskSubId" readonly></div>
+          <div class="cell"><label>ID nhiệm vụ chính</label><input type="text" id="taskSubOwnerId"></div>
         </div>
-        <label>Ten buoc</label><input type="text" id="taskSubName">
-        <label>Thong bao</label><textarea id="taskSubNotify"></textarea>
+        <label>Tên bước</label><input type="text" id="taskSubName">
+        <label>Thông báo</label><textarea id="taskSubNotify"></textarea>
         <div class="row">
-          <div class="cell"><label>So luong can lam</label><input type="text" id="taskSubCount"></div>
+          <div class="cell"><label>Số lượng cần làm</label><input type="text" id="taskSubCount"></div>
           <div class="cell"><label>NPC ID</label><input type="text" id="taskSubNpcId"></div>
         </div>
         <label>Map ID</label><input type="text" id="taskSubMapId">
         <div class="actions">
-          <button type="button" class="primary" onclick="SaveTaskSubTemplate()">Luu buoc nhiem vu</button>
+          <button type="button" class="primary" onclick="SaveTaskSubTemplate()">Lưu bước nhiệm vụ</button>
         </div>
       </div>
 
       <div id="taskRangeEditor" class="admin-hidden">
-        <div class="section-title" id="taskRangeTitle">Template nhiem vu</div>
-        <label>ID template</label><input type="text" id="taskRangeId">
-        <label>Ten template</label><input type="text" id="taskRangeName">
+        <div class="section-title" id="taskRangeTitle">Mẫu nhiệm vụ</div>
+        <label>ID mẫu</label><input type="text" id="taskRangeId">
+        <label>Tên mẫu</label><input type="text" id="taskRangeName">
         <div class="row">
-          <div class="cell"><label>De</label><input type="text" id="taskRangeLv1" placeholder="min-max"></div>
-          <div class="cell"><label>Binh thuong</label><input type="text" id="taskRangeLv2" placeholder="min-max"></div>
+          <div class="cell"><label>Dễ</label><input type="text" id="taskRangeLv1" placeholder="min-max"></div>
+          <div class="cell"><label>Bình thường</label><input type="text" id="taskRangeLv2" placeholder="min-max"></div>
         </div>
         <div class="row">
-          <div class="cell"><label>Kho</label><input type="text" id="taskRangeLv3" placeholder="min-max"></div>
-          <div class="cell"><label>Rat kho</label><input type="text" id="taskRangeLv4" placeholder="min-max"></div>
+          <div class="cell"><label>Khó</label><input type="text" id="taskRangeLv3" placeholder="min-max"></div>
+          <div class="cell"><label>Rất khó</label><input type="text" id="taskRangeLv4" placeholder="min-max"></div>
         </div>
-        <label>Dia nguc</label><input type="text" id="taskRangeLv5" placeholder="min-max">
+        <label>Địa ngục</label><input type="text" id="taskRangeLv5" placeholder="min-max">
         <div class="actions">
-          <button type="button" class="primary" onclick="SaveTaskRangeTemplate()">Luu template</button>
-          <button type="button" onclick="ClearTaskRangeEditor()">Nhap moi</button>
+          <button type="button" class="primary" onclick="SaveTaskRangeTemplate()">Lưu mẫu</button>
+          <button type="button" onclick="ClearTaskRangeEditor()">Nhập mới</button>
         </div>
-        <div class="player-warning">Moi muc do dung dang min-max. ID 0-58 la nhom template code dang goi truc tiep, chi sua khi da doi ung voi logic nhiem vu.</div>
+        <div class="player-warning">Mỗi mức độ dùng dạng min-max. ID 0-58 là nhóm template code đang gọi trực tiếp, chỉ sửa khi đã tương ứng với logic nhiệm vụ.</div>
       </div>
 
       <div id="taskBadgesEditor" class="admin-hidden">
-        <div class="section-title">Nhiem vu danh hieu</div>
-        <label>ID nhiem vu danh hieu</label><input type="text" id="taskBadgesId" readonly>
-        <label>Ten nhiem vu</label><input type="text" id="taskBadgesName">
+        <div class="section-title">Nhiệm vụ danh hiệu</div>
+        <label>ID nhiệm vụ danh hiệu</label><input type="text" id="taskBadgesId" readonly>
+        <label>Tên nhiệm vụ</label><input type="text" id="taskBadgesName">
         <div class="row">
-          <div class="cell"><label>So luong can lam</label><input type="text" id="taskBadgesCount"></div>
-          <div class="cell"><label>ID danh hieu thuong</label><input type="text" id="taskBadgesRewardId"></div>
+          <div class="cell"><label>Số lượng cần làm</label><input type="text" id="taskBadgesCount"></div>
+          <div class="cell"><label>ID danh hiệu thưởng</label><input type="text" id="taskBadgesRewardId"></div>
         </div>
-        <label>Ten danh hieu</label><input type="text" id="taskBadgesRewardName" readonly>
+        <label>Tên danh hiệu</label><input type="text" id="taskBadgesRewardName" readonly>
         <div class="actions">
-          <button type="button" class="primary" onclick="SaveTaskBadgesTemplate()">Luu nhiem vu danh hieu</button>
+          <button type="button" class="primary" onclick="SaveTaskBadgesTemplate()">Lưu nhiệm vụ danh hiệu</button>
         </div>
       </div>
 
-      <div class="player-limit-note" id="taskConfigNote">Cau hinh runtime doc lai tu task.properties trong toi da 1 giay. Template DB can restart server de nap lai Manager.</div>
+      <div class="player-limit-note" id="taskConfigNote">Cấu hình runtime đọc lại từ task.properties trong tối đa 1 giây. Template DB cần restart server để nạp lại Manager.</div>
       <div id="taskConfigMessage" class="message"></div>
     </div>
   </div>

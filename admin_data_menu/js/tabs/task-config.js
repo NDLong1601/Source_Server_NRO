@@ -7,12 +7,12 @@ var selectedTaskRangeType = "side";
 
 function TaskModes() {
   return [
-    ["runtime", "Cau hinh"],
-    ["main", "Nhiem vu chinh"],
-    ["sub", "Buoc nhiem vu"],
-    ["side", "Nhiem vu ngay"],
-    ["clan", "Nhiem vu bang"],
-    ["badges", "Danh hieu"]
+    ["runtime", "Cấu hình runtime"],
+    ["main", "Nhiệm vụ chính"],
+    ["sub", "Bước nhiệm vụ"],
+    ["side", "Nhiệm vụ ngày"],
+    ["clan", "Nhiệm vụ bang"],
+    ["badges", "Danh hiệu"]
   ];
 }
 
@@ -69,7 +69,7 @@ function LoadTaskRuntimeConfig() {
     }
   }
   if (!restored && filteredTaskRows.length > 1) PickTaskRuntimeRow(1);
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " cau hinh nhiem vu." : "Khong co cau hinh nhiem vu.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " Cấu hình nhiệm vụ." : "Không có cấu hình nhiệm vụ.");
 }
 
 function FilterTaskRows() {
@@ -83,7 +83,7 @@ function FilterTaskRows() {
 function FilterTaskRuntimeRows() {
   var q = Trim(V("taskConfigSearch")).toLowerCase();
   filteredTaskRows = [taskConfigRows[0] || []];
-  var html = "<thead><tr><th>Cau hinh</th><th>Gia tri</th><th>Pham vi</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>Cấu hình</th><th>Giá trị</th><th>Phạm vi</th></tr></thead><tbody>";
   for (var i = 1; i < taskConfigRows.length; i++) {
     var row = taskConfigRows[i];
     if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
@@ -112,7 +112,7 @@ function PickTaskRuntimeByKey(key) {
 }
 
 function SaveTaskRuntimeConfig() {
-  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chon mot cau hinh truoc."); return; }
+  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chọn một cấu hình trước."); return; }
   var row = FindConfigRow(taskConfigRows, V("taskRuntimeKey"));
   var kind = row ? row[5] : "";
   var text = RunAdmin("savetaskconfig", { ConfigKey: V("taskRuntimeKey"), ConfigValue: NormalizeConfigEditValue(V("taskRuntimeValue"), kind) });
@@ -121,7 +121,7 @@ function SaveTaskRuntimeConfig() {
 }
 
 function ResetTaskRuntimeConfig() {
-  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chon mot cau hinh truoc."); return; }
+  if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chọn một cấu hình trước."); return; }
   if (!window.confirm("Dua " + V("taskRuntimeName") + " ve mac dinh " + V("taskRuntimeDefault") + "?")) return;
   var text = RunAdmin("resettaskconfig", { ConfigKey: V("taskRuntimeKey") });
   Msg("taskConfigMessage", StatusText(text));
@@ -133,13 +133,13 @@ function LoadTaskMains() {
   taskConfigRows = ParseTsv(RunAdmin("listtaskmains", { Search: V("taskConfigSearch") }));
   FilterTaskMainRows();
   if (filteredTaskRows.length > 1) PickTaskMainRow(1); else ClearTaskMainEditor();
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " nhiem vu chinh." : "Khong co nhiem vu chinh.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Đã tải " + (taskConfigRows.length - 1) + " Nhiệm vụ chính." : "Không có nhiệm vụ chính.");
 }
 
 function FilterTaskMainRows() {
   var q = Trim(V("taskConfigSearch")).toLowerCase();
   filteredTaskRows = [taskConfigRows[0] || []];
-  var html = "<thead><tr><th>ID</th><th>Ten</th><th>So buoc</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>ID</th><th>Tên</th><th>Số bước</th></tr></thead><tbody>";
   for (var i = 1; i < taskConfigRows.length; i++) {
     var row = taskConfigRows[i];
     if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
@@ -182,13 +182,13 @@ function LoadTaskSubsForSelectedMain() {
   taskConfigRows = ParseTsv(RunAdmin("listtasksubs", { Id: selectedTaskMainId }));
   FilterTaskSubRows();
   if (filteredTaskRows.length > 1) PickTaskSubRow(1); else ClearTaskSubEditor();
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " buoc nhiem vu." : "Nhiem vu nay chua co buoc.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Đã tải " + (taskConfigRows.length - 1) + " bước nhiệm vụ." : "Nhiệm vụ này chưa có bước.");
 }
 
 function FilterTaskSubRows() {
   var q = Trim(V("taskConfigSearch")).toLowerCase();
   filteredTaskRows = [taskConfigRows[0] || []];
-  var html = "<thead><tr><th>ID</th><th>Ten buoc</th><th>Can lam</th><th>NPC/Map</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>ID</th><th>Tên bước</th><th>Số lượng</th><th>NPC/Map</th></tr></thead><tbody>";
   for (var i = 1; i < taskConfigRows.length; i++) {
     var row = taskConfigRows[i];
     if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
@@ -219,17 +219,17 @@ function SaveTaskSubTemplate() {
 function LoadTaskRangeTemplates(type) {
   selectedTaskRangeType = type;
   ShowTaskEditor("taskRangeEditor");
-  document.getElementById("taskRangeTitle").innerText = type == "clan" ? "Template nhiem vu bang" : "Template nhiem vu ngay";
+  document.getElementById("taskRangeTitle").innerText = type == "clan" ? "Template nhiệm vụ bang" : "Template nhiệm vụ ngày";
   taskConfigRows = ParseTsv(RunAdmin("listtasktemplates", { Type: type }));
   FilterTaskRangeRows();
   if (filteredTaskRows.length > 1) PickTaskRangeRow(1); else ClearTaskRangeEditor();
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " template." : "Khong co template.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Đã tải " + (taskConfigRows.length - 1) + " template." : "Không có template.");
 }
 
 function FilterTaskRangeRows() {
   var q = Trim(V("taskConfigSearch")).toLowerCase();
   filteredTaskRows = [taskConfigRows[0] || []];
-  var html = "<thead><tr><th>ID</th><th>Ten</th><th>De</th><th>Binh thuong</th><th>Kho</th><th>Rat kho</th><th>Dia nguc</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>ID</th><th>Tên</th><th>Dễ</th><th>Bình thường</th><th>Khó</th><th>Rất khó</th><th>Địa ngục</th></tr></thead><tbody>";
   for (var i = 1; i < taskConfigRows.length; i++) {
     var row = taskConfigRows[i];
     if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
@@ -262,13 +262,13 @@ function LoadTaskBadgesTemplates() {
   taskConfigRows = ParseTsv(RunAdmin("listbadgestasks", {}));
   FilterTaskBadgesRows();
   if (filteredTaskRows.length > 1) PickTaskBadgesRow(1); else ClearTaskBadgesEditor();
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " nhiem vu danh hieu." : "Khong co nhiem vu danh hieu.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Đã tải " + (taskConfigRows.length - 1) + " nhiệm vụ danh hiệu." : "Không có nhiệm vụ danh hiệu.");
 }
 
 function FilterTaskBadgesRows() {
   var q = Trim(V("taskConfigSearch")).toLowerCase();
   filteredTaskRows = [taskConfigRows[0] || []];
-  var html = "<thead><tr><th>ID</th><th>Ten</th><th>Can lam</th><th>Danh hieu</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>ID</th><th>Tên</th><th>Số lượng</th><th>Danh hiệu</th></tr></thead><tbody>";
   for (var i = 1; i < taskConfigRows.length; i++) {
     var row = taskConfigRows[i];
     if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
