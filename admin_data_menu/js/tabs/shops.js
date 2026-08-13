@@ -100,7 +100,7 @@ function PickShopItem(index) {
   var r = shopItemRows[index];
   shopSelectedItemIds = [r[2]];
   Set("shopItemId", r[0]); Set("shopTempId", r[2]); Set("shopIsNew", r[5]); Set("shopIsSell", r[6]);
-  Set("shopTypeSell", r[7]); Set("shopCost", r[8]); Set("shopIconSpec", r[9]);
+  Set("shopTypeSell", r[7]); Set("shopCost", r[8]); Set("shopIconSpec", r[9]); Set("shopOptionMode", r[10] || "0");
   Set("shopItemSearch", "");
   RenderShopItemPicker();
   LoadShopOptions();
@@ -109,7 +109,7 @@ function PickShopItem(index) {
 function NewShopItem() {
   shopSelectedItemIds = [];
   Set("shopItemId", ""); Set("shopTempId", ""); Set("shopCost", "0"); Set("shopTypeSell", "0");
-  Set("shopIsNew", "0"); Set("shopIsSell", "1"); Set("shopIconSpec", "0");
+  Set("shopIsNew", "0"); Set("shopIsSell", "1"); Set("shopIconSpec", "0"); Set("shopOptionMode", "0");
   Set("shopItemSearch", "");
   RenderShopItemPicker();
   ClearShopOptionEditor();
@@ -153,7 +153,7 @@ function SaveShopItem() {
   }
   var params = {
     Id: V("shopItemId"), TabId: V("tabId"), TempId: shopSelectedItemIds[0], Cost: V("shopCost"),
-    TypeSell: V("shopTypeSell"), IsNew: V("shopIsNew"), IsSell: V("shopIsSell"), IconSpec: V("shopIconSpec")
+    TypeSell: V("shopTypeSell"), IsNew: V("shopIsNew"), IsSell: V("shopIsSell"), IconSpec: V("shopIconSpec"), OptionMode: V("shopOptionMode")
   };
   var action = "saveshopitem";
   if (!V("shopItemId")) {

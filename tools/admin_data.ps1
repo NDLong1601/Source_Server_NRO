@@ -28,6 +28,7 @@
     [string]$TypeSell = "0",
     [string]$Cost = "0",
     [string]$IconSpec = "0",
+    [string]$OptionMode = "0",
     [string]$OptionId = "",
     [string]$Param = "0",
     [string]$EventValue = "",
@@ -104,7 +105,7 @@ foreach ($paramName in @(
         "Id", "Search", "Type", "Name", "Description", "Gender", "Level", "IconId", "Part",
         "IsUpToUp", "PowerRequire", "Gold", "Gem", "Head", "Body", "Leg", "NpcId", "ShopId",
         "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
-        "IconSpec", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
+        "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
@@ -1469,6 +1470,141 @@ function Ensure-RadarSchema {
     Invoke-MySql "ALTER TABLE radar ADD COLUMN IF NOT EXISTS milestones TEXT NOT NULL DEFAULT ('[]') AFTER options;" | Out-Null
 }
 
+function Ensure-ItemDefaultOptionSchema {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS item_default_option (
+  item_template_id INT NOT NULL,
+  option_id INT NOT NULL,
+  param INT NOT NULL,
+  sort_order SMALLINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (item_template_id, option_id),
+  KEY idx_item_default_option_option (option_id),
+  CONSTRAINT fk_item_default_option_item FOREIGN KEY (item_template_id) REFERENCES item_template(id) ON DELETE CASCADE,
+  CONSTRAINT fk_item_default_option_template FOREIGN KEY (option_id) REFERENCES item_option_template(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE item_shop ADD COLUMN IF NOT EXISTS option_mode TINYINT NOT NULL DEFAULT 1 AFTER icon_spec;
+"@ | Out-Null
+    if ((Get-MySqlScalar "SELECT COUNT(*) FROM item_default_option;") -eq '0') {
+        Invoke-MySql @"
+INSERT IGNORE INTO item_default_option (item_template_id, option_id, param, sort_order)
+SELECT s.temp_id, o.option_id, o.param, MIN(o.id)
+FROM item_shop s
+JOIN item_shop_option o ON o.item_shop_id=s.id
+JOIN (
+  SELECT temp_id
+  FROM (
+    SELECT s2.temp_id, s2.id,
+           COALESCE(GROUP_CONCAT(CONCAT(o2.option_id, ':', o2.param)
+                    ORDER BY o2.option_id, o2.param SEPARATOR ','), '') AS option_signature
+    FROM item_shop s2
+    LEFT JOIN item_shop_option o2 ON o2.item_shop_id=s2.id
+    GROUP BY s2.temp_id, s2.id
+  ) variants
+  GROUP BY temp_id
+  HAVING COUNT(DISTINCT option_signature)=1 AND MAX(option_signature)<>''
+) unambiguous ON unambiguous.temp_id=s.temp_id
+GROUP BY s.temp_id,o.option_id,o.param;
+"@ | Out-Null
+    }
+}
+
+function Assert-DefaultOptionPayload {
+    param([string]$Json, [int]$ItemId)
+    try {
+        $parsedOptions = $Json | ConvertFrom-Json
+        $rawOptions = if ($null -eq $parsedOptions) { @() } else { @($parsedOptions) }
+    } catch { throw "Danh sách option mặc định không đúng định dạng JSON." }
+    $seen = @{}
+    $values = New-Object System.Collections.Generic.List[string]
+    $order = 0
+    foreach ($rawOption in $rawOptions) {
+        $optionIdText = ([string]$rawOption.id).Trim()
+        $paramText = ([string]$rawOption.param).Trim()
+        if ($optionIdText -notmatch '^\d+$' -or [int64]$optionIdText -gt 255) { throw "Option ID không hợp lệ: $optionIdText" }
+        if ($paramText -notmatch '^-?\d+$' -or [int64]$paramText -lt -32768 -or [int64]$paramText -gt 32767) { throw "Param option $optionIdText phải nằm trong khoảng -32768..32767." }
+        if ($seen.ContainsKey($optionIdText)) { throw "Option ID $optionIdText bị chọn trùng." }
+        $seen[$optionIdText] = $true
+        $values.Add("($(SqlInt $ItemId),$([int]$optionIdText),$([int]$paramText),$order)")
+        $order++
+    }
+    if ($seen.Count -gt 0) {
+        $optionSql = ($seen.Keys -join ',')
+        $found = [int](Get-MySqlScalar "SELECT COUNT(*) FROM item_option_template WHERE id IN ($optionSql);")
+        if ($found -ne $seen.Count) { throw "Có option không tồn tại trong item_option_template." }
+    }
+    return $values
+}
+
+function List-ItemDefaultOptions {
+    Ensure-ItemDefaultOptionSchema
+    $where = if ($Id -match '^\d+$') { "d.item_template_id=$(SqlInt $Id)" } else { "1=1" }
+    Invoke-MySql @"
+SELECT d.item_template_id, COALESCE(t.`NAME`,''), d.option_id,
+       COALESCE(o.`NAME`,''), d.param, d.sort_order
+FROM item_default_option d
+LEFT JOIN item_template t ON t.id=d.item_template_id
+LEFT JOIN item_option_template o ON o.id=d.option_id
+WHERE $where
+ORDER BY d.item_template_id,d.sort_order,d.option_id;
+"@
+}
+
+function List-ItemDefaultOptionItems {
+    Ensure-ItemDefaultOptionSchema
+    $where = "1=1"
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        if ($Search -match '^\d+$') { $where = "t.id=$(SqlInt $Search)" }
+        else { $where = "t.`NAME` LIKE $(SqlString ('%' + $Search + '%'))" }
+    }
+    Invoke-MySql @"
+SELECT t.id, COALESCE(t.`NAME`,''), COALESCE(t.description,''),
+       COUNT(d.option_id), COALESCE((SELECT COUNT(*) FROM item_shop s WHERE s.temp_id=t.id),0)
+FROM item_template t
+LEFT JOIN item_default_option d ON d.item_template_id=t.id
+WHERE $where
+GROUP BY t.id,t.`NAME`,t.description
+ORDER BY t.id
+LIMIT 500;
+"@
+}
+
+function Save-ItemDefaultOptions {
+    Ensure-ItemDefaultOptionSchema
+    $itemId = SqlInt $Id
+    if ($itemId -lt 0) { throw "Chọn vật phẩm trước khi lưu option mặc định." }
+    if ((Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id=$itemId;") -ne '1') { throw "Không tìm thấy vật phẩm ID $itemId." }
+    $values = @(Assert-DefaultOptionPayload -Json $PayloadJson -ItemId $itemId)
+    $sql = New-Object System.Text.StringBuilder
+    [void]$sql.AppendLine("START TRANSACTION;")
+    [void]$sql.AppendLine("DELETE FROM item_default_option WHERE item_template_id=$itemId;")
+    if ($values.Count -gt 0) { [void]$sql.AppendLine("INSERT INTO item_default_option (item_template_id,option_id,param,sort_order) VALUES $($values -join ',');") }
+    [void]$sql.AppendLine("COMMIT;")
+    Invoke-MySql $sql.ToString() | Out-Null
+    "OK`tĐã lưu $($values.Count) option mặc định cho vật phẩm ID $itemId. Restart server để áp dụng cache."
+}
+
+function Save-ItemDefaultOptionsBulk {
+    Ensure-ItemDefaultOptionSchema
+    $ids = @(Convert-UniqueIdPayload -Json $PayloadJson -Label "Danh sách vật phẩm")
+    if ($ids.Count -eq 0) { throw "Chọn ít nhất một vật phẩm." }
+    $validated = @(Assert-DefaultOptionPayload -Json $OptionsJson -ItemId 0)
+    $optionParts = New-Object System.Collections.Generic.List[string]
+    foreach ($v in $validated) { $optionParts.Add(($v -replace '^\(0,', '(')) }
+    $idSql = $ids -join ','
+    $sql = New-Object System.Text.StringBuilder
+    [void]$sql.AppendLine("START TRANSACTION;")
+    [void]$sql.AppendLine("DELETE FROM item_default_option WHERE item_template_id IN ($idSql);")
+    foreach ($itemId in $ids) {
+        if ($optionParts.Count -gt 0) {
+            $rows = @($optionParts | ForEach-Object { $_ -replace '^\(', "($itemId," })
+            [void]$sql.AppendLine("INSERT INTO item_default_option (item_template_id,option_id,param,sort_order) VALUES $($rows -join ',');")
+        }
+    }
+    [void]$sql.AppendLine("COMMIT;")
+    Invoke-MySql $sql.ToString() | Out-Null
+    "OK`tĐã lưu option mặc định cho $($ids.Count) vật phẩm. Restart server để áp dụng cache."
+}
+
 function Assert-RadarMilestonesJson {
     param([string]$Json, [int]$DefaultMax)
     try {
@@ -1770,11 +1906,12 @@ COMMIT;
 }
 
 function List-ShopItems {
+    Ensure-ItemDefaultOptionSchema
     Invoke-MySql @"
 SELECT i.id, i.tab_id, i.temp_id,
        REPLACE(REPLACE(REPLACE(COALESCE(t.`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
        REPLACE(REPLACE(REPLACE(COALESCE(t.description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_description,
-       i.is_new, i.is_sell, i.type_sell, i.cost, i.icon_spec, i.create_time
+       i.is_new, i.is_sell, i.type_sell, i.cost, i.icon_spec, i.option_mode, i.create_time
 FROM item_shop i
 LEFT JOIN item_template t ON t.id = i.temp_id
 WHERE i.tab_id=$(SqlInt $TabId)
@@ -1814,7 +1951,9 @@ SELECT
   COALESCE(n.`NAME`, '') AS npc_name,
   i.type_sell,
   i.cost,
-  COUNT(o.id) AS options_count
+  CASE WHEN i.option_mode=0
+       THEN (SELECT COUNT(*) FROM item_default_option d0 WHERE d0.item_template_id=i.temp_id)
+       ELSE COUNT(o.id) END AS options_count
 FROM item_shop i
 JOIN item_template t ON t.id = i.temp_id
 LEFT JOIN tab_shop ts ON ts.id = i.tab_id
@@ -1822,30 +1961,46 @@ LEFT JOIN shop s ON s.id = ts.shop_id
 LEFT JOIN npc_template n ON n.id = s.npc_id
 LEFT JOIN item_shop_option o ON o.item_shop_id = i.id
 $whereSql
-GROUP BY i.id, i.temp_id, t.`NAME`, t.`TYPE`, t.gender, i.tab_id, ts.`NAME`, s.id, n.`NAME`, i.type_sell, i.cost
+ GROUP BY i.id, i.temp_id, t.`NAME`, t.`TYPE`, t.gender, i.tab_id, ts.`NAME`, s.id, n.`NAME`, i.type_sell, i.cost, i.option_mode
 ORDER BY t.gender, t.`TYPE`, t.id, i.id
 LIMIT 500;
 "@
 }
 
 function Save-ShopItem {
+    Ensure-ItemDefaultOptionSchema
+    if ((SqlInt $OptionMode) -notin @(0,1)) { throw "Chế độ option shop chỉ nhận 0 (kế thừa) hoặc 1 (tùy chỉnh)." }
     $itemShopId = SqlInt $Id
     if ($itemShopId -gt 0) {
-        Invoke-MySql "UPDATE item_shop SET tab_id=$(SqlInt $TabId), temp_id=$(SqlInt $TempId), is_new=$(SqlInt $IsNew), is_sell=$(SqlInt $IsSell), type_sell=$(SqlInt $TypeSell), cost=$(SqlInt $Cost), icon_spec=$(SqlInt $IconSpec) WHERE id=$itemShopId;" | Out-Null
+        Invoke-MySql "UPDATE item_shop SET tab_id=$(SqlInt $TabId), temp_id=$(SqlInt $TempId), is_new=$(SqlInt $IsNew), is_sell=$(SqlInt $IsSell), type_sell=$(SqlInt $TypeSell), cost=$(SqlInt $Cost), icon_spec=$(SqlInt $IconSpec), option_mode=$(SqlInt $OptionMode) WHERE id=$itemShopId;" | Out-Null
         return "OK`tĐã cập nhật vật phẩm shop ID $itemShopId."
     }
 
-    Invoke-MySql "INSERT INTO item_shop (tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, create_time) VALUES ($(SqlInt $TabId), $(SqlInt $TempId), $(SqlInt $IsNew), $(SqlInt $IsSell), $(SqlInt $TypeSell), $(SqlInt $Cost), $(SqlInt $IconSpec), NOW());" | Out-Null
+    Invoke-MySql "INSERT INTO item_shop (tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, option_mode, create_time) VALUES ($(SqlInt $TabId), $(SqlInt $TempId), $(SqlInt $IsNew), $(SqlInt $IsSell), $(SqlInt $TypeSell), $(SqlInt $Cost), $(SqlInt $IconSpec), $(SqlInt $OptionMode), NOW());" | Out-Null
     "OK`tĐã thêm vật phẩm vào shop."
 }
 
 function Convert-UniqueIdPayload {
     param([string]$Json, [string]$Label)
-    try { $rawIds = @($Json | ConvertFrom-Json) } catch { throw "$Label không đúng định dạng JSON." }
+    try { $parsed = $Json | ConvertFrom-Json } catch { $parsed = $Json }
+    $rawIds = New-Object System.Collections.Generic.List[string]
+    foreach ($rawValue in @($parsed)) {
+        if ($null -eq $rawValue) { continue }
+        if ($rawValue -is [string]) {
+            $parts = ($rawValue -split '[,\s;]+')
+            foreach ($part in $parts) {
+                $token = [string]$part
+                if (-not [string]::IsNullOrWhiteSpace($token)) { $rawIds.Add($token.Trim()) }
+            }
+            continue
+        }
+        $rawIds.Add(([string]$rawValue).Trim())
+    }
     $ids = New-Object System.Collections.Generic.List[int]
     $seen = @{}
     foreach ($rawId in $rawIds) {
-        $idText = [string]$rawId
+        $idText = ([string]$rawId).Trim()
+        if ([string]::IsNullOrWhiteSpace($idText)) { continue }
         if ($idText -notmatch '^\d+$' -or [int64]$idText -gt 32767) { throw "$Label có ID không hợp lệ: $idText" }
         if (-not $seen.ContainsKey($idText)) {
             $seen[$idText] = $true
@@ -1856,6 +2011,7 @@ function Convert-UniqueIdPayload {
 }
 
 function Save-ShopItems {
+    Ensure-ItemDefaultOptionSchema
     $tabIdNum = SqlInt $TabId
     if ($tabIdNum -le 0) { throw "Chọn tab shop trước." }
     $ids = @(Convert-UniqueIdPayload -Json $PayloadJson -Label "Danh sách vật phẩm")
@@ -1863,8 +2019,8 @@ function Save-ShopItems {
     $idSql = $ids -join ','
     $sql = @"
 START TRANSACTION;
-INSERT INTO item_shop (tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, create_time)
-SELECT $tabIdNum, t.id, $(SqlInt $IsNew), $(SqlInt $IsSell), $(SqlInt $TypeSell), $(SqlInt $Cost), $(SqlInt $IconSpec), NOW()
+INSERT INTO item_shop (tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, option_mode, create_time)
+SELECT $tabIdNum, t.id, $(SqlInt $IsNew), $(SqlInt $IsSell), $(SqlInt $TypeSell), $(SqlInt $Cost), $(SqlInt $IconSpec), $(SqlInt $OptionMode), NOW()
 FROM item_template t
 WHERE t.id IN ($idSql)
   AND NOT EXISTS (SELECT 1 FROM item_shop current_item WHERE current_item.tab_id=$tabIdNum AND current_item.temp_id=t.id);
@@ -1881,7 +2037,21 @@ function Delete-ShopItem {
 }
 
 function List-ShopOptions {
-    Invoke-MySql "SELECT o.id, o.item_shop_id, o.option_id, COALESCE(t.`NAME`, '') AS option_name, o.param FROM item_shop_option o LEFT JOIN item_option_template t ON t.id = o.option_id WHERE o.item_shop_id=$(SqlInt $Id) ORDER BY o.id;"
+    Ensure-ItemDefaultOptionSchema
+    Invoke-MySql @"
+SELECT o.id, o.item_shop_id, o.option_id, COALESCE(t.`NAME`, '') AS option_name, o.param
+FROM item_shop_option o
+LEFT JOIN item_option_template t ON t.id=o.option_id
+JOIN item_shop s ON s.id=o.item_shop_id
+WHERE o.item_shop_id=$(SqlInt $Id) AND s.option_mode=1
+UNION ALL
+SELECT 0, s.id, d.option_id, COALESCE(t.`NAME`, ''), d.param
+FROM item_shop s
+JOIN item_default_option d ON d.item_template_id=s.temp_id
+LEFT JOIN item_option_template t ON t.id=d.option_id
+WHERE s.id=$(SqlInt $Id) AND s.option_mode=0
+ORDER BY option_id;
+"@
 }
 
 function Save-ShopOption {
@@ -1896,6 +2066,7 @@ function Save-ShopOption {
 }
 
 function Save-ShopOptions {
+    Ensure-ItemDefaultOptionSchema
     $itemShopId = SqlInt $Id
     if ($itemShopId -le 0) { throw "Chọn vật phẩm shop trước." }
     try { $rawOptions = @($PayloadJson | ConvertFrom-Json) } catch { throw "Danh sách option không đúng định dạng JSON." }
@@ -1915,6 +2086,7 @@ function Save-ShopOptions {
     $sql = New-Object System.Text.StringBuilder
     [void]$sql.AppendLine("START TRANSACTION;")
     [void]$sql.AppendLine("DELETE FROM item_shop_option WHERE item_shop_id=$itemShopId;")
+    [void]$sql.AppendLine("UPDATE item_shop SET option_mode=1 WHERE id=$itemShopId;")
     if ($values.Count -gt 0) {
         [void]$sql.AppendLine("INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES $($values -join ',');")
     }
@@ -2651,6 +2823,8 @@ function Get-AuditSummary {
         "saveshopoption" { "Lưu option shop $(if ($Id) { "ID $Id" } else { "option $OptionId" }), param $Param" }
         "saveshopoptions" { "Lưu $(Get-JsonArrayCount $PayloadJson) option cho item shop ID $Id" }
         "deleteshopoption" { "Xóa option shop ID $Id" }
+        "saveitemdefaultoptions" { "Lưu $(Get-JsonArrayCount $PayloadJson) option mặc định cho vật phẩm ID $Id" }
+        "saveitemdefaultoptionsbulk" { "Lưu option mặc định cho $(Get-JsonArrayCount $PayloadJson) vật phẩm" }
         "savegiftcode" { "Lưu Giftcode $GiftCode, lượt $CountLeft, $(Get-JsonArrayCount $GiftDetail) phần quà" }
         "deletegiftcode" { "Xóa Giftcode ID $Id" }
         "saveradarcard" { "Lưu thẻ sưu tầm ID $Id - $Name, $(Get-JsonArrayCount $OptionsJson) option" }
@@ -2737,6 +2911,11 @@ function Get-AuditContext {
         }
         "saveshopoptions" { $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "item_shop_id=$(SqlInt $Id)")) }
         "deleteshopoption" { $snapshots.Add((New-DbAuditSnapshot "item_shop_option" "id=$(SqlInt $Id)")) }
+        "saveitemdefaultoptions" { $snapshots.Add((New-DbAuditSnapshot "item_default_option" "item_template_id=$(SqlInt $Id)")) }
+        "saveitemdefaultoptionsbulk" {
+            $ids = @(Convert-UniqueIdPayload -Json $PayloadJson -Label "Danh sách vật phẩm")
+            if ($ids.Count -gt 0) { $snapshots.Add((New-DbAuditSnapshot "item_default_option" "item_template_id IN ($($ids -join ','))")) }
+        }
         "savegiftcode" {
             $where = if ((SqlInt $Id) -gt 0) { "id=$(SqlInt $Id)" } else { "code=$(SqlString $GiftCode.Trim())" }
             $snapshots.Add((New-DbAuditSnapshot "giftcode" $where))
@@ -2921,7 +3100,7 @@ function Record-ManualAuditEntry {
 $actionLower = $Action.ToLowerInvariant()
 $mutationActions = @(
     "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
-    "saveshopoption", "saveshopoptions", "deleteshopoption", "savegiftcode", "deletegiftcode",
+    "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode",
     "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
@@ -2938,6 +3117,7 @@ try {
         if ($actionLower -like '*eventconfig' -or $actionLower -like '*eventboss' -or $actionLower -like '*eventitem') {
             Ensure-EventConfigSchema
         }
+        if ($actionLower -like '*itemdefaultoptions*') { Ensure-ItemDefaultOptionSchema }
         $auditContext = Get-AuditContext $actionLower
     }
     $result = switch ($actionLower) {
@@ -2965,6 +3145,10 @@ try {
         "getitem" { Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template WHERE id=$(SqlInt $Id) LIMIT 1;" }
         "saveitem" { Save-Item }
         "listoptions" { Invoke-MySql "SELECT id, `NAME` FROM item_option_template ORDER BY id LIMIT 600;" }
+        "listitemdefaultoptions" { List-ItemDefaultOptions }
+        "listitemdefaultoptionitems" { List-ItemDefaultOptionItems }
+        "saveitemdefaultoptions" { Save-ItemDefaultOptions }
+        "saveitemdefaultoptionsbulk" { Save-ItemDefaultOptionsBulk }
         "listnpcs" { List-Npcs }
         "listshops" { List-Shops }
         "saveshop" { Save-Shop }

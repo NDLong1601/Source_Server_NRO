@@ -91,6 +91,11 @@ public class ShopDAO {
                 itemShop.isNew = rs.getBoolean("is_new");
                 itemShop.cost = rs.getInt("cost");
                 itemShop.iconSpec = rs.getInt("icon_spec");
+                try {
+                    itemShop.optionMode = rs.getByte("option_mode");
+                } catch (SQLException ignored) {
+                    itemShop.optionMode = 1;
+                }
                 itemShop.typeSell = rs.getByte("type_sell");
                 loadItemShopOption(con, itemShop);
                 tabShop.itemShops.add(itemShop);
@@ -111,6 +116,10 @@ public class ShopDAO {
 
     private static void loadItemShopOption(Connection con, ItemShop itemShop) {
         try {
+            if (itemShop.optionMode == 0) {
+                itemShop.options.addAll(ItemService.gI().getDefaultItemOptions(itemShop.temp.id));
+                return;
+            }
             PreparedStatement ps = con.prepareStatement("select * from item_shop_option where item_shop_id = ?");
             ps.setInt(1, itemShop.id);
             ResultSet rs = ps.executeQuery();

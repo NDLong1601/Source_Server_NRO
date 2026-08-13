@@ -1,33 +1,6 @@
-﻿id	npc_id	npc_name	tag_name	type_shop
-1	7	Bunma	BUNMA	0
-2	8	Dende	DENDE	0
-3	9	Appule	APPULE	0
-25	13	Quy Lão Kame	QUY_LAO	1
-29	13	Quy Lão Kame	QDDN	3
-34	13	Quy Lão Kame	SHOP_DOI_DIEM	3
-4	16	Uron	URON	0
-16	18	Thần mèo Karin	KARIN	3
-6	21	Bà Hạt Mít	BUA_1H	0
-7	21	Bà Hạt Mít	BUA_8H	0
-8	21	Bà Hạt Mít	BUA_1M	0
-10	37	Bunma	BUNMA_FUTURE	0
-15	37	Bunma	BUNMA_LINHTHU	0
-17	37	Bunma	BULMA_TL	0
-5	39	Santa	SANTA_HEAD	0
-9	39	Santa	SANTA	0
-12	39	Santa	SANTA_RUONG	0
-13	39	Santa	SANTA_HSD	0
-22	39	Santa	SANTA_MO_RONG_HANH_TRANG	0
-23	39	Santa	SANTA_HAN_SU_DUNG	0
-26	39	Santa	SANTA_DANH_HIEU	0
-30	39	Santa	SANTA_GIAM_GIA_1	0
-31	39	Santa	SHOP_VIP	3
-14	44	Ôsin	OSIN	0
-35	47	Giu-ma Đầu Bò	SHOP_CLAN	3
-11	55	Bill	BILL	0
-36	55	Bill	SHOP_SU_KIEN_VL	3
-20	56	Whis	THIEN_SU	3
-32	75	Thỏ Đỏ ChiChi	DOI_SKILL_DE	3
-33	81	Chi Chi	SHOP_CHI_CHI	0
-19	103	Chú Bé Đần	CHUBEDAN	3
-21	106	Bulma Tết Nguyên Đán	BULMA_EVENT	3
+﻿key	value
+server.event	halloween
+server.expserver	2
+server.running	1
+server.restart_pending	0
+server.started_at	2026-08-13 16:12:25

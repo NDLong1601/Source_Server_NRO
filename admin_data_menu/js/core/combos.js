@@ -83,6 +83,7 @@ function InitCombos() {
   ]);
   SetComboItems("shopIsNew", [["1", "Bật"], ["0", "Tắt"]]);
   SetComboItems("shopIsSell", [["1", "Bật"], ["0", "Tắt"]]);
+  SetComboItems("shopOptionMode", [["0", "Kế thừa mặc định"], ["1", "Tùy chỉnh riêng"]]);
   RenderEquipPresets();
 }
 

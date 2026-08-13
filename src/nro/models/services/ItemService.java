@@ -89,6 +89,35 @@ public class ItemService {
         return item;
     }
 
+    /** Creates an item and clones the option preset configured for its template. */
+    public Item createNewItemWithDefaultOptions(short tempId) {
+        Item item = createNewItem(tempId);
+        if (item != null) {
+            item.itemOptions.addAll(getDefaultItemOptions(tempId));
+        }
+        return item;
+    }
+
+    public Item createNewItemWithDefaultOptions(short tempId, int quantity) {
+        Item item = createNewItem(tempId, quantity);
+        if (item != null) {
+            item.itemOptions.addAll(getDefaultItemOptions(tempId));
+        }
+        return item;
+    }
+
+    /** Returns detached option objects so callers can safely randomize params. */
+    public List<Item.ItemOption> getDefaultItemOptions(short id) {
+        List<Item.ItemOption> source = Manager.ITEM_DEFAULT_OPTIONS.get(id);
+        List<Item.ItemOption> result = new ArrayList<>();
+        if (source != null) {
+            for (Item.ItemOption option : source) {
+                result.add(new Item.ItemOption(option));
+            }
+        }
+        return result;
+    }
+
     public Item otpts(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
@@ -661,10 +690,16 @@ public class ItemService {
     }
 
     public List<Item.ItemOption> getListOptionItemShop(short id) {
+        List<Item.ItemOption> defaults = getDefaultItemOptions(id);
+        if (!defaults.isEmpty()) {
+            return defaults;
+        }
         List<Item.ItemOption> list = new ArrayList<>();
         Manager.SHOPS.forEach(shop -> shop.tabShops.forEach(tabShop -> tabShop.itemShops.forEach(itemShop -> {
             if (itemShop.temp.id == id && list.isEmpty()) {
-                list.addAll(itemShop.options);
+                for (Item.ItemOption option : itemShop.options) {
+                    list.add(new Item.ItemOption(option));
+                }
             }
         })));
         return list;

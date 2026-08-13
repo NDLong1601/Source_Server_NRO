@@ -1,0 +1,2 @@
+﻿item_template_id	COALESCE(t.NAME,'')	option_id	COALESCE(o.NAME,'')	param	sort_order
+14	Ngọc Rồng 1 sao	30	Không thể giao dịch	0	0

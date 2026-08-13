@@ -1,0 +1,33 @@
+<div id="panelItemOptions" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input type="text" id="defaultOptionItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="LoadDefaultOptionItems()">
+        <button type="button" onclick="LoadDefaultOptionItems()">Tìm</button>
+      </div>
+      <div class="table-wrap"><table id="defaultOptionItemsTable"></table></div>
+    </div>
+    <div class="right-pane">
+      <div class="section-title">Option mặc định vật phẩm</div>
+      <div class="row">
+        <div class="cell"><label>ID vật phẩm</label><input type="text" id="defaultOptionItemId" readonly></div>
+        <div class="cell"><label>Tên vật phẩm</label><input type="text" id="defaultOptionItemName" readonly></div>
+      </div>
+      <div class="player-warning">Cấu hình này được dùng khi vật phẩm được thêm vào shop ở chế độ kế thừa và khi phát phần thưởng nhiệm vụ. Shop tùy chỉnh vẫn giữ option riêng.</div>
+      <div class="option-picker-box">
+        <div class="option-picker-toolbar"><input type="text" id="defaultOptionSearch" placeholder="Tìm theo ID hoặc tên option" onkeyup="RenderDefaultOptionPicker()"></div>
+        <div class="option-param-columns"><span>Option mặc định</span><span class="option-param-heading">Param</span></div>
+        <div id="defaultOptionList" class="option-picker-list param-option-list"></div>
+      </div>
+      <div class="row">
+        <div class="cell"><label>Số option</label><input type="text" id="defaultOptionCount" readonly value="0"></div>
+        <div class="cell"><label>Số dòng shop</label><input type="text" id="defaultOptionShopCount" readonly value="0"></div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" onclick="SaveDefaultOptions()">Lưu option mặc định</button>
+        <button type="button" onclick="LoadDefaultOptions()">Tải lại</button>
+      </div>
+      <div id="defaultOptionMessage" class="message"></div>
+    </div>
+  </div>
+</div>

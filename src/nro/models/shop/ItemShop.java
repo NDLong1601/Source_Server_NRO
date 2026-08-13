@@ -28,6 +28,9 @@ public class ItemShop {
 
     public int iconSpec;
 
+    /** 0 = inherit item default options, 1 = use item_shop_option rows. */
+    public byte optionMode;
+
     public int cost;
 
     public ItemShop() {
@@ -42,6 +45,7 @@ public class ItemShop {
         this.isNew = itemShop.isNew;
         this.typeSell = itemShop.typeSell;
         this.iconSpec = itemShop.iconSpec;
+        this.optionMode = itemShop.optionMode;
         this.cost = itemShop.cost;
         for (Item.ItemOption io : itemShop.options) {
             this.options.add(new Item.ItemOption(io));

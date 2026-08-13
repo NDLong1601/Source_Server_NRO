@@ -1,0 +1,2 @@
+﻿id	COALESCE(t.NAME,'')	COALESCE(t.description,'')	COUNT(d.option_id)	COALESCE((SELECT COUNT(*) FROM item_shop s WHERE s.temp_id=t.id),0)
+14	Ngọc Rồng 1 sao	Thu thập để ước rồng thần	0	0

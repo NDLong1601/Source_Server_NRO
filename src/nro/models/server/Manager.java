@@ -87,6 +87,7 @@ public final class Manager {
     public static final List<ArrHead2Frames> ARR_HEAD_2_FRAMES = new ArrayList<>();
     public static final Map<String, Byte> IMAGES_BY_NAME = new HashMap<>();
     public static final List<ItemTemplate> ITEM_TEMPLATES = new ArrayList<>();
+    public static final Map<Short, List<ItemOption>> ITEM_DEFAULT_OPTIONS = new ConcurrentHashMap<>();
     public static final List<MobTemplate> MOB_TEMPLATES = new ArrayList<>();
     public static final List<NpcTemplate> NPC_TEMPLATES = new ArrayList<>();
     public static final List<TaskMain> TASKS = new ArrayList<>();
@@ -684,6 +685,8 @@ public final class Manager {
             }
             Logger.success(Logger.PURPLE + "Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");
 
+            loadDefaultItemOptions(ConnectionDatabase);
+
             //load shop
             SHOPS = ShopDAO.getShops(ConnectionDatabase);
             Logger.success(Logger.RED + "Successfully loaded shop (" + SHOPS.size() + ")\n");
@@ -977,6 +980,22 @@ public final class Manager {
 
         Logger.log(Logger.PURPLE, "Total database loading time: " + (System.currentTimeMillis() - st) + " (ms)\n");
 
+    }
+
+    private static void loadDefaultItemOptions(Connection connection) {
+        ITEM_DEFAULT_OPTIONS.clear();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT item_template_id, option_id, param FROM item_default_option ORDER BY item_template_id, sort_order, option_id");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                short itemId = rs.getShort("item_template_id");
+                List<ItemOption> options = ITEM_DEFAULT_OPTIONS.computeIfAbsent(itemId, key -> new ArrayList<>());
+                options.add(new ItemOption(rs.getInt("option_id"), rs.getInt("param")));
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded default item options (" + ITEM_DEFAULT_OPTIONS.size() + ")\n");
+        } catch (SQLException e) {
+            Logger.error("Could not load item_default_option (table may not be migrated yet): " + e.getMessage());
+        }
     }
 
     public static List<TOP> realTop(String query, Connection con) {

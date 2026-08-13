@@ -82,6 +82,15 @@
             </div>
           </div>
           <div class="cell"><label>Icon spec</label><input type="text" id="shopIconSpec"></div>
+          <div class="cell">
+            <label>Option</label>
+            <input type="text" id="shopOptionMode" class="hidden-value" value="0">
+            <div id="combo_shopOptionMode" class="combo" onclick="ToggleCombo('shopOptionMode'); event.cancelBubble = true;">
+              <span id="combo_shopOptionMode_text" class="combo-text">Ke thua mac dinh</span>
+              <span class="combo-button"><span class="combo-caret"></span></span>
+              <div id="combo_shopOptionMode_menu" class="combo-menu"></div>
+            </div>
+          </div>
         </div>
         <div class="actions">
           <button type="button" onclick="NewShopItem()">Chọn nhóm mới</button>

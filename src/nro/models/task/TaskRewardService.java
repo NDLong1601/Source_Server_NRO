@@ -40,7 +40,7 @@ public final class TaskRewardService {
             received.add(Util.numberToMoney(gem) + " ngọc");
         }
         for (int itemId : itemIds) {
-            Item item = ItemService.gI().createNewItem((short) itemId);
+            Item item = ItemService.gI().createNewItemWithDefaultOptions((short) itemId);
             if (item != null) {
                 InventoryService.gI().addItemBag(player, item);
                 received.add(item.template.name);

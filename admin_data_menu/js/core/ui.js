@@ -76,7 +76,7 @@ function ChooseCombo(id, value) {
 
 
 function CloseCombos(exceptId) {
-  var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "radarRankFilter", "radarRank", "radarType", "radarRequireLevel", "radarOptionActive", "expRate", "eventItemSource", "playerLimitPower", "playerBan", "playerActive", "bossSkillId", "shopTypeSell", "shopIsNew", "shopIsSell"];
+  var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "radarRankFilter", "radarRank", "radarType", "radarRequireLevel", "radarOptionActive", "expRate", "eventItemSource", "playerLimitPower", "playerBan", "playerActive", "bossSkillId", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionMode"];
   for (var i = 0; i < ids.length; i++) {
     if (ids[i] == exceptId) continue;
     var combo = document.getElementById("combo_" + ids[i]);
