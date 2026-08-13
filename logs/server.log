@@ -27,19 +27,9 @@
 [0m[0;32m[0;31mSuccessfully loaded giftcode (2)
 [0m[0;32m[0;35mSuccessfully Top Su Kien (3)
 [0m[0;32m[0;31mSuccessfully top Thach Dau Whis (3)
-[0m[0;35mTotal database loading time: 1730 (ms)
+[0m[0;35mTotal database loading time: 1737 (ms)
 [0m[0;32m[0;31mUpdate maps thread started success!
 [0m[0;32mServer initialized and listening on port 14445
-[0m[0;35mReset AutoMaintenance sau th?i gian b?o trì.
 [0m[0;32mLoaded admin spawn config (custom boss=0, server boss override=7, mob=1)
 [0m[0;32mLoaded event config (profile=8, boss=8, item=15)
-[0m[0;33m[17:59] - Player Login: admintest: 84 ms
-[0m[0;32m[0;35madmintest: Data update successfully....[0m
-[0;32m[0;35m18h56m: Player admintest save successfully! 67ms
-[0m[0;33m[0:16] - Player Login: admintest: 139 ms
-[0m[0;32m[0;35madmintest: Data update successfully....[0m
-[0;32m[0;35m0h16m: Player admintest save successfully! 25ms
-[0m[0;33m[0:16] - Player Login: admin: 50 ms
-[0m[0;32m[0;35madmin: Data update successfully....[0m
-[0;32m[0;35m0h17m: Player admin save successfully! 16ms
 [0m

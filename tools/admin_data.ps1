@@ -3277,6 +3277,12 @@ FROM admin_change_log l $where ORDER BY l.id DESC LIMIT 500;
 "@
 }
 
+function Clear-AuditEntries {
+    Ensure-AuditSchema
+    Invoke-MySql "TRUNCATE TABLE admin_change_log;" | Out-Null
+    "OK`tĐã xóa toàn bộ lịch sử thay đổi. Thao tác này không thể hoàn tác."
+}
+
 function Undo-AuditEntry {
     Ensure-AuditSchema
     $auditId = SqlInt $Id
@@ -3422,6 +3428,7 @@ try {
         "saveadminmob" { Save-AdminMob }
         "deleteadminmob" { Delete-AdminMob }
         "listaudit" { List-AuditEntries }
+        "clearaudit" { Clear-AuditEntries }
         "undoaudit" { Undo-AuditEntry }
         "recordaudit" { Record-ManualAuditEntry }
         "listcombineconfig" { List-CombineConfig }

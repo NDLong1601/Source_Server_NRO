@@ -41,6 +41,17 @@ function UndoAuditEntry() {
   LoadAuditHistory();
 }
 
+function ClearAuditHistory() {
+  if (!window.confirm("Xóa toàn bộ lịch sử thay đổi? Dữ liệu lịch sử và khả năng hoàn tác sẽ bị xóa vĩnh viễn.")) return;
+  var text = RunAdmin("clearaudit", {});
+  if (IsAdminError(text)) {
+    Msg("auditMessage", StatusText(text));
+    return;
+  }
+  LoadAuditHistory();
+  Msg("auditMessage", StatusText(text));
+}
+
 RegisterTab({
   id: "audit", view: "audit.html", panelId: "panelAudit", navId: "navAudit",
   title: "Lịch sử thay đổi", subtitle: "Theo dõi thao tác ghi dữ liệu và hoàn tác thay đổi gần nhất",
