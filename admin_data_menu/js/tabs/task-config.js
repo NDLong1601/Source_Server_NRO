@@ -4,6 +4,9 @@ var selectedTaskMode = "runtime";
 var selectedTaskRuntimeKey = "";
 var selectedTaskMainId = "";
 var selectedTaskRangeType = "side";
+var selectedTaskRewardType = "";
+var selectedTaskRewardId = "";
+var selectedTaskRewardItemIds = [];
 
 function TaskModes() {
   return [
@@ -37,10 +40,12 @@ function SelectTaskMode(mode) {
 function ShowTaskEditor(id) {
   var editors = ["taskConfigEditor", "taskMainEditor", "taskSubEditor", "taskRangeEditor", "taskBadgesEditor"];
   for (var i = 0; i < editors.length; i++) document.getElementById(editors[i]).style.display = editors[i] == id ? "block" : "none";
+  document.getElementById("taskRewardEditor").style.display = (id == "taskMainEditor" || id == "taskRangeEditor" || id == "taskBadgesEditor") ? "block" : "none";
   document.getElementById("taskSubMainSelect").style.display = selectedTaskMode == "sub" ? "inline-block" : "none";
 }
 
 function LoadTaskConfig() {
+  LoadItemCatalog(false);
   RenderTaskModeTabs();
   LoadTaskMode();
 }
@@ -154,6 +159,7 @@ function PickTaskMainRow(index) {
   if (!row) return;
   selectedTaskMainId = row[0];
   Set("taskMainId", row[0]); Set("taskMainName", TaskText(row[1])); Set("taskMainDetail", TaskText(row[2]));
+  LoadTaskReward("main", row[0], "Phần thưởng nhiệm vụ chính #" + row[0]);
 }
 
 function ClearTaskMainEditor() {
@@ -244,6 +250,7 @@ function PickTaskRangeRow(index) {
   if (!row) return;
   Set("taskRangeId", row[0]); Set("taskRangeName", TaskText(row[1])); Set("taskRangeLv1", row[2]); Set("taskRangeLv2", row[3]);
   Set("taskRangeLv3", row[4]); Set("taskRangeLv4", row[5]); Set("taskRangeLv5", row[6]);
+  LoadTaskReward(selectedTaskRangeType, row[0], "Phần thưởng " + (selectedTaskRangeType == "clan" ? "nhiệm vụ bang" : "nhiệm vụ ngày") + " #" + row[0]);
 }
 
 function ClearTaskRangeEditor() {
@@ -282,16 +289,75 @@ function PickTaskBadgesRow(index) {
   var row = filteredTaskRows[index];
   if (!row) return;
   Set("taskBadgesId", row[0]); Set("taskBadgesName", TaskText(row[1])); Set("taskBadgesCount", row[2]); Set("taskBadgesRewardId", row[3]); Set("taskBadgesRewardName", TaskText(row[4]));
+  Set("taskBadgesItemId", row[5] || "");
+  var image = document.getElementById("taskBadgesImage");
+  if (row[5] && row[5] != "-1") { image.src = "data/icon/x1/" + row[5] + ".png"; image.style.display = "inline-block"; }
+  else { image.removeAttribute("src"); image.style.display = "none"; }
+  LoadTaskReward("badges", row[0], "Phần thưởng nhiệm vụ danh hiệu #" + row[0]);
 }
 
 function ClearTaskBadgesEditor() {
-  Set("taskBadgesId", ""); Set("taskBadgesName", ""); Set("taskBadgesCount", ""); Set("taskBadgesRewardId", ""); Set("taskBadgesRewardName", "");
+  Set("taskBadgesId", ""); Set("taskBadgesName", ""); Set("taskBadgesCount", ""); Set("taskBadgesRewardId", ""); Set("taskBadgesRewardName", ""); Set("taskBadgesItemId", "");
+  document.getElementById("taskBadgesImage").style.display = "none";
 }
 
 function SaveTaskBadgesTemplate() {
   var text = RunAdmin("savebadgestask", { Id: V("taskBadgesId"), Name: V("taskBadgesName"), CountLeft: V("taskBadgesCount"), RequireId: V("taskBadgesRewardId") });
   Msg("taskConfigMessage", StatusText(text));
   if (!IsAdminError(text)) LoadTaskBadgesTemplates();
+}
+
+function LoadTaskReward(type, id, title) {
+  selectedTaskRewardType = type;
+  selectedTaskRewardId = "" + id;
+  document.getElementById("taskRewardTitle").innerText = title;
+  var rows = ParseTsv(RunAdmin("gettaskreward", { Type: type, Id: id }));
+  var row = rows.length > 1 ? rows[1] : [id, "0", "0", "0", "0", ""];
+  document.getElementById("taskRewardEnabled").checked = row[1] == "1";
+  Set("taskRewardPotential", row[2] || "0"); Set("taskRewardGold", row[3] || "0"); Set("taskRewardGem", row[4] || "0");
+  selectedTaskRewardItemIds = row[5] ? row[5].split(",") : [];
+  Set("taskRewardItemSearch", "");
+  RenderTaskRewardItemPicker();
+}
+
+function RenderTaskRewardItemPicker() {
+  if (!document.getElementById("taskRewardItemList")) return;
+  var selected = {};
+  for (var i = 0; i < selectedTaskRewardItemIds.length; i++) selected[selectedTaskRewardItemIds[i]] = true;
+  RenderItemPicker({
+    listId: "taskRewardItemList", idPrefix: "taskRewardItem", query: V("taskRewardItemSearch"),
+    selected: selected, selectedOrder: selectedTaskRewardItemIds, toggleFunction: "ToggleTaskRewardItem", limit: 150,
+    emptyText: "Không tìm thấy vật phẩm phù hợp."
+  });
+  var labels = [];
+  for (var s = 0; s < selectedTaskRewardItemIds.length && s < 3; s++) labels.push(selectedTaskRewardItemIds[s] + " - " + ItemCatalogName(selectedTaskRewardItemIds[s]));
+  document.getElementById("taskRewardItemSummary").innerText = selectedTaskRewardItemIds.length
+    ? "Đã chọn " + selectedTaskRewardItemIds.length + " vật phẩm: " + labels.join("; ") + (selectedTaskRewardItemIds.length > 3 ? "..." : "")
+    : "Chưa chọn vật phẩm";
+}
+
+function ToggleTaskRewardItem(id, checked) {
+  var next = [];
+  var found = false;
+  for (var i = 0; i < selectedTaskRewardItemIds.length; i++) {
+    if (selectedTaskRewardItemIds[i] == id) found = true;
+    if (!(selectedTaskRewardItemIds[i] == id && !checked)) next.push(selectedTaskRewardItemIds[i]);
+  }
+  if (checked && !found) next.push("" + id);
+  selectedTaskRewardItemIds = next;
+  RenderTaskRewardItemPicker();
+}
+
+function SaveTaskReward() {
+  if (!selectedTaskRewardType || selectedTaskRewardId === "") { Msg("taskConfigMessage", "Chọn nhiệm vụ trước khi lưu phần thưởng."); return; }
+  var payload = {
+    Enabled: document.getElementById("taskRewardEnabled").checked ? "1" : "0",
+    Potential: V("taskRewardPotential"), Gold: V("taskRewardGold"), Gem: V("taskRewardGem"),
+    ItemIds: selectedTaskRewardItemIds
+  };
+  var text = RunAdmin("savetaskreward", { Type: selectedTaskRewardType, Id: selectedTaskRewardId, PayloadJson: JSON.stringify(payload) });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskReward(selectedTaskRewardType, selectedTaskRewardId, document.getElementById("taskRewardTitle").innerText);
 }
 
 RegisterTab({

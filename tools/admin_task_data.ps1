@@ -94,6 +94,65 @@ function Assert-TaskCountRange {
     "$from-$to"
 }
 
+function Get-TaskRewardType {
+    param([string]$Type)
+    $value = $Type.Trim().ToLowerInvariant()
+    if ($value -in @("main", "side", "clan", "badges")) { return $value }
+    throw "Loai phan thuong nhiem vu khong hop le."
+}
+
+function Get-TaskRewardKeyPrefix {
+    param([string]$Type, [string]$Id)
+    $rewardType = Get-TaskRewardType $Type
+    $rewardId = Assert-TaskIntRange $Id "ID nhiem vu" 0 32767
+    "task.reward.$rewardType.$rewardId"
+}
+
+function Convert-TaskRewardPayload {
+    param([string]$PayloadJson)
+    try { $payload = $PayloadJson | ConvertFrom-Json } catch { throw "Du lieu phan thuong khong hop le." }
+    if ($null -eq $payload) { throw "Du lieu phan thuong khong hop le." }
+    $enabled = if ([string]$payload.Enabled -eq "1" -or [string]$payload.Enabled -eq "true") { "1" } else { "0" }
+    $potential = Assert-TaskIntRange ([string]$payload.Potential) "Tiem nang" 0 2147483647
+    $gold = Assert-TaskIntRange ([string]$payload.Gold) "Vang" 0 2147483647
+    $gem = Assert-TaskIntRange ([string]$payload.Gem) "Ngoc" 0 2147483647
+    $itemIds = @()
+    foreach ($rawId in @($payload.ItemIds)) {
+        $itemId = Assert-TaskIntRange ([string]$rawId) "ID vat pham" 0 32767
+        if ($itemIds -notcontains $itemId) { $itemIds += $itemId }
+    }
+    if ($itemIds.Count -gt 50) { throw "Chi duoc chon toi da 50 vat pham." }
+    if ($itemIds.Count -gt 0) {
+        $idSql = $itemIds -join ','
+        $found = [int](Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id IN ($idSql);")
+        if ($found -ne $itemIds.Count) { throw "Co vat pham khong ton tai trong item_template." }
+    }
+    [pscustomobject]@{ Enabled=$enabled; Potential=$potential; Gold=$gold; Gem=$gem; ItemIds=($itemIds -join ',') }
+}
+
+function Get-TaskReward {
+    $prefix = Get-TaskRewardKeyPrefix $Type $Id
+    $map = Get-PropertyMap (Join-Path $Root "task.properties")
+    $enabled = if ($map.ContainsKey("$prefix.enabled")) { $map["$prefix.enabled"] } else { "0" }
+    $potential = if ($map.ContainsKey("$prefix.potential")) { $map["$prefix.potential"] } else { "0" }
+    $gold = if ($map.ContainsKey("$prefix.gold")) { $map["$prefix.gold"] } else { "0" }
+    $gem = if ($map.ContainsKey("$prefix.gem")) { $map["$prefix.gem"] } else { "0" }
+    $items = if ($map.ContainsKey("$prefix.items")) { $map["$prefix.items"] } else { "" }
+    "id`tenabled`tpotential`tgold`tgem`titems`r`n$Id`t$enabled`t$potential`t$gold`t$gem`t$items"
+}
+
+function Save-TaskReward {
+    $prefix = Get-TaskRewardKeyPrefix $Type $Id
+    $reward = Convert-TaskRewardPayload $PayloadJson
+    $path = Join-Path $Root "task.properties"
+    Set-PropertyValue -Path $path -Key "$prefix.enabled" -Value $reward.Enabled
+    Set-PropertyValue -Path $path -Key "$prefix.potential" -Value $reward.Potential
+    Set-PropertyValue -Path $path -Key "$prefix.gold" -Value $reward.Gold
+    Set-PropertyValue -Path $path -Key "$prefix.gem" -Value $reward.Gem
+    Set-PropertyValue -Path $path -Key "$prefix.items" -Value $reward.ItemIds
+    "OK`tDa luu phan thuong nhiem vu. Runtime ap dung trong toi da 1 giay."
+}
+
 function Get-TaskTemplateTable {
     $taskType = $Type.Trim().ToLowerInvariant()
     if ($taskType -eq "side") { return "side_task_template" }
@@ -213,9 +272,10 @@ function List-BadgesTasks {
 SELECT t.id,
        REPLACE(REPLACE(REPLACE(COALESCE(t.NAME,''),CHAR(9),' '),CHAR(13),'\\r'),CHAR(10),'\\n') AS name,
        t.maxCount,t.idBadgesReward,
-       REPLACE(REPLACE(REPLACE(COALESCE(b.NAME,''),CHAR(9),' '),CHAR(13),'\\r'),CHAR(10),'\\n') AS badge_name
+       REPLACE(REPLACE(REPLACE(COALESCE(b.NAME,''),CHAR(9),' '),CHAR(13),'\\r'),CHAR(10),'\\n') AS badge_name,
+       COALESCE(b.idItem,-1) AS badge_item_id
 FROM task_badges_template t
-LEFT JOIN data_badges b ON b.id=t.idBadgesReward
+LEFT JOIN data_badges b ON b.idEffect=t.idBadgesReward
 ORDER BY t.id;
 "@
 }

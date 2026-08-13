@@ -30,6 +30,7 @@ import nro.models.server.Client;
 import nro.models.task.BadgesTaskService;
 import nro.models.task.ClanTaskTemplate;
 import nro.models.task.TaskConfig;
+import nro.models.task.TaskRewardService;
 
 /**
  *
@@ -104,7 +105,11 @@ public class TaskService {
     }
 
     public void sendNextTaskMain(Player player) {
-        rewardDoneTask(player);
+        if (!rewardDoneTask(player)) {
+            player.playerTask.taskMain.index = player.playerTask.taskMain.subTasks.size() - 1;
+            sendTaskMain(player);
+            return;
+        }
         switch (player.playerTask.taskMain.id) {
             case 3:
                 player.playerTask.taskMain = TaskService.gI().getTaskMainById(player, player.gender + 4);
@@ -1083,8 +1088,12 @@ public class TaskService {
         }
     }
 
-    private void rewardDoneTask(Player player) {
-        switch (player.playerTask.taskMain.id) {
+    private boolean rewardDoneTask(Player player) {
+        int taskId = player.playerTask.taskMain.id;
+        if (TaskConfig.isCustomRewardEnabled("main", taskId)) {
+            return TaskRewardService.grant(player, "main", taskId);
+        }
+        switch (taskId) {
             case 0:
                 Service.gI().addSMTN(player, (byte) 0, 500, false);
                 Service.gI().addSMTN(player, (byte) 1, 500, false);
@@ -1110,11 +1119,12 @@ public class TaskService {
                 Service.gI().addSMTN(player, (byte) 1, 20000, false);
                 break;
         }
-        if (player.playerTask.taskMain.id > 0 && player.playerTask.taskMain.id < 25) {
-            Service.gI().addSMTN(player, (byte) 2, 500L * (player.playerTask.taskMain.id + 1), false);
-            player.inventory.gold += (player.playerTask.taskMain.id < 5 && player.playerTask.taskMain.id >= 0) ? 100000 * (player.playerTask.taskMain.id + 1) : 500000;
+        if (taskId > 0 && taskId < 25) {
+            Service.gI().addSMTN(player, (byte) 2, 500L * (taskId + 1), false);
+            player.inventory.gold += (taskId < 5) ? 100000 * (taskId + 1) : 500000;
             Service.gI().sendMoney(player);
         }
+        return true;
     }
 
     private void addDoneSubTask(Player player, int numDone) {
@@ -1280,6 +1290,14 @@ public class TaskService {
     public void paySideTask(Player player) {
         if (player.playerTask.sideTask.template != null) {
             if (player.playerTask.sideTask.isDone()) {
+                int templateId = player.playerTask.sideTask.template.id;
+                if (TaskConfig.isCustomRewardEnabled("side", templateId)) {
+                    if (TaskRewardService.grant(player, "side", templateId)) {
+                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
+                        player.playerTask.sideTask.reset();
+                    }
+                    return;
+                }
                 int goldReward = 0;
                 int ngocBi = TaskConfig.getSideItemReward(ConstTask.EASY);
                 int cayThong = -1;
@@ -1509,6 +1527,14 @@ public class TaskService {
     public void payClanTask(Player player) {
         if (player.playerTask.clanTask.template != null) {
             if (player.playerTask.clanTask.isDone()) {
+                int templateId = player.playerTask.clanTask.template.id;
+                if (TaskConfig.isCustomRewardEnabled("clan", templateId)) {
+                    if (TaskRewardService.grant(player, "clan", templateId)) {
+                        player.playerTask.clanTask.leftTask--;
+                        player.playerTask.clanTask.reset();
+                    }
+                    return;
+                }
                 int capsuleClan = TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level);
                 player.playerTask.clanTask.leftTask--;
                 player.playerTask.clanTask.reset();

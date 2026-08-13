@@ -2680,6 +2680,7 @@ function Get-AuditSummary {
         "savetasksub" { "Luu buoc nhiem vu ID $Id thuoc nhiem vu $OwnerId" }
         "savetasktemplate" { "Luu template $(Get-TaskTemplateLabel) ID $Id - $Name" }
         "savebadgestask" { "Luu nhiem vu danh hieu ID $Id - $Name" }
+        "savetaskreward" { "Luu phan thuong nhiem vu $Type ID $Id" }
         "savetaskconfig" { "Doi cau hinh nhiem vu $ConfigKey = $ConfigValue" }
         "resettaskconfig" { "Khoi phuc cau hinh nhiem vu $ConfigKey ve mac dinh" }
         "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
@@ -2823,7 +2824,7 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot $table "id=$(SqlInt $Id)"))
         }
         "savebadgestask" { $snapshots.Add((New-DbAuditSnapshot "task_badges_template" "id=$(SqlInt $Id)")) }
-        { $_ -in @("savetaskconfig", "resettaskconfig") } {
+        { $_ -in @("savetaskconfig", "resettaskconfig", "savetaskreward") } {
             $configPath = Join-Path $Root "task.properties"
             if (Test-Path $configPath) {
                 $fileSnapshots.Add([pscustomobject]@{ path="task.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
@@ -2925,7 +2926,8 @@ $mutationActions = @(
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
-    "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem"
+    "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem",
+    "savetaskreward"
 )
 $isAuditedMutation = $mutationActions -contains $actionLower
 $auditContext = $null
@@ -3017,6 +3019,8 @@ try {
         "listtaskconfig" { List-TaskConfig }
         "savetaskconfig" { Save-TaskConfig }
         "resettaskconfig" { Reset-TaskConfig }
+        "gettaskreward" { Get-TaskReward }
+        "savetaskreward" { Save-TaskReward }
         "listtaskmains" { List-TaskMains }
         "listtasksubs" { List-TaskSubs }
         "savetaskmain" { Save-TaskMain }

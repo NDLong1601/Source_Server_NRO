@@ -113,6 +113,55 @@ public final class TaskConfig {
         return Math.max(0, level + 1) * perLevel;
     }
 
+    private static String rewardKey(String type, int id, String field) {
+        return "task.reward." + type + "." + id + "." + field;
+    }
+
+    public static boolean isCustomRewardEnabled(String type, int id) {
+        return "1".equals(values().getProperty(rewardKey(type, id, "enabled"), "").trim())
+                || "true".equalsIgnoreCase(values().getProperty(rewardKey(type, id, "enabled"), "").trim());
+    }
+
+    public static long getTaskRewardPotential(String type, int id) {
+        return getLong(rewardKey(type, id, "potential"), 0L, 0L, Integer.MAX_VALUE);
+    }
+
+    public static long getTaskRewardGold(String type, int id) {
+        return getLong(rewardKey(type, id, "gold"), 0L, 0L, Integer.MAX_VALUE);
+    }
+
+    public static int getTaskRewardGem(String type, int id) {
+        return getInt(rewardKey(type, id, "gem"), 0, 0, Integer.MAX_VALUE);
+    }
+
+    public static int[] getTaskRewardItems(String type, int id) {
+        String raw = values().getProperty(rewardKey(type, id, "items"), "").trim();
+        if (raw.isEmpty()) {
+            return new int[0];
+        }
+        String[] parts = raw.split(",");
+        int[] parsed = new int[parts.length];
+        try {
+            for (int i = 0; i < parts.length; i++) {
+                parsed[i] = Integer.parseInt(parts[i].trim());
+                if (parsed[i] < 0 || parsed[i] > Short.MAX_VALUE) {
+                    return new int[0];
+                }
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            return new int[0];
+        }
+    }
+
+    private static long getLong(String key, long defaultValue, long min, long max) {
+        try {
+            return Math.max(min, Math.min(max, Long.parseLong(values().getProperty(key, "").trim())));
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
     private static int getLevelInt(String key, int level, int... defaultValues) {
         int[] configured = getIntArray(key, defaultValues);
         if (level < 0) {

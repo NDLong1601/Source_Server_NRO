@@ -34,6 +34,10 @@ public class BadgesTaskService {
                         return;
                     }
                 }
+                if (TaskConfig.isCustomRewardEnabled("badges", data.id)
+                        && !TaskRewardService.grant(player, "badges", data.id)) {
+                    return;
+                }
                 BadgesData danhHieu = new BadgesData(player, data.idBadgesReward, 30);
                 player.dataBadges.add(danhHieu);
                 data.count = 0;

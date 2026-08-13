@@ -88,9 +88,29 @@
           <div class="cell"><label>ID danh hiệu thưởng</label><input type="text" id="taskBadgesRewardId"></div>
         </div>
         <label>Tên danh hiệu</label><input type="text" id="taskBadgesRewardName" readonly>
+        <div class="row">
+          <div class="cell"><label>Vật phẩm danh hiệu</label><input type="text" id="taskBadgesItemId" readonly></div>
+          <div class="cell"><label>Hình ảnh danh hiệu</label><img id="taskBadgesImage" class="admin-hidden task-badge-image" alt="Hình danh hiệu"></div>
+        </div>
         <div class="actions">
           <button type="button" class="primary" onclick="SaveTaskBadgesTemplate()">Lưu nhiệm vụ danh hiệu</button>
         </div>
+      </div>
+
+      <div id="taskRewardEditor" class="admin-hidden split-small">
+        <div class="section-title" id="taskRewardTitle">Phần thưởng khi hoàn thành</div>
+        <label><input type="checkbox" id="taskRewardEnabled"> Dùng phần thưởng tùy chỉnh này (thay phần thưởng mặc định của nhiệm vụ)</label>
+        <div class="row">
+          <div class="cell"><label>Tiềm năng</label><input type="text" id="taskRewardPotential" value="0"></div>
+          <div class="cell"><label>Vàng</label><input type="text" id="taskRewardGold" value="0"></div>
+          <div class="cell"><label>Ngọc</label><input type="text" id="taskRewardGem" value="0"></div>
+        </div>
+        <div class="option-picker-box">
+          <div class="option-picker-toolbar"><input type="text" id="taskRewardItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="RenderTaskRewardItemPicker()"></div>
+          <div id="taskRewardItemSummary" class="option-picker-summary">Chưa chọn vật phẩm</div>
+          <div id="taskRewardItemList" class="option-picker-list"></div>
+        </div>
+        <div class="actions"><button type="button" class="primary" onclick="SaveTaskReward()">Lưu phần thưởng</button></div>
       </div>
 
       <div class="player-limit-note" id="taskConfigNote">Cấu hình runtime đọc lại từ task.properties trong tối đa 1 giây. Template DB cần restart server để nạp lại Manager.</div>
