@@ -965,6 +965,85 @@ tr:hover td.gift-status-waiting {
   text-align: right;
 }
 
+/* Gift-box tab keeps native checkboxes compact. The generic input rule above
+   otherwise stretches checkboxes to the full row width in the custom option list. */
+#panelGiftBox input[type="checkbox"] {
+  width: 15px !important;
+  min-width: 15px !important;
+  max-width: 15px !important;
+  height: 15px !important;
+  min-height: 15px !important;
+  max-height: 15px !important;
+  margin: 1px 7px 0 0;
+  padding: 0;
+  vertical-align: top;
+  cursor: pointer;
+}
+
+#panelGiftBox .param-option-row {
+  min-height: 30px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eef2f7;
+  box-sizing: border-box;
+}
+
+#panelGiftBox .param-option-row label {
+  display: inline-block;
+  width: auto;
+  max-width: 58%;
+  margin: 0;
+  line-height: 18px;
+  vertical-align: top;
+  cursor: pointer;
+}
+
+.gift-box-icon-cell {
+  width: 48px;
+  text-align: center;
+}
+
+.gift-box-list-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.gift-box-preview-cell {
+  min-width: 190px;
+}
+
+.gift-box-icon-preview {
+  display: flex;
+  align-items: center;
+  min-height: 58px;
+  padding: 6px 9px;
+  border: 1px solid #dbe3ed;
+  border-radius: 7px;
+  background: #f8fafc;
+  box-sizing: border-box;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.gift-box-preview-image {
+  width: 48px;
+  height: 48px;
+  margin-right: 10px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.gift-box-icon-preview b,
+.gift-box-icon-preview small {
+  display: block;
+}
+
+.gift-box-icon-preview b {
+  color: #0f172a;
+  font-size: 13px;
+}
+
 .gift-note {
   margin: 8px 0;
   padding: 8px 10px;

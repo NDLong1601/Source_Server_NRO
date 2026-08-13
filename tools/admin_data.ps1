@@ -1434,7 +1434,8 @@ SELECT id,
        REPLACE(REPLACE(REPLACE(COALESCE(`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
        REPLACE(REPLACE(REPLACE(COALESCE(description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS description,
        `TYPE` AS item_type,
-       gender
+       gender,
+       icon_id
 FROM item_template
 ORDER BY id
 LIMIT 10000;
@@ -2146,6 +2147,206 @@ ORDER BY id DESC;
 "@
 }
 
+function Ensure-GiftBoxSchema {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS gift_box_config (
+  box_template_id INT NOT NULL PRIMARY KEY,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  min_empty_slots INT NOT NULL DEFAULT 1,
+  consume_quantity INT NOT NULL DEFAULT 1,
+  draw_count INT NOT NULL DEFAULT 1,
+  config_json TEXT NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+"@ | Out-Null
+}
+
+function New-DefaultGiftBoxJson {
+    param([int]$BoxId, [int]$MinSlots, [int]$Stat, [int[]]$ItemIds, [int]$LuckOption, [int]$LuckParam)
+    $rewards = @()
+    foreach ($itemId in $ItemIds) {
+        $rewards += [ordered]@{
+            itemId=$itemId; weight=1; quantityMin=1; quantityMax=1; gender=3; initBaseOptions=$true; useDefaultOptions=$false;
+            options=@(
+                [ordered]@{id=50;paramMin=$Stat;paramMax=$Stat},
+                [ordered]@{id=77;paramMin=$Stat;paramMax=$Stat},
+                [ordered]@{id=103;paramMin=$Stat;paramMax=$Stat},
+                [ordered]@{id=$LuckOption;paramMin=$LuckParam;paramMax=$LuckParam}
+            );
+            expiry=@(
+                [ordered]@{mode='permanent';weight=1;daysMin=0;daysMax=0},
+                [ordered]@{mode='days';weight=99;daysMin=3;daysMax=3}
+            )
+        }
+    }
+    return (ConvertTo-Json -InputObject ([ordered]@{boxTemplateId=$BoxId;enabled=$true;minEmptySlots=$MinSlots;consumeQuantity=1;drawCount=1;rewards=$rewards}) -Compress -Depth 12)
+}
+
+function Ensure-GiftBoxDefaults {
+    Ensure-GiftBoxSchema
+    $countText = Invoke-MySql "SELECT COUNT(*) FROM gift_box_config;"
+    $countLines = $countText -split "`r?`n"
+    if ($countLines.Count -gt 1 -and [int]$countLines[1] -gt 0) { return }
+    $profiles = @(
+        @{id=1776;slots=2;stat=10;items=@(1772,1773);luck=14;luckParam=10},
+        @{id=1777;slots=2;stat=25;items=@(1761,1731,1732);luck=236;luckParam=10},
+        @{id=1591;slots=2;stat=20;items=@(1588,1589,1595,1587,1593,1590);luck=210;luckParam=2},
+        @{id=1594;slots=2;stat=20;items=@(1588,1589,1595,1587,1593,1590);luck=210;luckParam=2},
+        @{id=1592;slots=2;stat=25;items=@(1588,1589,1595,1587,1593,1590);luck=210;luckParam=4},
+        @{id=1840;slots=5;stat=27;items=@(1588,1589,1595,1587,1593,1590);luck=210;luckParam=4},
+        @{id=1755;slots=2;stat=20;items=@(1741,1742,1743,1744,1745,1746);luck=210;luckParam=2},
+        @{id=1756;slots=2;stat=20;items=@(1741,1742,1743,1744,1745,1746);luck=210;luckParam=2},
+        @{id=1757;slots=2;stat=27;items=@(1741,1742,1743,1744,1745,1746);luck=210;luckParam=4}
+    )
+    foreach ($profile in $profiles) {
+        $json = New-DefaultGiftBoxJson $profile.id $profile.slots $profile.stat $profile.items $profile.luck $profile.luckParam
+        Invoke-MySql "INSERT IGNORE INTO gift_box_config (box_template_id,enabled,min_empty_slots,consume_quantity,draw_count,config_json) VALUES ($($profile.id),1,$($profile.slots),1,1,$(SqlString $json));" | Out-Null
+    }
+}
+
+function List-GiftBoxes {
+    Ensure-GiftBoxDefaults
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safeSearch = $Search.Replace("\", "\\").Replace("'", "''")
+        if ($Search -match '^\d+$') {
+            $where = "WHERE g.box_template_id=$(SqlInt $Search) OR t.`NAME` LIKE '%$safeSearch%'"
+        } else {
+            $where = "WHERE t.`NAME` LIKE '%$safeSearch%'"
+        }
+    }
+    Invoke-MySql @"
+SELECT g.box_template_id, COALESCE(t.`NAME`, '') AS box_name, COALESCE(t.`TYPE`, -1) AS item_type,
+       g.enabled, g.min_empty_slots, g.consume_quantity, g.draw_count,
+       REPLACE(REPLACE(REPLACE(g.config_json, CHAR(9), ' '), CHAR(13), ' '), CHAR(10), '') AS config_json,
+       DATE_FORMAT(g.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+       COALESCE(t.icon_id, -1) AS icon_id
+FROM gift_box_config g
+LEFT JOIN item_template t ON t.id=g.box_template_id
+$where
+ORDER BY g.box_template_id;
+"@
+}
+
+function Get-GiftBox {
+    Ensure-GiftBoxDefaults
+    Invoke-MySql @"
+SELECT g.box_template_id, COALESCE(t.`NAME`, '') AS box_name, COALESCE(t.`TYPE`, -1) AS item_type,
+       g.enabled, g.min_empty_slots, g.consume_quantity, g.draw_count,
+       REPLACE(REPLACE(REPLACE(g.config_json, CHAR(9), ' '), CHAR(13), ' '), CHAR(10), '') AS config_json,
+       DATE_FORMAT(g.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+       COALESCE(t.icon_id, -1) AS icon_id
+FROM gift_box_config g
+LEFT JOIN item_template t ON t.id=g.box_template_id
+WHERE g.box_template_id=$(SqlInt $Id)
+LIMIT 1;
+"@
+}
+
+function Parse-JsonInteger {
+    param([object]$Value, [string]$Label, [int64]$Min = -2147483648, [int64]$Max = 2147483647)
+    $text = [string]$Value
+    if ($text -notmatch '^-?\d+$') { throw "$Label phải là số nguyên." }
+    $number = [int64]$text
+    if ($number -lt $Min -or $number -gt $Max) { throw "$Label nằm ngoài giới hạn cho phép." }
+    return [int]$number
+}
+
+function Parse-JsonBoolean {
+    param([object]$Value, [bool]$Default = $false)
+    if ($null -eq $Value) { return $Default }
+    return ([string]$Value -eq '1' -or [string]$Value -eq 'true')
+}
+
+function Convert-GiftBoxPayload {
+    try { $raw = $PayloadJson | ConvertFrom-Json } catch { throw "Cấu hình hộp quà không đúng JSON." }
+    if ($null -eq $raw) { throw "Cấu hình hộp quà bị trống." }
+    $boxId = Parse-JsonInteger $Id "ID hộp" 0 32767
+    $templateCount = Invoke-MySql "SELECT COUNT(*) FROM item_template WHERE id=$boxId;"
+    $templateLines = $templateCount -split "`r?`n"
+    if ($templateLines.Count -lt 2 -or [int]$templateLines[1] -eq 0) { throw "Không tìm thấy item template ID $boxId." }
+
+    $enabled = if (Parse-JsonBoolean $raw.enabled $true) { 1 } else { 0 }
+    $minSlots = Parse-JsonInteger $raw.minEmptySlots "Số ô trống tối thiểu" 1 127
+    $consume = Parse-JsonInteger $raw.consumeQuantity "Số lượng hộp tiêu hao" 1 2000000000
+    $drawCount = Parse-JsonInteger $raw.drawCount "Số lượt rút" 1 100
+    $rawRewards = @($raw.rewards | Where-Object { $null -ne $_ })
+    if ($rawRewards.Count -eq 0) { throw "Hộp quà phải có ít nhất một phần thưởng." }
+
+    $normalizedRewards = New-Object System.Collections.Generic.List[object]
+    $totalWeight = 0
+    foreach ($rawReward in $rawRewards) {
+        $itemId = Parse-JsonInteger $rawReward.itemId "ID phần thưởng" 0 32767
+        $rewardTemplateCount = Invoke-MySql "SELECT COUNT(*) FROM item_template WHERE id=$itemId;"
+        $rewardTemplateLines = $rewardTemplateCount -split "`r?`n"
+        if ($rewardTemplateLines.Count -lt 2 -or [int]$rewardTemplateLines[1] -eq 0) {
+            throw "Không tìm thấy item template phần thưởng ID $itemId."
+        }
+        $weight = Parse-JsonInteger $rawReward.weight "Trọng số phần thưởng" 0 2000000000
+        $quantityMin = Parse-JsonInteger $rawReward.quantityMin "Số lượng min" 1 2000000000
+        $quantityMax = Parse-JsonInteger $rawReward.quantityMax "Số lượng max" 1 2000000000
+        if ($quantityMin -gt $quantityMax) { throw "Số lượng min không được lớn hơn max cho vật phẩm ID $itemId." }
+        if ($weight -le 0) { continue }
+        $gender = Parse-JsonInteger $rawReward.gender "Giới tính phần thưởng" -1 3
+        $initBase = Parse-JsonBoolean $rawReward.initBaseOptions $false
+        $useDefault = Parse-JsonBoolean $rawReward.useDefaultOptions $false
+        $options = New-Object System.Collections.Generic.List[object]
+        $seenOptions = @{}
+        foreach ($rawOption in @($rawReward.options | Where-Object { $null -ne $_ })) {
+            $optionId = Parse-JsonInteger $rawOption.id "ID option" 0 255
+            if ($seenOptions.ContainsKey([string]$optionId)) { throw "Option $optionId bị trùng trong phần thưởng ID $itemId." }
+            $seenOptions[[string]$optionId] = $true
+            $paramMin = Parse-JsonInteger $rawOption.paramMin "Param min option $optionId" -32768 32767
+            $paramMax = Parse-JsonInteger $rawOption.paramMax "Param max option $optionId" -32768 32767
+            if ($paramMin -gt $paramMax) { throw "Param min không được lớn hơn max của option $optionId." }
+            $options.Add([ordered]@{ id=$optionId; paramMin=$paramMin; paramMax=$paramMax })
+        }
+        $expiry = New-Object System.Collections.Generic.List[object]
+        foreach ($rawExpiry in @($rawReward.expiry)) {
+            $mode = ([string]$rawExpiry.mode).ToLowerInvariant()
+            if ($mode -notin @('permanent','days')) { throw "HSD chỉ nhận permanent hoặc days." }
+            $expiryWeight = Parse-JsonInteger $rawExpiry.weight "Trọng số HSD" 0 2000000000
+            if ($expiryWeight -le 0) { continue }
+            $daysMin = 0; $daysMax = 0
+            if ($mode -eq 'days') {
+                $daysMin = Parse-JsonInteger $rawExpiry.daysMin "Số ngày min" 1 3650
+                $daysMax = Parse-JsonInteger $rawExpiry.daysMax "Số ngày max" 1 3650
+                if ($daysMin -gt $daysMax) { throw "Số ngày min không được lớn hơn max." }
+            }
+            $expiry.Add([ordered]@{ mode=$mode; weight=$expiryWeight; daysMin=$daysMin; daysMax=$daysMax })
+        }
+        $normalizedRewards.Add([ordered]@{
+            itemId=$itemId; weight=$weight; quantityMin=$quantityMin; quantityMax=$quantityMax; gender=$gender;
+            initBaseOptions=$initBase; useDefaultOptions=$useDefault; options=$options.ToArray(); expiry=$expiry.ToArray()
+        })
+        $totalWeight += $weight
+    }
+    if ($totalWeight -le 0) { throw "Tổng trọng số phần thưởng phải lớn hơn 0." }
+    $normalized = [ordered]@{
+        boxTemplateId=$boxId; enabled=($enabled -eq 1); minEmptySlots=$minSlots; consumeQuantity=$consume; drawCount=$drawCount;
+        rewards=$normalizedRewards.ToArray()
+    }
+    return (ConvertTo-Json -InputObject $normalized -Compress -Depth 12)
+}
+
+function Save-GiftBox {
+    Ensure-GiftBoxSchema
+    $boxId = Parse-JsonInteger $Id "ID hộp" 0 32767
+    $json = Convert-GiftBoxPayload
+    $raw = $json | ConvertFrom-Json
+    $enabled = if (Parse-JsonBoolean $raw.enabled $true) { 1 } else { 0 }
+    $sql = "INSERT INTO gift_box_config (box_template_id, enabled, min_empty_slots, consume_quantity, draw_count, config_json) VALUES ($boxId,$enabled,$(Parse-JsonInteger $raw.minEmptySlots 'Số ô trống' 1 127),$(Parse-JsonInteger $raw.consumeQuantity 'Số lượng tiêu hao' 1 2000000000),$(Parse-JsonInteger $raw.drawCount 'Số lượt rút' 1 100),$(SqlString $json)) ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), min_empty_slots=VALUES(min_empty_slots), consume_quantity=VALUES(consume_quantity), draw_count=VALUES(draw_count), config_json=VALUES(config_json);"
+    Invoke-MySql $sql | Out-Null
+    "OK`tĐã lưu cấu hình hộp ID $boxId. Restart server để áp dụng."
+}
+
+function Delete-GiftBox {
+    Ensure-GiftBoxSchema
+    $boxId = Parse-JsonInteger $Id "ID hộp" 0 32767
+    Invoke-MySql "UPDATE gift_box_config SET enabled=0 WHERE box_template_id=$boxId;" | Out-Null
+    "OK`tĐã khóa cấu hình hộp ID $boxId. Restart server để áp dụng."
+}
+
 function List-GiftItems {
     $where = ""
     if (-not [string]::IsNullOrWhiteSpace($Search)) {
@@ -2851,6 +3052,8 @@ function Get-AuditSummary {
         "saveitemdefaultoptionsbulk" { "Lưu option mặc định cho $(Get-JsonArrayCount $PayloadJson) vật phẩm" }
         "savegiftcode" { "Lưu Giftcode $GiftCode, lượt $CountLeft, $(Get-JsonArrayCount $GiftDetail) phần quà" }
         "deletegiftcode" { "Xóa Giftcode ID $Id" }
+        "savegiftbox" { "Lưu cấu hình Hộp quà ID $Id" }
+        "deletegiftbox" { "Khóa cấu hình Hộp quà ID $Id" }
         "saveradarcard" { "Lưu thẻ sưu tầm ID $Id - $Name, $(Get-JsonArrayCount $OptionsJson) option" }
         "deleteradarcard" { "Xóa thẻ sưu tầm ID $Id" }
         "saveradarmobdrops" { "Lưu Mob rơi thẻ sưu tầm ID $Id, $(Get-JsonArrayCount $MobDropsJson) Mob" }
@@ -2945,6 +3148,8 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "giftcode" $where))
         }
         "deletegiftcode" { $snapshots.Add((New-DbAuditSnapshot "giftcode" "id=$(SqlInt $Id)")) }
+        "savegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
+        "deletegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
         { $_ -in @("saveradarcard", "deleteradarcard") } { $snapshots.Add((New-DbAuditSnapshot "radar" "id=$(SqlInt $Id)")) }
         "saveradarmobdrops" {
             Ensure-SpawnSchema
@@ -3124,7 +3329,7 @@ function Record-ManualAuditEntry {
 $actionLower = $Action.ToLowerInvariant()
 $mutationActions = @(
     "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
-    "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode",
+    "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savegiftbox", "deletegiftbox",
     "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
@@ -3192,6 +3397,10 @@ try {
         "listgiftitems" { List-GiftItems }
         "savegiftcode" { Save-GiftCode }
         "deletegiftcode" { Delete-GiftCode }
+        "listgiftboxes" { List-GiftBoxes }
+        "getgiftbox" { Get-GiftBox }
+        "savegiftbox" { Save-GiftBox }
+        "deletegiftbox" { Delete-GiftBox }
         "listradarcards" { List-RadarCards }
         "getradarcard" { Get-RadarCard }
         "saveradarcard" { Save-RadarCard }

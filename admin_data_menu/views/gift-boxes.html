@@ -1,0 +1,74 @@
+<div id="panelGiftBox" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar">
+        <input type="text" id="giftBoxSearch" placeholder="Tìm ID hoặc tên hộp">
+        <button type="button" onclick="LoadGiftBoxes()">Tìm</button>
+        <button type="button" onclick="NewGiftBox()">Mới</button>
+      </div>
+      <div class="table-wrap"><table id="giftBoxesTable"></table></div>
+    </div>
+
+    <div class="right-pane">
+      <div class="section-title">Cấu hình hộp quà / rương</div>
+      <div class="row">
+        <div class="cell"><label>ID hộp template</label><input type="text" id="giftBoxId" placeholder="Ví dụ: 1757" onkeyup="UpdateGiftBoxIdentityPreview()" onchange="UpdateGiftBoxIdentityPreview()"></div>
+        <div class="cell"><label>Tên hộp</label><input type="text" id="giftBoxName" readonly></div>
+        <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="giftBoxEnabled" checked><span>Bật</span></label></div>
+        <div class="cell gift-box-preview-cell"><label>Hình ảnh hộp</label><div id="giftBoxIconPreview" class="gift-box-icon-preview">Chưa chọn hộp</div></div>
+      </div>
+      <div class="row">
+        <div class="cell"><label>Ô trống tối thiểu</label><input type="text" id="giftBoxMinSlots" value="1"></div>
+        <div class="cell"><label>Số hộp tiêu hao</label><input type="text" id="giftBoxConsume" value="1"></div>
+        <div class="cell"><label>Số lượt rút</label><input type="text" id="giftBoxDrawCount" value="1"></div>
+      </div>
+
+      <div class="split-small">
+        <div class="section-title">Checklist vật phẩm trong pool</div>
+        <input type="text" id="giftBoxItemSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="FilterGiftBoxItems()">
+        <div id="giftBoxItemSummary" class="option-picker-summary">Chưa chọn phần thưởng</div>
+        <div id="giftBoxItemList" class="option-picker-list gift-item-list"></div>
+      </div>
+
+      <div class="split-small">
+        <div class="section-title">Pool phần thưởng</div>
+        <div class="mini-table"><table id="giftBoxRewardsTable"></table></div>
+      </div>
+
+      <div id="giftBoxRewardEditor" class="split-small">
+        <div class="section-title" id="giftBoxRewardTitle">Chọn một phần thưởng</div>
+        <div class="row">
+          <div class="cell"><label>Trọng số / tỉ lệ tương đối</label><input type="text" id="giftBoxRewardWeight" value="1" onchange="SetGiftBoxRewardField('weight', this.value)"></div>
+          <div class="cell"><label>Số lượng min</label><input type="text" id="giftBoxRewardQtyMin" value="1" onchange="SetGiftBoxRewardField('quantityMin', this.value)"></div>
+          <div class="cell"><label>Số lượng max</label><input type="text" id="giftBoxRewardQtyMax" value="1" onchange="SetGiftBoxRewardField('quantityMax', this.value)"></div>
+          <div class="cell"><label>Gender (-1/tất cả, 0/1/2)</label><input type="text" id="giftBoxRewardGender" value="3" onchange="SetGiftBoxRewardField('gender', this.value)"></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="giftBoxRewardInitBase" onchange="SetGiftBoxRewardField('initBaseOptions', this.checked)"><span>Khởi tạo chỉ số cơ bản</span></label></div>
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="giftBoxRewardUseDefault" onchange="SetGiftBoxRewardField('useDefaultOptions', this.checked)"><span>Dùng option mặc định</span></label></div>
+        </div>
+
+        <div class="section-title">Option riêng / random min–max</div>
+        <input type="text" id="giftBoxOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderGiftBoxOptions()">
+        <div id="giftBoxOptionList" class="option-picker-list param-option-list"></div>
+
+        <div class="section-title">Hạn sử dụng</div>
+        <div class="row">
+          <div class="cell"><label>Trọng số vĩnh viễn</label><input type="text" id="giftBoxExpiryPermanentWeight" value="0" onchange="SetGiftBoxExpiry()"></div>
+          <div class="cell"><label>Trọng số HSD ngày</label><input type="text" id="giftBoxExpiryDaysWeight" value="0" onchange="SetGiftBoxExpiry()"></div>
+          <div class="cell"><label>Ngày min</label><input type="text" id="giftBoxExpiryDaysMin" value="1" onchange="SetGiftBoxExpiry()"></div>
+          <div class="cell"><label>Ngày max</label><input type="text" id="giftBoxExpiryDaysMax" value="1" onchange="SetGiftBoxExpiry()"></div>
+        </div>
+        <div class="hint">Ví dụ: vĩnh viễn = 1, HSD ngày = 99, min = 5, max = 10. Hệ thống sẽ chọn theo trọng số.</div>
+      </div>
+
+      <div class="actions">
+        <button type="button" onclick="NewGiftBox()">Mới</button>
+        <button type="button" class="primary" onclick="SaveGiftBox()">Lưu cấu hình</button>
+        <button type="button" class="danger" onclick="DisableGiftBox()">Khóa hộp</button>
+      </div>
+      <div class="gift-note">Cấu hình được nạp khi server khởi động. Sau khi lưu hoặc khóa, hãy Restart server.</div>
+      <div id="giftBoxMessage" class="message"></div>
+    </div>
+  </div>
+</div>

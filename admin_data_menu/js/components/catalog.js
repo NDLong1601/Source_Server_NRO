@@ -87,7 +87,7 @@ function LoadItemCatalog(force) {
   for (var i = 1; i < rows.length; i++) {
     itemCatalogById[rows[i][0]] = {
       id: rows[i][0], name: rows[i][1] || ("Vật phẩm " + rows[i][0]),
-      description: rows[i][2] || "", type: rows[i][3] || "", gender: rows[i][4] || ""
+      description: rows[i][2] || "", type: rows[i][3] || "", gender: rows[i][4] || "", iconId: rows[i][5] || ""
     };
   }
   SyncGiftItemCatalog();

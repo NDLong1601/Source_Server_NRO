@@ -42,6 +42,7 @@ import nro.models.services.ItemService;
 import nro.models.services.ItemTimeService;
 import nro.models.services.PetService;
 import nro.models.services.RewardService;
+import nro.models.admin.GiftBoxConfigService;
 import nro.models.services.PlayerService;
 import nro.models.services.TaskService;
 import nro.models.services.InventoryService;
@@ -264,6 +265,11 @@ public class UseItem {
                 } else {
                     openRuongGo(pl);
                 }
+                return;
+            }
+            if (GiftBoxConfigService.gI().open(pl, item)) {
+                TaskService.gI().checkDoneTaskUseItem(pl, item);
+                InventoryService.gI().sendItemBags(pl);
                 return;
             }
             if (item.template.strRequire <= pl.nPoint.power) {
@@ -709,6 +715,8 @@ public class UseItem {
                             case 1840:
                                 UseItem.gI().OpenHopQuaGokuDayVip(pl, item.template.id);
                                 break;
+                            case 1755:
+                            case 1756:
                             case 1757:
                                 UseItem.gI().OpenHopQuaCadic(pl, item.template.id);
                                 break;

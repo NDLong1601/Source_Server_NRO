@@ -60,6 +60,7 @@ import nro.models.task.BadgesTaskTemplate;
 import nro.models.task.ClanTaskTemplate;
 import nro.models.utils.FileIO;
 import nro.models.utils.Util;
+import nro.models.admin.GiftBoxConfigService;
 
 /**
  *
@@ -686,6 +687,7 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");
 
             loadDefaultItemOptions(ConnectionDatabase);
+            GiftBoxConfigService.gI().load();
 
             //load shop
             SHOPS = ShopDAO.getShops(ConnectionDatabase);
