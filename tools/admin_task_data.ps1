@@ -273,9 +273,11 @@ SELECT t.id,
        REPLACE(REPLACE(REPLACE(COALESCE(t.NAME,''),CHAR(9),' '),CHAR(13),'\\r'),CHAR(10),'\\n') AS name,
        t.maxCount,t.idBadgesReward,
        REPLACE(REPLACE(REPLACE(COALESCE(b.NAME,''),CHAR(9),' '),CHAR(13),'\\r'),CHAR(10),'\\n') AS badge_name,
-       COALESCE(b.idItem,-1) AS badge_item_id
+       COALESCE(b.idItem,-1) AS badge_item_id,
+       COALESCE(i.icon_id,-1) AS badge_icon_id
 FROM task_badges_template t
 LEFT JOIN data_badges b ON b.idEffect=t.idBadgesReward
+LEFT JOIN item_template i ON i.id=b.idItem
 ORDER BY t.id;
 "@
 }

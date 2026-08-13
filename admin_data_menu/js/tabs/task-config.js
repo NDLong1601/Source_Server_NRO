@@ -291,7 +291,8 @@ function PickTaskBadgesRow(index) {
   Set("taskBadgesId", row[0]); Set("taskBadgesName", TaskText(row[1])); Set("taskBadgesCount", row[2]); Set("taskBadgesRewardId", row[3]); Set("taskBadgesRewardName", TaskText(row[4]));
   Set("taskBadgesItemId", row[5] || "");
   var image = document.getElementById("taskBadgesImage");
-  if (row[5] && row[5] != "-1") { image.src = "data/icon/x1/" + row[5] + ".png"; image.style.display = "inline-block"; }
+  var badgeIconId = row[6] || "-1";
+  if (badgeIconId != "-1") { image.src = "data/icon/x2/" + badgeIconId + ".png"; image.style.display = "inline-block"; }
   else { image.removeAttribute("src"); image.style.display = "none"; }
   LoadTaskReward("badges", row[0], "Phần thưởng nhiệm vụ danh hiệu #" + row[0]);
 }

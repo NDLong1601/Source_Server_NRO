@@ -44,9 +44,10 @@
       <label>Mô tả</label><textarea id="itemDesc"></textarea>
       <div class="row">
         <div class="cell"><label>Level</label><input type="text" id="itemLevel"></div>
-        <div class="cell"><label>Icon</label><input type="text" id="itemIcon"></div>
+        <div class="cell"><label>Icon</label><input type="text" id="itemIcon" onkeyup="UpdateItemIconPreview()"></div>
         <div class="cell"><label>Part</label><input type="text" id="itemPart"></div>
       </div>
+      <div class="item-icon-preview" id="itemIconPreview">Chưa có icon</div>
       <div class="row">
         <div class="cell">
           <label>Up to up</label>
