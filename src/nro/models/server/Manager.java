@@ -933,6 +933,14 @@ public final class Manager {
                         int id = Integer.parseInt(jsonObj.get("id").toString());
                         int quantity = Integer.parseInt(jsonObj.get("quantity").toString());
 
+                        Object defaultFlag = jsonObj.get("useDefaultOptions");
+                        if (defaultFlag == null) {
+                            defaultFlag = jsonObj.get("useDefault");
+                        }
+                        boolean useDefaultOptions = defaultFlag != null
+                                && ("1".equals(defaultFlag.toString())
+                                || "true".equalsIgnoreCase(defaultFlag.toString()));
+
                         JSONArray option = (JSONArray) jsonObj.get("options");
                         ArrayList<ItemOption> optionList = new ArrayList<>();
 
@@ -946,6 +954,7 @@ public final class Manager {
                         }
 
                         giftcode.option.put(id, optionList);
+                        giftcode.useDefaultOptions.put(id, useDefaultOptions);
                         giftcode.detail.put(id, quantity);
                     }
                 }

@@ -246,7 +246,7 @@ function SaveShopOptions() {
   if (!V("shopItemId")) { Msg("npcMessage", "Chọn một vật phẩm shop trước."); return; }
   var payload = [];
   for (var i = 0; i < shopOptionValues.length; i++) payload.push({ id: shopOptionValues[i].id, param: shopOptionValues[i].param });
-  var text = RunAdmin("saveshopoptions", { Id: V("shopItemId"), PayloadJson: JSON.stringify(payload) });
+  var text = RunAdmin("saveshopoptions", { Id: V("shopItemId"), OptionMode: V("shopOptionMode"), PayloadJson: JSON.stringify(payload) });
   Msg("npcMessage", StatusText(text));
   if (!IsAdminError(text)) LoadShopOptions();
 }

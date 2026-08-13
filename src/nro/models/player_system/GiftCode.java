@@ -19,6 +19,7 @@ public class GiftCode {
     public int id;
     public HashMap<Integer, Integer> detail = new HashMap<>();
     public HashMap<Integer, ArrayList<ItemOption>> option = new HashMap<>();
+    public HashMap<Integer, Boolean> useDefaultOptions = new HashMap<>();
     public Timestamp datecreate;
     public Timestamp dateexpired;
 

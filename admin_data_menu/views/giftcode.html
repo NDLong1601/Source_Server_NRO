@@ -59,6 +59,8 @@
           <div class="cell"><label>Số lượng</label><input type="text" id="giftRewardQuantity" value="1" onchange="SetGiftRewardQuantity()"></div>
           <div class="cell gift-count-cell"><label>Đã chọn option</label><input type="text" id="giftRewardOptionCount" value="0" readonly></div>
         </div>
+        <label class="option-default-toggle"><input type="checkbox" id="giftRewardUseDefault" onchange="ToggleGiftRewardDefault()"><span>Nhận option mặc định của vật phẩm</span></label>
+        <div class="hint">Bật để dùng option trong tab "Option mặc định"; các option bên dưới sẽ được cộng thêm hoặc ghi đè theo ID.</div>
         <div class="option-picker-box">
           <div class="option-picker-toolbar"><input type="text" id="giftOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="FilterGiftOptions()"></div>
           <div class="option-param-columns"><span>Option áp dụng cho vật phẩm</span><span class="option-param-heading">Param</span></div>

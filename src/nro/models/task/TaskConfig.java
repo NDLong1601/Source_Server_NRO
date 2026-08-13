@@ -6,8 +6,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import nro.models.item.Item;
 import nro.models.consts.ConstTask;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public final class TaskConfig {
 
@@ -151,6 +159,56 @@ public final class TaskConfig {
             return parsed;
         } catch (NumberFormatException e) {
             return new int[0];
+        }
+    }
+
+    /** Returns per-item default/extra option settings for a custom task reward. */
+    public static Map<Integer, TaskItemOptions> getTaskRewardItemOptions(String type, int id) {
+        Map<Integer, TaskItemOptions> result = new HashMap<>();
+        String raw = values().getProperty(rewardKey(type, id, "itemOptions"), "").trim();
+        if (raw.isEmpty()) {
+            return result;
+        }
+        Object parsed = JSONValue.parse(raw);
+        if (!(parsed instanceof JSONArray array)) {
+            return result;
+        }
+        for (Object value : array) {
+            if (!(value instanceof JSONObject config) || config.get("itemId") == null) {
+                continue;
+            }
+            try {
+                int itemId = Integer.parseInt(config.get("itemId").toString());
+                Object flag = config.get("useDefaultOptions");
+                boolean useDefaults = flag == null
+                        || "1".equals(flag.toString()) || "true".equalsIgnoreCase(flag.toString());
+                List<Item.ItemOption> extras = new ArrayList<>();
+                Object rawOptions = config.get("options");
+                if (rawOptions instanceof JSONArray options) {
+                    for (Object optionValue : options) {
+                        if (optionValue instanceof JSONObject option
+                                && option.get("id") != null && option.get("param") != null) {
+                            extras.add(new Item.ItemOption(
+                                    Integer.parseInt(option.get("id").toString()),
+                                    Integer.parseInt(option.get("param").toString())));
+                        }
+                    }
+                }
+                result.put(itemId, new TaskItemOptions(useDefaults, extras));
+            } catch (RuntimeException ignored) {
+                // Invalid optional configuration is ignored; the default reward remains safe.
+            }
+        }
+        return result;
+    }
+
+    public static final class TaskItemOptions {
+        public final boolean useDefaultOptions;
+        public final List<Item.ItemOption> options;
+
+        public TaskItemOptions(boolean useDefaultOptions, List<Item.ItemOption> options) {
+            this.useDefaultOptions = useDefaultOptions;
+            this.options = options == null ? new ArrayList<>() : options;
         }
     }
 

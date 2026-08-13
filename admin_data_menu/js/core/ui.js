@@ -134,7 +134,52 @@ function Set(id, value) {
 
 
 function Msg(id, text) {
-  document.getElementById(id).innerText = text;
+  var message = text == null ? "" : "" + text;
+  var target = document.getElementById(id);
+  if (target) target.innerText = message;
+  ShowToast(message);
+}
+
+function ShowToast(text) {
+  if (!Trim(text)) return;
+  var container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  var isError = /(^|\r?\n)\s*(ERROR|LỖI)\b/i.test(text);
+  var isSuccess = !isError && /(^|\r?\n)\s*(OK|Đã|Đang|Cập nhật|Đang cấu hình|Đã chọn|Đã tải|Đã đọc|Đã nạp)/i.test(text);
+  var type = isError ? "error" : (isSuccess ? "success" : "info");
+  var toast = document.createElement("div");
+  toast.className = "toast toast-" + type;
+
+  var badge = document.createElement("span");
+  badge.className = "toast-badge";
+  badge.innerText = isError ? "LỖI" : (isSuccess ? "THÀNH CÔNG" : "THÔNG TIN");
+  toast.appendChild(badge);
+
+  var body = document.createElement("div");
+  body.className = "toast-body";
+  body.innerText = text;
+  toast.appendChild(body);
+
+  var close = document.createElement("button");
+  close.type = "button";
+  close.className = "toast-close";
+  close.innerText = "×";
+  close.onclick = function () {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  };
+  toast.appendChild(close);
+
+  container.appendChild(toast);
+  while (container.childNodes.length > 5) container.removeChild(container.firstChild);
+  window.setTimeout(function () {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, isError ? 6500 : 4500);
 }
 
 

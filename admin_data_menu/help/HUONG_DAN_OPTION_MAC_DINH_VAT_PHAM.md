@@ -298,3 +298,12 @@ Kiểm tra:
 Tính năng đã được thêm vào source và database. Khi build toàn bộ project, nếu gặp lỗi ở các module Radar hoặc `PlayerDAO`, cần xử lý các lỗi compile nền đó trước khi tạo JAR mới.
 
 Sau khi build thành công, cần cập nhật JAR runtime theo quy trình build hiện tại của dự án rồi restart server để áp dụng code mới.
+## 15. Kế thừa option theo ngữ cảnh
+
+Giftcode, SHOP, phần thưởng nhiệm vụ, drop Mob/Boss và vật phẩm sự kiện đều hỗ trợ cùng quy tắc:
+
+- Bật **Nhận option mặc định** để lấy preset trong `item_default_option`.
+- Nhập option bổ sung nếu cần; option trùng ID sẽ ghi đè giá trị mặc định.
+- Tắt checkbox để chỉ dùng option riêng của ngữ cảnh đó.
+
+SHOP dùng `option_mode=0` (mặc định), `1` (riêng) hoặc `2` (mặc định + bổ sung). Giftcode lưu cờ `useDefaultOptions`; phần thưởng nhiệm vụ lưu cấu hình theo từng item trong `task.properties`; drop Mob/Boss và sự kiện lưu cấu hình tương tự trong JSON database.

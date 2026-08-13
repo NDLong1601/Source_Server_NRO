@@ -75,7 +75,8 @@
           <div class="cell"><label>Số lượng max</label><input type="text" id="bossDropMax" value="1"></div>
           <div class="cell"><label>Tỉ lệ (%)</label><input type="text" id="bossDropRate" value="100"></div>
         </div>
-        <label>Option và khoảng chỉ số random</label><input type="text" id="bossOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderBossOptionChecklist()">
+        <label class="option-default-toggle"><input type="checkbox" id="bossDropUseDefault"><span>Nhận option mặc định của vật phẩm</span></label>
+        <label>Option bổ sung và khoảng chỉ số random</label><input type="text" id="bossOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="RenderBossOptionChecklist()">
         <div id="bossOptionSummary" class="option-picker-summary">Chọn một vật phẩm để cấu hình option</div>
         <div id="bossOptionChecklist" class="option-picker-list"></div>
         <div class="actions"><button type="button" onclick="UpdateBossDrop()">Cập nhật vật phẩm đang chọn</button><button type="button" onclick="ClearBossDropSelection()">Bỏ chọn dòng chỉnh sửa</button></div>

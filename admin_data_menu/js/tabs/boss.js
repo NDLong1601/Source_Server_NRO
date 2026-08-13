@@ -43,6 +43,7 @@ function FindBossDropIndex(itemId) {
 function NormalizeBossDrops() {
   for (var i = 0; i < bossDrops.length; i++) {
     var options = bossDrops[i].options || [];
+    bossDrops[i].useDefaultOptions = bossDrops[i].useDefaultOptions === true || bossDrops[i].useDefaultOptions === 1 || bossDrops[i].useDefaultOptions === "1" || bossDrops[i].useDefaultOptions === "true";
     for (var o = 0; o < options.length; o++) {
       var fixed = options[o].param == null ? 0 : parseInt(options[o].param, 10);
       if (options[o].paramMin == null) options[o].paramMin = fixed;
@@ -72,7 +73,7 @@ function RenderBossItemChecklist() {
 function ToggleBossDropItem(id, checked) {
   var index = FindBossDropIndex(id);
   if (checked && index < 0) {
-    bossDrops.push({ itemId: parseInt(id, 10), quantityMin: 1, quantityMax: 1, dropRate: 100, options: [] });
+    bossDrops.push({ itemId: parseInt(id, 10), quantityMin: 1, quantityMax: 1, dropRate: 100, useDefaultOptions: false, options: [] });
     index = bossDrops.length - 1;
   } else if (!checked && index >= 0) {
     bossDrops.splice(index, 1);
@@ -98,6 +99,7 @@ function PickBossDrop(index) {
   var d = bossDrops[index];
   Set("bossDropItem", d.itemId); Set("bossDropItemName", spawnItemNames[d.itemId] || "Không rõ");
   Set("bossDropMin", d.quantityMin); Set("bossDropMax", d.quantityMax); Set("bossDropRate", d.dropRate);
+  if (document.getElementById("bossDropUseDefault")) document.getElementById("bossDropUseDefault").checked = !!d.useDefaultOptions;
   RenderBossOptionChecklist();
 }
 
@@ -110,6 +112,7 @@ function RemoveBossDrop(index) {
 function ClearBossDropSelection() {
   selectedBossDrop = -1;
   Set("bossDropItem", ""); Set("bossDropItemName", ""); Set("bossDropMin", "1"); Set("bossDropMax", "1"); Set("bossDropRate", "100");
+  if (document.getElementById("bossDropUseDefault")) document.getElementById("bossDropUseDefault").checked = false;
   RenderBossOptionChecklist();
 }
 

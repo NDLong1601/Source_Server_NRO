@@ -43,7 +43,12 @@ function ParseNumberArray(json) {
 function ParseSpawnDrops(json) {
   try {
     var parsed = JSON.parse(json || "[]");
-    return parsed && parsed.length != null ? parsed : [];
+    if (!parsed || parsed.length == null) return [];
+    for (var i = 0; i < parsed.length; i++) {
+      parsed[i].options = parsed[i].options || [];
+      parsed[i].useDefaultOptions = parsed[i].useDefaultOptions === true || parsed[i].useDefaultOptions === 1 || parsed[i].useDefaultOptions === "1" || parsed[i].useDefaultOptions === "true";
+    }
+    return parsed;
   } catch (e) { return []; }
 }
 
@@ -84,7 +89,7 @@ function AddSpawnDrop(prefix) {
     Msg(messageId, "Tỉ lệ phải từ 0–100 và số lượng min không lớn hơn max."); return;
   }
   var options = ParseSpawnOptions(V(prefix + "DropOptions"), messageId); if (options == null) return;
-  var drop = { itemId: parseInt(V(prefix + "DropItem"), 10), quantityMin: parseInt(V(prefix + "DropMin"), 10), quantityMax: parseInt(V(prefix + "DropMax"), 10), dropRate: rate, options: options };
+  var drop = { itemId: parseInt(V(prefix + "DropItem"), 10), quantityMin: parseInt(V(prefix + "DropMin"), 10), quantityMax: parseInt(V(prefix + "DropMax"), 10), dropRate: rate, useDefaultOptions: !!document.getElementById(prefix + "DropUseDefault") && document.getElementById(prefix + "DropUseDefault").checked, options: options };
   var list = prefix == "boss" ? bossDrops : mobDrops;
   var selected = prefix == "boss" ? selectedBossDrop : selectedMobDrop;
   if (selected >= 0) list[selected] = drop; else list.push(drop);
@@ -107,6 +112,7 @@ function PickSpawnDrop(prefix, index) {
   var list = prefix == "boss" ? bossDrops : mobDrops; var d = list[index];
   if (prefix == "boss") selectedBossDrop = index; else selectedMobDrop = index;
   Set(prefix + "DropItem", d.itemId); Set(prefix + "DropMin", d.quantityMin); Set(prefix + "DropMax", d.quantityMax); Set(prefix + "DropRate", d.dropRate); Set(prefix + "DropOptions", SpawnOptionsText(d.options));
+  if (document.getElementById(prefix + "DropUseDefault")) document.getElementById(prefix + "DropUseDefault").checked = !!d.useDefaultOptions;
   ShowSpawnItemName(prefix);
 }
 
@@ -118,6 +124,7 @@ function RemoveSpawnDrop(prefix, index) {
 
 function ClearSpawnDropEditor(prefix) {
   Set(prefix + "DropItem", ""); Set(prefix + "DropItemName", ""); Set(prefix + "DropMin", "1"); Set(prefix + "DropMax", "1"); Set(prefix + "DropRate", "100"); Set(prefix + "DropOptions", "");
+  if (document.getElementById(prefix + "DropUseDefault")) document.getElementById(prefix + "DropUseDefault").checked = false;
   if (prefix == "boss") selectedBossDrop = -1; else selectedMobDrop = -1;
 }
 

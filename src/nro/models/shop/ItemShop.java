@@ -28,7 +28,7 @@ public class ItemShop {
 
     public int iconSpec;
 
-    /** 0 = inherit item default options, 1 = use item_shop_option rows. */
+    /** 0 = defaults, 1 = custom rows, 2 = defaults plus custom rows. */
     public byte optionMode;
 
     public int cost;

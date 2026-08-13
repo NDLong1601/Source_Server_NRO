@@ -116,15 +116,17 @@ public class ShopDAO {
 
     private static void loadItemShopOption(Connection con, ItemShop itemShop) {
         try {
+            boolean includeDefaults = itemShop.optionMode == 0 || itemShop.optionMode == 2;
             if (itemShop.optionMode == 0) {
                 itemShop.options.addAll(ItemService.gI().getDefaultItemOptions(itemShop.temp.id));
                 return;
             }
+            List<Item.ItemOption> customOptions = new ArrayList<>();
             PreparedStatement ps = con.prepareStatement("select * from item_shop_option where item_shop_id = ?");
             ps.setInt(1, itemShop.id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                itemShop.options.add(new Item.ItemOption(rs.getInt("option_id"), rs.getInt("param")));
+                customOptions.add(new Item.ItemOption(rs.getInt("option_id"), rs.getInt("param")));
             }
             try {
                 if (rs != null) {
@@ -135,6 +137,7 @@ public class ShopDAO {
                 }
             } catch (SQLException ex) {
             }
+            itemShop.options.addAll(ItemService.gI().mergeItemOptions(itemShop.temp.id, includeDefaults, customOptions));
         } catch (Exception e) {
             Logger.logException(ShopDAO.class, e);
         }

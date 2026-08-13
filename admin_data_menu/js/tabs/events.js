@@ -292,6 +292,23 @@ function PickEventItem(index) {
   Set("eventItemRate", row[7]);
   document.getElementById("eventItemEnabled").checked = row[8] == "1";
   Set("eventItemNotes", row[9]);
+  var optionConfig = ParseEventItemOptions(row[10]);
+  document.getElementById("eventItemUseDefault").checked = optionConfig.useDefaultOptions;
+  Set("eventItemOptions", EventOptionsText(optionConfig.options));
+}
+
+function ParseEventItemOptions(value) {
+  try {
+    var parsed = JSON.parse(value || "[]");
+    var options = parsed && parsed.options ? parsed.options : (parsed instanceof Array ? parsed : []);
+    return { useDefaultOptions: !!(parsed && parsed.useDefaultOptions === true || parsed && parsed.useDefaultOptions === 1 || parsed && parsed.useDefaultOptions === "1" || parsed && parsed.useDefaultOptions === "true"), options: options };
+  } catch (e) { return { useDefaultOptions: false, options: [] }; }
+}
+
+function EventOptionsText(options) {
+  var result = [];
+  for (var i = 0; i < (options || []).length; i++) result.push(options[i].id + ":" + (options[i].param == null ? options[i].paramMin : options[i].param));
+  return result.join(",");
 }
 
 function ClearEventItemForm() {
@@ -303,14 +320,19 @@ function ClearEventItemForm() {
   Set("eventItemMax", "1");
   Set("eventItemRate", "100");
   Set("eventItemNotes", "");
+  Set("eventItemOptions", "");
+  document.getElementById("eventItemUseDefault").checked = false;
   document.getElementById("eventItemEnabled").checked = true;
 }
 
 function SaveEventItem() {
   if (!selectedEventCode) return;
+  var eventOptions = ParseSpawnOptions(V("eventItemOptions"), "eventConfigMessage");
+  if (eventOptions == null) return;
   var text = RunAdmin("saveeventitem", { EventValue: selectedEventCode, Id: V("eventItemRowId"), TemplateId: V("eventItemId"),
     SourceType: V("eventItemSource"), SourceId: V("eventItemSourceId"), QuantityMin: V("eventItemMin"), QuantityMax: V("eventItemMax"),
-    DropRate: V("eventItemRate"), Enabled: CheckedValue("eventItemEnabled"), Notes: V("eventItemNotes") });
+    DropRate: V("eventItemRate"), Enabled: CheckedValue("eventItemEnabled"), Notes: V("eventItemNotes"),
+    OptionsJson: JSON.stringify({ useDefaultOptions: document.getElementById("eventItemUseDefault").checked, options: eventOptions }) });
   Msg("eventConfigMessage", StatusText(text));
   if (!IsAdminError(text)) { LoadEventConfigDetail(); RefreshEventCardsOnly(); }
 }

@@ -39,7 +39,8 @@
           <div class="cell"><label>Số lượng max</label><input type="text" id="mobDropMax" value="1"></div>
           <div class="cell"><label>Tỉ lệ (%)</label><input type="text" id="mobDropRate" value="100"></div>
         </div>
-        <label>Chỉ số (optionId:param, phân cách dấu phẩy)</label><input type="text" id="mobDropOptions" placeholder="Ví dụ: 77:15,103:15,30:1">
+        <label class="option-default-toggle"><input type="checkbox" id="mobDropUseDefault"><span>Nhận option mặc định của vật phẩm</span></label>
+        <label>Option bổ sung (optionId:param, phân cách dấu phẩy)</label><input type="text" id="mobDropOptions" placeholder="Ví dụ: 77:15,103:15,30:1">
         <div class="actions"><button type="button" onclick="AddSpawnDrop('mob')">Thêm / cập nhật drop</button><button type="button" onclick="ClearSpawnDropEditor('mob')">Nhập dòng mới</button></div>
         <div class="mini-table"><table id="mobDropsTable"></table></div>
       </div>

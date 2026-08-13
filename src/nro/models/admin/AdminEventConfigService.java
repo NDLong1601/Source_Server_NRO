@@ -70,7 +70,7 @@ public final class AdminEventConfigService implements Runnable {
                         rs.getInt("item_id"), Math.max(1, rs.getInt("quantity_min")),
                         Math.max(1, rs.getInt("quantity_max")),
                         Math.max(0D, Double.parseDouble(rs.getString("drop_rate"))),
-                        rs.getBoolean("enabled"), parseOptions(rs.getString("options_json"))
+                        rs.getBoolean("enabled"), parseUseDefaultOptions(rs.getString("options_json")), parseOptions(rs.getString("options_json"))
                 ));
             }
             Logger.success("Loaded event config (profile=" + profiles.size() + ", boss="
@@ -157,11 +157,13 @@ public final class AdminEventConfigService implements Runnable {
             int quantity = min == max ? min : ThreadLocalRandom.current().nextInt(min, max + 1);
             ItemMap item = new ItemMap(zone, rule.itemId, quantity,
                     x + ThreadLocalRandom.current().nextInt(-15, 16), y, playerId);
+            List<Item.ItemOption> extraOptions = new ArrayList<>();
             for (OptionValue option : rule.options) {
                 int param = option.paramMin == option.paramMax ? option.paramMin
                         : ThreadLocalRandom.current().nextInt(option.paramMin, option.paramMax + 1);
-                item.options.add(new Item.ItemOption(option.id, param));
+                extraOptions.add(new Item.ItemOption(option.id, param));
             }
+            item.options.addAll(ItemService.gI().mergeItemOptions((short) rule.itemId, rule.useDefaultOptions, extraOptions));
             result.add(item);
         }
         return result;
@@ -239,7 +241,9 @@ public final class AdminEventConfigService implements Runnable {
     private static List<OptionValue> parseOptions(String json) {
         List<OptionValue> result = new ArrayList<>();
         Object parsed = JSONValue.parse(json == null ? "[]" : json);
-        if (!(parsed instanceof JSONArray array)) {
+        JSONArray array = parsed instanceof JSONObject object && object.get("options") instanceof JSONArray nested
+                ? nested : parsed instanceof JSONArray direct ? direct : null;
+        if (array == null) {
             return result;
         }
         for (Object value : array) {
@@ -257,6 +261,15 @@ public final class AdminEventConfigService implements Runnable {
             result.add(new OptionValue(Integer.parseInt(option.get("id").toString()), Math.min(min, max), Math.max(min, max)));
         }
         return result;
+    }
+
+    private static boolean parseUseDefaultOptions(String json) {
+        Object parsed = JSONValue.parse(json == null ? "[]" : json);
+        if (parsed instanceof JSONObject object) {
+            Object flag = object.get("useDefaultOptions");
+            return flag != null && ("1".equals(flag.toString()) || "true".equalsIgnoreCase(flag.toString()));
+        }
+        return false;
     }
 
     private static int[] parseIntArray(String json) {
@@ -295,7 +308,8 @@ public final class AdminEventConfigService implements Runnable {
     }
 
     private record ItemRule(String eventCode, String sourceType, int sourceId, int itemId,
-            int quantityMin, int quantityMax, double rate, boolean enabled, List<OptionValue> options) {
+            int quantityMin, int quantityMax, double rate, boolean enabled, boolean useDefaultOptions,
+            List<OptionValue> options) {
     }
 
     private record OptionValue(int id, int paramMin, int paramMax) {

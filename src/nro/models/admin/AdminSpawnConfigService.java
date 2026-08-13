@@ -79,7 +79,7 @@ public final class AdminSpawnConfigService {
                 DropConfig drop = new DropConfig(
                         rs.getInt("item_id"), Math.max(1, rs.getInt("quantity_min")),
                         Math.max(1, rs.getInt("quantity_max")), Double.parseDouble(rs.getString("drop_rate")),
-                        parseOptions(rs.getString("options_json"))
+                        parseUseDefaultOptions(rs.getString("options_json")), parseOptions(rs.getString("options_json"))
                 );
                 drops.computeIfAbsent(key(rs.getString("owner_type"), rs.getInt("owner_id")), ignored -> new ArrayList<>()).add(drop);
             }
@@ -195,12 +195,14 @@ public final class AdminSpawnConfigService {
                     ? drop.quantityMin
                     : ThreadLocalRandom.current().nextInt(drop.quantityMin, drop.quantityMax + 1);
             ItemMap itemMap = new ItemMap(zone, drop.itemId, quantity, x + ThreadLocalRandom.current().nextInt(-15, 16), y, playerId);
+            List<Item.ItemOption> extraOptions = new ArrayList<>();
             for (OptionValue option : drop.options) {
                 int param = option.paramMin == option.paramMax
                         ? option.paramMin
                         : ThreadLocalRandom.current().nextInt(option.paramMin, option.paramMax + 1);
-                itemMap.options.add(new Item.ItemOption(option.id, param));
+                extraOptions.add(new Item.ItemOption(option.id, param));
             }
+            itemMap.options.addAll(ItemService.gI().mergeItemOptions((short) drop.itemId, drop.useDefaultOptions, extraOptions));
             result.add(itemMap);
         }
         return result;
@@ -221,7 +223,9 @@ public final class AdminSpawnConfigService {
     private static List<OptionValue> parseOptions(String json) {
         List<OptionValue> result = new ArrayList<>();
         Object parsed = JSONValue.parse(json == null ? "[]" : json);
-        if (!(parsed instanceof JSONArray array)) {
+        JSONArray array = parsed instanceof JSONObject object && object.get("options") instanceof JSONArray nested
+                ? nested : parsed instanceof JSONArray direct ? direct : null;
+        if (array == null) {
             return result;
         }
         for (Object value : array) {
@@ -243,6 +247,15 @@ public final class AdminSpawnConfigService {
             }
         }
         return result;
+    }
+
+    private static boolean parseUseDefaultOptions(String json) {
+        Object parsed = JSONValue.parse(json == null ? "[]" : json);
+        if (parsed instanceof JSONObject object) {
+            Object flag = object.get("useDefaultOptions");
+            return flag != null && ("1".equals(flag.toString()) || "true".equalsIgnoreCase(flag.toString()));
+        }
+        return false;
     }
 
     private static int[] parseIntArray(String json) {
@@ -376,7 +389,7 @@ public final class AdminSpawnConfigService {
     }
 
     private record DropConfig(int itemId, int quantityMin, int quantityMax, double rate,
-            List<OptionValue> options) {
+            boolean useDefaultOptions, List<OptionValue> options) {
     }
 
     private record BossOverride(boolean enabled, int[][] skills, boolean useTimeRange,

@@ -71,10 +71,11 @@ public class GiftCodeService {
                         Item itemGiftTemplate = ItemService.gI().createNewItem((short) idItem);
                         if (itemGiftTemplate != null) {
                             Item itemGift = new Item((short) idItem);
-                            if (itemGift.template.id == 457 && giftcode.option.get(key).isEmpty()) {
+                            boolean useDefaultOptions = Boolean.TRUE.equals(giftcode.useDefaultOptions.get(key));
+                            itemGift.itemOptions = ItemService.gI().mergeItemOptions((short) idItem,
+                                    useDefaultOptions, giftcode.option.get(key));
+                            if (itemGift.template.id == 457 && itemGift.itemOptions.isEmpty()) {
                                 itemGift.itemOptions.add(new Item.ItemOption(30, 0));
-                            } else {
-                                itemGift.itemOptions = giftcode.option.get(key);
                             }
                             itemGift.quantity = quantity;
                             InventoryService.gI().addItemBag(player, itemGift);

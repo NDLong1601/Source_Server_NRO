@@ -106,6 +106,15 @@ public class ItemService {
         return item;
     }
 
+    public Item createNewItemWithOptions(short tempId, int quantity, boolean includeDefaults,
+            Collection<Item.ItemOption> additionalOptions) {
+        Item item = createNewItem(tempId, quantity);
+        if (item != null) {
+            item.itemOptions.addAll(mergeItemOptions(tempId, includeDefaults, additionalOptions));
+        }
+        return item;
+    }
+
     /** Returns detached option objects so callers can safely randomize params. */
     public List<Item.ItemOption> getDefaultItemOptions(short id) {
         List<Item.ItemOption> source = Manager.ITEM_DEFAULT_OPTIONS.get(id);
@@ -116,6 +125,48 @@ public class ItemService {
             }
         }
         return result;
+    }
+
+    /**
+     * Builds a detached option list for an item. Defaults are optional and
+     * explicitly configured options replace a default with the same id.
+     * This keeps Giftcode/Shop/Task/Event/Drop reward paths consistent.
+     */
+    public List<Item.ItemOption> mergeItemOptions(short tempId, boolean includeDefaults,
+            Collection<Item.ItemOption> additionalOptions) {
+        List<Item.ItemOption> result = new ArrayList<>();
+        if (includeDefaults) {
+            result.addAll(getDefaultItemOptions(tempId));
+        }
+        if (additionalOptions == null) {
+            return result;
+        }
+        for (Item.ItemOption additional : additionalOptions) {
+            if (additional == null || additional.optionTemplate == null) {
+                continue;
+            }
+            int optionId = additional.optionTemplate.id;
+            int existing = -1;
+            for (int i = 0; i < result.size(); i++) {
+                Item.ItemOption current = result.get(i);
+                if (current != null && current.optionTemplate != null
+                        && current.optionTemplate.id == optionId) {
+                    existing = i;
+                    break;
+                }
+            }
+            Item.ItemOption copy = new Item.ItemOption(additional);
+            if (existing >= 0) {
+                result.set(existing, copy);
+            } else {
+                result.add(copy);
+            }
+        }
+        return result;
+    }
+
+    public List<Item.ItemOption> mergeItemOptions(short tempId, boolean includeDefaults) {
+        return mergeItemOptions(tempId, includeDefaults, null);
     }
 
     public Item otpts(short tempId, int quantity) {

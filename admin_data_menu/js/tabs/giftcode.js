@@ -53,7 +53,8 @@ function ParseGiftRewards(detail) {
         id: "" + parsed[i].id,
         name: GiftItemName(parsed[i].id),
         quantity: "" + (parsed[i].quantity || 1),
-        options: options
+        options: options,
+        useDefaultOptions: parsed[i].useDefaultOptions === true || parsed[i].useDefaultOptions === 1 || parsed[i].useDefaultOptions === "1" || parsed[i].useDefaultOptions === "true"
       });
     }
     return rewards;
@@ -200,7 +201,7 @@ function UpdateGiftItemSummary() {
 function ToggleGiftItem(id, checked) {
   var reward = FindGiftReward(id);
   if (checked && !reward) {
-    giftRewards.push({ id: "" + id, name: GiftItemName(id), quantity: "1", options: [] });
+    giftRewards.push({ id: "" + id, name: GiftItemName(id), quantity: "1", options: [], useDefaultOptions: false });
     selectedGiftRewardId = "" + id;
   } else if (!checked && reward) {
     var next = [];
@@ -221,7 +222,7 @@ function RenderGiftRewardsTable() {
     var optionLabels = [];
     for (var o = 0; o < reward.options.length; o++) optionLabels.push(reward.options[o].id + ":" + reward.options[o].param);
     html += '<tr onclick="PickGiftReward(' + i + ')"><td>' + Html(reward.id) + "</td><td>" + Html(reward.name) +
-      "</td><td>" + Html(reward.quantity) + "</td><td>" + Html(optionLabels.join(", ")) + "</td></tr>";
+      "</td><td>" + Html(reward.quantity) + "</td><td>" + Html((reward.useDefaultOptions ? "mặc định" : "riêng") + (optionLabels.length ? " + " + optionLabels.join(", ") : "")) + "</td></tr>";
   }
   document.getElementById("giftRewardsTable").innerHTML = html + "</tbody>";
 }
@@ -241,8 +242,15 @@ function ShowGiftRewardEditor() {
   document.getElementById("giftRewardEditor").style.display = "block";
   document.getElementById("giftRewardTitle").innerText = "Cấu hình: " + reward.id + " - " + reward.name;
   Set("giftRewardQuantity", reward.quantity);
+  document.getElementById("giftRewardUseDefault").checked = !!reward.useDefaultOptions;
   Set("giftOptionSearch", "");
   RenderGiftOptionPicker();
+}
+
+function ToggleGiftRewardDefault() {
+  var reward = FindGiftReward(selectedGiftRewardId);
+  if (reward) reward.useDefaultOptions = document.getElementById("giftRewardUseDefault").checked;
+  RenderGiftRewardsTable();
 }
 
 function SetGiftRewardQuantity() {
@@ -323,7 +331,7 @@ function SaveGiftCode() {
   var mode = document.getElementById("giftExpiryRange").checked ? "range" : "days";
   var detail = [];
   for (var i = 0; i < giftRewards.length; i++) {
-    detail.push({ id: parseInt(giftRewards[i].id, 10), quantity: parseInt(giftRewards[i].quantity, 10), options: giftRewards[i].options });
+    detail.push({ id: parseInt(giftRewards[i].id, 10), quantity: parseInt(giftRewards[i].quantity, 10), useDefaultOptions: !!giftRewards[i].useDefaultOptions, options: giftRewards[i].options });
   }
   var text = RunAdmin("savegiftcode", {
     Id: V("giftId"), GiftCode: V("giftCode"), CountLeft: document.getElementById("giftUnlimited").checked ? "-1" : V("giftCount"),

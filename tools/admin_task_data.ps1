@@ -1,12 +1,12 @@
 ﻿function Get-TaskConfigCatalog {
     @(
-        [pscustomobject]@{ Key="task.side.maxPerDay"; Category="Nhiem vu ngay"; Name="So luot nhiem vu moi ngay"; Default="10"; Kind="int"; Scope="runtime"; Description="So luot nhiem vu ngay reset sau nua dem." },
-        [pscustomobject]@{ Key="task.side.goldRewards"; Category="Nhiem vu ngay"; Name="Vang thuong theo do kho"; Default="5000,20000,50000,200000,25"; Kind="int-list-5"; Scope="runtime"; Description="5 so tuong ung De, Binh thuong, Kho, Rat kho, Dia nguc." },
-        [pscustomobject]@{ Key="task.side.itemRewards"; Category="Nhiem vu ngay"; Name="Item thuong theo do kho"; Default="708,707,706,705,704"; Kind="int-list-5"; Scope="runtime"; Description="5 item template id tuong ung De den Dia nguc." },
-        [pscustomobject]@{ Key="task.side.hellTreeItemId"; Category="Nhiem vu ngay"; Name="Item dac biet dia nguc"; Default="822"; Kind="item-id"; Scope="runtime"; Description="Item dac biet co the nhan o nhiem vu Dia nguc khi dat nguong luot con lai." },
-        [pscustomobject]@{ Key="task.side.hellTreeLeftThreshold"; Category="Nhiem vu ngay"; Name="Nguong luot con lai nhan item dac biet"; Default="15"; Kind="int"; Scope="runtime"; Description="Neu luot con lai nho hon gia tri nay thi xet thuong item dac biet." },
-        [pscustomobject]@{ Key="task.clan.maxPerDay"; Category="Nhiem vu bang"; Name="So luot nhiem vu bang moi ngay"; Default="5"; Kind="int"; Scope="runtime"; Description="So luot nhiem vu bang reset sau nua dem." },
-        [pscustomobject]@{ Key="task.clan.capsulePerLevel"; Category="Nhiem vu bang"; Name="Capsule bang moi cap do"; Default="10"; Kind="int"; Scope="runtime"; Description="Thuong capsule bang = (do kho + 1) nhan gia tri nay." }
+        [pscustomobject]@{ Key="task.side.maxPerDay"; Category="Nhiệm vụ ngày"; Name="Số lượt nhiệm vụ mỗi ngày"; Default="10"; Kind="int"; Scope="runtime"; Description="Số lượt nhiệm vụ ngày được đặt lại sau nửa đêm." },
+        [pscustomobject]@{ Key="task.side.goldRewards"; Category="Nhiệm vụ ngày"; Name="Vàng thưởng theo độ khó"; Default="5000,20000,50000,200000,25"; Kind="int-list-5"; Scope="runtime"; Description="5 số tương ứng với Dễ, Bình thường, Khó, Rất khó và Địa ngục." },
+        [pscustomobject]@{ Key="task.side.itemRewards"; Category="Nhiệm vụ ngày"; Name="Vật phẩm thưởng theo độ khó"; Default="708,707,706,705,704"; Kind="int-list-5"; Scope="runtime"; Description="5 ID template vật phẩm tương ứng từ Dễ đến Địa ngục." },
+        [pscustomobject]@{ Key="task.side.hellTreeItemId"; Category="Nhiệm vụ ngày"; Name="ID vật phẩm đặc biệt Địa ngục"; Default="822"; Kind="item-id"; Scope="runtime"; Description="Vật phẩm đặc biệt có thể nhận ở nhiệm vụ Địa ngục khi đạt ngưỡng lượt còn lại." },
+        [pscustomobject]@{ Key="task.side.hellTreeLeftThreshold"; Category="Nhiệm vụ ngày"; Name="Ngưỡng lượt còn lại để nhận vật phẩm đặc biệt"; Default="15"; Kind="int"; Scope="runtime"; Description="Nếu số lượt còn lại nhỏ hơn giá trị này thì xét thưởng vật phẩm đặc biệt." },
+        [pscustomobject]@{ Key="task.clan.maxPerDay"; Category="Nhiệm vụ bang"; Name="Số lượt nhiệm vụ bang mỗi ngày"; Default="5"; Kind="int"; Scope="runtime"; Description="Số lượt nhiệm vụ bang được đặt lại sau nửa đêm." },
+        [pscustomobject]@{ Key="task.clan.capsulePerLevel"; Category="Nhiệm vụ bang"; Name="Số capsule bang theo cấp độ"; Default="10"; Kind="int"; Scope="runtime"; Description="Thưởng capsule bang = (độ khó + 1) nhân với giá trị này." }
     )
 }
 
@@ -18,24 +18,24 @@ function Get-TaskConfigEntry {
 function Assert-TaskConfigValue {
     param($Entry, [string]$Value)
     $Value = $Value.Trim()
-    if ([string]::IsNullOrWhiteSpace($Value)) { throw "Gia tri khong duoc de trong." }
+    if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
     if ($Entry.Kind -eq "int") {
-        if ($Value -notmatch '^\d+$') { throw "Gia tri phai la so nguyen khong am." }
-        if ([decimal]$Value -gt 2147483647) { throw "Gia tri vuot gioi han int." }
+        if ($Value -notmatch '^\d+$') { throw "Giá trị phải là số nguyên không âm." }
+        if ([decimal]$Value -gt 2147483647) { throw "Giá trị vượt giới hạn int." }
     } elseif ($Entry.Kind -eq "item-id") {
-        if ($Value -notmatch '^-?\d+$') { throw "Item id phai la so nguyen." }
-        if ([int]$Value -lt -1 -or [int]$Value -gt 32767) { throw "Item id phai tu -1 den 32767." }
+        if ($Value -notmatch '^-?\d+$') { throw "ID vật phẩm phải là số nguyên." }
+        if ([int]$Value -lt -1 -or [int]$Value -gt 32767) { throw "ID vật phẩm phải từ -1 đến 32767." }
     } elseif ($Entry.Kind -eq "int-list-5") {
         $parts = @($Value -split ',')
-        if ($parts.Count -ne 5) { throw "Danh sach phai co dung 5 so." }
+        if ($parts.Count -ne 5) { throw "Danh sách phải có đúng 5 số." }
         foreach ($part in $parts) {
             $number = $part.Trim()
-            if ($number -notmatch '^\d+$') { throw "Danh sach chi gom so nguyen khong am, phan cach bang dau phay." }
-            if ([decimal]$number -gt 2147483647) { throw "Moi gia tri khong duoc vuot gioi han int." }
+            if ($number -notmatch '^\d+$') { throw "Danh sách chỉ gồm số nguyên không âm, phân cách bằng dấu phẩy." }
+            if ([decimal]$number -gt 2147483647) { throw "Mỗi giá trị không được vượt giới hạn int." }
         }
         $Value = ($parts | ForEach-Object { ([int]$_.Trim()).ToString() }) -join ','
     } else {
-        throw "Kieu cau hinh nhiem vu khong hop le: $($Entry.Kind)"
+        throw "Kiểu cấu hình nhiệm vụ không hợp lệ: $($Entry.Kind)"
     }
     $Value
 }
@@ -54,17 +54,17 @@ function List-TaskConfig {
 
 function Save-TaskConfig {
     $entry = Get-TaskConfigEntry $ConfigKey
-    if ($null -eq $entry) { throw "Khoa cau hinh nhiem vu khong hop le: $ConfigKey" }
+    if ($null -eq $entry) { throw "Khóa cấu hình nhiệm vụ không hợp lệ: $ConfigKey" }
     $validated = Assert-TaskConfigValue $entry $ConfigValue
     Set-PropertyValue -Path (Join-Path $Root "task.properties") -Key $entry.Key -Value $validated
-    "OK`tDa luu $($entry.Name). Runtime ap dung trong toi da 1 giay."
+    "OK`tĐã lưu $($entry.Name). Runtime áp dụng trong tối đa 1 giây."
 }
 
 function Reset-TaskConfig {
     $entry = Get-TaskConfigEntry $ConfigKey
-    if ($null -eq $entry) { throw "Khoa cau hinh nhiem vu khong hop le: $ConfigKey" }
+    if ($null -eq $entry) { throw "Khóa cấu hình nhiệm vụ không hợp lệ: $ConfigKey" }
     Set-PropertyValue -Path (Join-Path $Root "task.properties") -Key $entry.Key -Value "" -Remove
-    "OK`tDa dua $($entry.Name) ve mac dinh $($entry.Default)."
+    "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
 }
 
 function Assert-TaskText {
@@ -127,7 +127,25 @@ function Convert-TaskRewardPayload {
         $found = [int](Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id IN ($idSql);")
         if ($found -ne $itemIds.Count) { throw "Co vat pham khong ton tai trong item_template." }
     }
-    [pscustomobject]@{ Enabled=$enabled; Potential=$potential; Gold=$gold; Gem=$gem; ItemIds=($itemIds -join ',') }
+    $itemOptionConfigs = New-Object System.Collections.Generic.List[object]
+    foreach ($rawConfig in @($payload.ItemOptions)) {
+        if ($null -eq $rawConfig) { continue }
+        $itemIdText = [string]$rawConfig.itemId
+        if ($itemIdText -notmatch '^\d+$' -or $itemIds -notcontains ([int]$itemIdText)) { throw "Cấu hình option gắn với item chưa được chọn." }
+        $useDefault = ([string]$rawConfig.useDefaultOptions -eq '1' -or [string]$rawConfig.useDefaultOptions -eq 'true')
+        $seenOptions = @{}; $normalizedOptions = New-Object System.Collections.Generic.List[object]
+        foreach ($rawOption in @($rawConfig.options)) {
+            $optionIdText = [string]$rawOption.id; $paramText = [string]$rawOption.param
+            if ($optionIdText -notmatch '^\d+$' -or $paramText -notmatch '^-?\d+$') { throw "Option nhiệm vụ phải có ID và param là số nguyên." }
+            if ($seenOptions.ContainsKey($optionIdText)) { throw "Option ID $optionIdText bị trùng trong phần thưởng nhiệm vụ." }
+            $seenOptions[$optionIdText] = $true
+            $normalizedOptions.Add([ordered]@{ id=[int]$optionIdText; param=[int]$paramText })
+        }
+        $itemOptionConfigs.Add([ordered]@{ itemId=[int]$itemIdText; useDefaultOptions=$useDefault; options=$normalizedOptions.ToArray() })
+    }
+    $itemOptionsJson = ConvertTo-Json -InputObject $itemOptionConfigs.ToArray() -Compress -Depth 8
+    if ([string]::IsNullOrWhiteSpace($itemOptionsJson)) { $itemOptionsJson = '[]' }
+    [pscustomobject]@{ Enabled=$enabled; Potential=$potential; Gold=$gold; Gem=$gem; ItemIds=($itemIds -join ','); ItemOptions=$itemOptionsJson }
 }
 
 function Get-TaskReward {
@@ -138,7 +156,8 @@ function Get-TaskReward {
     $gold = if ($map.ContainsKey("$prefix.gold")) { $map["$prefix.gold"] } else { "0" }
     $gem = if ($map.ContainsKey("$prefix.gem")) { $map["$prefix.gem"] } else { "0" }
     $items = if ($map.ContainsKey("$prefix.items")) { $map["$prefix.items"] } else { "" }
-    "id`tenabled`tpotential`tgold`tgem`titems`r`n$Id`t$enabled`t$potential`t$gold`t$gem`t$items"
+    $itemOptions = if ($map.ContainsKey("$prefix.itemOptions")) { $map["$prefix.itemOptions"] } else { "[]" }
+    "id`tenabled`tpotential`tgold`tgem`titems`titem_options`r`n$Id`t$enabled`t$potential`t$gold`t$gem`t$items`t$itemOptions"
 }
 
 function Save-TaskReward {
@@ -150,6 +169,7 @@ function Save-TaskReward {
     Set-PropertyValue -Path $path -Key "$prefix.gold" -Value $reward.Gold
     Set-PropertyValue -Path $path -Key "$prefix.gem" -Value $reward.Gem
     Set-PropertyValue -Path $path -Key "$prefix.items" -Value $reward.ItemIds
+    Set-PropertyValue -Path $path -Key "$prefix.itemOptions" -Value $reward.ItemOptions
     "OK`tDa luu phan thuong nhiem vu. Runtime ap dung trong toi da 1 giay."
 }
 

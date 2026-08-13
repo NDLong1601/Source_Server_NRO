@@ -2,6 +2,7 @@ package nro.models.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import nro.models.item.Item;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
@@ -18,6 +19,7 @@ public final class TaskRewardService {
 
     public static boolean grant(Player player, String type, int taskId) {
         int[] itemIds = TaskConfig.getTaskRewardItems(type, taskId);
+        Map<Integer, TaskConfig.TaskItemOptions> itemOptionConfigs = TaskConfig.getTaskRewardItemOptions(type, taskId);
         if (itemIds.length > 0 && InventoryService.gI().getCountEmptyBag(player) < itemIds.length) {
             Service.gI().sendThongBao(player, "Hành trang không đủ chỗ trống để nhận phần thưởng nhiệm vụ.");
             return false;
@@ -40,7 +42,10 @@ public final class TaskRewardService {
             received.add(Util.numberToMoney(gem) + " ngọc");
         }
         for (int itemId : itemIds) {
-            Item item = ItemService.gI().createNewItemWithDefaultOptions((short) itemId);
+            TaskConfig.TaskItemOptions config = itemOptionConfigs.get(itemId);
+            boolean useDefaults = config == null || config.useDefaultOptions;
+            List<Item.ItemOption> extras = config == null ? null : config.options;
+            Item item = ItemService.gI().createNewItemWithOptions((short) itemId, 1, useDefaults, extras);
             if (item != null) {
                 InventoryService.gI().addItemBag(player, item);
                 received.add(item.template.name);

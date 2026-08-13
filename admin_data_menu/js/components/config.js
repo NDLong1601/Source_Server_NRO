@@ -16,10 +16,15 @@ function ConfigKindLabel(kind) {
   var labels = {
     "bool": "Bật / tắt", "int": "Số nguyên", "positive-int": "Số nguyên dương", "long": "Số nguyên lớn",
     "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm",
-    "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sach 5 gia tri", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
+    "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sách 5 giá trị", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
     "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option"
   };
   return labels[kind] || kind;
+}
+
+function ConfigScopeLabel(scope) {
+  var labels = { "runtime": "Đang chạy", "database": "Cơ sở dữ liệu" };
+  return labels[scope] || scope;
 }
 
 function FormatPetTypes(value) {

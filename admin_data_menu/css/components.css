@@ -295,6 +295,50 @@ textarea {
   cursor: pointer;
 }
 
+/* Compact, consistent toggle for inheriting an item's default options. */
+.option-default-toggle {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  box-sizing: border-box;
+  margin: 10px 0 4px;
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option-default-toggle:hover {
+  border-color: #14b8a6;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.option-default-toggle input[type="checkbox"] {
+  flex: 0 0 15px;
+  width: 15px !important;
+  min-width: 15px;
+  height: 15px !important;
+  min-height: 15px;
+  margin: 0 7px 0 0;
+  padding: 0;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.option-default-toggle span {
+  display: inline-block;
+}
+
+.option-default-toggle + .hint {
+  margin-top: 2px;
+}
+
 .option-picker-summary {
   margin: 6px 0;
   color: #0f766e;
@@ -405,6 +449,93 @@ button.compact {
   color: #0f766e;
   line-height: 18px;
   white-space: pre-line;
+}
+
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 1000;
+  width: 330px;
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 58px;
+  margin-bottom: 9px;
+  padding: 9px 34px 10px 12px;
+  border: 1px solid #99f6e4;
+  border-left: 4px solid #0f766e;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #134e4a;
+  box-shadow: 0 9px 22px rgba(15, 23, 42, 0.2);
+  font-size: 12px;
+  line-height: 17px;
+  white-space: pre-line;
+  pointer-events: auto;
+}
+
+.toast-info {
+  border-color: #bfdbfe;
+  border-left-color: #2563eb;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.toast-error {
+  border-color: #fecaca;
+  border-left-color: #dc2626;
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+.toast-badge {
+  display: inline-block;
+  margin: 0 6px 4px 0;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 14px;
+}
+
+.toast-info .toast-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.toast-error .toast-badge {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.toast-body {
+  display: inline;
+}
+
+.toast-close {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  color: #0f172a;
 }
 
 .split-small {

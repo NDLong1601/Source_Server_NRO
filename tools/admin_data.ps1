@@ -931,7 +931,7 @@ function List-EventBosses {
 function List-EventItems {
     Ensure-EventConfigSchema
     $code = Assert-EventCode $EventValue
-    Invoke-MySql "SELECT e.id,e.item_id,COALESCE(i.NAME,CONCAT('Item ',e.item_id)) AS item_name,e.source_type,e.source_id,e.quantity_min,e.quantity_max,e.drop_rate,e.enabled,REPLACE(REPLACE(REPLACE(e.notes,CHAR(13),' '),CHAR(10),' '),CHAR(9),' ') FROM admin_event_item e LEFT JOIN item_template i ON i.id=e.item_id WHERE e.event_code=$(SqlString $code) ORDER BY e.enabled DESC,e.source_type,e.id;"
+    Invoke-MySql "SELECT e.id,e.item_id,COALESCE(i.NAME,CONCAT('Item ',e.item_id)) AS item_name,e.source_type,e.source_id,e.quantity_min,e.quantity_max,e.drop_rate,e.enabled,REPLACE(REPLACE(REPLACE(e.notes,CHAR(13),' '),CHAR(10),' '),CHAR(9),' '),COALESCE(e.options_json,'[]') FROM admin_event_item e LEFT JOIN item_template i ON i.id=e.item_id WHERE e.event_code=$(SqlString $code) ORDER BY e.enabled DESC,e.source_type,e.id;"
 }
 
 function Save-EventProfile {
@@ -988,11 +988,27 @@ function Save-EventItem {
     $rate = Assert-DecimalRange $DropRate "Tỉ lệ drop" 0 100
     $enabledValue = Assert-BoolValue $Enabled "Trạng thái vật phẩm"
     if ((Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id=$itemId;") -ne '1') { throw "Không tìm thấy Item ID $itemId." }
+    $optionsPayload = [ordered]@{ useDefaultOptions = $false; options = @() }
+    if (-not [string]::IsNullOrWhiteSpace($OptionsJson)) {
+        try { $rawOptions = $OptionsJson | ConvertFrom-Json } catch { throw "Option vật phẩm sự kiện không đúng JSON." }
+        $useDefault = ([string]$rawOptions.useDefaultOptions -eq '1' -or [string]$rawOptions.useDefaultOptions -eq 'true')
+        $rawList = if ($null -ne $rawOptions.options) { @($rawOptions.options) } elseif ($rawOptions -is [array]) { @($rawOptions) } else { @() }
+        $seenOptions = @{}; $normalizedOptions = New-Object System.Collections.Generic.List[object]
+        foreach ($rawOption in $rawList) {
+            $optionIdText = [string]$rawOption.id; $paramText = [string]$rawOption.param
+            if ($optionIdText -notmatch '^\d+$' -or $paramText -notmatch '^-?\d+$') { throw "Option sự kiện phải có ID và param là số nguyên." }
+            if ($seenOptions.ContainsKey($optionIdText)) { throw "Option ID $optionIdText bị trùng." }
+            $seenOptions[$optionIdText] = $true
+            $normalizedOptions.Add([ordered]@{ id=[int]$optionIdText; param=[int]$paramText })
+        }
+        $optionsPayload = [ordered]@{ useDefaultOptions = $useDefault; options = $normalizedOptions.ToArray() }
+    }
+    $optionsSql = SqlString (ConvertTo-Json -InputObject $optionsPayload -Compress -Depth 6)
     $rowId = SqlInt $Id
     if ($rowId -gt 0) {
-        Invoke-MySql "UPDATE admin_event_item SET item_id=$itemId,source_type=$(SqlString $source),source_id=$sourceValue,quantity_min=$min,quantity_max=$max,drop_rate=$rate,enabled=$enabledValue,notes=$(SqlString $Notes) WHERE id=$rowId AND event_code=$(SqlString $code);" | Out-Null
+        Invoke-MySql "UPDATE admin_event_item SET item_id=$itemId,source_type=$(SqlString $source),source_id=$sourceValue,quantity_min=$min,quantity_max=$max,drop_rate=$rate,enabled=$enabledValue,options_json=$optionsSql,notes=$(SqlString $Notes) WHERE id=$rowId AND event_code=$(SqlString $code);" | Out-Null
     } else {
-        Invoke-MySql "INSERT INTO admin_event_item (event_code,item_id,source_type,source_id,quantity_min,quantity_max,drop_rate,enabled,options_json,notes) VALUES ($(SqlString $code),$itemId,$(SqlString $source),$sourceValue,$min,$max,$rate,$enabledValue,'[]',$(SqlString $Notes)) ON DUPLICATE KEY UPDATE quantity_min=VALUES(quantity_min),quantity_max=VALUES(quantity_max),drop_rate=VALUES(drop_rate),enabled=VALUES(enabled),notes=VALUES(notes);" | Out-Null
+        Invoke-MySql "INSERT INTO admin_event_item (event_code,item_id,source_type,source_id,quantity_min,quantity_max,drop_rate,enabled,options_json,notes) VALUES ($(SqlString $code),$itemId,$(SqlString $source),$sourceValue,$min,$max,$rate,$enabledValue,$optionsSql,$(SqlString $Notes)) ON DUPLICATE KEY UPDATE quantity_min=VALUES(quantity_min),quantity_max=VALUES(quantity_max),drop_rate=VALUES(drop_rate),enabled=VALUES(enabled),options_json=VALUES(options_json),notes=VALUES(notes);" | Out-Null
     }
     "OK`tĐã gắn Item $itemId vào $code. Nguồn mob/boss có hiệu lực sau khi restart."
 }
@@ -1951,8 +1967,8 @@ SELECT
   COALESCE(n.`NAME`, '') AS npc_name,
   i.type_sell,
   i.cost,
-  CASE WHEN i.option_mode=0
-       THEN (SELECT COUNT(*) FROM item_default_option d0 WHERE d0.item_template_id=i.temp_id)
+       CASE WHEN i.option_mode IN (0,2)
+       THEN (SELECT COUNT(*) FROM item_default_option d0 WHERE d0.item_template_id=i.temp_id) + CASE WHEN i.option_mode=2 THEN COUNT(o.id) ELSE 0 END
        ELSE COUNT(o.id) END AS options_count
 FROM item_shop i
 JOIN item_template t ON t.id = i.temp_id
@@ -1969,7 +1985,7 @@ LIMIT 500;
 
 function Save-ShopItem {
     Ensure-ItemDefaultOptionSchema
-    if ((SqlInt $OptionMode) -notin @(0,1)) { throw "Chế độ option shop chỉ nhận 0 (kế thừa) hoặc 1 (tùy chỉnh)." }
+    if ((SqlInt $OptionMode) -notin @(0,1,2)) { throw "Chế độ option shop chỉ nhận 0 (mặc định), 1 (tùy chỉnh) hoặc 2 (mặc định + bổ sung)." }
     $itemShopId = SqlInt $Id
     if ($itemShopId -gt 0) {
         Invoke-MySql "UPDATE item_shop SET tab_id=$(SqlInt $TabId), temp_id=$(SqlInt $TempId), is_new=$(SqlInt $IsNew), is_sell=$(SqlInt $IsSell), type_sell=$(SqlInt $TypeSell), cost=$(SqlInt $Cost), icon_spec=$(SqlInt $IconSpec), option_mode=$(SqlInt $OptionMode) WHERE id=$itemShopId;" | Out-Null
@@ -2043,25 +2059,26 @@ SELECT o.id, o.item_shop_id, o.option_id, COALESCE(t.`NAME`, '') AS option_name,
 FROM item_shop_option o
 LEFT JOIN item_option_template t ON t.id=o.option_id
 JOIN item_shop s ON s.id=o.item_shop_id
-WHERE o.item_shop_id=$(SqlInt $Id) AND s.option_mode=1
+    WHERE o.item_shop_id=$(SqlInt $Id) AND s.option_mode IN (1,2)
 UNION ALL
 SELECT 0, s.id, d.option_id, COALESCE(t.`NAME`, ''), d.param
 FROM item_shop s
 JOIN item_default_option d ON d.item_template_id=s.temp_id
 LEFT JOIN item_option_template t ON t.id=d.option_id
-WHERE s.id=$(SqlInt $Id) AND s.option_mode=0
+    WHERE s.id=$(SqlInt $Id) AND s.option_mode IN (0,2)
 ORDER BY option_id;
 "@
 }
 
 function Save-ShopOption {
+    Ensure-ItemDefaultOptionSchema
     $rowId = SqlInt $Id
     if ($rowId -gt 0) {
-        Invoke-MySql "UPDATE item_shop_option SET option_id=$(SqlInt $OptionId), param=$(SqlInt $Param) WHERE id=$rowId;" | Out-Null
+        Invoke-MySql "UPDATE item_shop_option SET option_id=$(SqlInt $OptionId), param=$(SqlInt $Param) WHERE id=$rowId; UPDATE item_shop s JOIN item_shop_option o ON o.item_shop_id=s.id SET s.option_mode=1 WHERE o.id=$rowId;" | Out-Null
         return "OK`tĐã cập nhật option ID $rowId."
     }
 
-    Invoke-MySql "INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES ($(SqlInt $TempId), $(SqlInt $OptionId), $(SqlInt $Param));" | Out-Null
+    Invoke-MySql "INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES ($(SqlInt $TempId), $(SqlInt $OptionId), $(SqlInt $Param)); UPDATE item_shop SET option_mode=1 WHERE id=$(SqlInt $TempId);" | Out-Null
     "OK`tĐã thêm option cho vật phẩm shop."
 }
 
@@ -2069,6 +2086,8 @@ function Save-ShopOptions {
     Ensure-ItemDefaultOptionSchema
     $itemShopId = SqlInt $Id
     if ($itemShopId -le 0) { throw "Chọn vật phẩm shop trước." }
+    $mode = SqlInt $OptionMode
+    if ($mode -notin @(0,1,2)) { throw "Chế độ option shop không hợp lệ." }
     try { $rawOptions = @($PayloadJson | ConvertFrom-Json) } catch { throw "Danh sách option không đúng định dạng JSON." }
     $seen = @{}
     $values = New-Object System.Collections.Generic.List[string]
@@ -2086,7 +2105,8 @@ function Save-ShopOptions {
     $sql = New-Object System.Text.StringBuilder
     [void]$sql.AppendLine("START TRANSACTION;")
     [void]$sql.AppendLine("DELETE FROM item_shop_option WHERE item_shop_id=$itemShopId;")
-    [void]$sql.AppendLine("UPDATE item_shop SET option_mode=1 WHERE id=$itemShopId;")
+    if ($mode -eq 0 -and $values.Count -gt 0) { $mode = 2 }
+    [void]$sql.AppendLine("UPDATE item_shop SET option_mode=$mode WHERE id=$itemShopId;")
     if ($values.Count -gt 0) {
         [void]$sql.AppendLine("INSERT INTO item_shop_option (item_shop_id, option_id, param) VALUES $($values -join ',');")
     }
@@ -2198,9 +2218,11 @@ function Convert-GiftDetail {
                 $options += [ordered]@{ id = [int]$optionIdText; param = [int]$paramText }
             }
         }
+        $useDefaultOptions = ([string]$rawItem.useDefaultOptions -eq '1' -or [string]$rawItem.useDefaultOptions -eq 'true')
         $validated += [ordered]@{
             id = [int]$itemIdText
             quantity = [int64]$quantityText
+            useDefaultOptions = $useDefaultOptions
             options = $options
         }
     }
@@ -2419,7 +2441,9 @@ function Get-DropInsertSql {
             }
             $validatedOptions.Add([pscustomobject]@{ id=[int]$optionIdText; paramMin=[int]$paramMin; paramMax=[int]$paramMax })
         }
-        $optionsJson = ConvertTo-Json -InputObject $validatedOptions.ToArray() -Compress -Depth 6
+        $useDefaultOptions = ([string]$drop.useDefaultOptions -eq '1' -or [string]$drop.useDefaultOptions -eq 'true')
+        $optionsPayload = [ordered]@{ useDefaultOptions=$useDefaultOptions; options=$validatedOptions.ToArray() }
+        $optionsJson = ConvertTo-Json -InputObject $optionsPayload -Compress -Depth 6
         if ([string]::IsNullOrWhiteSpace($optionsJson)) { $optionsJson = '[]' }
         $rateSql = $rateNumber.ToString('0.####', [Globalization.CultureInfo]::InvariantCulture)
         $values.Add("($(SqlString $OwnerType),$ConfigId,$itemId,$quantityMin,$quantityMax,$rateSql,$(SqlString $optionsJson))")

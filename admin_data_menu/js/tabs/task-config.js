@@ -7,6 +7,7 @@ var selectedTaskRangeType = "side";
 var selectedTaskRewardType = "";
 var selectedTaskRewardId = "";
 var selectedTaskRewardItemIds = [];
+var selectedTaskRewardItemOptions = {};
 
 function TaskModes() {
   return [
@@ -74,7 +75,7 @@ function LoadTaskRuntimeConfig() {
     }
   }
   if (!restored && filteredTaskRows.length > 1) PickTaskRuntimeRow(1);
-  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Da tai " + (taskConfigRows.length - 1) + " Cấu hình nhiệm vụ." : "Không có cấu hình nhiệm vụ.");
+  Msg("taskConfigMessage", taskConfigRows.length > 1 ? "Đã tải " + (taskConfigRows.length - 1) + " cấu hình nhiệm vụ." : "Không có cấu hình nhiệm vụ.");
 }
 
 function FilterTaskRows() {
@@ -111,7 +112,7 @@ function PickTaskRuntimeByKey(key) {
     selectedTaskRuntimeKey = key;
     Set("taskRuntimeKey", row[0]); Set("taskRuntimeCategory", row[1]); Set("taskRuntimeName", row[2]);
     Set("taskRuntimeValue", FormatConfigEditValue(row[3], row[5])); Set("taskRuntimeDefault", FormatAdminValue(row[4], row[5], row[0]));
-    Set("taskRuntimeKind", ConfigKindLabel(row[5])); Set("taskRuntimeScope", row[6]); Set("taskRuntimeDescription", row[7]);
+    Set("taskRuntimeKind", ConfigKindLabel(row[5])); Set("taskRuntimeScope", ConfigScopeLabel(row[6])); Set("taskRuntimeDescription", row[7]);
     return;
   }
 }
@@ -127,7 +128,7 @@ function SaveTaskRuntimeConfig() {
 
 function ResetTaskRuntimeConfig() {
   if (!V("taskRuntimeKey")) { Msg("taskConfigMessage", "Chọn một cấu hình trước."); return; }
-  if (!window.confirm("Dua " + V("taskRuntimeName") + " ve mac dinh " + V("taskRuntimeDefault") + "?")) return;
+  if (!window.confirm("Đưa " + V("taskRuntimeName") + " về mặc định " + V("taskRuntimeDefault") + "?")) return;
   var text = RunAdmin("resettaskconfig", { ConfigKey: V("taskRuntimeKey") });
   Msg("taskConfigMessage", StatusText(text));
   if (!IsAdminError(text)) LoadTaskRuntimeConfig();
@@ -317,8 +318,16 @@ function LoadTaskReward(type, id, title) {
   document.getElementById("taskRewardEnabled").checked = row[1] == "1";
   Set("taskRewardPotential", row[2] || "0"); Set("taskRewardGold", row[3] || "0"); Set("taskRewardGem", row[4] || "0");
   selectedTaskRewardItemIds = row[5] ? row[5].split(",") : [];
+  selectedTaskRewardItemOptions = {};
+  if (row[6]) {
+    try {
+      var configs = JSON.parse(row[6] || "[]");
+      for (var c = 0; c < configs.length; c++) selectedTaskRewardItemOptions["" + configs[c].itemId] = configs[c];
+    } catch (e) { selectedTaskRewardItemOptions = {}; }
+  }
   Set("taskRewardItemSearch", "");
   RenderTaskRewardItemPicker();
+  if (selectedTaskRewardItemIds.length > 0) PickTaskRewardOptionItem(selectedTaskRewardItemIds[0]);
 }
 
 function RenderTaskRewardItemPicker() {
@@ -335,6 +344,12 @@ function RenderTaskRewardItemPicker() {
   document.getElementById("taskRewardItemSummary").innerText = selectedTaskRewardItemIds.length
     ? "Đã chọn " + selectedTaskRewardItemIds.length + " vật phẩm: " + labels.join("; ") + (selectedTaskRewardItemIds.length > 3 ? "..." : "")
     : "Chưa chọn vật phẩm";
+  var optionButtons = [];
+  for (var b = 0; b < selectedTaskRewardItemIds.length; b++) {
+    var buttonId = selectedTaskRewardItemIds[b];
+    optionButtons.push('<button type="button" onclick="PickTaskRewardOptionItem(\'' + EscapeJs(buttonId) + '\')">Cấu hình ' + Html(buttonId + " - " + ItemCatalogName(buttonId)) + '</button>');
+  }
+  if (document.getElementById("taskRewardOptionItems")) document.getElementById("taskRewardOptionItems").innerHTML = optionButtons.join(" ");
 }
 
 function ToggleTaskRewardItem(id, checked) {
@@ -346,15 +361,43 @@ function ToggleTaskRewardItem(id, checked) {
   }
   if (checked && !found) next.push("" + id);
   selectedTaskRewardItemIds = next;
+  if (checked) PickTaskRewardOptionItem(id);
+  else if (selectedTaskRewardItemOptions["" + id]) delete selectedTaskRewardItemOptions["" + id];
   RenderTaskRewardItemPicker();
+}
+
+function PickTaskRewardOptionItem(id) {
+  id = "" + id;
+  var config = selectedTaskRewardItemOptions[id] || { itemId: parseInt(id, 10), useDefaultOptions: true, options: [] };
+  selectedTaskRewardItemOptions[id] = config;
+  Set("taskRewardOptionItemId", id);
+  document.getElementById("taskRewardUseDefault").checked = config.useDefaultOptions !== false;
+  Set("taskRewardExtraOptions", TaskRewardOptionsText(config.options));
+}
+
+function TaskRewardOptionsText(options) {
+  var result = [];
+  for (var i = 0; i < (options || []).length; i++) result.push(options[i].id + ":" + options[i].param);
+  return result.join(",");
+}
+
+function SaveTaskRewardOptionEditor() {
+  var id = V("taskRewardOptionItemId");
+  if (!id) return;
+  var options = ParseSpawnOptions(V("taskRewardExtraOptions"), "taskConfigMessage");
+  if (options == null) return;
+  selectedTaskRewardItemOptions[id] = { itemId: parseInt(id, 10), useDefaultOptions: document.getElementById("taskRewardUseDefault").checked, options: options };
 }
 
 function SaveTaskReward() {
   if (!selectedTaskRewardType || selectedTaskRewardId === "") { Msg("taskConfigMessage", "Chọn nhiệm vụ trước khi lưu phần thưởng."); return; }
+  SaveTaskRewardOptionEditor();
+  var itemOptions = [];
+  for (var optionItemId in selectedTaskRewardItemOptions) if (selectedTaskRewardItemOptions.hasOwnProperty(optionItemId)) itemOptions.push(selectedTaskRewardItemOptions[optionItemId]);
   var payload = {
     Enabled: document.getElementById("taskRewardEnabled").checked ? "1" : "0",
     Potential: V("taskRewardPotential"), Gold: V("taskRewardGold"), Gem: V("taskRewardGem"),
-    ItemIds: selectedTaskRewardItemIds
+    ItemIds: selectedTaskRewardItemIds, ItemOptions: itemOptions
   };
   var text = RunAdmin("savetaskreward", { Type: selectedTaskRewardType, Id: selectedTaskRewardId, PayloadJson: JSON.stringify(payload) });
   Msg("taskConfigMessage", StatusText(text));

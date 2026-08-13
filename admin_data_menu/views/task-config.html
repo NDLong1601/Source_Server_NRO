@@ -99,7 +99,7 @@
 
       <div id="taskRewardEditor" class="admin-hidden split-small">
         <div class="section-title" id="taskRewardTitle">Phần thưởng khi hoàn thành</div>
-        <label><input type="checkbox" id="taskRewardEnabled"> Dùng phần thưởng tùy chỉnh này (thay phần thưởng mặc định của nhiệm vụ)</label>
+        <label class="option-default-toggle"><input type="checkbox" id="taskRewardEnabled"><span>Dùng phần thưởng tùy chỉnh này (thay phần thưởng mặc định của nhiệm vụ)</span></label>
         <div class="row">
           <div class="cell"><label>Tiềm năng</label><input type="text" id="taskRewardPotential" value="0"></div>
           <div class="cell"><label>Vàng</label><input type="text" id="taskRewardGold" value="0"></div>
@@ -110,6 +110,12 @@
           <div id="taskRewardItemSummary" class="option-picker-summary">Chưa chọn vật phẩm</div>
           <div id="taskRewardItemList" class="option-picker-list"></div>
         </div>
+        <div class="row">
+          <div class="cell"><label>Vật phẩm đang cấu hình option</label><input type="text" id="taskRewardOptionItemId" readonly></div>
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="taskRewardUseDefault"><span>Nhận option mặc định</span></label></div>
+        </div>
+        <div id="taskRewardOptionItems" class="option-picker-summary"></div>
+        <label>Option bổ sung (optionId:param, phân cách dấu phẩy)</label><input type="text" id="taskRewardExtraOptions" placeholder="Ví dụ: 77:15,103:20">
         <div class="actions"><button type="button" class="primary" onclick="SaveTaskReward()">Lưu phần thưởng</button></div>
       </div>
 
