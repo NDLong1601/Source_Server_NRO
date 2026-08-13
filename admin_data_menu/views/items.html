@@ -2,9 +2,9 @@
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar item-toolbar">
-        <input type="text" id="itemTypeFilter" class="hidden-value" value="27">
+        <input type="text" id="itemTypeFilter" class="hidden-value" value="">
         <div id="combo_itemTypeFilter" class="combo toolbar-combo" onclick="ToggleCombo('itemTypeFilter'); event.cancelBubble = true;">
-          <span id="combo_itemTypeFilter_text" class="combo-text">27 - Pet đeo lưng / follow</span>
+          <span id="combo_itemTypeFilter_text" class="combo-text">Tất cả group</span>
           <span class="combo-button"><span class="combo-caret"></span></span>
           <div id="combo_itemTypeFilter_menu" class="combo-menu"></div>
         </div>
@@ -71,11 +71,6 @@
       </div>
       <div class="actions">
         <button type="button" class="primary" onclick="SaveItem()">Lưu vật phẩm</button>
-      </div>
-      <div class="split-small">
-        <div class="section-title">Mẫu option</div>
-        <input type="text" id="optionSearch" placeholder="Lọc nhanh trên bảng option" onkeyup="FilterOptionRows()">
-        <div class="mini-table"><table id="optionsTable"></table></div>
       </div>
       <div id="itemMessage" class="message"></div>
     </div>

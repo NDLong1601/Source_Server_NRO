@@ -10,7 +10,8 @@ function LoadOptions() {
 }
 
 function FilterOptionRows() {
-  var q = V("optionSearch").toLowerCase();
+  var search = document.getElementById("optionSearch");
+  var q = search ? (search.value || "").toLowerCase() : "";
   var filtered = [optionRows[0]];
   for (var i = 1; i < optionRows.length; i++) {
     if ((optionRows[i].join(" ") || "").toLowerCase().indexOf(q) >= 0) filtered.push(optionRows[i]);
@@ -19,6 +20,7 @@ function FilterOptionRows() {
 }
 
 function RenderOptionTable(rows) {
+  if (!document.getElementById("optionsTable")) return;
   RenderTable("optionsTable", rows, ["ID", "Tên option"], "Noop");
 }
 

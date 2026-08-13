@@ -1,6 +1,6 @@
 var itemRows = [];
 var itemBrokenIconCache = {};
-var itemDefaultIconSrc = "data/icon/x2/544.png";
+var itemDefaultIconSrc = "data/icon/x3/544.png";
 var itemDefaultIconImage = new Image();
 itemDefaultIconImage.src = itemDefaultIconSrc;
 
@@ -8,13 +8,13 @@ function ItemIconSrc(iconId) {
   iconId = Trim(iconId);
   if (!/^\d+$/.test(iconId) || itemBrokenIconCache[iconId]) return itemDefaultIconSrc;
   try {
-    if (!fso.FileExists(rootDir + "\\data\\icon\\x2\\" + iconId + ".png")) {
+    if (!fso.FileExists(rootDir + "\\data\\icon\\x3\\" + iconId + ".png")) {
       itemBrokenIconCache[iconId] = true;
       return itemDefaultIconSrc;
     }
   } catch (e) {
   }
-  return "data/icon/x2/" + iconId + ".png";
+  return "data/icon/x3/" + iconId + ".png";
 }
 
 function HandleItemImageError(image, iconId) {

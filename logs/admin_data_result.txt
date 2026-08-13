@@ -1,19 +1,33 @@
-﻿id	name	maxCount	idBadgesReward	badge_name	badge_item_id
-1	Nạp Tích luỹ 1 Triệu Trong Ngày	1000000	218	Đại gia mới nhú	1289
-2	Ước Rồng Thần 1 Sao X100 Lần	100	219	Trùm ước rồng	1290
-3	Hạ Gục Cumber, Black Goku, Cooler, Xên ( 300 Lần )	300	220	Trùm săn boss	1291
-4	Đập 5 Trang Bị +7 Trong Ngày	5	221	Thánh đập đồ +7	1292
-5	Top 1 Đại Hội Võ Đài Siêu Hạng	1	222	Cao thủ siêu hạng	1293
-6	Hoàn Thành 10 Nhiệm Vụ Siêu Khó Tại Bò Mộng	10	223	Nông dân chăm chỉ	1294
-7	Đánh Bại, Hoặc Cho Xương Sói 20 Lần	20	1286		-1
-8	Hoàn Thành Nhiệm Vụ 5 Lần Cho Xinbato Nước	5	1287		-1
-9	Nhặt Đồ Trong Ngày 500 Lần	500	224	Ông thần ve chai	1295
-10	Tiêu diệt 30 Boss Ăn Trộm	30	225	Bị móc sạch túi	1296
-11	Tiêu Diệt 30 Boss Ở Dơ	30	1300		-1
-12	Mở Rương Gỗ Cấp 12	10	240	Gõ đầu trẻ	1394
-13	Mở Rương Gỗ Cấp 12	20	242	Gõ đầu trẻ	1392
-14	Mở Rương Gỗ Cấp 12	30	243	Gõ đầu trẻ	1393
-15	Đạt 500 Điểm Sự Kiện	500	247	X-mas	1457
-16	Nạp tích lũy 2 triệu trong ngày	2000000	253	Em xinh, em đẹp	1514
-17	Sở hữu 7 rồng nhí vĩnh viễn	7	256	Mẹ Rồng	1790
-18	Fan cứng KOL	1	226	KOL	1297
+﻿id	npc_id	npc_name	tag_name	type_shop
+1	7	Bunma	BUNMA	0
+2	8	Dende	DENDE	0
+3	9	Appule	APPULE	0
+25	13	Quy Lão Kame	QUY_LAO	1
+29	13	Quy Lão Kame	QDDN	3
+34	13	Quy Lão Kame	SHOP_DOI_DIEM	3
+4	16	Uron	URON	0
+16	18	Thần mèo Karin	KARIN	3
+6	21	Bà Hạt Mít	BUA_1H	0
+7	21	Bà Hạt Mít	BUA_8H	0
+8	21	Bà Hạt Mít	BUA_1M	0
+10	37	Bunma	BUNMA_FUTURE	0
+15	37	Bunma	BUNMA_LINHTHU	0
+17	37	Bunma	BULMA_TL	0
+5	39	Santa	SANTA_HEAD	0
+9	39	Santa	SANTA	0
+12	39	Santa	SANTA_RUONG	0
+13	39	Santa	SANTA_HSD	0
+22	39	Santa	SANTA_MO_RONG_HANH_TRANG	0
+23	39	Santa	SANTA_HAN_SU_DUNG	0
+26	39	Santa	SANTA_DANH_HIEU	0
+30	39	Santa	SANTA_GIAM_GIA_1	0
+31	39	Santa	SHOP_VIP	3
+14	44	Ôsin	OSIN	0
+35	47	Giu-ma Đầu Bò	SHOP_CLAN	3
+11	55	Bill	BILL	0
+36	55	Bill	SHOP_SU_KIEN_VL	3
+20	56	Whis	THIEN_SU	3
+32	75	Thỏ Đỏ ChiChi	DOI_SKILL_DE	3
+33	81	Chi Chi	SHOP_CHI_CHI	0
+19	103	Chú Bé Đần	CHUBEDAN	3
+21	106	Bulma Tết Nguyên Đán	BULMA_EVENT	3
