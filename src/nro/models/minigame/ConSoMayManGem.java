@@ -9,10 +9,6 @@ import nro.models.server.Client;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class ConSoMayManGem implements Runnable {
 
     public long second = 50;
@@ -141,7 +137,8 @@ public class ConSoMayManGem implements Runnable {
         players.add(data);
         player.inventory.gem -= this.cost;
         Service.gI().sendMoney(player);
-        Service.gI().sendThongBao(player, "Bạn đã chọn ngẫu nhiên số lẻ " + generatedPoint + " bằng " + this.cost + " ngọc.");
+        Service.gI().sendThongBao(player,
+                "Bạn đã chọn ngẫu nhiên số lẻ " + generatedPoint + " bằng " + this.cost + " ngọc.");
         Service.gI().showYourNumber(player, strNumber((int) player.id), null, null, 0);
     }
 
@@ -183,7 +180,8 @@ public class ConSoMayManGem implements Runnable {
         players.add(data);
         player.inventory.gem -= this.cost;
         Service.gI().sendMoney(player);
-        Service.gI().sendThongBao(player, "Bạn đã chọn ngẫu nhiên số chẵn " + generatedPoint + " bằng " + this.cost + " ngọc.");
+        Service.gI().sendThongBao(player,
+                "Bạn đã chọn ngẫu nhiên số chẵn " + generatedPoint + " bằng " + this.cost + " ngọc.");
         Service.gI().showYourNumber(player, strNumber((int) player.id), null, null, 0);
     }
 
@@ -205,13 +203,15 @@ public class ConSoMayManGem implements Runnable {
             if (id == g.id && g.point == result) {
                 if (currentPlayer != null) {
                     if (g.conSoMayManNgoc == 1) {
-                        finish = "Chúc mừng " + currentPlayer.name + " đã thắng " + this.rewardAmount + " ngọc với con số may mắn " + result;
+                        finish = "Chúc mừng " + currentPlayer.name + " đã thắng " + this.rewardAmount
+                                + " ngọc với con số may mắn " + result;
                         currentPlayer.inventory.gem += this.rewardAmount;
                         Service.gI().sendMoney(currentPlayer);
                     }
                 } else {
                     if (g.conSoMayManNgoc == 1) {
-                        finish = "Chúc mừng người chơi ID: " + g.id + " đã thắng " + this.rewardAmount + " ngọc với con số may mắn " + result;
+                        finish = "Chúc mừng người chơi ID: " + g.id + " đã thắng " + this.rewardAmount
+                                + " ngọc với con số may mắn " + result;
                     }
                 }
                 break;

@@ -12,11 +12,6 @@ import nro.models.skill.Skill;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class HocTuyetKy {
 
     public static void showInfoCombine(Player player) {
@@ -36,11 +31,11 @@ public class HocTuyetKy {
         Template.SkillTemplate skillTemplate = SkillUtil.findSkillTemplate(skillId);
         StringBuilder text = new StringBuilder();
         text.append(ConstFont.BOLD_GREEN)
-            .append("Qua sẽ dạy ngươi tuyệt kỹ ")
-            .append(skillTemplate.name)
-            .append(" ")
-            .append(nextPoint)
-            .append("\n");
+                .append("Qua sẽ dạy ngươi tuyệt kỹ ")
+                .append(skillTemplate.name)
+                .append(" ")
+                .append(nextPoint)
+                .append("\n");
 
         int requiredBiKip = (nextPoint == 1) ? 9999 : 999;
         int requiredGem = (nextPoint == 1) ? 99 : 0;
@@ -107,11 +102,11 @@ public class HocTuyetKy {
 
     private static void appendRequirement(StringBuilder text, String label, long current, long required) {
         text.append((current < required) ? ConstFont.BOLD_RED : ConstFont.BOLD_BLUE)
-            .append(label)
-            .append(": ")
-            .append(current)
-            .append("/")
-            .append(required)
-            .append("\n");
+                .append(label)
+                .append(": ")
+                .append(current)
+                .append("/")
+                .append(required)
+                .append("\n");
     }
 }

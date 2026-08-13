@@ -2,12 +2,6 @@ package nro.models.player_badges;
 
 import nro.models.player.Player;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BadgesService {
 
     public static void turnOnBadges(Player player, int id) {

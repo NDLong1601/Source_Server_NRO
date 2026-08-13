@@ -9,12 +9,6 @@ import nro.models.player.Player;
 import nro.models.map.service.MapService;
 import nro.models.map.service.ChangeMapService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class MajinBuu14HService {
 
     private static MajinBuu14HService instance;

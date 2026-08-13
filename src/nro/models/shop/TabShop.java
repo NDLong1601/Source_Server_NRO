@@ -3,12 +3,6 @@ package nro.models.shop;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TabShop {
 
     public Shop shop;
@@ -58,4 +52,5 @@ public class TabShop {
             this.itemShops.clear();
         }
         this.itemShops = null;
-    }}
+    }
+}

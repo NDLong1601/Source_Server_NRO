@@ -24,11 +24,6 @@ import nro.models.map.service.ItemMapService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class InventoryService {
 
     private static InventoryService I;

@@ -4,10 +4,6 @@ import nro.models.item.Item;
 import nro.models.player.Player;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class CombineSystem {
 
     public static boolean isTrangBiPhaLeHoa(Item item) {
@@ -19,7 +15,8 @@ public class CombineSystem {
     }
 
     public static boolean isDaPhaLe(Item item) {
-        return item != null && item.template != null && (item.template.type == 30 || (item.template.id >= 14 && item.template.id <= 20));
+        return item != null && item.template != null
+                && (item.template.type == 30 || (item.template.id >= 14 && item.template.id <= 20));
     }
 
     public static int getGemEpSao(int star) {

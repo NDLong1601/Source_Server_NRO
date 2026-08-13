@@ -11,12 +11,6 @@ import java.util.List;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class LuckyRound {
 
     private static final byte MAX_ITEM_IN_BOX = 100;
@@ -148,7 +142,8 @@ public class LuckyRound {
         int ticketNeed = (count * PRICE_TICKET);
         Item ticket = InventoryService.gI().findItemBag(player, TICKET);
         if (ticket == null || ticket.quantity < ticketNeed) {
-            Service.gI().sendThongBao(player, "Bạn không đủ " + ItemService.gI().createNewItem((short) TICKET).template.name + " để quay");
+            Service.gI().sendThongBao(player,
+                    "Bạn không đủ " + ItemService.gI().createNewItem((short) TICKET).template.name + " để quay");
             sendReward(player, new ArrayList<>());
         } else {
             if (count + player.inventory.itemsBoxCrackBall.size() <= MAX_ITEM_IN_BOX) {

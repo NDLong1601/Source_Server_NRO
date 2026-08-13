@@ -11,10 +11,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 
-/**
- *
- * @author By Mr Blue
- */
 @AllArgsConstructor
 @NoArgsConstructor
 public class AutoUpdate_NhanQuaFree {

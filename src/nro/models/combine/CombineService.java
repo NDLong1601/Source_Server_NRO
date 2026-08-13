@@ -11,24 +11,19 @@ import nro.models.map.service.NpcManager;
 import nro.models.combine.PhanRaTrangBiKichHoat.PhanRaTrangBi;
 import nro.models.services.InventoryService;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class CombineService {
-    
+
     public static final byte MAX_STAR_ITEM = 9;
     public static final byte MAX_LEVEL_ITEM = 8;
     public static final int DANG_SINH_LE = 8999;
-    
+
     private static final byte OPEN_TAB_COMBINE = 0;
     private static final byte REOPEN_TAB_COMBINE = 1;
     private static final byte COMBINE_SUCCESS = 2;
     private static final byte COMBINE_FAIL = 3;
     private static final byte COMBINE_DRAGON_BALL = 5;
     public static final byte OPEN_ITEM = 6;
-    
+
     public static final int LAM_PHEP_NHAP_DA = 512;
     public static final int EP_SAO_TRANG_BI = 500;
     public static final int PHA_LE_HOA_TRANG_BI = 501;
@@ -40,7 +35,7 @@ public class CombineService {
     public static final int DANH_BONG_SAO_PHA_LE = 101;
     public static final int CUONG_HOA_LO_SAO_PHA_LE = 102;
     public static final int TAO_DA_HEMATITE = 103;
-    
+
     public static final int GIAM_DINH_SACH = 104;
     public static final int TAY_SACH = 105;
     public static final int NANG_CAP_SACH_TUYET_KY = 106;
@@ -57,15 +52,15 @@ public class CombineService {
     public static final int NANG_CAP_BONG_TAI3 = 455;
     public static final int NANG_CHI_SO_BONG_TAI3 = 457;
     private static CombineService instance;
-    
+
     public final Npc baHatMit;
     public final Npc whis;
-    
+
     private CombineService() {
         this.baHatMit = NpcManager.getNpc(ConstNpc.BA_HAT_MIT);
         this.whis = NpcManager.getNpc(ConstNpc.WHIS);
     }
-    
+
     public static CombineService gI() {
         if (instance == null) {
             instance = new CombineService();
@@ -125,7 +120,7 @@ public class CombineService {
                 break;
             case NANG_CHI_SO_BONG_TAI3:
                 NangChiSoBongTai3.showInfoCombine(player);
-                break;    
+                break;
             case NANG_CAP_SAO_PHA_LE:
                 NangCapSaoPhaLe.showInfoCombine(player);
                 break;
@@ -245,31 +240,31 @@ public class CombineService {
                 TaoDaMai.CheTaoDuiDuc(player);
                 break;
         }
-        
+
         player.idMark.setIndexMenu(ConstNpc.IGNORE_MENU);
         player.combineNew.clearParamCombine();
         player.combineNew.lastTimeCombine = System.currentTimeMillis();
-        
+
     }
-    
+
     public void startCombineVip(Player player, int n) {
         switch (player.combineNew.typeCombine) {
             case PHA_LE_HOA_TRANG_BI:
                 PhaLeHoaTrangBi.phaLeHoa(player, n);
                 break;
         }
-        
+
         player.idMark.setIndexMenu(ConstNpc.IGNORE_MENU);
         player.combineNew.clearParamCombine();
         player.combineNew.lastTimeCombine = System.currentTimeMillis();
-        
+
     }
 
     /**
      * Mở tab đập đồ
      *
      * @param player
-     * @param type kiểu đập đồ
+     * @param type   kiểu đập đồ
      */
     public void openTabCombine(Player player, int type) {
         player.combineNew.setTypeCombine(type);
@@ -320,7 +315,7 @@ public class CombineService {
         } catch (IOException e) {
         }
     }
-    
+
     public void sendEffectOpenItem(Player player, short icon1, short icon2) {
         Message msg = null;
         try {
@@ -336,7 +331,7 @@ public class CombineService {
             }
         }
     }
-    
+
     public void sendEffectCombineItem(Player player, byte type, short icon1, short icon2) {
         Message msg = null;
         try {
@@ -383,7 +378,7 @@ public class CombineService {
             }
         }
     }
-    
+
     private int getTempIdItemC0(int gender, int type) {
         if (type == 4) {
             return 12;
@@ -428,7 +423,7 @@ public class CombineService {
         }
         return -1;
     }
-    //Trả về tên đồ c0
+    // Trả về tên đồ c0
 
     private String getNameItemC0(int gender, int type) {
         if (type == 4) {
@@ -491,11 +486,11 @@ public class CombineService {
                 return io.param >= 9;
             }
         }
-        
+
         return false;
-        
+
     }
-    
+
     public void sendEffSuccessVip(Player player, int iconID) {
         Message msg;
         try {
@@ -507,7 +502,7 @@ public class CombineService {
         } catch (IOException e) {
         }
     }
-    
+
     public void sendEffectSuccessCombine(Player player) {
         Message msg = null;
         try {
@@ -538,7 +533,7 @@ public class CombineService {
         } catch (IOException e) {
         }
     }
-    
+
     public void sendEffectFailCombine(Player player) {
         Message msg = null;
         try {
@@ -603,7 +598,7 @@ public class CombineService {
             }
         }
     }
-    
+
     private String getTextTopTabCombine(int type) {
         switch (type) {
             case EP_SAO_TRANG_BI:
@@ -630,7 +625,7 @@ public class CombineService {
             case NANG_CAP_BONG_TAI3:
                 return "Ta sẽ phù phép\ncho bông tai Porata của ngươi\nthành cấp 3";
             case NANG_CHI_SO_BONG_TAI3:
-                return "Ta sẽ phù phép\ncho bông tai Porata cấp 3 của ngươi\ncó 2 chỉ số ngẫu nhiên";    
+                return "Ta sẽ phù phép\ncho bông tai Porata cấp 3 của ngươi\ncó 2 chỉ số ngẫu nhiên";
             case NANG_CAP_SAO_PHA_LE:
                 return "Ta sẽ phù phép\nnâng cấp Sao Pha Lê\nthành cấp 2";
             case DANH_BONG_SAO_PHA_LE:
@@ -663,7 +658,7 @@ public class CombineService {
                 return "";
         }
     }
-    
+
     private String getTextInfoTabCombine(int type) {
         switch (type) {
             case EP_SAO_TRANG_BI:
@@ -701,7 +696,7 @@ public class CombineService {
                         + "\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI3:
                 return "Vào hành trang\nChọn bông tai Porata Cấp 3\nChọn mảnh hồn porata số lượng 99"
-                        + "\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";    
+                        + "\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";
             case NANG_CAP_SAO_PHA_LE:
                 return "Vào hành trang\nChọn đá Hematite\nChọn loại sao pha lê (cấp 1)\nSau đó chọn 'Nâng cấp'";
             case DANH_BONG_SAO_PHA_LE:

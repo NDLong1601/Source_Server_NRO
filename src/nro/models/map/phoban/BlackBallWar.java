@@ -1,9 +1,7 @@
 package nro.models.map.phoban;
 
-
-
 import nro.models.utils.Functions;
-import nro.models.database.MrBlue;
+import nro.models.database.MrFinn;
 import nro.models.database.PlayerDAO;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -49,7 +47,7 @@ public class BlackBallWar implements Runnable {
     }
 
     private void start() {
-    Executors.newSingleThreadExecutor().submit(this, "Zone " + zone.zoneId);
+        Executors.newSingleThreadExecutor().submit(this, "Zone " + zone.zoneId);
     }
 
     @Override
@@ -116,7 +114,7 @@ public class BlackBallWar implements Runnable {
                 if (p != null) {
                     p.rewardBlackBall.reward((byte) star);
                 } else {
-                    Player pFromDb = MrBlue.loadById(m.id);
+                    Player pFromDb = MrFinn.loadById(m.id);
                     if (pFromDb != null) {
                         pFromDb.rewardBlackBall.reward((byte) star);
                         PlayerDAO.updatePlayer(pFromDb);

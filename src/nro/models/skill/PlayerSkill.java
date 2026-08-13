@@ -6,12 +6,6 @@ import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.network.Message;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class PlayerSkill {
 
     private Player player;

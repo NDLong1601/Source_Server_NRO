@@ -7,12 +7,6 @@ import java.util.List;
 import nro.models.data.LocalManager;
 import org.json.simple.JSONValue;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ConsignShopManager {
 
     private static ConsignShopManager instance;
@@ -26,7 +20,7 @@ public class ConsignShopManager {
 
     public long lastTimeUpdate;
 
-    public String[] tabName = {"Áo Quần", "Găng Tay", "Phụ Kiện", "Linh tinh", ""};
+    public String[] tabName = { "Áo Quần", "Găng Tay", "Phụ Kiện", "Linh tinh", "" };
 
     public List<ConsignItem> listItem = new ArrayList<>();
 
@@ -36,8 +30,12 @@ public class ConsignShopManager {
             s.execute("TRUNCATE shop_ky_gui");
             for (ConsignItem it : this.listItem) {
                 if (it != null) {
-                    s.execute(String.format("INSERT INTO `shop_ky_gui`(`id`, `player_id`, `tab`, `item_id`,`gold`, `gem`, `quantity`, `itemOption`, `isUpTop`, `isBuy`) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
-                            it.id, it.player_sell, it.tab, it.itemId, it.goldSell, it.gemSell, it.quantity, JSONValue.toJSONString(it.options).equals("null") ? "[]" : JSONValue.toJSONString(it.options), it.isUpTop, it.isBuy ? 1 : 0));
+                    s.execute(String.format(
+                            "INSERT INTO `shop_ky_gui`(`id`, `player_id`, `tab`, `item_id`,`gold`, `gem`, `quantity`, `itemOption`, `isUpTop`, `isBuy`) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
+                            it.id, it.player_sell, it.tab, it.itemId, it.goldSell, it.gemSell, it.quantity,
+                            JSONValue.toJSONString(it.options).equals("null") ? "[]"
+                                    : JSONValue.toJSONString(it.options),
+                            it.isUpTop, it.isBuy ? 1 : 0));
                 }
             }
         } catch (Exception e) {
@@ -45,4 +43,3 @@ public class ConsignShopManager {
         }
     }
 }
-

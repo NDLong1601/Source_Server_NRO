@@ -12,12 +12,6 @@ import nro.models.map.service.NpcService;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Shenron_Service {
 
     private static Shenron_Service instance;
@@ -54,7 +48,8 @@ public class Shenron_Service {
                 if (Util.canDoWithTime(player.lastTimeShenronAppeared, Shenron_Event.timeResummonShenron)) {
                     for (int i = NGOC_RONG_1_SAO; i <= NGOC_RONG_7_SAO; i++) {
                         try {
-                            InventoryService.gI().subQuantityItemsBag(player, InventoryService.gI().findItemBag(player, i), 1);
+                            InventoryService.gI().subQuantityItemsBag(player,
+                                    InventoryService.gI().findItemBag(player, i), 1);
                         } catch (Exception ex) {
                         }
                     }
@@ -67,8 +62,10 @@ public class Shenron_Service {
                     shenron.activeShenron(true, Shenron_Event.DRAGON_EVENT);
                     shenron.sendBlackGokuhesShenron();
                 } else {
-                    int timeLeft = (int) ((Shenron_Event.timeResummonShenron - (System.currentTimeMillis() - player.lastTimeShenronAppeared)) / 1000);
-                    Service.gI().sendThongBao(player, "Vui lòng đợi " + (timeLeft < 7200 ? timeLeft + " giây" : timeLeft / 60 + " phút") + " nữa");
+                    int timeLeft = (int) ((Shenron_Event.timeResummonShenron
+                            - (System.currentTimeMillis() - player.lastTimeShenronAppeared)) / 1000);
+                    Service.gI().sendThongBao(player, "Vui lòng đợi "
+                            + (timeLeft < 7200 ? timeLeft + " giây" : timeLeft / 60 + " phút") + " nữa");
                 }
             }
         } else {

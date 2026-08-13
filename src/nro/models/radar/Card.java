@@ -3,12 +3,6 @@ package nro.models.radar;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Card {
 
     public short Id;

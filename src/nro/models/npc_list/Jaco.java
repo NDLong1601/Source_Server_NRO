@@ -5,12 +5,6 @@ import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.map.service.ChangeMapService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Jaco extends Npc {
 
     public Jaco(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -23,10 +17,12 @@ public class Jaco extends Npc {
             switch (this.mapId) {
                 case 24 ->
                     this.createOtherMenu(player, ConstNpc.BASE_MENU,
-                            "Gô Tên, Calích và Monaka đang gặp chuyện ở hành tinh\nPotaufeu\nHãy đến đó ngay", "Đến\nPotaufeu", "Từ chối");
+                            "Gô Tên, Calích và Monaka đang gặp chuyện ở hành tinh\nPotaufeu\nHãy đến đó ngay",
+                            "Đến\nPotaufeu", "Từ chối");
                 case 139 ->
                     this.createOtherMenu(player, ConstNpc.BASE_MENU,
-                            "Tàu Vũ Trụ của ta có thể đưa cậu đến hành tinh khác chỉ trong 3 giây.\nCậu muốn đi đâu?", "Đến\nTrái Đất", "Đến\nNamếc", "Đến\nXayda", "Từ chối");
+                            "Tàu Vũ Trụ của ta có thể đưa cậu đến hành tinh khác chỉ trong 3 giây.\nCậu muốn đi đâu?",
+                            "Đến\nTrái Đất", "Đến\nNamếc", "Đến\nXayda", "Từ chối");
                 default -> {
                 }
             }

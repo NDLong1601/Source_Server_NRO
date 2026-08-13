@@ -9,11 +9,6 @@ import nro.models.services.Service;
 import nro.models.player_system.Template;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class TaoDaMai {
 
     private static final int GOLD_TAO_DA = 50_000_000;
@@ -32,7 +27,8 @@ public class TaoDaMai {
                 npcSay += "|2|Cần: " + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n";
                 npcSay += "|7|Thất bại -5 Dùi Đục\n";
                 if (player.inventory.gold < player.combineNew.goldCombine) {
-                    npcSay += "|7|Còn thiếu " + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
+                    npcSay += "|7|Còn thiếu "
+                            + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
@@ -62,7 +58,7 @@ public class TaoDaMai {
                 player.inventory.gold -= gold;
                 InventoryService.gI().subQuantityItemsBag(player, DuiDuc, 5);
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
-                    Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1439); 
+                    Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1439);
                     Item DaMai = new Item();
                     DaMai.template = hematiteTemplate;
                     DaMai.quantity = 1;

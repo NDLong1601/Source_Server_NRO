@@ -15,11 +15,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import nro.models.map.Zone;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class ItemService {
 
     private static final int DROP_ACTIVATION_RATE = 5;

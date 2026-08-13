@@ -21,9 +21,6 @@ import lombok.Getter;
 import nro.models.player.Player;
 import nro.models.services.ItemService;
 
-/**
- * @author By Mr Blue
- */
 public class MyClanTopBanDoKhoBau {
 
     @Getter

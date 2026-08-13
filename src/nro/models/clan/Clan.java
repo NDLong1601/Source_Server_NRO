@@ -10,7 +10,7 @@ import nro.models.player.Player;
 import nro.models.server.Client;
 import nro.models.services.Service;
 import nro.models.network.Message;
-import nro.models.database.MrBlue;
+import nro.models.database.MrFinn;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 import java.sql.Connection;
@@ -137,7 +137,7 @@ public class Clan {
         }
         return false;
     }
-//
+    //
 
     public void addSMTNClan(Player plOri, long param) {
         for (int i = this.membersInGame.size() - 1; i >= 0; i--) {
@@ -257,7 +257,7 @@ public class Clan {
             }
         }
 
-        Player playeroffline = MrBlue.loadById(playerId);
+        Player playeroffline = MrFinn.loadById(playerId);
         if (playeroffline != null) {
             return playeroffline;
         }
@@ -265,19 +265,19 @@ public class Clan {
         return null;
     }
 
-    //load db danh sách member
+    // load db danh sách member
     public void addClanMember(ClanMember cm) {
         this.members.add(cm);
     }
 
-    //thêm vào khi player tạo mới clan or mới vào clan
+    // thêm vào khi player tạo mới clan or mới vào clan
     public void addClanMember(Player player, byte role) {
         ClanMember cm = new ClanMember(player, this, role);
         this.members.add(cm);
         player.clanMember = cm;
     }
 
-    //xóa khi member rời clan or bị kích
+    // xóa khi member rời clan or bị kích
     public void removeClanMember(ClanMember cm) {
         this.members.remove(cm);
         cm.dispose();
@@ -335,14 +335,16 @@ public class Clan {
 
         String topBanDoKhoBau = "[" + levelDoneBanDoKhoBau + "," + thoiGianHoanThanhBDKB + "]";
 
-        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + "," + getLeader().body + "," + getLeader().leg + "]";
+        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
+                + getLeader().body + "," + getLeader().leg + "]";
 
         String top = dataArray.toJSONString();
 
         PreparedStatement ps = null;
         try (Connection con = LocalManager.getConnection();) {
-            ps = con.prepareStatement("insert into clan (id, name, name_2, slogan, img_id, power_point, max_member, clan_point, level, members, tops, thanhTichBDKB, thongTinLeader) "
-                    + "values (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            ps = con.prepareStatement(
+                    "insert into clan (id, name, name_2, slogan, img_id, power_point, max_member, clan_point, level, members, tops, thanhTichBDKB, thongTinLeader) "
+                            + "values (?,?,?,?,?,?,?,?,?,?,?,?,?)");
             ps.setInt(1, this.id);
             ps.setString(2, this.name);
             ps.setString(3, this.name2);
@@ -394,14 +396,16 @@ public class Clan {
         String member = dataArray.toJSONString();
         String topBanDoKhoBau = "[" + levelDoneBanDoKhoBau + "," + thoiGianHoanThanhBDKB + "]";
 
-        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + "," + getLeader().body + "," + getLeader().leg + "]";
+        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
+                + getLeader().body + "," + getLeader().leg + "]";
 
         dataArray.clear();
 
         PreparedStatement ps = null;
         try (Connection con = LocalManager.getConnection();) {
-            ps = con.prepareStatement("update clan set slogan = ?, img_id = ?, power_point = ?, max_member = ?, clan_point = ?, "
-                    + "level = ?, members = ?, name_2 = ?, tops = ?, thanhTichBDKB = ?, thongTinLeader = ? where id = ? limit 1");
+            ps = con.prepareStatement(
+                    "update clan set slogan = ?, img_id = ?, power_point = ?, max_member = ?, clan_point = ?, "
+                            + "level = ?, members = ?, name_2 = ?, tops = ?, thanhTichBDKB = ?, thongTinLeader = ? where id = ? limit 1");
             ps.setString(1, this.slogan);
             ps.setInt(2, this.imgId);
             ps.setLong(3, this.powerPoint);
@@ -441,7 +445,8 @@ public class Clan {
 
     public void updatethanhTichBDKB(int clanId) {
         String topBanDoKhoBau = "[" + levelDoneBanDoKhoBau + "," + thoiGianHoanThanhBDKB + "]";
-        try (Connection con = LocalManager.gI().getConnection(); PreparedStatement ps = con.prepareStatement("UPDATE clan SET thanhTichBDKB = ? WHERE id = ? LIMIT 1")) {
+        try (Connection con = LocalManager.gI().getConnection();
+                PreparedStatement ps = con.prepareStatement("UPDATE clan SET thanhTichBDKB = ? WHERE id = ? LIMIT 1")) {
             ps.setString(1, topBanDoKhoBau);
             ps.setInt(2, clanId);
             ps.executeUpdate();
@@ -451,10 +456,12 @@ public class Clan {
     }
 
     public void updatethanhTichBDKBForLeader() {
-        try (Connection con = LocalManager.gI().getConnection(); PreparedStatement ps = con.prepareStatement(
-                "UPDATE player SET thanhTichBang = ? WHERE id = ? LIMIT 1")) {
+        try (Connection con = LocalManager.gI().getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "UPDATE player SET thanhTichBang = ? WHERE id = ? LIMIT 1")) {
 
-            String data = "[" + this.name + "," + this.levelDoneBanDoKhoBau + "," + this.thoiGianHoanThanhBDKB + "," + System.currentTimeMillis() + "]";
+            String data = "[" + this.name + "," + this.levelDoneBanDoKhoBau + "," + this.thoiGianHoanThanhBDKB + ","
+                    + System.currentTimeMillis() + "]";
             ps.setString(1, data);
             ps.setInt(2, this.getLeader().id);
             ps.executeUpdate();
@@ -465,8 +472,11 @@ public class Clan {
     }
 
     public void updatethanhTichKhiGasForLeader() {
-        String TopKhiGasHuyDiet = "[" + this.name + "," + this.levelDoneKhiGas + "," + thoiGianHoanThanhKhiGas + "," + System.currentTimeMillis() + "]";
-        try (Connection con = LocalManager.gI().getConnection(); PreparedStatement ps = con.prepareStatement("UPDATE player SET thanhTichKhiGas = ? WHERE id = ? LIMIT 1")) {
+        String TopKhiGasHuyDiet = "[" + this.name + "," + this.levelDoneKhiGas + "," + thoiGianHoanThanhKhiGas + ","
+                + System.currentTimeMillis() + "]";
+        try (Connection con = LocalManager.gI().getConnection();
+                PreparedStatement ps = con
+                        .prepareStatement("UPDATE player SET thanhTichKhiGas = ? WHERE id = ? LIMIT 1")) {
             ps.setString(1, TopKhiGasHuyDiet);
             ps.setInt(2, this.getLeader().id);
             ps.executeUpdate();
@@ -476,8 +486,11 @@ public class Clan {
     }
 
     public void updatethanhTichCDRDForLeader() {
-        String TopConDuongRanDoc = "[" + this.name + "," + this.levelDoneCDRD + "," + thoiGianHoanThanhCDRD + "," + System.currentTimeMillis() + "]";
-        try (Connection con = LocalManager.gI().getConnection(); PreparedStatement ps = con.prepareStatement("UPDATE player SET thanhTichCDRD = ? WHERE id = ? LIMIT 1")) {
+        String TopConDuongRanDoc = "[" + this.name + "," + this.levelDoneCDRD + "," + thoiGianHoanThanhCDRD + ","
+                + System.currentTimeMillis() + "]";
+        try (Connection con = LocalManager.gI().getConnection();
+                PreparedStatement ps = con
+                        .prepareStatement("UPDATE player SET thanhTichCDRD = ? WHERE id = ? LIMIT 1")) {
             ps.setString(1, TopConDuongRanDoc);
             ps.setInt(2, this.getLeader().id);
             ps.executeUpdate();
@@ -487,8 +500,10 @@ public class Clan {
     }
 
     public void updateThongTinLeader(int clanId) {
-        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + "," + getLeader().body + "," + getLeader().leg + "]";
-        try (Connection con = LocalManager.gI().getConnection(); PreparedStatement ps = con.prepareStatement("UPDATE clan SET thanhTichBDKB = ? WHERE id = ? LIMIT 1")) {
+        String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
+                + getLeader().body + "," + getLeader().leg + "]";
+        try (Connection con = LocalManager.gI().getConnection();
+                PreparedStatement ps = con.prepareStatement("UPDATE clan SET thanhTichBDKB = ? WHERE id = ? LIMIT 1")) {
             ps.setString(1, thongTinLeader);
             ps.setInt(2, clanId);
             ps.executeUpdate();

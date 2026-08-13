@@ -6,12 +6,6 @@ import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class NewPet extends Player {
 
     public Player master;
@@ -79,7 +73,8 @@ public class NewPet extends Player {
         if (this.isDie()) {
             Service.gI().hsChar(this, nPoint.hpMax, nPoint.mpMax);
         }
-        if (master != null && master.zone != null && (this.zone == null || this.zone != master.zone) && !MapService.gI().isMapOffline(master.zone.map.mapId)) {
+        if (master != null && master.zone != null && (this.zone == null || this.zone != master.zone)
+                && !MapService.gI().isMapOffline(master.zone.map.mapId)) {
             joinMapMaster();
         }
         if (master != null && master.isDie()) {
@@ -109,7 +104,7 @@ public class NewPet extends Player {
 
     @Override
     public void dispose() {
-        if (zone !=null) {
+        if (zone != null) {
             ChangeMapService.gI().exitMap(this);
         }
         this.master = null;

@@ -1,11 +1,5 @@
 package nro.models.radar;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class OptionCard {
 
     public int id;

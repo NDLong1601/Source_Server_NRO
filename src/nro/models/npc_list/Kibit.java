@@ -6,12 +6,6 @@ import nro.models.player.Player;
 import nro.models.map.service.NpcService;
 import nro.models.map.service.ChangeMapService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Kibit extends Npc {
 
     public Kibit(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -30,7 +24,8 @@ public class Kibit extends Npc {
                             "Từ chối");
                 case 114 -> {
                     if (player.cFlag != 9) {
-                        NpcService.gI().createTutorial(player, tempId, this.avartar, "Ngươi hãy về phe của mình mà thể hiện");
+                        NpcService.gI().createTutorial(player, tempId, this.avartar,
+                                "Ngươi hãy về phe của mình mà thể hiện");
                         return;
                     }
                     this.createOtherMenu(player, ConstNpc.BASE_MENU, "Ta có thể giúp gì cho ngươi ?",

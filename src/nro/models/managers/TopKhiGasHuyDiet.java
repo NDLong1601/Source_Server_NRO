@@ -15,10 +15,6 @@ import nro.models.services.ItemService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 
-/**
- *
- * @author By Mr Blue
- */
 public class TopKhiGasHuyDiet {
 
     @Getter
@@ -28,20 +24,22 @@ public class TopKhiGasHuyDiet {
     public static TopKhiGasHuyDiet getInstance() {
         return INSTANCE;
     }
+
     private long timeLoad;
 
     public void load() {
         list.clear();
 
-        try (Connection con = LocalManager.getConnection(); PreparedStatement ps = con.prepareStatement(
-                "SELECT *, "
-                + "SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 1), '[', -1) AS so1, "
-                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 2), ',', -1) AS SIGNED) AS so2, "
-                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 3), ',', -1) AS SIGNED) AS so3, "
-                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 4), ',', -1) AS SIGNED) AS so4 "
-                + "FROM player "
-                + "WHERE CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 2), ',', -1), ']', 1) AS SIGNED) > 0 "
-                + "ORDER BY so2 DESC, so1 ASC LIMIT 100")) {
+        try (Connection con = LocalManager.getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "SELECT *, "
+                                + "SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 1), '[', -1) AS so1, "
+                                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 2), ',', -1) AS SIGNED) AS so2, "
+                                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 3), ',', -1) AS SIGNED) AS so3, "
+                                + "CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 4), ',', -1) AS SIGNED) AS so4 "
+                                + "FROM player "
+                                + "WHERE CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(thanhTichKhiGas, ',', 2), ',', -1), ']', 1) AS SIGNED) > 0 "
+                                + "ORDER BY so2 DESC, so1 ASC LIMIT 100")) {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

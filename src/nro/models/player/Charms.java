@@ -1,10 +1,5 @@
 package nro.models.player;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
 public class Charms {
 
     private Player player;
@@ -144,4 +139,3 @@ public class Charms {
         this.player = null;
     }
 }
-

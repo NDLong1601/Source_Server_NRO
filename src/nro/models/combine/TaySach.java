@@ -8,10 +8,6 @@ import nro.models.services.Service;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class TaySach {
 
     public static void showInfoCombine(Player player) {
@@ -23,7 +19,8 @@ public class TaySach {
             Service.gI().sendDialogMessage(player, "Cần Sách Tuyệt Kỹ để tẩy.");
             return;
         }
-        CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, ConstFont.BOLD_BLUE + "Tẩy Sách Tuyệt Kỹ ?", "Đồng ý", "Từ chối");
+        CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE,
+                ConstFont.BOLD_BLUE + "Tẩy Sách Tuyệt Kỹ ?", "Đồng ý", "Từ chối");
     }
 
     public static void taySach(Player player) {

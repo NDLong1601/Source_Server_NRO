@@ -1,4 +1,5 @@
 package nro.models.services_func;
+
 import nro.models.data.LocalManager;
 import nro.models.database.PlayerDAO;
 import nro.models.player.Player;
@@ -17,12 +18,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import nro.models.Bot.Bot;
 import nro.models.server.ServerManager;
-
-/**
- *
- * @author By Mr Blue
- * 
- */
 
 public class TransactionService implements Runnable {
 
@@ -106,7 +101,8 @@ public class TransactionService implements Runnable {
                                     sendInviteTrade(pl, plMap);
                                 } else {
                                     Service.gI().sendThongBao(pl, "Thử lại sau "
-                                            + TimeUtil.getTimeLeft(Math.max(pl.idMark.getLastTimeTrade(), plMap.idMark.getLastTimeTrade()), TIME_DELAY_TRADE / 1000));
+                                            + TimeUtil.getTimeLeft(Math.max(pl.idMark.getLastTimeTrade(),
+                                                    plMap.idMark.getLastTimeTrade()), TIME_DELAY_TRADE / 1000));
                                 }
                             } else {
                                 if (plMap.idMark.getPlayerTradeId() == pl.id) {
@@ -129,7 +125,7 @@ public class TransactionService implements Runnable {
                             trade.cancelTrade();
                             break;
                         }
-                        if (quantity == 0) {//do
+                        if (quantity == 0) {// do
                             quantity = 1;
                         }
                         if (index != -1 && quantity > Trade.QUANLITY_MAX) {
@@ -178,8 +174,8 @@ public class TransactionService implements Runnable {
      * Mời giao dịch
      */
     private void sendInviteTrade(Player plInvite, Player plReceive) {
-        if(plReceive.isBot){
-              ((Bot) plReceive).shop.activeTraDe(plInvite);
+        if (plReceive.isBot) {
+            ((Bot) plReceive).shop.activeTraDe(plInvite);
         }
         Message msg = null;
         try {

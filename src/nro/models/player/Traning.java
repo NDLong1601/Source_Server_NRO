@@ -3,12 +3,6 @@ package nro.models.player;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Traning {
 
     @Setter

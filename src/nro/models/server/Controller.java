@@ -53,12 +53,6 @@ import nro.models.utils.Logger;
 import nro.models.data.LocalResultSet;
 import nro.models.shop_ky_gui.ConsignShopService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Controller implements IMessageHandler {
 
     private int errors;
@@ -145,7 +139,8 @@ public class Controller implements IMessageHandler {
                                 break;
                             case 1:
                                 short idC = _msg.reader().readShort();
-                                Card card = player.Cards.stream().filter(r -> r != null && r.Id == idC).findFirst().orElse(null);
+                                Card card = player.Cards.stream().filter(r -> r != null && r.Id == idC).findFirst()
+                                        .orElse(null);
                                 if (card != null) {
                                     if (card.Level == 0) {
                                         return;
@@ -173,7 +168,8 @@ public class Controller implements IMessageHandler {
                             player.idMark.setGotoFuture(false);
                         } else if (player.type == 1 && player.maxTime == 5) {
                             if (player.idMark != null && player.idMark.isGoToBDKB()) {
-                                ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 135, -1), 35, 35);
+                                ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 135, -1),
+                                        35, 35);
                                 player.idMark.setGoToBDKB(false);
                             }
                         } else if (player.type == 2 && player.maxTime == 5) {
@@ -183,22 +179,25 @@ public class Controller implements IMessageHandler {
                                 ChangeMapService.gI().changeMap(player, 160, -1, -1, 5);
                             }
                         } else if (player.type == 3 && player.maxTime == 5) {
-                            ChangeMapService.gI().changeMap(player, player.idMark.getZoneKhiGasHuyDiet(), player.idMark.getXMapKhiGasHuyDiet(), player.idMark.getYMapKhiGasHuyDiet());
+                            ChangeMapService.gI().changeMap(player, player.idMark.getZoneKhiGasHuyDiet(),
+                                    player.idMark.getXMapKhiGasHuyDiet(), player.idMark.getYMapKhiGasHuyDiet());
                             player.idMark.setZoneKhiGasHuyDiet(null);
                         } else if (player.type == 4 && player.maxTime == 5) {
                             if (player.idMark != null && player.idMark.isGoToKGHD()) {
-                                ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 149, -1), 100 + (Util.nextInt(-10, 10)), 336);
+                                ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 149, -1),
+                                        100 + (Util.nextInt(-10, 10)), 336);
                                 player.idMark.setGoToKGHD(false);
                             }
                         } else if (player.type == 5 && player.maxTime == 5) {
-                            ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 156, -1), 100 + (Util.nextInt(-10, 10)), 336);
+                            ChangeMapService.gI().changeMap(player, MapService.gI().getMapCanJoin(player, 156, -1),
+                                    100 + (Util.nextInt(-10, 10)), 336);
                         }
                     }
                     break;
                 case 42:
-//                    //Đăng ký tài khoản nhanh
-//                    Service.gI().regisAccount(_session, _msg);
-//                    break;
+                    // //Đăng ký tài khoản nhanh
+                    // Service.gI().regisAccount(_session, _msg);
+                    // break;
                 case -127:
                     if (player != null) {
                         LuckyRound.gI().readOpenBall(player, _msg);
@@ -250,7 +249,8 @@ public class Controller implements IMessageHandler {
                 case -59:
                     if (player != null) {
                         if (player.baovetaikhoan) {
-                            Service.gI().sendThongBao(player, "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
+                            Service.gI().sendThongBao(player,
+                                    "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
                             return;
                         }
                         PVPService.gI().controllerThachDau(player, _msg);
@@ -272,34 +272,36 @@ public class Controller implements IMessageHandler {
                         player.pet.changeStatus(_msg.reader().readByte());
                     }
                     break;
-                case 6: //buy item
+                case 6: // buy item
                     if (player != null && !Maintenance.isRunning) {
                         if (TransactionService.gI().check(player)) {
                             Service.gI().sendThongBao(player, "Không thể thực hiện");
                             return;
                         }
                         if (player.baovetaikhoan) {
-                            Service.gI().sendThongBao(player, "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
+                            Service.gI().sendThongBao(player,
+                                    "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
                             return;
                         }
                         byte typeBuy = _msg.reader().readByte();
                         int tempId = _msg.reader().readShort();
-//                        int quantity = 0;
-//                        try {
-//                            quantity = _msg.reader().readShort();
-//                        } catch (Exception e) {
-//                        }
+                        // int quantity = 0;
+                        // try {
+                        // quantity = _msg.reader().readShort();
+                        // } catch (Exception e) {
+                        // }
                         ShopService.gI().takeItem(player, typeBuy, tempId);
                     }
                     break;
-                case 7: //sell item
+                case 7: // sell item
                     if (player != null && !Maintenance.isRunning) {
                         if (TransactionService.gI().check(player)) {
                             Service.gI().sendThongBao(player, "Không thể thực hiện");
                             return;
                         }
                         if (player.baovetaikhoan) {
-                            Service.gI().sendThongBao(player, "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
+                            Service.gI().sendThongBao(player,
+                                    "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
                             return;
                         }
                         action = _msg.reader().readByte();
@@ -434,7 +436,8 @@ public class Controller implements IMessageHandler {
                             break;
                         }
                         int shenronType = player.zone.shenronType;
-                        if (idT == 25 && shenronType != -1 && player.zone.map.mapId != 0 && player.zone.map.mapId != 7 && player.zone.map.mapId != 14) {
+                        if (idT == 25 && shenronType != -1 && player.zone.map.mapId != 0 && player.zone.map.mapId != 7
+                                && player.zone.map.mapId != 14) {
                             idT = shenronType == 1 ? 59 : shenronType == 0 ? 59 : 60;
                         }
                         DataGame.sendEffectTemplate(_session, effId, idT);
@@ -448,7 +451,7 @@ public class Controller implements IMessageHandler {
                 case -63:
                     if (player != null) {
                         byte fbid = _msg.reader().readByte();
-                        int fbidz = fbid & 0xFF; //Chuyển sang byte không dấu
+                        int fbidz = fbid & 0xFF; // Chuyển sang byte không dấu
                         FlagBagService.gI().sendIconEffectFlag(player, fbidz);
                     }
                     break;
@@ -543,7 +546,8 @@ public class Controller implements IMessageHandler {
                             return;
                         }
                         if (player.baovetaikhoan) {
-                            Service.gI().sendThongBao(player, "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
+                            Service.gI().sendThongBao(player,
+                                    "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
                             return;
                         }
                         UseItem.gI().doItem(player, _msg);
@@ -606,14 +610,14 @@ public class Controller implements IMessageHandler {
                         if (isMobMe) {
                             masterId = _msg.reader().readInt();
                         }
-//                        _msg.reader().readByte();
+                        // _msg.reader().readByte();
                         Service.gI().attackMob(player, mobId, isMobMe, masterId);
                     }
                     break;
                 case -60:
                     if (player != null) {
                         int playerId = _msg.reader().readInt();
-//                        _msg.reader().readByte();
+                        // _msg.reader().readByte();
                         Service.gI().attackPlayer(player, playerId);
                     }
                     break;
@@ -667,7 +671,8 @@ public class Controller implements IMessageHandler {
                                 if (player.isAdmin()) {
                                     Boss boss = BossManager.gI().getBoss(_id);
                                     if (boss != null) {
-                                        ChangeMapService.gI().changeMapYardrat(player, boss.zone, boss.location.x, boss.location.y);
+                                        ChangeMapService.gI().changeMapYardrat(player, boss.zone, boss.location.x,
+                                                boss.location.y);
                                     }
                                 } else {
                                     Service.gI().sendThongBao(player, "Không thể thực hiện");
@@ -676,26 +681,26 @@ public class Controller implements IMessageHandler {
                         }
                     }
                     break;
-                case -38: //finish update
+                case -38: // finish update
                     if (player != null) {
                         finishUpdate(player);
                     }
                     break;
-                case 126: //androidPack2
+                case 126: // androidPack2
                     break;
-                case -78: //checkMMove
+                case -78: // checkMMove
                     _msg.reader().readInt(); // second
                     break;
-                case -114: //RequestPean
+                case -114: // RequestPean
                     break;
                 case 27:
-//                    short menuid
+                    // short menuid
                     break;
                 case -76:
                     AchievementService.gI().confirmAchievement(player, _msg.reader().readByte());
                     break;
                 default:
-                    //Logger.log(Logger.YELLOW, "CMD: " + cmd + "\n");
+                    // Logger.log(Logger.YELLOW, "CMD: " + cmd + "\n");
                     break;
             }
         } catch (Exception e) {
@@ -703,7 +708,7 @@ public class Controller implements IMessageHandler {
                 errors++;
                 Logger.logException(Controller.class, e);
                 if (player != null) {
-                    //Logger.warning("Player: " + player.name + "\n");
+                    // Logger.warning("Player: " + player.name + "\n");
                 }
                 Logger.errorln("Lỗi function: 'onMessage'\n");
                 Logger.errorln("Lỗi controller message command: " + _msg.command + "\n");
@@ -713,7 +718,7 @@ public class Controller implements IMessageHandler {
             _msg.dispose();
             long timeDo = System.currentTimeMillis() - st;
             if (timeDo > 10000) {
-                //Logger.warning(_msg.command + " - TimeOut: " + timeDo + " ms\n");
+                // Logger.warning(_msg.command + " - TimeOut: " + timeDo + " ms\n");
             }
         }
     }
@@ -734,7 +739,7 @@ public class Controller implements IMessageHandler {
                 }
             } catch (IOException e) {
                 session.disconnect();
-//                Logger.logException(Controller.class, e);
+                // Logger.logException(Controller.class, e);
             }
         }
     }
@@ -762,7 +767,7 @@ public class Controller implements IMessageHandler {
                         DataGame.sendMapTemp(_session, _msg.reader().readUnsignedByte());
                         break;
                     case 13:
-                        //client ok
+                        // client ok
                         if (player != null && player.isPl()) {
                             Service.gI().player(player);
                             Service.gI().Send_Caitrang(player);
@@ -776,7 +781,7 @@ public class Controller implements IMessageHandler {
                             ItemTimeService.gI().sendAllItemTime(player);
 
                             // send thong bao map tuong lai
-                          //  TaskService.gI().sendInfoMapTuongLai(player);
+                            // TaskService.gI().sendInfoMapTuongLai(player);
 
                             // -70 thông báo bigmessage
                             sendThongBaoServer(player);
@@ -784,11 +789,11 @@ public class Controller implements IMessageHandler {
                             if (TaskService.gI().getIdTask(player) == ConstTask.TASK_0_0) {
                                 NpcService.gI().createTutorial(player, -1,
                                         "Chào Mừng " + player.name + " Đến Với: " + ServerManager.NAME + "\n"
-                                        + "Nhiệm vụ đầu tiên của bạn là di chuyển\n"
-                                        + "Bạn hãy di chuyển nhân vật theo mũi tên chỉ hướng");
+                                                + "Nhiệm vụ đầu tiên của bạn là di chuyển\n"
+                                                + "Bạn hãy di chuyển nhân vật theo mũi tên chỉ hướng");
                             } else {
                                 // -70 thông báo bigmessage
-                                //sendThongBaoServer(player);
+                                // sendThongBaoServer(player);
                             }
 
                             if (player.inventory.itemsBody.get(10).isNotNullItem()) {
@@ -892,12 +897,14 @@ public class Controller implements IMessageHandler {
                                 }
                             }
                             if (isNotIgnoreName) {
-                                created = PlayerDAO.createNewPlayer(session.userId, name.toLowerCase(), (byte) gender, hair);
+                                created = PlayerDAO.createNewPlayer(session.userId, name.toLowerCase(), (byte) gender,
+                                        hair);
                             }
                         }
                     }
                 } else {
-                    Service.gI().sendThongBaoOK(session, "Tên nhân vật chỉ đồng ý các ký tự a-z, 0-9 và chiều dài từ 5 đến 10 ký tự");
+                    Service.gI().sendThongBaoOK(session,
+                            "Tên nhân vật chỉ đồng ý các ký tự a-z, 0-9 và chiều dài từ 5 đến 10 ký tự");
                 }
             } catch (Exception e) {
                 Logger.logException(Controller.class, e);

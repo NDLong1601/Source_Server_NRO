@@ -10,12 +10,6 @@ import nro.models.services.InventoryService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TreasureUnderSeaService {
 
     private static TreasureUnderSeaService instance;
@@ -57,7 +51,8 @@ public class TreasureUnderSeaService {
                             player.timesPerDayBDKB = 1;
                         } else if (player.lastTimeJoinBDKB != player.clan.lastTimeOpenBanDoKhoBau) {
                             if (player.timesPerDayBDKB >= 3) {
-                                Service.gI().sendThongBao(player, "Bạn đã vào hang kho báu 3 lần trong hôm nay, hẹn gặp lại ngày mai");
+                                Service.gI().sendThongBao(player,
+                                        "Bạn đã vào hang kho báu 3 lần trong hôm nay, hẹn gặp lại ngày mai");
                                 return;
                             }
                         }

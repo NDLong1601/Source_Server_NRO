@@ -3,12 +3,6 @@ package nro.models.player;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GiftCode {
 
     public List<String> rewards;

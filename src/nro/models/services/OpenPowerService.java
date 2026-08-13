@@ -4,12 +4,6 @@ import nro.models.player.NPoint;
 import nro.models.player.Pet;
 import nro.models.player.Player;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class OpenPowerService {
 
     public static final int COST_SPEED_OPEN_LIMIT_POWER = 50000000;

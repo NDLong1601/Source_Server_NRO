@@ -18,12 +18,6 @@ import nro.models.services.IntrinsicService;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Shenron_Event {
 
     @Setter
@@ -49,11 +43,10 @@ public class Shenron_Event {
     public static int timeResummonShenron = 60000;
     public static int timeShenronWait = 60000;
 
-    public static final String SHENRONEVENT_SAY
-            = "Ta sẽ ban cho người 1 điều ước, ngươi có 5 phút, hãy chọn đi:\n1) Đổi skill 3, 4 đệ tử (có thể trùng skill trước đó).\n2) Thay đổi nội tại.\n3) Cải trang siêu thần HSD 90 ngày.\n4) Cải trang Black Gohan Rose HSD 90 ngày.";
+    public static final String SHENRONEVENT_SAY = "Ta sẽ ban cho người 1 điều ước, ngươi có 5 phút, hãy chọn đi:\n1) Đổi skill 3, 4 đệ tử (có thể trùng skill trước đó).\n2) Thay đổi nội tại.\n3) Cải trang siêu thần HSD 90 ngày.\n4) Cải trang Black Gohan Rose HSD 90 ngày.";
 
-    public static final String[] SHENRON_WISHES
-            = new String[]{"Điều ước 1", "Điều ước 2", "Điều ước 3", "Điều ước 4"};
+    public static final String[] SHENRON_WISHES = new String[] { "Điều ước 1", "Điều ước 2", "Điều ước 3",
+            "Điều ước 4" };
 
     public boolean shenronLeave;
 
@@ -64,8 +57,10 @@ public class Shenron_Event {
                     Player pl = Client.gI().getPlayer(playerId);
                     if (pl != null) {
                         player = pl;
-                        if (player.zone != null && player.zone.map.mapId != 0 && player.zone.map.mapId != 7 && player.zone.map.mapId != 14
-                                && player.zone.map.mapId != 21 && player.zone.map.mapId != 22 && player.zone.map.mapId != 23) {
+                        if (player.zone != null && player.zone.map.mapId != 0 && player.zone.map.mapId != 7
+                                && player.zone.map.mapId != 14
+                                && player.zone.map.mapId != 21 && player.zone.map.mapId != 22
+                                && player.zone.map.mapId != 23) {
                             player.shenronEvent = this;
                             zone = player.zone;
                             player.idMark.setShenronType(shenronType);
@@ -76,7 +71,8 @@ public class Shenron_Event {
                 }
                 if (Util.canDoWithTime(lastTimeShenronWait, timeShenronWait)) {
                     leaveMap = true;
-                    NpcService.gI().createMenuRongThieng(player, ConstNpc.IGNORE_MENU, "Còn cái nịt =))\nCó không ước mất đừng tìm.", "Xin vĩnh biệt cụ........");
+                    NpcService.gI().createMenuRongThieng(player, ConstNpc.IGNORE_MENU,
+                            "Còn cái nịt =))\nCó không ước mất đừng tìm.", "Xin vĩnh biệt cụ........");
                     shenronLeave();
                 }
             }
@@ -91,7 +87,8 @@ public class Shenron_Event {
     }
 
     public void sendBlackGokuhesShenron() {
-        NpcService.gI().createMenuRongThieng(player, ConstNpc.SHOW_SHENRON_EVENT_CONFIRM, SHENRONEVENT_SAY, SHENRON_WISHES);
+        NpcService.gI().createMenuRongThieng(player, ConstNpc.SHOW_SHENRON_EVENT_CONFIRM, SHENRONEVENT_SAY,
+                SHENRON_WISHES);
     }
 
     public void showConfirmShenron(byte select) {
@@ -102,7 +99,8 @@ public class Shenron_Event {
                 wish = SHENRON_WISHES[select];
                 break;
         }
-        NpcService.gI().createMenuRongThieng(player, ConstNpc.SHENRON_EVENT_CONFIRM, "Ngươi có chắc muốn ước?", wish, "Từ chối");
+        NpcService.gI().createMenuRongThieng(player, ConstNpc.SHENRON_EVENT_CONFIRM, "Ngươi có chắc muốn ước?", wish,
+                "Từ chối");
     }
 
     public void activeShenron(boolean appear, byte type) {
@@ -134,7 +132,7 @@ public class Shenron_Event {
         switch (player.idMark.getShenronType()) {
             case 0:
                 switch (this.select) {
-                     case 0: //thay chiêu 3-4 đệ tử
+                    case 0: // thay chiêu 3-4 đệ tử
                         if (player.pet != null) {
                             if (player.pet.playerSkill.skills.get(2).skillId != -1) {
                                 player.pet.openSkill3();
@@ -154,14 +152,14 @@ public class Shenron_Event {
                         break;
                     case 1:
                         if (player.getSession().player.nPoint.power >= 10_000_000_000L) {
-                        IntrinsicService.gI().doinoitai(player);
-                          } else {
+                            IntrinsicService.gI().doinoitai(player);
+                        } else {
                             Service.gI().sendThongBao(player, "10Tỷ Sức Mạnh?");
                             sendBlackGokuhesShenron();
                             return;
                         }
                         break;
-                        
+
                     case 2:
                         if (InventoryService.gI().getCountEmptyBag(player) > 0) {
                             byte gender = this.player.gender;
@@ -216,7 +214,7 @@ public class Shenron_Event {
                         Service.gI().point(player);
                         Service.gI().Send_Info_NV(player);
                         break;
-                    case 99: //quần đang đeo lên 1 cấp
+                    case 99: // quần đang đeo lên 1 cấp
                         Item item = this.player.inventory.itemsBody.get(1);
                         if (item.isNotNullItem()) {
                             int level = 0;

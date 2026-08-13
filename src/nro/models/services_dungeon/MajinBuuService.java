@@ -12,12 +12,6 @@ import nro.models.npc.Npc;
 import nro.models.map.service.NpcService;
 import nro.models.utils.TimeUtil;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class MajinBuuService {
 
     public static byte HOUR_OPEN_MAP_MABU = 12;
@@ -77,13 +71,15 @@ public class MajinBuuService {
     }
 
     public void xuongTangDuoi(Player player) {
-        NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_XUONG_TANG_DUOI, player.cFlag == 9 ? 4390 : 4388, "Mau đi với ta xuống tầng tiếp theo", "OK");
+        NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_XUONG_TANG_DUOI, player.cFlag == 9 ? 4390 : 4388,
+                "Mau đi với ta xuống tầng tiếp theo", "OK");
     }
 
     public void goHome(Player player) {
         if (player.goHome && Util.canDoWithTime(player.lastUpdateGohomeTime, 3000)) {
             if (player.timeGohome == 30) {
-                NpcService.gI().createMenuConMeo(player, -1, 4390, "Trận chiến đã kết thúc, chúng ta phải rời khỏi đây ngay", "OK");
+                NpcService.gI().createMenuConMeo(player, -1, 4390,
+                        "Trận chiến đã kết thúc, chúng ta phải rời khỏi đây ngay", "OK");
             }
             if (player.timeGohome > 0) {
                 Service.gI().sendThongBao(player, "Về nhà sau " + player.timeGohome + " giây nữa");

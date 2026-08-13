@@ -19,12 +19,6 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.services_func.Input;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class DrDrief extends Npc {
 
     public DrDrief(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -37,7 +31,8 @@ public class DrDrief extends Npc {
             if (this.mapId == 84) {
                 this.createOtherMenu(pl, ConstNpc.BASE_MENU,
                         "Tàu Vũ Trụ của ta có thể đưa cậu đến hành tinh khác chỉ trong 3 giây. Cậu muốn đi đâu?",
-                        pl.gender == ConstPlayer.TRAI_DAT ? "Đến\nTrái Đất" : pl.gender == ConstPlayer.NAMEC ? "Đến\nNamếc" : "Đến\nXayda");
+                        pl.gender == ConstPlayer.TRAI_DAT ? "Đến\nTrái Đất"
+                                : pl.gender == ConstPlayer.NAMEC ? "Đến\nNamếc" : "Đến\nXayda");
             } else if (this.mapId == 153) {
 
                 ArrayList<String> menu = new ArrayList<>();
@@ -46,7 +41,8 @@ public class DrDrief extends Npc {
                     if (clan.isLeader(pl)) {
                         menu.add("Chức năng\nbang hội");
                     }
-                    menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + TaskConfig.getMaxClanTask() + "]");
+                    menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + TaskConfig.getMaxClanTask()
+                            + "]");
                 }
                 menu.add("Đảo Kame");
                 menu.add("Từ chối");
@@ -55,7 +51,8 @@ public class DrDrief extends Npc {
                 this.createOtherMenu(pl, ConstNpc.BASE_MENU, "Tôi có thể giúp gì cho bang hội của bạn ?", menus);
             } else if (!TaskService.gI().checkDoneTaskTalkNpc(pl, this)) {
                 if (pl.playerTask.taskMain.id == 7) {
-                    NpcService.gI().createTutorial(pl, this.avartar, "Hãy lên đường cứu đứa bé nhà tôi\nChắc bây giờ nó đang sợ hãi lắm rồi");
+                    NpcService.gI().createTutorial(pl, this.avartar,
+                            "Hãy lên đường cứu đứa bé nhà tôi\nChắc bây giờ nó đang sợ hãi lắm rồi");
                 } else {
                     this.createOtherMenu(pl, ConstNpc.BASE_MENU,
                             "Tàu Vũ Trụ của ta có thể đưa cậu đến hành tinh khác chỉ trong 3 giây. Cậu muốn đi đâu?",
@@ -71,22 +68,31 @@ public class DrDrief extends Npc {
             if (this.mapId == 84) {
                 ChangeMapService.gI().changeMapBySpaceShip(player, player.gender + 24, -1, -1);
             } else if (this.mapId == 153) {
-                OUTER:
-                switch (player.idMark.getIndexMenu()) {
+                OUTER: switch (player.idMark.getIndexMenu()) {
                     case ConstNpc.BASE_MENU -> {
                         Clan clan = player.clan;
                         if (clan != null) {
                             if (clan.isLeader(player)) {
                                 switch (select) {
                                     case 0 ->
-                                        createOtherMenu(player, 1, "Tôi có thể giúp gì cho bang hội của bạn ?", "Đổi tên\ntên bang\nviết tắt", "Chọn ngẫu nhiên tên bang viết tắt", "Nâng cấp Bang hội", "Đóng");
+                                        createOtherMenu(player, 1, "Tôi có thể giúp gì cho bang hội của bạn ?",
+                                                "Đổi tên\ntên bang\nviết tắt", "Chọn ngẫu nhiên tên bang viết tắt",
+                                                "Nâng cấp Bang hội", "Đóng");
                                     case 1 -> {
                                         if (player.playerTask.clanTask.template != null) {
                                             if (player.playerTask.clanTask.isDone()) {
-                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level) + " capsule bang", "Nhận\nthưởng", "Đóng");
+                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK,
+                                                        "Nhiệm vụ đã hoàn thành, hãy nhận "
+                                                                + TaskConfig.getClanCapsuleReward(
+                                                                        player.playerTask.clanTask.level)
+                                                                + " capsule bang",
+                                                        "Nhận\nthưởng", "Đóng");
                                                 break;
                                             }
-                                            createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName() + ". Đã hạ được " + player.playerTask.clanTask.count, "OK", "Hủy bỏ\nNhiệm vụ\nnày");
+                                            createOtherMenu(player, ConstNpc.MENU_CLAN_TASK,
+                                                    "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName()
+                                                            + ". Đã hạ được " + player.playerTask.clanTask.count,
+                                                    "OK", "Hủy bỏ\nNhiệm vụ\nnày");
                                         } else {
                                             TaskService.gI().changeClanTask(this, player, (byte) Util.nextInt(5));
                                         }
@@ -101,10 +107,18 @@ public class DrDrief extends Npc {
                                     case 0 -> {
                                         if (player.playerTask.clanTask.template != null) {
                                             if (player.playerTask.clanTask.isDone()) {
-                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ đã hoàn thành, hãy nhận " + TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level) + " capsule bang", "Nhận\nthưởng", "Đóng");
+                                                createOtherMenu(player, ConstNpc.MENU_CLAN_TASK,
+                                                        "Nhiệm vụ đã hoàn thành, hãy nhận "
+                                                                + TaskConfig.getClanCapsuleReward(
+                                                                        player.playerTask.clanTask.level)
+                                                                + " capsule bang",
+                                                        "Nhận\nthưởng", "Đóng");
                                                 break;
                                             }
-                                            createOtherMenu(player, ConstNpc.MENU_CLAN_TASK, "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName() + ". Đã hạ được " + player.playerTask.clanTask.count, "OK", "Hủy bỏ\nNhiệm vụ\nnày");
+                                            createOtherMenu(player, ConstNpc.MENU_CLAN_TASK,
+                                                    "Nhiệm vụ hiện tại: " + player.playerTask.clanTask.getName()
+                                                            + ". Đã hạ được " + player.playerTask.clanTask.count,
+                                                    "OK", "Hủy bỏ\nNhiệm vụ\nnày");
                                         } else {
                                             TaskService.gI().changeClanTask(this, player, (byte) Util.nextInt(5));
                                         }
@@ -144,7 +158,9 @@ public class DrDrief extends Npc {
                                             Service.gI().sendThongBao(player, "Đang ở cấp độ cao nhất.");
                                             return;
                                         }
-                                        String npcSay = "Cần " + Util.formatNumber(ClanService.gI().capsule(clan)) + " capsule bang [đang có " + Util.formatNumber(clan.capsuleClan) + " capsule bang] để nâng cấp bang hội lên cấp " + (level + 1);
+                                        String npcSay = "Cần " + Util.formatNumber(ClanService.gI().capsule(clan))
+                                                + " capsule bang [đang có " + Util.formatNumber(clan.capsuleClan)
+                                                + " capsule bang] để nâng cấp bang hội lên cấp " + (level + 1);
                                         npcSay += "\n+1 tối đa số lượng thành viên";
                                         if (level > 1) {
                                             npcSay += "\n+1 ô trống tối đa rương bang.";
@@ -172,7 +188,8 @@ public class DrDrief extends Npc {
                                     clan.capsuleClan -= capsuleCan;
                                     clan.level++;
                                     clan.maxMember++;
-                                    Service.gI().sendThongBao(player, "Chúc mừng bang hội của bạn đã lên cấp " + (clan.level));
+                                    Service.gI().sendThongBao(player,
+                                            "Chúc mừng bang hội của bạn đã lên cấp " + (clan.level));
                                     for (ClanMember cm : player.clan.getMembers()) {
                                         Player pl = Client.gI().getPlayer(cm.id);
                                         if (pl != null) {
@@ -180,7 +197,8 @@ public class DrDrief extends Npc {
                                         }
                                     }
                                 } else {
-                                    Service.gI().sendThongBao(player, "Không đủ capsule bang, cần " + Util.formatNumber(capsuleCan - capsuleBang) + " capsule bang nữa.");
+                                    Service.gI().sendThongBao(player, "Không đủ capsule bang, cần "
+                                            + Util.formatNumber(capsuleCan - capsuleBang) + " capsule bang nữa.");
                                 }
                             }
                         }
@@ -195,7 +213,9 @@ public class DrDrief extends Npc {
                                 }
                                 case 1 -> {
                                     if (!player.playerTask.clanTask.isDone()) {
-                                        createOtherMenu(player, ConstNpc.MENU_CLAN_TASK_REMOVE, "Bạn có chắc muốn hủy nhiệm vụ này?\nNếu hủy nhiệm vụ bạn sẽ mất 1 lượt nhiệm vụ trong ngày.", "Đồng ý", "Từ chối");
+                                        createOtherMenu(player, ConstNpc.MENU_CLAN_TASK_REMOVE,
+                                                "Bạn có chắc muốn hủy nhiệm vụ này?\nNếu hủy nhiệm vụ bạn sẽ mất 1 lượt nhiệm vụ trong ngày.",
+                                                "Đồng ý", "Từ chối");
                                     }
                                 }
                             }

@@ -8,12 +8,6 @@ import nro.models.player_system.Template.AchievementQuest;
 import nro.models.player_system.Template.AchievementTemplate;
 import nro.models.server.Manager;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Achievement {
 
     private Player player;

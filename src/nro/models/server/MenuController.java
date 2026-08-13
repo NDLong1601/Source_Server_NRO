@@ -10,12 +10,6 @@ import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.services_func.TransactionService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class MenuController {
 
     private static MenuController instance;

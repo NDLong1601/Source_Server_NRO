@@ -15,12 +15,6 @@ import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SuperDivineWaterService {
 
     private static SuperDivineWaterService instance;
@@ -98,7 +92,8 @@ public class SuperDivineWaterService {
 
     public void update(Player player) {
         try {
-            if (player.isPl() && MapService.gI().isMapSieuThanhThuy(player.zone.map.mapId) && player.zone == player.zoneSieuThanhThuy) {
+            if (player.isPl() && MapService.gI().isMapSieuThanhThuy(player.zone.map.mapId)
+                    && player.zone == player.zoneSieuThanhThuy) {
                 if (!player.callBossPocolo) {
                     boolean allCharactersDead = true;
                     for (Mob mob : player.zone.mobs) {
@@ -115,8 +110,7 @@ public class SuperDivineWaterService {
                                     player.zone,
                                     player,
                                     (int) bossDamage,
-                                    (int) bossMaxHealth
-                            );
+                                    (int) bossMaxHealth);
                         } catch (Exception e) {
                         }
                         player.callBossPocolo = true;
@@ -130,7 +124,8 @@ public class SuperDivineWaterService {
                         if (player.isDie()) {
                             Service.gI().hsChar(player, player.nPoint.hpMax, player.nPoint.hpMax);
                         }
-                        NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_SIEU_THAN_THUY, 2119, "Để tôi đưa cậu về", "Đồng ý", "Từ chối");
+                        NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_SIEU_THAN_THUY, 2119,
+                                "Để tôi đưa cậu về", "Đồng ý", "Từ chối");
                         player.lastTimeUpdateSTT = System.currentTimeMillis();
                     }
                 }

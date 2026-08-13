@@ -20,12 +20,6 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TrainingService {
 
     private static TrainingService instance;
@@ -142,7 +136,8 @@ public class TrainingService {
         if (time > 60) {
             tnsm = ((long) getTnsmMoiPhut(player) * (long) ((time > 86400 ? 86400 : time)) / 60);
             if (MapService.gI().isMapLuyenTap(player.zone.map.mapId)) {
-                NpcService.gI().createTutorial(player, -1, "Bạn tăng được " + Util.numberToMoney(tnsm) + " sức mạnh trong thời gian " + (time / 60) + " phút tập luyện Offline");
+                NpcService.gI().createTutorial(player, -1, "Bạn tăng được " + Util.numberToMoney(tnsm)
+                        + " sức mạnh trong thời gian " + (time / 60) + " phút tập luyện Offline");
                 Service.gI().addSMTN(player, (byte) 2, tnsm, false);
             } else if (player.dangKyTapTuDong && time > 1800) {
                 if (player.inventory.getGem() > 1) {
@@ -158,8 +153,11 @@ public class TrainingService {
                             player.lastXOffline = player.location.x;
                             Service.gI().addSMTN(player, (byte) 2, tnsm, false);
                             player.teleTapTuDong = true;
-                            player.thongBaoTapTuDong = "Bạn tăng được " + Util.numberToMoney(tnsm) + " sức mạnh trong thời gian " + (time / 60) + " phút tập luyện Offline, -1 ngọc (phí đăng ký tập tự động)";
-                            ChangeMapService.gI().changeMapBySpaceShip(player, player.mapIdDangTapTuDong, 0, Util.nextInt(200, 400));
+                            player.thongBaoTapTuDong = "Bạn tăng được " + Util.numberToMoney(tnsm)
+                                    + " sức mạnh trong thời gian " + (time / 60)
+                                    + " phút tập luyện Offline, -1 ngọc (phí đăng ký tập tự động)";
+                            ChangeMapService.gI().changeMapBySpaceShip(player, player.mapIdDangTapTuDong, 0,
+                                    Util.nextInt(200, 400));
                             Service.gI().sendMoney(player);
                         } catch (InterruptedException e) {
                         }

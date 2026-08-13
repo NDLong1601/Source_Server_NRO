@@ -28,11 +28,6 @@ import nro.models.npc.NonInteractiveNPC;
 import nro.models.services_func.EffectMapService;
 import nro.models.skill.Skill;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class SkillService {
 
     private static SkillService instance;

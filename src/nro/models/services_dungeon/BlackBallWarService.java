@@ -19,12 +19,6 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BlackBallWarService {
 
     private static BlackBallWarService instance;
@@ -95,10 +89,12 @@ public class BlackBallWarService {
                         + TimeUtil.getSecondsUntilCanPick() + " giây nữa");
                 return false;
             } else if (player.zone.finishBlackBallWar) {
-                Service.gI().sendThongBao(player, "Trò chơi tìm ngọc hôm nay đã kết thúc, hẹn gặp lại vào 20h ngày mai");
+                Service.gI().sendThongBao(player,
+                        "Trò chơi tìm ngọc hôm nay đã kết thúc, hẹn gặp lại vào 20h ngày mai");
                 return false;
             } else {
-                if (Util.canDoWithTime(player.zone.lastTimeDropBlackBall, BlackBallWar.TIME_CAN_PICK_BLACK_BALL_AFTER_DROP)) {
+                if (Util.canDoWithTime(player.zone.lastTimeDropBlackBall,
+                        BlackBallWar.TIME_CAN_PICK_BLACK_BALL_AFTER_DROP)) {
                     player.idMark.setHoldBlackBall(true);
                     player.idMark.setTempIdBlackBallHold(item.template.id);
                     player.idMark.setLastTimeHoldBlackBall(System.currentTimeMillis());
@@ -116,7 +112,9 @@ public class BlackBallWarService {
                     return true;
                 } else {
                     Service.gI().sendThongBao(player, "Chưa thể nhặt lúc này, hãy đợi "
-                            + TimeUtil.getTimeLeft(player.zone.lastTimeDropBlackBall, BlackBallWar.TIME_CAN_PICK_BLACK_BALL_AFTER_DROP / 1000) + " nữa");
+                            + TimeUtil.getTimeLeft(player.zone.lastTimeDropBlackBall,
+                                    BlackBallWar.TIME_CAN_PICK_BLACK_BALL_AFTER_DROP / 1000)
+                            + " nữa");
                     return false;
                 }
             }
@@ -189,7 +187,8 @@ public class BlackBallWarService {
                 ChangeMapService.gI().changeMap(player,
                         player.mapBlackBall.get(index).map.mapId, -1, 50, 50);
             } else {
-                Service.gI().sendThongBao(player, "Trò chơi tìm ngọc hôm nay đã kết thúc, hẹn gặp lại vào 20h ngày mai");
+                Service.gI().sendThongBao(player,
+                        "Trò chơi tìm ngọc hôm nay đã kết thúc, hẹn gặp lại vào 20h ngày mai");
                 Service.gI().hideWaitDialog(player);
             }
         } catch (Exception ex) {

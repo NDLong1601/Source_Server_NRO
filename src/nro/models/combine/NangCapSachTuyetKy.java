@@ -9,11 +9,6 @@ import nro.models.services.Service;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class NangCapSachTuyetKy {
 
     private static final int KIM_BAM_GIAY_ID = 1285;
@@ -42,12 +37,12 @@ public class NangCapSachTuyetKy {
             return;
         }
 
-        String statusColor = kimBamGiay.quantity >= REQUIRED_KIM_BAM_GIAY_QUANTITY ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED;
+        String statusColor = kimBamGiay.quantity >= REQUIRED_KIM_BAM_GIAY_QUANTITY ? ConstFont.BOLD_BLUE
+                : ConstFont.BOLD_RED;
         String message = String.format(
-            "%sNâng cấp sách tuyệt kỹ\n%sCần 10 Kìm bấm giấy\n%sTỉ lệ thành công: %s%%\n%sNâng cấp thất bại sẽ mất 10 Kìm bấm giấy",
-            ConstFont.BOLD_BLUE, statusColor, ConstFont.BOLD_BLUE,
-            CombineConfig.getRate("book.upgradeRate", SUCCESS_RATE_PERCENT), ConstFont.BOLD_BLUE
-        );
+                "%sNâng cấp sách tuyệt kỹ\n%sCần 10 Kìm bấm giấy\n%sTỉ lệ thành công: %s%%\n%sNâng cấp thất bại sẽ mất 10 Kìm bấm giấy",
+                ConstFont.BOLD_BLUE, statusColor, ConstFont.BOLD_BLUE,
+                CombineConfig.getRate("book.upgradeRate", SUCCESS_RATE_PERCENT), ConstFont.BOLD_BLUE);
 
         if (kimBamGiay.quantity < REQUIRED_KIM_BAM_GIAY_QUANTITY) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, message,

@@ -9,12 +9,6 @@ import nro.models.task.BadgesTaskService;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TabShopSoHuu extends TabShop {
 
     public TabShopSoHuu(TabShop tabShop, Player player) {
@@ -35,7 +29,8 @@ public class TabShopSoHuu extends TabShop {
                 if (shouldAdd) {
                     for (Item.ItemOption option : itemShop.options) {
                         if (option.optionTemplate.id == 93) {
-                            option.param = BadgesTaskService.sendDay(player, BagesTemplate.fineIdEffectbyIdItem(itemShop.temp.id));
+                            option.param = BadgesTaskService.sendDay(player,
+                                    BagesTemplate.fineIdEffectbyIdItem(itemShop.temp.id));
                             break;
                         }
                     }

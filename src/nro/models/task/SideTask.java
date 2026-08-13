@@ -3,12 +3,6 @@ package nro.models.task;
 import nro.models.consts.ConstTask;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SideTask {
 
     public SideTaskTemplate template;

@@ -8,12 +8,6 @@ import java.util.List;
 import nro.models.server.Maintenance;
 import nro.models.server.Maintenance;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Shenron_Manager implements Runnable {
 
     private static Shenron_Manager instance;

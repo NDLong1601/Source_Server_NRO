@@ -12,12 +12,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import nro.models.server.Maintenance;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ChatGlobalService implements Runnable {
 
     private static final int COUNT_CHAT = 100;
@@ -132,7 +126,7 @@ public class ChatGlobalService implements Runnable {
             msg.writer().writeShort(chat.head);
             msg.writer().writeShort(-1);
             msg.writer().writeShort(chat.body);
-            msg.writer().writeShort(chat.bag); //bag
+            msg.writer().writeShort(chat.bag); // bag
             msg.writer().writeShort(chat.leg);
             msg.writer().writeByte(0);
             Service.gI().sendMessAllPlayer(msg);

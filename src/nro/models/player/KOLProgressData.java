@@ -1,9 +1,5 @@
 package nro.models.player;
 
-/**
- *
- * @author By Mr Blue
- */
 public class KOLProgressData {
 
     public int kolQuestStage;

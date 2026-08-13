@@ -5,7 +5,7 @@ import java.net.Socket;
 import nro.models.player.Player;
 import nro.models.server.Controller;
 import nro.models.data.DataGame;
-import nro.models.database.MrBlue;
+import nro.models.database.MrFinn;
 import nro.models.item.Item;
 import java.io.IOException;
 import nro.models.network.Message;
@@ -28,7 +28,7 @@ public class MySession extends Session {
     public byte timeWait = 100;
     public boolean sentKey;
 
-    public static final byte[] KEYS = {0};
+    public static final byte[] KEYS = { 0 };
     public byte curR, curW;
 
     public String ipAddress;
@@ -121,7 +121,7 @@ public class MySession extends Session {
                 long st = System.currentTimeMillis();
                 this.uu = username;
                 this.pp = password;
-                pl = MrBlue.login(this, al);
+                pl = MrFinn.login(this, al);
                 if (pl != null) {
                     DataGame.sendSmallVersion(this);
                     DataGame.sendBgItemVersion(this);
@@ -144,8 +144,10 @@ public class MySession extends Session {
                     DataGame.sendVersionGame(this);
                     DataGame.sendDataItemBG(this);
                     Controller.gI().sendInfo(this);
-                    Logger.warning("[" + TimeUtil.getCurrHour() + ":" + TimeUtil.getCurrMin() + "] - Player Login: " + this.player.name + ": " + (System.currentTimeMillis() - st) + " ms\n");
-                    if (this.player.notify != null && !this.player.notify.equals("null") && !this.player.notify.isEmpty() && this.player.notify.length() > 0) {
+                    Logger.warning("[" + TimeUtil.getCurrHour() + ":" + TimeUtil.getCurrMin() + "] - Player Login: "
+                            + this.player.name + ": " + (System.currentTimeMillis() - st) + " ms\n");
+                    if (this.player.notify != null && !this.player.notify.equals("null")
+                            && !this.player.notify.isEmpty() && this.player.notify.length() > 0) {
                         Service.gI().sendThongBao(this.player, this.player.notify);
                         this.player.notify = null;
                     }

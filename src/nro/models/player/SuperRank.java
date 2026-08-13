@@ -8,12 +8,6 @@ import nro.models.services.Service;
 import nro.models.map.service.NpcService;
 import nro.models.task.BadgesTaskService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SuperRank {
 
     private Player player;

@@ -3,12 +3,6 @@ package nro.models.player;
 import nro.models.item.Item;
 import nro.models.services.ItemService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SetClothes {
 
     private Player player;

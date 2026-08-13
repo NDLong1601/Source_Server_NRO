@@ -9,19 +9,15 @@ import nro.models.services.Service;
 import nro.models.player_system.Template;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class LamPhepNhapDa {
 
-    private static final int GOLD_TAO_DA = 10_000_000;  // Lượng vàng cần thiết
-    private static final int RATIO_TAO_DA = 80;  // Tỉ lệ thành công
+    private static final int GOLD_TAO_DA = 10_000_000; // Lượng vàng cần thiết
+    private static final int RATIO_TAO_DA = 80; // Tỉ lệ thành công
 
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() != 2) {
-            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Cần đặt đúng 2 vật phẩm!", "Đóng");
+            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Cần đặt đúng 2 vật phẩm!",
+                    "Đóng");
             return;
         }
 
@@ -29,7 +25,8 @@ public class LamPhepNhapDa {
         Item item2 = player.combineNew.itemsCombine.get(1);
 
         if (!isValidCombination(item1, item2)) {
-            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Nguyên liệu không hợp lệ!", "Đóng");
+            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Nguyên liệu không hợp lệ!",
+                    "Đóng");
             return;
         }
 
@@ -37,7 +34,7 @@ public class LamPhepNhapDa {
         player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.mergeUpgradeStoneRate", RATIO_TAO_DA);
 
         String npcSay = "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n"
-                      + "|2|Cần: " + Util.numberToMoney(GOLD_TAO_DA) + " vàng\n";
+                + "|2|Cần: " + Util.numberToMoney(GOLD_TAO_DA) + " vàng\n";
 
         if (player.inventory.gold < GOLD_TAO_DA) {
             npcSay += "|7|Còn thiếu " + Util.powerToString(GOLD_TAO_DA - player.inventory.gold) + " vàng\n";
@@ -98,6 +95,6 @@ public class LamPhepNhapDa {
 
     private static boolean isValidCombination(Item item1, Item item2) {
         return (item1.template.id == 225 && item2.template.id == 226) ||
-               (item1.template.id == 226 && item2.template.id == 225);
+                (item1.template.id == 226 && item2.template.id == 225);
     }
 }

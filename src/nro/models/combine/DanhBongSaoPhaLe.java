@@ -9,11 +9,6 @@ import nro.models.services.Service;
 import nro.models.player_system.Template;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class DanhBongSaoPhaLe {
 
     private static final int GOLD_NANG_CAP = 100_000_000;
@@ -33,7 +28,8 @@ public class DanhBongSaoPhaLe {
 
             if (saoPhaLe != null && daMai != null && saoPhaLe.quantity >= 2) {
                 player.combineNew.goldCombine = GOLD_NANG_CAP;
-                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.polishRate", RATIO_NANG_CAP);
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.polishRate",
+                        RATIO_NANG_CAP);
 
                 String npcSay = "|2|Nâng cấp Sao Pha Lê từ cấp 2 lên Sao Pha Lê lấp lánh\n";
                 npcSay += "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n";
@@ -41,12 +37,14 @@ public class DanhBongSaoPhaLe {
                 npcSay += "|2|Cần: " + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n";
                 npcSay += "|7|Thất bại -1 đá đá mài\n";
                 if (player.inventory.gold < player.combineNew.goldCombine) {
-                    npcSay += "|7|Còn thiếu " + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
+                    npcSay += "|7|Còn thiếu "
+                            + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
                             "Nâng cấp\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n"
-                            + Util.numberToMoney(player.combineNew.gemCombine) + " ngọc\n", "Từ chối");
+                                    + Util.numberToMoney(player.combineNew.gemCombine) + " ngọc\n",
+                            "Từ chối");
                 }
             } else {
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
@@ -57,7 +55,7 @@ public class DanhBongSaoPhaLe {
                     "Cần x2 Sao Pha Lê cấp 2 và 1 đá mài", "Đóng");
         }
     }
-    
+
     public static void danhBongSaoPhaLe(Player player) {
         if (player.combineNew.itemsCombine.size() == 2) {
             int gold = player.combineNew.goldCombine;

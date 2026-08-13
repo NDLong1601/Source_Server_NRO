@@ -4,12 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.item.Item.ItemOption;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ConsignItem {
 
     public int id;
@@ -26,7 +20,8 @@ public class ConsignItem {
     public ConsignItem() {
     }
 
-    public ConsignItem(int i, short id, int plId, byte t, int gold, int gem, int q, byte isUp, List<ItemOption> op, boolean b) {
+    public ConsignItem(int i, short id, int plId, byte t, int gold, int gem, int q, byte isUp, List<ItemOption> op,
+            boolean b) {
         this.id = i;
         itemId = id;
         player_sell = plId;

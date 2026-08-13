@@ -10,12 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.player_badges.BagesTemplate;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TabShopDanhHieu extends TabShop {
 
     public TabShopDanhHieu(TabShop tabShop, Player player) {
@@ -43,7 +37,8 @@ public class TabShopDanhHieu extends TabShop {
                     }
 
                     itemShop.options.clear();
-                    int percent = BadgesTaskService.sendPercenBadgesTask(player, BagesTemplate.fineIdEffectbyIdItem(itemShop.temp.id));
+                    int percent = BadgesTaskService.sendPercenBadgesTask(player,
+                            BagesTemplate.fineIdEffectbyIdItem(itemShop.temp.id));
 
                     itemShop.options.addAll(listOptionBackup);
                     itemShop.options.add(new Item.ItemOption(220, percent));

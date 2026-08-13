@@ -3,12 +3,6 @@ package nro.models.radar;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class RadarCard {
 
     public short Id;
@@ -42,7 +36,7 @@ public class RadarCard {
         Require = -1;
         RequireLevel = 0;
         AuraId = -1;
-        Milestones = new byte[]{1, 0, 0};
+        Milestones = new byte[] { 1, 0, 0 };
     }
 
     public byte getRequiredAmountForLevel(int level) {

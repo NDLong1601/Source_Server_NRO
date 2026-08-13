@@ -13,10 +13,6 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- */
 public class VuaHung extends Npc {
 
     private static final int NGA_VOI = 1220;
@@ -64,8 +60,7 @@ public class VuaHung extends Npc {
                     "Dâng\nsính lễ",
                     "Dâng\nsính lễ\nxịn",
                     "Dâng\nbánh dầy",
-                    "Dâng\nbánh chưng"
-            ));
+                    "Dâng\nbánh chưng"));
             String info = hetThoiGian
                     ? "Cây dưa đã sẵn sàng, ngươi muốn đổi quà chăng?"
                     : "Cây dưa đang lớn, quay lại sau để đổi quà!";
@@ -91,8 +86,7 @@ public class VuaHung extends Npc {
                 "Dâng\nsính lễ",
                 "Dâng\nsính lễ\nxịn",
                 "Dâng\nbánh dầy",
-                "Dâng\nbánh chưng"
-        ));
+                "Dâng\nbánh chưng"));
         createOtherMenu(player, 0, "Ngươi muốn dâng sính lễ?", options.toArray(new String[0]));
     }
 
@@ -309,12 +303,12 @@ public class VuaHung extends Npc {
     }
 
     private int randomBanhDay() {
-        int[] possibleItems = {381, 382, 383, 384, 385, 1635};
+        int[] possibleItems = { 381, 382, 383, 384, 385, 1635 };
         return possibleItems[random.nextInt(possibleItems.length)];
     }
 
     private int randomBanhChung() {
-        int[] possibleItems = {1150, 1151, 1152, 1153, 1635, 1154, 1423, 1438, 1634};
+        int[] possibleItems = { 1150, 1151, 1152, 1153, 1635, 1154, 1423, 1438, 1634 };
         return possibleItems[random.nextInt(possibleItems.length)];
     }
 
@@ -322,9 +316,9 @@ public class VuaHung extends Npc {
         Item DuaHau = InventoryService.gI().findItemBag(player, DUA_HAU);
         Item tem = InventoryService.gI().findItemBag(player, TEM);
 
-        int[] gems = {5, 40, 120, 185, 250};
-        int[] duahau = {1, 10, 20, 25, 30};
-        int[] temNeeded = {1, 2, 3, 4, 5};
+        int[] gems = { 5, 40, 120, 185, 250 };
+        int[] duahau = { 1, 10, 20, 25, 30 };
+        int[] temNeeded = { 1, 2, 3, 4, 5 };
 
         if (DuaHau != null && tem != null
                 && DuaHau.quantity >= duahau[select]

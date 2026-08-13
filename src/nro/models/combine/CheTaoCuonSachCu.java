@@ -8,10 +8,6 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
-/**
- *
- * @author By Mr Blue
- */
 
 public class CheTaoCuonSachCu {
 
@@ -28,15 +24,15 @@ public class CheTaoCuonSachCu {
         int quantityBiaSach = getItemQuantity(player, BIA_SACH_ID);
 
         StringBuilder text = new StringBuilder()
-            .append(ConstFont.BOLD_GREEN).append("Chế tạo Cuốn sách cũ\n")
-            .append(formatRequirement("Trang sách cũ", quantityTrangSachCu, REQUIRED_TRANG_SACH_CU))
-            .append(formatRequirement("Bìa sách", quantityBiaSach, REQUIRED_BIA_SACH))
-            .append(formatSuccessRate(quantityTrangSachCu, quantityBiaSach))
-            .append(ConstFont.BOLD_RED).append("Thất bại mất 99 trang sách và 1 bìa sách");
+                .append(ConstFont.BOLD_GREEN).append("Chế tạo Cuốn sách cũ\n")
+                .append(formatRequirement("Trang sách cũ", quantityTrangSachCu, REQUIRED_TRANG_SACH_CU))
+                .append(formatRequirement("Bìa sách", quantityBiaSach, REQUIRED_BIA_SACH))
+                .append(formatSuccessRate(quantityTrangSachCu, quantityBiaSach))
+                .append(ConstFont.BOLD_RED).append("Thất bại mất 99 trang sách và 1 bìa sách");
 
         int menuType = (quantityTrangSachCu >= REQUIRED_TRANG_SACH_CU && quantityBiaSach >= REQUIRED_BIA_SACH)
-            ? ConstNpc.DONG_THANH_SACH_CU
-            : ConstNpc.IGNORE_MENU;
+                ? ConstNpc.DONG_THANH_SACH_CU
+                : ConstNpc.IGNORE_MENU;
 
         CombineService.gI().baHatMit.createOtherMenu(player, menuType, text.toString(), "Đồng ý", "Từ chối");
     }
@@ -50,7 +46,8 @@ public class CheTaoCuonSachCu {
         Item trangSachCu = InventoryService.gI().findItemBag(player, TRANG_SACH_CU_ID);
         Item biaSach = InventoryService.gI().findItemBag(player, BIA_SACH_ID);
 
-        if (trangSachCu == null || biaSach == null || trangSachCu.quantity < REQUIRED_TRANG_SACH_CU || biaSach.quantity < REQUIRED_BIA_SACH) {
+        if (trangSachCu == null || biaSach == null || trangSachCu.quantity < REQUIRED_TRANG_SACH_CU
+                || biaSach.quantity < REQUIRED_BIA_SACH) {
             return;
         }
 
@@ -81,7 +78,8 @@ public class CheTaoCuonSachCu {
     }
 
     private static boolean hasSufficientSpace(Player player) {
-        return InventoryService.gI().getCountEmptyBag(player) > 0 || InventoryService.gI().findItemBag(player, CUON_SACH_CU_ID) != null;
+        return InventoryService.gI().getCountEmptyBag(player) > 0
+                || InventoryService.gI().findItemBag(player, CUON_SACH_CU_ID) != null;
     }
 
     private static void processSuccess(Player player, Item trangSachCu, Item biaSach) {

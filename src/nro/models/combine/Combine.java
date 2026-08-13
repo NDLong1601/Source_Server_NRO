@@ -1,13 +1,9 @@
 package nro.models.combine;
+
 import lombok.Setter;
 import nro.models.item.Item;
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- *
- * @author By Mr Blue
- */
 
 public class Combine {
 

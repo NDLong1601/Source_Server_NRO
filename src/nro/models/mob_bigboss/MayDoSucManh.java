@@ -16,10 +16,6 @@ import nro.models.server.Manager;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class MayDoSucManh extends BigBoss {
 
     private final Map<Long, Long> damageMap = new HashMap<>();

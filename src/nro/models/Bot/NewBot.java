@@ -15,7 +15,7 @@ public class NewBot {
     public static int[][] PARTBOT = new int[Manager.ITEM_TEMPLATES.size()][4];
 
     private final String[] FIRST_NAMES = java.util.stream.IntStream.rangeClosed(1, 50000)
-            .mapToObj(i -> "mrblue" + i)
+            .mapToObj(i -> "MrFinn" + i)
             .toArray(String[]::new);
 
     public static NewBot gI() {

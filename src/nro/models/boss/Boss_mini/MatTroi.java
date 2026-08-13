@@ -21,10 +21,6 @@ import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class MatTroi extends Boss {
 
     private final Map<Long, Long> globalEffectTimers = new ConcurrentHashMap<>();
@@ -34,14 +30,14 @@ public class MatTroi extends Boss {
         super(BossID.Virut, new BossData(
                 "Mặt Trời " + Util.nextInt(1, 49),
                 ConstPlayer.TRAI_DAT,
-                new short[]{1501, 1502, 1503, -1, -1, -1},
+                new short[] { 1501, 1502, 1503, -1, -1, -1 },
                 10,
-                new int[]{100},
-                new int[]{5, 7, 0, 14},
-                new int[][]{{Skill.DRAGON, 7, 1000}},
-                new String[]{}, // Text chat 1
-                new String[]{}, // Text chat 2
-                new String[]{},
+                new int[] { 100 },
+                new int[] { 5, 7, 0, 14 },
+                new int[][] { { Skill.DRAGON, 7, 1000 } },
+                new String[] {}, // Text chat 1
+                new String[] {}, // Text chat 2
+                new String[] {},
                 600));
     }
 
@@ -103,7 +99,8 @@ public class MatTroi extends Boss {
                     return;
                 }
 
-                this.playerSkill.skillSelect = this.playerSkill.skills.get(Util.nextInt(0, this.playerSkill.skills.size() - 1));
+                this.playerSkill.skillSelect = this.playerSkill.skills
+                        .get(Util.nextInt(0, this.playerSkill.skills.size() - 1));
 
                 if (Util.getDistance(this, pl) <= 40) {
                     SkillService.gI().useSkill(this, pl, null, -1, null);
@@ -127,7 +124,7 @@ public class MatTroi extends Boss {
         int x = this.location.x;
         int y = this.zone.map.yPhysicInTop(x, this.location.y - 24);
         if (Util.isTrue(50, 100)) {
-            int[] costumes = {1562};
+            int[] costumes = { 1562 };
             int costumeId = costumes[Util.nextInt(costumes.length)];
 
             ItemMap itemMap = new ItemMap(this.zone, costumeId, 1, x, y, plKill.id);

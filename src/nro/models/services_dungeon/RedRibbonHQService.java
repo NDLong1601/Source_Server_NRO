@@ -9,12 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class RedRibbonHQService {
 
     private static RedRibbonHQService instance;

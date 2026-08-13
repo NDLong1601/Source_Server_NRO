@@ -12,12 +12,6 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SnakeWayService {
 
     private static SnakeWayService instance;
@@ -51,7 +45,8 @@ public class SnakeWayService {
                     return;
                 }
                 if (!player.joinCDRD && !Util.isTimeDifferenceGreaterThanNDays(player.lastTimeJoinCDRD, 7)) {
-                    Service.gI().sendThongBao(player, "Vui lòng đợi " + TimeUtil.getDateLeft(player.lastTimeJoinCDRD, 7 * 24 * 60 * 60) + " nữa");
+                    Service.gI().sendThongBao(player,
+                            "Vui lòng đợi " + TimeUtil.getDateLeft(player.lastTimeJoinCDRD, 7 * 24 * 60 * 60) + " nữa");
                     return;
                 } else if (!player.joinCDRD) {
                     player.talkToThuongDe = false;

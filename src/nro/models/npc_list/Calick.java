@@ -12,12 +12,6 @@ import nro.models.services.TaskService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Calick extends Npc {
 
     private final byte COUNT_CHANGE = 25;
@@ -75,19 +69,19 @@ public class Calick extends Npc {
         if (this.mapId == 102) {
             if (player.idMark.isBaseMenu()) {
                 if (select == 0) {
-                    //kể chuyện
+                    // kể chuyện
                     NpcService.gI().createTutorial(player, tempId, this.avartar, ConstNpc.CALICK_KE_CHUYEN);
                 } else if (select == 1) {
-                    //về quá khứ
+                    // về quá khứ
                     ChangeMapService.gI().goToQuaKhu(player);
                 }
             }
         } else if (player.idMark.isBaseMenu()) {
             switch (select) {
-                case 0 -> //kể chuyện
+                case 0 -> // kể chuyện
                     NpcService.gI().createTutorial(player, tempId, this.avartar, ConstNpc.CALICK_KE_CHUYEN);
                 case 1 -> {
-                    //đến tương lai
+                    // đến tương lai
                     changeMap();
                     if (TaskService.gI().getIdTask(player) >= ConstTask.TASK_20_0) {
                         ChangeMapService.gI().goToTuongLai(player);

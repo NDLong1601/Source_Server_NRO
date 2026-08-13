@@ -5,10 +5,6 @@ import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
 
-/**
- *
- * @author By Mr Blue
- */
 public class RandomCollection<E> {
 
     private final NavigableMap<Double, E> map = new TreeMap<Double, E>();

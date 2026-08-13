@@ -5,12 +5,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SystemMetrics {
 
     private static String formatMemory(double used, double total) {

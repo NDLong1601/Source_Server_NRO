@@ -6,12 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.utils.SkillUtil;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ItemShop {
 
     public TabShop tabShop;
@@ -64,16 +58,16 @@ public class ItemShop {
         this.options = null;
     }
 
-        public byte getLevelSkill() {
+    public byte getLevelSkill() {
         String[] subName = temp.name.split("");
         byte level = Byte.parseByte(subName[subName.length - 1]);
         return level;
     }
-    
-//   public long getPowerRequire() {
-//   
-//    return (long) SkillUtil.getSkillByItemID(temp.id, getLevelSkill()).powRequire;
-//}
 
-    
+    // public long getPowerRequire() {
+    //
+    // return (long) SkillUtil.getSkillByItemID(temp.id,
+    // getLevelSkill()).powRequire;
+    // }
+
 }

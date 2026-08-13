@@ -15,12 +15,6 @@ import nro.models.services.TaskService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Cui extends Npc {
 
     private final int COST_FIND_BOSS = 50000000;
@@ -34,7 +28,8 @@ public class Cui extends Npc {
         if (canOpenNpc(pl)) {
             if (!TaskService.gI().checkDoneTaskTalkNpc(pl, this)) {
                 if (pl.playerTask.taskMain.id == 7) {
-                    NpcService.gI().createTutorial(pl, this.avartar, "Hãy lên đường cứu đứa bé nhà tôi\nChắc bây giờ nó đang sợ hãi lắm rồi");
+                    NpcService.gI().createTutorial(pl, this.avartar,
+                            "Hãy lên đường cứu đứa bé nhà tôi\nChắc bây giờ nó đang sợ hãi lắm rồi");
                 } else {
                     switch (this.mapId) {
                         case 19 -> {
@@ -43,15 +38,18 @@ public class Cui extends Npc {
                                 case ConstTask.TASK_19_0 ->
                                     this.createOtherMenu(pl, ConstNpc.MENU_FIND_KUKU,
                                             "Đội quân của Fide đang ở Thung lũng Nappa, ta sẽ đưa ngươi đến đó",
-                                            "Đến chỗ\nKuku\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)", "Đến Cold", "Đến\nNappa", "Từ chối");
+                                            "Đến chỗ\nKuku\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)",
+                                            "Đến Cold", "Đến\nNappa", "Từ chối");
                                 case ConstTask.TASK_19_1 ->
                                     this.createOtherMenu(pl, ConstNpc.MENU_FIND_MAP_DAU_DINH,
                                             "Đội quân của Fide đang ở Thung lũng Nappa, ta sẽ đưa ngươi đến đó",
-                                            "Đến chỗ\nMập đầu đinh\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)", "Đến Cold", "Đến\nNappa", "Từ chối");
+                                            "Đến chỗ\nMập đầu đinh\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)",
+                                            "Đến Cold", "Đến\nNappa", "Từ chối");
                                 case ConstTask.TASK_19_2 ->
                                     this.createOtherMenu(pl, ConstNpc.MENU_FIND_RAMBO,
                                             "Đội quân của Fide đang ở Thung lũng Nappa, ta sẽ đưa ngươi đến đó",
-                                            "Đến chỗ\nRambo\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)", "Đến Cold", "Đến\nNappa", "Từ chối");
+                                            "Đến chỗ\nRambo\n(" + Util.numberToMoney(COST_FIND_BOSS) + " vàng)",
+                                            "Đến Cold", "Đến\nNappa", "Từ chối");
                                 default ->
                                     this.createOtherMenu(pl, ConstNpc.BASE_MENU,
                                             "Đội quân của Fide đang ở Thung lũng Nappa, ta sẽ đưa ngươi đến đó",
@@ -64,7 +62,7 @@ public class Cui extends Npc {
                         default ->
                             this.createOtherMenu(pl, ConstNpc.BASE_MENU,
                                     "Tàu vũ trụ Xayda sử dụng công nghệ mới nhất, "
-                                    + "có thể đưa ngươi đi bất kỳ đâu, chỉ cần trả tiền là được.",
+                                            + "có thể đưa ngươi đi bất kỳ đâu, chỉ cần trả tiền là được.",
                                     "Đến\nTrái Đất", "Đến\nNamếc", "Siêu thị");
                     }
                 }
@@ -99,12 +97,15 @@ public class Cui extends Npc {
                     switch (select) {
                         case 0 -> {
                             Boss boss = BossManager.gI().getBossById(BossID.KUKU);
-                            if (boss != null && !boss.isDie() && boss.zone != null && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
+                            if (boss != null && !boss.isDie() && boss.zone != null
+                                    && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
                                 if (player.inventory.gold >= COST_FIND_BOSS) {
-                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId, boss.zone.zoneId);
+                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
+                                            boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
                                         player.inventory.gold -= COST_FIND_BOSS;
-                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x, boss.location.y);
+                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
+                                                boss.location.y);
                                         Service.gI().sendMoney(player);
                                     } else {
                                         Service.gI().sendThongBao(player, "Khu vực đang full.");
@@ -126,12 +127,15 @@ public class Cui extends Npc {
                     switch (select) {
                         case 0 -> {
                             Boss boss = BossManager.gI().getBossById(BossID.MAP_DAU_DINH);
-                            if (boss != null && !boss.isDie() && boss.zone != null && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
+                            if (boss != null && !boss.isDie() && boss.zone != null
+                                    && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
                                 if (player.inventory.gold >= COST_FIND_BOSS) {
-                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId, boss.zone.zoneId);
+                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
+                                            boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
                                         player.inventory.gold -= COST_FIND_BOSS;
-                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x, boss.location.y);
+                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
+                                                boss.location.y);
                                         Service.gI().sendMoney(player);
                                     } else {
                                         Service.gI().sendThongBao(player, "Khu vực đang full.");
@@ -153,12 +157,15 @@ public class Cui extends Npc {
                     switch (select) {
                         case 0 -> {
                             Boss boss = BossManager.gI().getBossById(BossID.RAMBO);
-                            if (boss != null && !boss.isDie() && boss.zone != null && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
+                            if (boss != null && !boss.isDie() && boss.zone != null
+                                    && !MapService.gI().isMapPhoBan(boss.zone.map.mapId)) {
                                 if (player.inventory.gold >= COST_FIND_BOSS) {
-                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId, boss.zone.zoneId);
+                                    Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
+                                            boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
                                         player.inventory.gold -= COST_FIND_BOSS;
-                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x, boss.location.y);
+                                        ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
+                                                boss.location.y);
                                         Service.gI().sendMoney(player);
                                     } else {
                                         Service.gI().sendThongBao(player, "Khu vực đang full.");

@@ -15,10 +15,6 @@ import nro.models.services_func.Input;
 import nro.models.utils.Util;
 import nro.models.map.*;
 
-/**
- *
- * @author By Mr Blue
- */
 public class DuaHau extends Npc {
 
     public DuaHau(int mapId, int status, int cx, int cy, int tempId, int avatar) {
@@ -28,7 +24,8 @@ public class DuaHau extends Npc {
     @Override
     public void openBaseMenu(Player player) {
         if (player.DuaHauEgg.getSecondDone() <= 0) {
-            this.createOtherMenu(player, ConstNpc.CO_THE_THU_HOACH, "Dưa hấu đã chín, bạn có thể thu hoạch!", "Thu hoạch", "Từ chối");
+            this.createOtherMenu(player, ConstNpc.CO_THE_THU_HOACH, "Dưa hấu đã chín, bạn có thể thu hoạch!",
+                    "Thu hoạch", "Từ chối");
         } else {
             int timeLeft = player.DuaHauEgg.getSecondDone();
             int hours = timeLeft / 3600;

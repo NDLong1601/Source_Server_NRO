@@ -2,12 +2,6 @@ package nro.models.player;
 
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Satellite {
 
     public boolean isHP;

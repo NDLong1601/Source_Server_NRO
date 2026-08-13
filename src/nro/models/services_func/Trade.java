@@ -17,12 +17,6 @@ import java.util.List;
 import nro.models.Bot.Bot;
 import nro.models.server.ServerManager;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Trade {
 
     public static final int TIME_TRADE = 180000;
@@ -93,7 +87,8 @@ public class Trade {
         if (pl.getSession().actived) {
             if (index == -1) { // Giao dịch vàng
                 if (quantity > MAX_GOLD_TRADE_PER_TIME || quantity < 0) {
-                    Service.gI().sendThongBao(pl, "Số vàng giao dịch không được vượt quá " + MAX_GOLD_TRADE_PER_TIME + " vàng.");
+                    Service.gI().sendThongBao(pl,
+                            "Số vàng giao dịch không được vượt quá " + MAX_GOLD_TRADE_PER_TIME + " vàng.");
                     sendUpdateGoldTrade(pl); // Cập nhật lại số vàng hiển thị về 0 hoặc giá trị hợp lệ
                     return;
                 }
@@ -185,7 +180,7 @@ public class Trade {
             }
         }
     }
-    
+
     // Các phương thức khác giữ nguyên
     private void removeItemTrade(Player pl, byte index) {
         Message msg = null;
@@ -236,18 +231,18 @@ public class Trade {
                 } else {
                     return false;
                 }
-            case 5: //cải trang
-            case 6: //đậu thần
-            case 7: //sách skill
-            case 8: //vật phẩm nhiệm vụ
-            case 11: //flag bag
-            case 13: //bùa
-            case 22: //vệ tinh
-            case 23: //ván bay
-            case 24: //ván bay vip
-            case 28: //cờ
-            case 31: //bánh trung thu, bánh tết
-            case 32: //giáp tập luyện
+            case 5: // cải trang
+            case 6: // đậu thần
+            case 7: // sách skill
+            case 8: // vật phẩm nhiệm vụ
+            case 11: // flag bag
+            case 13: // bùa
+            case 22: // vệ tinh
+            case 23: // ván bay
+            case 24: // ván bay vip
+            case 28: // cờ
+            case 31: // bánh trung thu, bánh tết
+            case 32: // giáp tập luyện
                 return true;
             default:
                 return false;
@@ -420,11 +415,13 @@ public class Trade {
                 break;
             case FAIL_MAX_GOLD_PLAYER1:
                 Service.gI().sendThongBao(player1, "Giao dịch thất bại do số lượng vàng sau giao dịch vượt tối đa");
-                Service.gI().sendThongBao(player2, "Giao dịch thất bại do số lượng vàng " + player1.name + " sau giao dịch vượt tối đa");
+                Service.gI().sendThongBao(player2,
+                        "Giao dịch thất bại do số lượng vàng " + player1.name + " sau giao dịch vượt tối đa");
                 break;
             case FAIL_MAX_GOLD_PLAYER2:
                 Service.gI().sendThongBao(player2, "Giao dịch thất bại do số lượng vàng sau giao dịch vượt tối đa");
-                Service.gI().sendThongBao(player1, "Giao dịch thất bại do số lượng vàng " + player2.name + " sau giao dịch vượt tối đa");
+                Service.gI().sendThongBao(player1,
+                        "Giao dịch thất bại do số lượng vàng " + player2.name + " sau giao dịch vượt tối đa");
                 break;
             case FAIL_NOT_ENOUGH_BAG_P1:
                 Service.gI().sendThongBao(player1, "Giao dịch thất bại vì " + player1.name + " không đủ chỗ chứa");

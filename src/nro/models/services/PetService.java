@@ -9,11 +9,6 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class PetService {
 
     private static PetService instance;

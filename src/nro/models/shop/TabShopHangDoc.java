@@ -5,15 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.services.InventoryService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TabShopHangDoc extends TabShop {
 
-    private final int[] listDauThan = {293, 294, 295, 296, 297, 298, 299, 596, 597, 598};
+    private final int[] listDauThan = { 293, 294, 295, 296, 297, 298, 299, 596, 597, 598 };
 
     public TabShopHangDoc(TabShop tabShop, Player player) {
         this.itemShops = new ArrayList<>();

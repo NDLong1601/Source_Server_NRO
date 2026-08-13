@@ -12,7 +12,7 @@ import nro.models.utils.Util;
 
 /**
  *
- * @author MrBlue
+ * @author MrFinn
  */
 public class TaiTaoCapsuleKichHoat {
 
@@ -45,8 +45,9 @@ public class TaiTaoCapsuleKichHoat {
         if (countKhoang < REQUIRED_KHOANG || countVatLieu2 < REQUIRED_CAPSULE) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
                     "Thiếu vật phẩm cần thiết!\n"
-                    + "- Cần: " + REQUIRED_KHOANG + " Khoáng tái chế\n"
-                    + "- Cần: " + REQUIRED_CAPSULE + " Capsule Vỡ", "Đóng");
+                            + "- Cần: " + REQUIRED_KHOANG + " Khoáng tái chế\n"
+                            + "- Cần: " + REQUIRED_CAPSULE + " Capsule Vỡ",
+                    "Đóng");
             return;
         }
 

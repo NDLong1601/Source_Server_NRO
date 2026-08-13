@@ -5,12 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class NClass {
 
     public int classId;
@@ -27,7 +21,8 @@ public class NClass {
         }
         return null;
     }
-public List<Skill> getSkills(int tempId) {
+
+    public List<Skill> getSkills(int tempId) {
         for (SkillTemplate skillTemplate : skillTemplatess) {
             if (skillTemplate.id == tempId) {
                 return skillTemplate.skillss;
@@ -35,9 +30,11 @@ public List<Skill> getSkills(int tempId) {
         }
         return null;
     }
+
     public SkillTemplate getSkillTemplateByName(String name) {
         for (SkillTemplate skillTemplate : skillTemplatess) {
-            if ((Util.removeAccent(skillTemplate.name).toUpperCase()).contains((Util.removeAccent(name)).toUpperCase())) {
+            if ((Util.removeAccent(skillTemplate.name).toUpperCase())
+                    .contains((Util.removeAccent(name)).toUpperCase())) {
                 return skillTemplate;
             }
         }

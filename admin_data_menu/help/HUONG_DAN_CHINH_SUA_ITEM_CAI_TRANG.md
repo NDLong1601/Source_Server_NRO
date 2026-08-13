@@ -679,7 +679,7 @@ items_box
 Source đọc item player tại:
 
 ```text
-src/nro/models/database/MrBlue.java
+src/nro/models/database/MrFinn.java
 ```
 
 Source save item player tại:

@@ -5,12 +5,6 @@ import nro.models.player.Player;
 import nro.models.network.Message;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class EffectMapService {
 
     private static EffectMapService i;

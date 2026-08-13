@@ -8,11 +8,6 @@ import nro.models.services.InventoryService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class GiamDinhSach {
 
     public static void showInfoCombine(Player player) {
@@ -39,15 +34,16 @@ public class GiamDinhSach {
 
         StringBuilder text = new StringBuilder();
         text.append(ConstFont.BOLD_GREEN)
-            .append("Giám định ")
-            .append(sachTuyetKy.template.name)
-            .append(" ?\n")
-            .append(ConstFont.BOLD_BLUE)
-            .append("Bùa giám định ")
-            .append(buaGiamDinh.quantity)
-            .append("/1");
+                .append("Giám định ")
+                .append(sachTuyetKy.template.name)
+                .append(" ?\n")
+                .append(ConstFont.BOLD_BLUE)
+                .append("Bùa giám định ")
+                .append(buaGiamDinh.quantity)
+                .append("/1");
 
-        CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, text.toString(), "Giám định", "Từ chối");
+        CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, text.toString(), "Giám định",
+                "Từ chối");
     }
 
     public static void giamDinhSach(Player player) {
@@ -71,7 +67,7 @@ public class GiamDinhSach {
             return;
         }
 
-        int[] options = {77, 103, 50, 108, 94, 14, 80, 81, 175, 5, 214, 216};
+        int[] options = { 77, 103, 50, 108, 94, 14, 80, 81, 175, 5, 214, 216 };
 
         for (int i = 0; i < sachTuyetKy.itemOptions.size(); i++) {
             Item.ItemOption io = sachTuyetKy.itemOptions.get(i);

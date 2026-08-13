@@ -25,11 +25,6 @@ import nro.models.task.BadgesTaskService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class PlayerService {
 
     private static PlayerService i;

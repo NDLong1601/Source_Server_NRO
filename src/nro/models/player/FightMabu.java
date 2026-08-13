@@ -5,12 +5,6 @@ import nro.models.map.service.MapService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class FightMabu {
 
     public final byte POINT_MAX = 10;

@@ -5,12 +5,6 @@ import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.services.TaskService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class DauThan extends Npc {
 
     public DauThan(int mapId, int status, int cx, int cy, int tempId, int avartar) {

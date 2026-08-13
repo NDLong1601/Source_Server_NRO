@@ -10,12 +10,6 @@ import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class DestronGasService {
 
     private static DestronGasService instance;

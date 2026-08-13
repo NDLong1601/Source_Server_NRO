@@ -6,12 +6,6 @@ import nro.models.player_badges.BadgesData;
 import nro.models.server.Manager;
 import nro.models.task.BadgesTaskTemplate;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BadgesTaskService {
 
     public static void createAndResetTask(Player player) {

@@ -8,15 +8,11 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.player_system.Template;
 import nro.models.utils.Util;
-/**
- *
- * @author By Mr Blue
- */
 
 public class CheTaoDuiDuc {
 
-    private static final int GOLD_TAO_DA = 50_000_000;  
-    private static final int RATIO_TAO_DA = 100; 
+    private static final int GOLD_TAO_DA = 50_000_000;
+    private static final int RATIO_TAO_DA = 100;
 
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() == 1) {
@@ -33,11 +29,13 @@ public class CheTaoDuiDuc {
 
                 // Kiểm tra tài nguyên và đưa ra menu
                 if (player.inventory.gold < player.combineNew.goldCombine) {
-                    npcSay += "|7|Còn thiếu " + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
+                    npcSay += "|7|Còn thiếu "
+                            + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
-                            "Tạo đá Dùi Đục\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n", "Từ chối");
+                            "Tạo đá Dùi Đục\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n",
+                            "Từ chối");
                 }
             } else {
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
@@ -63,7 +61,7 @@ public class CheTaoDuiDuc {
                 player.inventory.gold -= gold;
                 InventoryService.gI().subQuantityItemsBag(player, Hematite, 5);
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
-                    Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1438); 
+                    Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1438);
                     Item DuiDuc = new Item();
                     DuiDuc.template = hematiteTemplate;
                     DuiDuc.quantity = 1;

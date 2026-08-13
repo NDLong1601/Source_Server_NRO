@@ -10,12 +10,6 @@ import nro.models.map.service.NpcService;
 import nro.models.shop.ItemShop;
 import nro.models.shop.Shop;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GiftCodeService {
 
     private static GiftCodeService instance;
@@ -30,14 +24,14 @@ public class GiftCodeService {
     public void giftCode(Player player, String code) {
         GiftCode giftcode = GiftCodeManager.gI().findGiftCode(code);
         if (giftcode == null) {
-//            int itemId = 190;
-//            Item item = ItemService.gI().createNewItem(((short) itemId));
-//            ItemShop it = new Shop().getItemShop(itemId);
-//            if (it != null && !it.options.isEmpty()) {
-//                item.itemOptions.addAll(it.options);
-//            }
-//            InventoryService.gI().addItemBag(player, item);
-//            InventoryService.gI().sendItemBags(player);
+            // int itemId = 190;
+            // Item item = ItemService.gI().createNewItem(((short) itemId));
+            // ItemShop it = new Shop().getItemShop(itemId);
+            // if (it != null && !it.options.isEmpty()) {
+            // item.itemOptions.addAll(it.options);
+            // }
+            // InventoryService.gI().addItemBag(player, item);
+            // InventoryService.gI().sendItemBags(player);
             Service.gI().sendThongBao(player, "Code không chính xác!");
         } else if (!giftcode.hasStarted()) {
             Service.gI().sendThongBao(player, "Code chưa đến thời gian sử dụng");
@@ -56,7 +50,8 @@ public class GiftCodeService {
 
                 switch (idItem) {
                     case -1 -> {
-                        player.inventory.gold = Math.min(player.inventory.gold + (long) quantity, PlayerConfig.getMaxGold());
+                        player.inventory.gold = Math.min(player.inventory.gold + (long) quantity,
+                                PlayerConfig.getMaxGold());
                         textGift += "|2|" + quantity + " vàng\b";
                     }
                     case -2 -> {

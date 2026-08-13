@@ -5,12 +5,6 @@ import nro.models.player.Player;
 import nro.models.services.ItemService;
 import nro.models.shop.ShopService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BuyBackService {
 
     private static final byte MAX_ITEM_IN_BOX = 10;

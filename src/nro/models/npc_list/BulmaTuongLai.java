@@ -11,12 +11,6 @@ import nro.models.services.TaskService;
 import nro.models.shop.ShopService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BulmaTuongLai extends Npc {
 
     public BulmaTuongLai(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -52,11 +46,10 @@ public class BulmaTuongLai extends Npc {
                     switch (select) {
                         case 0 ->
                             ShopService.gI().opendShop(player, "BUNMA_FUTURE", true);
-                      
+
                     }
-                            }
-                        
-                
+                }
+
             }
         }
     }

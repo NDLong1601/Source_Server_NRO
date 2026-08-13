@@ -5,12 +5,6 @@ import nro.models.skill.Skill;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Template {
 
     public static class ItemOptionTemplate {
@@ -68,7 +62,8 @@ public class Template {
         public ItemTemplate() {
         }
 
-        public ItemTemplate(short id, byte type, byte gender, String name, String description, short iconID, short part, boolean isUpToUp, int strRequire) {
+        public ItemTemplate(short id, byte type, byte gender, String name, String description, short iconID, short part,
+                boolean isUpToUp, int strRequire) {
             this.id = id;
             this.type = type;
             this.gender = gender;

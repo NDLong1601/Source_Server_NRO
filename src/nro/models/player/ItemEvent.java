@@ -2,12 +2,6 @@ package nro.models.player;
 
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ItemEvent {
 
     public Player player;
@@ -27,7 +21,7 @@ public class ItemEvent {
     public int remainingKeoNguoiTuyetCount;
     public int remainingTVGSCount;
     public int remainingManhVo;
-    
+
     public long lastHHTime;
 
     public int remainingHHCount;
@@ -136,15 +130,15 @@ public class ItemEvent {
         return false;
     }
 
-   public boolean canDropManhVo(int maxCount) {
-    if (Util.isAfterMidnight(lastItemManhVo)) {
-        remainingManhVo = maxCount;
-        lastItemManhVo = System.currentTimeMillis();
-        return true;
-    } else if (remainingManhVo > 0) {
-        remainingManhVo--;
-        return true;
+    public boolean canDropManhVo(int maxCount) {
+        if (Util.isAfterMidnight(lastItemManhVo)) {
+            remainingManhVo = maxCount;
+            lastItemManhVo = System.currentTimeMillis();
+            return true;
+        } else if (remainingManhVo > 0) {
+            remainingManhVo--;
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 }

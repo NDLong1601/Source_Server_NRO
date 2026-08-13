@@ -9,10 +9,6 @@ import nro.models.services.Service;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class DoiSachTuyetKy {
 
     private static final int REQUIRED_CUON_SACH_CU = 10;
@@ -20,7 +16,7 @@ public class DoiSachTuyetKy {
     private static final int REQUIRED_CON_DAU = 1;
     private static final int SUCCESS_RATE_PERCENT = 20;
     private static final int EXTRA_OPTION_CHANCE = 20;
-    private static final short[] SACH_IDS = new short[]{1044, 1211, 1212};
+    private static final short[] SACH_IDS = new short[] { 1044, 1211, 1212 };
 
     public static void showCombine(Player player) {
         Item cuonSachCu = InventoryService.gI().findItemBag(player, 1283);
@@ -36,7 +32,8 @@ public class DoiSachTuyetKy {
                 .append(formatRequirement("Cuốn sách cũ", quantityCuonSachCu, REQUIRED_CUON_SACH_CU))
                 .append(formatRequirement("Kìm bấm giấy", quantityKimBamGiay, REQUIRED_KIM_BAM_GIAY));
 
-        boolean hasAllMaterials = quantityCuonSachCu >= REQUIRED_CUON_SACH_CU && quantityKimBamGiay >= REQUIRED_KIM_BAM_GIAY;
+        boolean hasAllMaterials = quantityCuonSachCu >= REQUIRED_CUON_SACH_CU
+                && quantityKimBamGiay >= REQUIRED_KIM_BAM_GIAY;
         text.append(hasAllMaterials ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
                 .append("Tỉ lệ thành công: ")
                 .append(CombineConfig.getRate("book.exchangeRate", SUCCESS_RATE_PERCENT)).append("%\n");
@@ -45,9 +42,11 @@ public class DoiSachTuyetKy {
         if (!hasAllMaterials) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(), "Từ chối");
         } else if (quantityConDau >= REQUIRED_CON_DAU) {
-            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.DOI_SACH_TUYET_KY, text.toString(), "Đồng ý", "Dùng con dấu", "Từ chối");
+            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.DOI_SACH_TUYET_KY, text.toString(), "Đồng ý",
+                    "Dùng con dấu", "Từ chối");
         } else {
-            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.DOI_SACH_TUYET_KY, text.toString(), "Đồng ý", "Từ chối");
+            CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.DOI_SACH_TUYET_KY, text.toString(), "Đồng ý",
+                    "Từ chối");
         }
     }
 
@@ -89,7 +88,8 @@ public class DoiSachTuyetKy {
         }
     }
 
-    private static void processSuccess(Player player, Item cuonSachCu, Item kimBamGiay, Item conDau, boolean useConDau) {
+    private static void processSuccess(Player player, Item cuonSachCu, Item kimBamGiay, Item conDau,
+            boolean useConDau) {
         InventoryService.gI().subQuantityItemsBag(player, cuonSachCu, REQUIRED_CUON_SACH_CU);
         InventoryService.gI().subQuantityItemsBag(player, kimBamGiay, REQUIRED_KIM_BAM_GIAY);
         if (useConDau && conDau != null) {
@@ -113,14 +113,14 @@ public class DoiSachTuyetKy {
         CombineService.gI().sendEffFailVip(player);
 
         String[] failMessages = {
-            "Chúc con may mắn lần sau, đừng buồn con nhé.",
-            "Xịt rồi! Lại tốn giấy, tiếc ghê!",
-            "Con có chắc là đã cầu nguyện trước khi đập không?",
-            "Hên xui mà, biết đâu lần sau ăn luôn!",
-            "Không sao, nhân phẩm ngủ quên chút thôi.",
-            "Bình tĩnh, rồi cũng lên!",
-            "Lại xịt, hay là đi xin vía trước đã?",
-            "Làm lại đi, ba tin con sẽ thành công!"
+                "Chúc con may mắn lần sau, đừng buồn con nhé.",
+                "Xịt rồi! Lại tốn giấy, tiếc ghê!",
+                "Con có chắc là đã cầu nguyện trước khi đập không?",
+                "Hên xui mà, biết đâu lần sau ăn luôn!",
+                "Không sao, nhân phẩm ngủ quên chút thôi.",
+                "Bình tĩnh, rồi cũng lên!",
+                "Lại xịt, hay là đi xin vía trước đã?",
+                "Làm lại đi, ba tin con sẽ thành công!"
         };
 
         Util.setTimeout(() -> {

@@ -8,12 +8,6 @@ import nro.models.map.service.ItemMapService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class DropItem {
 
     private Player player;

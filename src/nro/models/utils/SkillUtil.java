@@ -8,12 +8,6 @@ import nro.models.skill.Skill;
 import nro.models.player_system.Template.SkillTemplate;
 import nro.models.server.Manager;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SkillUtil {
 
     private final static NClass nClassTD;
@@ -91,19 +85,19 @@ public class SkillUtil {
         return (skillId == Skill.KAMEJOKO || skillId == Skill.MASENKO || skillId == Skill.ANTOMIC);
     }
 
-    public static int getTimeMonkey(int level) { //thời gian tồn tại khỉ v
+    public static int getTimeMonkey(int level) { // thời gian tồn tại khỉ v
         return (level + 5) * 10000;
     }
 
-    public static int getPercentHpMonkey(int level) { //tỉ lệ máu khỉ cộng thêm v
+    public static int getPercentHpMonkey(int level) { // tỉ lệ máu khỉ cộng thêm v
         return (level + 3) * 10;
     }
 
-    public static int getPercentDameMonkey(int level) { //tỉ lệ dam khỉ cộng thêm v
+    public static int getPercentDameMonkey(int level) { // tỉ lệ dam khỉ cộng thêm v
         return (level + 3);
     }
 
-    public static int getTimeStun(int level) { //thời gian choáng thái dương hạ san v
+    public static int getTimeStun(int level) { // thời gian choáng thái dương hạ san v
         return (level + 2) * 1000;
     }
 
@@ -111,57 +105,57 @@ public class SkillUtil {
         return 30000;
     }
 
-    public static int getTimeShield(int level) { //thời gian tồn tại khiên v
+    public static int getTimeShield(int level) { // thời gian tồn tại khiên v
         return (level + 2) * 5000;
     }
 
-    public static int getTimeTroi(int level) { //thời gian trói v
+    public static int getTimeTroi(int level) { // thời gian trói v
         return level * 5000;
     }
 
-    public static int getTimeDCTT(int level) { //thời gian choáng dịch chuyển tức thời v
+    public static int getTimeDCTT(int level) { // thời gian choáng dịch chuyển tức thời v
         return (level + 1) * 500;
     }
 
-    public static int getTimeThoiMien(int level) { //thời gian thôi miên
+    public static int getTimeThoiMien(int level) { // thời gian thôi miên
         return (level + 4) * 1000;
     }
 
-    public static int getRangeStun(int level) { //phạm vi thái dương hạ san
+    public static int getRangeStun(int level) { // phạm vi thái dương hạ san
         return 120 + level * 30;
     }
 
-    public static int getRangeBom(int level) { //phạm vi tự sát
+    public static int getRangeBom(int level) { // phạm vi tự sát
         return 400 + level * 30;
     }
 
-    public static int getRangeQCKK(int level) { //phạm vi quả cầu kênh khi
+    public static int getRangeQCKK(int level) { // phạm vi quả cầu kênh khi
         return 350 + level * 30;
     }
 
-    public static int getPercentHPHuytSao(int level) { //tỉ lệ máu huýt sáo cộng thêm v
+    public static int getPercentHPHuytSao(int level) { // tỉ lệ máu huýt sáo cộng thêm v
         return (level + 3) * 10;
     }
 
-    public static int getPercentTriThuong(int level) { //tỉ lệ máu hồi phục trị thương v
+    public static int getPercentTriThuong(int level) { // tỉ lệ máu hồi phục trị thương v
         return (level + 9) * 5;
     }
 
-    public static int getPercentCharge(int level) { //tỉ lệ hp ttnl
+    public static int getPercentCharge(int level) { // tỉ lệ hp ttnl
         return level + 3;
     }
 
     public static int getTempMobMe(int level) {
-        int[] temp = {8, 11, 32, 25, 43, 49, 50};
+        int[] temp = { 8, 11, 32, 25, 43, 49, 50 };
         return temp[level - 1];
     }
 
-    public static int getTimeSurviveMobMe(int level) { //thời gian trứng tồn tại
+    public static int getTimeSurviveMobMe(int level) { // thời gian trứng tồn tại
         return getTimeMonkey(level) * 2;
     }
 
     public static long getHPMobMe(long hpMaxPlayer, int level) {
-        long[] perHPs = {30, 40, 50, 60, 70, 80, 90};
+        long[] perHPs = { 30, 40, 50, 60, 70, 80, 90 };
         return hpMaxPlayer * perHPs[level - 1] / 100L;
     }
 

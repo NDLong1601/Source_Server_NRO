@@ -12,11 +12,6 @@ import java.util.List;
 import nro.models.item.Item;
 import nro.models.server.Manager;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class IntrinsicService {
 
     private static IntrinsicService I;

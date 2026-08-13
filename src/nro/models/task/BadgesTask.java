@@ -4,12 +4,6 @@ import nro.models.player.Player;
 import nro.models.server.Manager;
 import nro.models.task.ClanTaskTemplate;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BadgesTask {
 
     public ClanTaskTemplate template;
@@ -30,16 +24,14 @@ public class BadgesTask {
         return this.count >= this.countMax;
     }
 
-public int getPercentProcess() {
-   
-    if (this.count >= this.countMax) {
-        return 100;
+    public int getPercentProcess() {
+
+        if (this.count >= this.countMax) {
+            return 100;
+        }
+        int percent = (int) ((long) count * 100 / countMax);
+        return percent;
     }
-    int percent = (int) ((long) count * 100 / countMax);
-    return percent;
-}
-
-
 
     @Override
     public String toString() {

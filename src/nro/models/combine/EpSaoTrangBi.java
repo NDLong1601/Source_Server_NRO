@@ -9,10 +9,6 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
 public class EpSaoTrangBi {
 
     public static void showInfoCombine(Player player) {
@@ -57,15 +53,18 @@ public class EpSaoTrangBi {
                             npcSay += "|7|" + io.getOptionString() + "\n";
                         }
                     } else {
-                        npcSay += "|7|" + ItemService.gI().getItemOptionTemplate(CombineSystem.getOptionDaPhaLe(daPhaLe)).name
-                                .replaceAll("#", CombineSystem.getParamDaPhaLe(daPhaLe) + "") + "\n";
+                        npcSay += "|7|"
+                                + ItemService.gI().getItemOptionTemplate(CombineSystem.getOptionDaPhaLe(daPhaLe)).name
+                                        .replaceAll("#", CombineSystem.getParamDaPhaLe(daPhaLe) + "")
+                                + "\n";
                     }
                     npcSay += "|1|Cần " + Util.numberToMoney(player.combineNew.gemCombine) + " ngọc";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
                             "Nâng cấp\ncần " + player.combineNew.gemCombine + " ngọc");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
-                            "Cần 1 trang bị có lỗ sao pha lê và 1 loại đá pha lê để ép vào, và lỗ sao tối đa là 9", "Đóng");
+                            "Cần 1 trang bị có lỗ sao pha lê và 1 loại đá pha lê để ép vào, và lỗ sao tối đa là 9",
+                            "Đóng");
                 }
             } else {
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,

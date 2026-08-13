@@ -1,8 +1,9 @@
 package nro.models.matches.dai_hoi_vo_thuat;
+
 import nro.models.consts.ConstSuperRank;
 import java.util.List;
 import nro.models.consts.ConstTaskBadges;
-import nro.models.database.MrBlue;
+import nro.models.database.MrFinn;
 import nro.models.database.SuperRankDAO;
 import nro.models.managers.SuperRankManager;
 import nro.models.matches.dai_hoi_vo_thuat.SuperRank;
@@ -60,7 +61,7 @@ public class SuperRankService {
         } else if (pl.superRank.rank < 10 && player.superRank.rank - pl.superRank.rank > 2) {
             Service.gI().sendThongBao(player, ConstSuperRank.TEXT_KHONG_THE_THI_DAU_TREN_2_HANG);
             return;
-        } else if (player.superRank.ticket <= 0 && player.inventory.getGem() < 1 ) {
+        } else if (player.superRank.ticket <= 0 && player.inventory.getGem() < 1) {
             Service.gI().sendThongBao(player, "Bạn không đủ ngọc, còn thiếu 1 ngọc nữa");
             return;
         }
@@ -88,7 +89,8 @@ public class SuperRankService {
         player.idMark.setMenuType(type);
         Message msg = null;
         try {
-            List<SuperRankBuilder> list = type == 0 ? SuperRankDAO.getPlayerListInRank(player.superRank.rank, 100) : SuperRankDAO.getPlayerListInRankRange(player.superRank.rank, 11);
+            List<SuperRankBuilder> list = type == 0 ? SuperRankDAO.getPlayerListInRank(player.superRank.rank, 100)
+                    : SuperRankDAO.getPlayerListInRankRange(player.superRank.rank, 11);
             msg = new Message(-96);
             msg.writer().writeByte(0);
             msg.writer().writeUTF("Top 100 Cao Thủ");
@@ -122,9 +124,8 @@ public class SuperRankService {
         }
     }
 
-
     public Player loadPlayer(long id) {
-        Player pl = MrBlue.loadById(id);
+        Player pl = MrFinn.loadById(id);
         if (pl != null) {
             pl.setClothes.setup();
             if (pl.pet != null) {

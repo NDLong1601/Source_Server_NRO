@@ -9,11 +9,6 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class PhanRaSach {
 
     public static void showInfoCombine(Player player) {
@@ -34,7 +29,8 @@ public class PhanRaSach {
         StringBuilder text = new StringBuilder();
         text.append(ConstFont.BOLD_BLUE).append("Phân rã sách\n");
         text.append(ConstFont.BOLD_BLUE).append("Nhận lại 5 cuốn sách cũ\n");
-        text.append(player.inventory.gold >= 10_000_000 ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED).append("Phí rã 10 triệu vàng");
+        text.append(player.inventory.gold >= 10_000_000 ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
+                .append("Phí rã 10 triệu vàng");
         if (player.inventory.gold < 10_000_000) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(),
                     "Còn thiếu\n" + Util.numberToMoney(10_000_000 - player.inventory.gold) + " vàng");

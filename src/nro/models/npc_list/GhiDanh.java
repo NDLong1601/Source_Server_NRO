@@ -15,15 +15,9 @@ import nro.models.map.service.ChangeMapService;
 import nro.models.server.Manager;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GhiDanh extends Npc {
 
-    String[] menuselect = new String[]{};
+    String[] menuselect = new String[] {};
 
     public GhiDanh(int mapId, int status, int cx, int cy, int tempId, int avartar) {
         super(mapId, status, cx, cy, tempId, avartar);
@@ -34,7 +28,8 @@ public class GhiDanh extends Npc {
         if (canOpenNpc(pl)) {
             switch (this.mapId) {
                 case 42, 43, 44 ->
-                    this.createOtherMenu(pl, ConstNpc.MAY_DAM, "Tính điểm máy đấm nào các thí sinh\nMáy đấm đằng kia không phải tôi.",
+                    this.createOtherMenu(pl, ConstNpc.MAY_DAM,
+                            "Tính điểm máy đấm nào các thí sinh\nMáy đấm đằng kia không phải tôi.",
                             "Top 100\n Trái đất",
                             "Top 100\nNamek",
                             "Top 100\nXayda",
@@ -52,11 +47,18 @@ public class GhiDanh extends Npc {
                     long rubychallenge = pl.rubyChallenge;
                     // Hướng dẫn thêm - Hủy\nđăng kí - về dhvt
                     if (pl.levelWoodChest == 0) {
-                        menuselect = new String[]{"Hướng\ndẫn\nthêm", "Thi đấu\n" + Util.numberToMoney(rubychallenge) + " ngọc", "Thi đấu\n" + Util.numberToMoney(goldchallenge) + " vàng", "Về\nĐại Hội\nVõ Thuật"};
+                        menuselect = new String[] { "Hướng\ndẫn\nthêm",
+                                "Thi đấu\n" + Util.numberToMoney(rubychallenge) + " ngọc",
+                                "Thi đấu\n" + Util.numberToMoney(goldchallenge) + " vàng", "Về\nĐại Hội\nVõ Thuật" };
                     } else {
-                        menuselect = new String[]{"Hướng\ndẫn\nthêm", "Thi đấu\n" + Util.numberToMoney(rubychallenge) + " ngọc", "Thi đấu\n" + Util.numberToMoney(goldchallenge) + " vàng", "Nhận\nthưởng\nRương Cấp\n" + pl.levelWoodChest, "Về\nĐại Hội\nVõ Thuật"};
+                        menuselect = new String[] { "Hướng\ndẫn\nthêm",
+                                "Thi đấu\n" + Util.numberToMoney(rubychallenge) + " ngọc",
+                                "Thi đấu\n" + Util.numberToMoney(goldchallenge) + " vàng",
+                                "Nhận\nthưởng\nRương Cấp\n" + pl.levelWoodChest, "Về\nĐại Hội\nVõ Thuật" };
                     }
-                    this.createOtherMenu(pl, ConstNpc.BASE_MENU, "Đại hội võ thuật lần thứ 23\nDiễn ra bất kể ngày đêm, ngày nghỉ, ngày lễ\nPhần thưởng vô cùng quý giá\nNhanh chóng tham gia nào", menuselect, "Từ chối");
+                    this.createOtherMenu(pl, ConstNpc.BASE_MENU,
+                            "Đại hội võ thuật lần thứ 23\nDiễn ra bất kể ngày đêm, ngày nghỉ, ngày lễ\nPhần thưởng vô cùng quý giá\nNhanh chóng tham gia nào",
+                            menuselect, "Từ chối");
                 }
                 default ->
                     super.openBaseMenu(pl);
@@ -89,7 +91,11 @@ public class GhiDanh extends Npc {
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
                                                 } else {
-                                                    Service.gI().sendThongBao(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(rubychallenge - player.inventory.ruby) + " ngọc nữa");
+                                                    Service.gI().sendThongBao(player,
+                                                            "Bạn không đủ ngọc, còn thiếu "
+                                                                    + Util.numberToMoney(
+                                                                            rubychallenge - player.inventory.ruby)
+                                                                    + " ngọc nữa");
                                                 }
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
@@ -99,14 +105,19 @@ public class GhiDanh extends Npc {
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
                                                 } else {
-                                                    Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(goldchallenge - player.inventory.gold) + " vàng nữa");
+                                                    Service.gI().sendThongBao(player,
+                                                            "Bạn không đủ vàng, còn thiếu "
+                                                                    + Util.numberToMoney(
+                                                                            goldchallenge - player.inventory.gold)
+                                                                    + " vàng nữa");
                                                 }
                                             }
                                         } else {
                                             Service.gI().sendThongBao(player, "Hãy mở rương báu vật trước");
                                         }
                                     } else {
-                                        Service.gI().sendThongBao(player, "Bạn đã vô địch giải. Vui lòng chờ đến ngày mai");
+                                        Service.gI().sendThongBao(player,
+                                                "Bạn đã vô địch giải. Vui lòng chờ đến ngày mai");
                                     }
                                 }
                                 case 3 ->
@@ -127,7 +138,11 @@ public class GhiDanh extends Npc {
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
                                                 } else {
-                                                    Service.gI().sendThongBao(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(rubychallenge - player.inventory.gem) + " ngọc nữa");
+                                                    Service.gI().sendThongBao(player,
+                                                            "Bạn không đủ ngọc, còn thiếu "
+                                                                    + Util.numberToMoney(
+                                                                            rubychallenge - player.inventory.gem)
+                                                                    + " ngọc nữa");
                                                 }
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
@@ -137,20 +152,27 @@ public class GhiDanh extends Npc {
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
                                                 } else {
-                                                    Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(goldchallenge - player.inventory.gold) + " vàng nữa");
+                                                    Service.gI().sendThongBao(player,
+                                                            "Bạn không đủ vàng, còn thiếu "
+                                                                    + Util.numberToMoney(
+                                                                            goldchallenge - player.inventory.gold)
+                                                                    + " vàng nữa");
                                                 }
                                             }
                                         } else {
                                             Service.gI().sendThongBao(player, "Hãy mở rương báu vật trước");
                                         }
                                     } else {
-                                        Service.gI().sendThongBao(player, "Bạn đã vô địch giải. Vui lòng chờ đến ngày mai");
+                                        Service.gI().sendThongBao(player,
+                                                "Bạn đã vô địch giải. Vui lòng chờ đến ngày mai");
                                     }
                                 }
                                 case 3 ->
-                                    this.createOtherMenu(player, 1, "Phần thưởng của bạn đang ở cấp " + player.levelWoodChest + " / 12\n"
-                                            + "Mỗi ngày chỉ được nhận được nhận thưởng 1 lần\n"
-                                            + "bạn có chắc sẽ nhận phần thưởng ngay bây giờ?", "OK", "Từ chối");
+                                    this.createOtherMenu(player, 1,
+                                            "Phần thưởng của bạn đang ở cấp " + player.levelWoodChest + " / 12\n"
+                                                    + "Mỗi ngày chỉ được nhận được nhận thưởng 1 lần\n"
+                                                    + "bạn có chắc sẽ nhận phần thưởng ngay bây giờ?",
+                                            "OK", "Từ chối");
                                 case 4 ->
                                     ChangeMapService.gI().changeMapNonSpaceship(player, 52, player.location.x, 336);
                             }
@@ -168,9 +190,12 @@ public class GhiDanh extends Npc {
                                     InventoryService.gI().sendItemBags(player);
                                     player.levelWoodChest = 0;
                                     player.lastTimeRewardWoodChest = System.currentTimeMillis();
-                                    NpcService.gI().createMenuConMeo(player, -1, -1, "Bạn nhận được\n|1|Rương Gỗ\n|2|Giấu bên trong nhiều vật phẩm quý giá", "OK");
+                                    NpcService.gI().createMenuConMeo(player, -1, -1,
+                                            "Bạn nhận được\n|1|Rương Gỗ\n|2|Giấu bên trong nhiều vật phẩm quý giá",
+                                            "OK");
                                 } else {
-                                    this.npcChat(player, "Hành trang đã đầy, cần một ô trống trong hành trang để nhận vật phẩm");
+                                    this.npcChat(player,
+                                            "Hành trang đã đầy, cần một ô trống trong hành trang để nhận vật phẩm");
                                 }
                             } else {
                                 Service.gI().sendThongBao(player, "Hãy mở rương báu vật trước");
@@ -190,11 +215,10 @@ public class GhiDanh extends Npc {
                                 Service.gI().showListTopXayda(player, Manager.Topmaydam);
                             case 3 ->
                                 Service.gI().sendThongBao(player, "Điểm hiện tại của bạn là: " + player.point_maydam);
-                            }
                         }
                     }
                 }
             }
         }
     }
-
+}

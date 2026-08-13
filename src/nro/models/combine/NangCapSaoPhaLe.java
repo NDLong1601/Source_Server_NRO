@@ -9,11 +9,6 @@ import nro.models.services.Service;
 import nro.models.player_system.Template.ItemTemplate;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class NangCapSaoPhaLe {
 
     private static final int GOLD_NANG_CAP = 200_000_000;
@@ -36,7 +31,8 @@ public class NangCapSaoPhaLe {
             if (saoPhaLe != null && hematite != null) {
                 player.combineNew.goldCombine = GOLD_NANG_CAP;
                 player.combineNew.gemCombine = GEM_NANG_CAP;
-                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.upgradeRate", RATIO_NANG_CAP);
+                player.combineNew.ratioCombine = (float) CombineConfig.getRate("crystal.level2.upgradeRate",
+                        RATIO_NANG_CAP);
 
                 String npcSay = "|2|Nâng cấp Sao Pha Lê từ cấp 1 lên cấp 2\n";
                 npcSay += "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n";
@@ -49,12 +45,14 @@ public class NangCapSaoPhaLe {
                     npcSay += "|7|Còn thiếu " + (player.combineNew.gemCombine - player.inventory.gem) + " ngọc xanh\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else if (player.inventory.gold < player.combineNew.goldCombine) {
-                    npcSay += "|7|Còn thiếu " + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
+                    npcSay += "|7|Còn thiếu "
+                            + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
                             "Nâng cấp\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n"
-                            + Util.numberToMoney(player.combineNew.gemCombine) + " ngọc\n", "Từ chối");
+                                    + Util.numberToMoney(player.combineNew.gemCombine) + " ngọc\n",
+                            "Từ chối");
                 }
             } else {
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
@@ -94,7 +92,7 @@ public class NangCapSaoPhaLe {
             if (saoPhaLe != null && hematite != null) {
                 player.inventory.gold -= gold;
                 player.inventory.gem -= gem;
-                
+
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     int getSaoPhaLeCap2Id = getSaoPhaLeCap2Id(saoPhaLe.template.id);
                     ItemTemplate newTemplate = ItemService.gI().getTemplate(getSaoPhaLeCap2Id);
@@ -102,20 +100,20 @@ public class NangCapSaoPhaLe {
                     newItem.template = newTemplate;
                     newItem.quantity = 1;
                     newItem.itemOptions.clear();
-                    
+
                     for (Item.ItemOption option : saoPhaLe.itemOptions) {
                         newItem.itemOptions.add(new Item.ItemOption(option.optionTemplate.id, option.param));
                     }
 
                     InventoryService.gI().addItemBag(player, newItem);
-                    
+
                     InventoryService.gI().subQuantityItemsBag(player, saoPhaLe, 1);
                     CombineService.gI().sendEffectSuccessCombine(player);
                 } else {
                     CombineService.gI().sendEffectFailCombine(player);
                 }
 
-                InventoryService.gI().subQuantityItemsBag(player, hematite, 1); 
+                InventoryService.gI().subQuantityItemsBag(player, hematite, 1);
                 InventoryService.gI().sendItemBags(player);
                 Service.gI().sendMoney(player);
                 CombineService.gI().reOpenItemCombine(player);

@@ -8,12 +8,6 @@ import nro.models.server.Manager;
 import nro.models.network.Message;
 import nro.models.utils.Logger;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class NpcService {
 
     private static NpcService i;
@@ -33,12 +27,14 @@ public class NpcService {
         createMenu(player, indexMenu, ConstNpc.CON_MEO, avatar, npcSay, menuSelect);
     }
 
-    public void createMenuConMeo(Player player, int indexMenu, int avatar, String npcSay, String[] menuSelect, Object object) {
+    public void createMenuConMeo(Player player, int indexMenu, int avatar, String npcSay, String[] menuSelect,
+            Object object) {
         NpcFactory.PLAYERID_OBJECT.put(player.id, object);
         createMenuConMeo(player, indexMenu, avatar, npcSay, menuSelect);
     }
 
-    private void createMenu(Player player, int indexMenu, byte npcTempId, int avatar, String npcSay, String... menuSelect) {
+    private void createMenu(Player player, int indexMenu, byte npcTempId, int avatar, String npcSay,
+            String... menuSelect) {
         if (player == null || !player.isPl() || player.idMark == null) {
             return;
         }
@@ -100,7 +96,7 @@ public class NpcService {
         }
         return 1139;
     }
-    
+
     public void createBigMessage(Player player, int avatar, String npcSay, byte type, String select, String confirn) {
         Message msg;
         try {

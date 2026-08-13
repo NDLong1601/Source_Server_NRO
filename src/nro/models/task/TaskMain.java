@@ -3,12 +3,6 @@ package nro.models.task;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class TaskMain {
 
     public int id;

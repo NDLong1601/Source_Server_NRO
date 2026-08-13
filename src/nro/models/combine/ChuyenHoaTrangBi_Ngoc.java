@@ -8,15 +8,12 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- */
 public class ChuyenHoaTrangBi_Ngoc {
 
     public static void chuyenHoaTrangBiNgoc(Player player) {
         if (player.combineNew.itemsCombine.size() != 2) {
-            Service.gI().sendThongBaoOK(player, "Cần 1 trang bị có cấp từ [+4] và 1 trang bị không có cấp nhưng cao hơn 1 bậc");
+            Service.gI().sendThongBaoOK(player,
+                    "Cần 1 trang bị có cấp từ [+4] và 1 trang bị không có cấp nhưng cao hơn 1 bậc");
             return;
         }
 
@@ -46,7 +43,8 @@ public class ChuyenHoaTrangBi_Ngoc {
         }
 
         if (!isTrangBiChuyenHoa(trangBiCanChuyenHoa)) {
-            Service.gI().sendThongBaoOK(player, "Trang bị cần chuyển hóa phải là Thần Xayda, Thần Trái Đất hoặc Thần Namek");
+            Service.gI().sendThongBaoOK(player,
+                    "Trang bị cần chuyển hóa phải là Thần Xayda, Thần Trái Đất hoặc Thần Namek");
             return;
         }
 
@@ -165,17 +163,19 @@ public class ChuyenHoaTrangBi_Ngoc {
     private static boolean isDoLuongLong(Item item) {
         return item != null && item.isNotNullItem()
                 && (item.template.id == 241 || item.template.id == 253 || item.template.id == 265
-                || item.template.id == 277 || item.template.id == 281);
+                        || item.template.id == 277 || item.template.id == 281);
     }
 
     private static boolean isDoJean(Item item) {
         return item != null && item.isNotNullItem()
-                && (item.template.id == 237 || item.template.id == 249 || item.template.id == 261 || item.template.id == 273);
+                && (item.template.id == 237 || item.template.id == 249 || item.template.id == 261
+                        || item.template.id == 273);
     }
 
     private static boolean isDoZelot(Item item) {
         return item != null && item.isNotNullItem()
-                && (item.template.id == 233 || item.template.id == 245 || item.template.id == 257 || item.template.id == 269);
+                && (item.template.id == 233 || item.template.id == 245 || item.template.id == 257
+                        || item.template.id == 269);
     }
 
     private static boolean isDoThanXD(Item item) {

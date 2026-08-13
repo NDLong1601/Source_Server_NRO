@@ -7,11 +7,6 @@ import nro.models.services.Service;
 import nro.models.services.InventoryService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class HoiPhucSach {
 
     private static int getGem(int param) {
@@ -21,7 +16,7 @@ public class HoiPhucSach {
         }
         return gem;
     }
-    
+
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() != 1) {
             Service.gI().sendDialogMessage(player, "Cần Sách Tuyệt Kỹ hỏng để phục hồi.");

@@ -36,4 +36,10 @@
 [0m[0;33m[17:59] - Player Login: admintest: 84 ms
 [0m[0;32m[0;35madmintest: Data update successfully....[0m
 [0;32m[0;35m18h56m: Player admintest save successfully! 67ms
+[0m[0;33m[0:16] - Player Login: admintest: 139 ms
+[0m[0;32m[0;35madmintest: Data update successfully....[0m
+[0;32m[0;35m0h16m: Player admintest save successfully! 25ms
+[0m[0;33m[0:16] - Player Login: admin: 50 ms
+[0m[0;32m[0;35madmin: Data update successfully....[0m
+[0;32m[0;35m0h17m: Player admin save successfully! 16ms
 [0m

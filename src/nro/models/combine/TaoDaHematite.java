@@ -9,15 +9,10 @@ import nro.models.services.Service;
 import nro.models.player_system.Template;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class TaoDaHematite {
 
-    private static final int GOLD_TAO_DA = 50_000_000;  // Vàng cần thiết để tạo đá Hematite
-    private static final int RATIO_TAO_DA = 100;  // Tỉ lệ thành công tạo đá Hematite (80%)
+    private static final int GOLD_TAO_DA = 50_000_000; // Vàng cần thiết để tạo đá Hematite
+    private static final int RATIO_TAO_DA = 100; // Tỉ lệ thành công tạo đá Hematite (80%)
 
     public static void showInfoCombine(Player player) {
         if (player.combineNew.itemsCombine.size() == 1) {
@@ -35,11 +30,13 @@ public class TaoDaHematite {
 
                 // Kiểm tra tài nguyên và đưa ra menu
                 if (player.inventory.gold < player.combineNew.goldCombine) {
-                    npcSay += "|7|Còn thiếu " + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
+                    npcSay += "|7|Còn thiếu "
+                            + Util.powerToString(player.combineNew.goldCombine - player.inventory.gold) + " vàng\n";
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
                 } else {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
-                            "Tạo đá Hematite\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n", "Từ chối");
+                            "Tạo đá Hematite\n" + Util.numberToMoney(player.combineNew.goldCombine) + " vàng\n",
+                            "Từ chối");
                 }
             } else {
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,

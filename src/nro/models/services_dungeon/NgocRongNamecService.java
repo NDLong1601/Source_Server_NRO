@@ -19,12 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class NgocRongNamecService implements Runnable {
 
     private static NgocRongNamecService instance;
@@ -37,11 +31,11 @@ public class NgocRongNamecService implements Runnable {
         return instance;
     }
 
-    public int mapNrNamec[] = {-1, -1, -1, -1, -1, -1, -1};
-    public String nameNrNamec[] = {"", "", "", "", "", "", ""};
-    public byte zoneNrNamec[] = {-1, -1, -1, -1, -1, -1, -1};
-    public String pNrNamec[] = {"", "", "", "", "", "", ""};
-    public int idpNrNamec[] = {-1, -1, -1, -1, -1, -1, -1};
+    public int mapNrNamec[] = { -1, -1, -1, -1, -1, -1, -1 };
+    public String nameNrNamec[] = { "", "", "", "", "", "", "" };
+    public byte zoneNrNamec[] = { -1, -1, -1, -1, -1, -1, -1 };
+    public String pNrNamec[] = { "", "", "", "", "", "", "" };
+    public int idpNrNamec[] = { -1, -1, -1, -1, -1, -1, -1 };
     public long timeNrNamec = 0;
     public boolean firstNrNamec = true;
     public long tOpenNrNamec = 0;
@@ -55,7 +49,7 @@ public class NgocRongNamecService implements Runnable {
                 || (mapId >= 31 && mapId <= 34) || mapId == 43;
     }
 
-    public void initNgocRongNamec(byte type) { //type 0: INIT NGOC RONG, type 1: INIT HOA THACH NGOC RONG
+    public void initNgocRongNamec(byte type) { // type 0: INIT NGOC RONG, type 1: INIT HOA THACH NGOC RONG
         ArrayList<Integer> listMap = new ArrayList<>();
         listMap.add(7);
         listMap.add(8);
@@ -160,11 +154,14 @@ public class NgocRongNamecService implements Runnable {
     }
 
     public boolean isSameMapNrNamec() {
-        return (mapNrNamec[0] == 7) && (mapNrNamec[1] == 7) && (mapNrNamec[2] == 7) && (mapNrNamec[3] == 7) && (mapNrNamec[4] == 7) && (mapNrNamec[5] == 7) && (mapNrNamec[6] == 7);
+        return (mapNrNamec[0] == 7) && (mapNrNamec[1] == 7) && (mapNrNamec[2] == 7) && (mapNrNamec[3] == 7)
+                && (mapNrNamec[4] == 7) && (mapNrNamec[5] == 7) && (mapNrNamec[6] == 7);
     }
 
     public boolean isSameZoneNrNamec() {
-        return (zoneNrNamec[0] == zoneNrNamec[1]) && (zoneNrNamec[2] == zoneNrNamec[0]) && (zoneNrNamec[3] == zoneNrNamec[0]) && (zoneNrNamec[4] == zoneNrNamec[0]) && (zoneNrNamec[5] == zoneNrNamec[0]) && (zoneNrNamec[6] == zoneNrNamec[0]);
+        return (zoneNrNamec[0] == zoneNrNamec[1]) && (zoneNrNamec[2] == zoneNrNamec[0])
+                && (zoneNrNamec[3] == zoneNrNamec[0]) && (zoneNrNamec[4] == zoneNrNamec[0])
+                && (zoneNrNamec[5] == zoneNrNamec[0]) && (zoneNrNamec[6] == zoneNrNamec[0]);
     }
 
     public boolean canCallDragonNamec(Player p) {
@@ -212,7 +209,7 @@ public class NgocRongNamecService implements Runnable {
         try {
             int idMAP = mapNrNamec[id];
             int idZone = zoneNrNamec[id];
-            Integer[] sttMap = {7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43};
+            Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
             Zone z = Manager.MAPS.get(idMAP).zones.get(idZone);
             if (z != null && !z.items.isEmpty()) {
                 ItemMap it = z.getItemMapByTempId(temp);
@@ -238,7 +235,8 @@ public class NgocRongNamecService implements Runnable {
                                 int map = findIndex(index, indexMap).get(i);
                                 w += Manager.MAPS.get(map).mapWidth;
                             }
-                            return (id + 1) + " Sao:" + z.map.mapName + " (" + Math.abs((pl.location.x - it.x - w) / 10) + " m)";
+                            return (id + 1) + " Sao:" + z.map.mapName + " (" + Math.abs((pl.location.x - it.x - w) / 10)
+                                    + " m)";
                         } else {
                             return (id + 1) + " Sao:Namếc ( ? m)";
                         }
@@ -254,16 +252,18 @@ public class NgocRongNamecService implements Runnable {
     public String getDisPlayer(Player pl, int id, short temp) {
         try {
             String nPlayer = pNrNamec[id];
-            Integer[] sttMap = {7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43};
+            Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
             Player player = Client.gI().getPlayer(idpNrNamec[id]);
             if (player != null && player.isPl()) {
                 int idMAP = player.zone.map.mapId;
                 if (pl.zone.map.mapId == player.zone.map.mapId) {
                     if (pl.zone.zoneId == player.zone.zoneId) {
                         if ((pl.location.x - player.location.x) / 10 > 0) {
-                            return (id + 1) + " Sao:" + Math.abs((pl.location.x - player.location.x) / 10) + " m(<-)(" + nPlayer + ")";
+                            return (id + 1) + " Sao:" + Math.abs((pl.location.x - player.location.x) / 10) + " m(<-)("
+                                    + nPlayer + ")";
                         } else if ((pl.location.x - player.location.x) / 10 < 0) {
-                            return (id + 1) + " Sao:" + Math.abs((pl.location.x - player.location.x) / 10) + " m(->)(" + nPlayer + ")";
+                            return (id + 1) + " Sao:" + Math.abs((pl.location.x - player.location.x) / 10) + " m(->)("
+                                    + nPlayer + ")";
                         } else {
                             return (id + 1) + " Sao(" + nPlayer + ")";
                         }
@@ -279,7 +279,8 @@ public class NgocRongNamecService implements Runnable {
                             int map = findIndex(index, indexMap).get(i);
                             w += Manager.MAPS.get(map).mapWidth;
                         }
-                        return (id + 1) + " Sao:" + player.zone.map.mapName + " (" + Math.abs((pl.location.x - player.location.x - w) / 10) + " m)(" + nPlayer + ")";
+                        return (id + 1) + " Sao:" + player.zone.map.mapName + " ("
+                                + Math.abs((pl.location.x - player.location.x - w) / 10) + " m)(" + nPlayer + ")";
                     } else {
                         return (id + 1) + " Sao:Namếc ( ? m)";
                     }
@@ -298,7 +299,7 @@ public class NgocRongNamecService implements Runnable {
         try {
             int idMAP = mapNrNamec[id];
             int idZone = zoneNrNamec[id];
-            Integer[] sttMap = {7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43};
+            Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
             Zone z = Manager.MAPS.get(idMAP).zones.get(idZone);
             if (z != null && !z.items.isEmpty()) {
                 ItemMap it = z.getItemMapByTempId(temp);
@@ -324,7 +325,8 @@ public class NgocRongNamecService implements Runnable {
                                 int map = findIndex(index, indexMap).get(i);
                                 w += Manager.MAPS.get(map).mapWidth;
                             }
-                            return "Hóa thạch Ngọc Rồng:" + z.map.mapName + " (" + Math.abs((pl.location.x - it.x - w) / 10) + " m)";
+                            return "Hóa thạch Ngọc Rồng:" + z.map.mapName + " ("
+                                    + Math.abs((pl.location.x - it.x - w) / 10) + " m)";
                         } else {
                             return "Hóa thạch Ngọc Rồng:Namếc ( ? m)";
                         }
@@ -338,7 +340,7 @@ public class NgocRongNamecService implements Runnable {
     }
 
     public byte findIndex(int id) {
-        Integer[] sttMap = {7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43};
+        Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
         for (byte i = 0; i < sttMap.length; i++) {
             if (sttMap[i] == id) {
                 return i;
@@ -349,7 +351,7 @@ public class NgocRongNamecService implements Runnable {
 
     public List<Integer> findIndex(int start, int stop) {
         List<Integer> a = new ArrayList<>();
-        Integer[] sttMap = {7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43};
+        Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
         if (start < stop) {
             for (int i = start; i < stop; i++) {
                 a.add(sttMap[i]);
@@ -423,7 +425,7 @@ public class NgocRongNamecService implements Runnable {
 
                 Thread.sleep(1000);
             } catch (Exception e) {
-            e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }
@@ -445,7 +447,7 @@ public class NgocRongNamecService implements Runnable {
         }
     }
 
-    //Rồng Thần đã xuất hiện, không thể nhặt ngọc được nữa
+    // Rồng Thần đã xuất hiện, không thể nhặt ngọc được nữa
     public void menuCheckTeleNamekBall(Player pl) {
         String nrnm = "";
         for (int i = 0; i < 7; i++) {
@@ -455,6 +457,7 @@ public class NgocRongNamecService implements Runnable {
             NpcService.gI().createMenuConMeo(pl, ConstNpc.CONFIRM_TELE_NAMEC, 2294, nrnm.trim(), "Kết thúc");
             return;
         }
-        NpcService.gI().createMenuConMeo(pl, ConstNpc.CONFIRM_TELE_NAMEC, 2294, nrnm.trim(), "Đến ngay\nViên " + (pl.idGo + 1) + " Sao\n50 ngọc", "Kết thúc");
+        NpcService.gI().createMenuConMeo(pl, ConstNpc.CONFIRM_TELE_NAMEC, 2294, nrnm.trim(),
+                "Đến ngay\nViên " + (pl.idGo + 1) + " Sao\n50 ngọc", "Kết thúc");
     }
 }

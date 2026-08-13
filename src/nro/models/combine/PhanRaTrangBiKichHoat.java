@@ -9,35 +9,33 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- */
-
 public class PhanRaTrangBiKichHoat {
 
     public class PhanRaTrangBi {
 
-        private static final int GOLD_PHAN_RA = 2_000_000_000;  // Lượng vàng cần thiết
-        private static final int RATIO_PHAN_RA = 100;  // Tỉ lệ thành công
+        private static final int GOLD_PHAN_RA = 2_000_000_000; // Lượng vàng cần thiết
+        private static final int RATIO_PHAN_RA = 100; // Tỉ lệ thành công
         private static final int[][] optionIds = {
-            {128, 129, 127, 233, 245, 130, 131, 132, 233, 237, 133, 135, 134, 233, 241}};
+                { 128, 129, 127, 233, 245, 130, 131, 132, 233, 237, 133, 135, 134, 233, 241 } };
 
         public static void showInfoCombine(Player player) {
             if (player.combineNew.itemsCombine.size() != 1) {
-                CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Cần đặt đúng vật phẩm!", "Đóng");
+                CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Cần đặt đúng vật phẩm!",
+                        "Đóng");
                 return;
             }
 
             Item item1 = player.combineNew.itemsCombine.get(0);
 
             if (!isValidItem(item1)) {
-                CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Vật phẩm không đủ điều kiện để phân rã!", "Đóng");
+                CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
+                        "Vật phẩm không đủ điều kiện để phân rã!", "Đóng");
                 return;
             }
 
             player.combineNew.goldCombine = GOLD_PHAN_RA;
-            player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.recycleActiveEquipmentRate", RATIO_PHAN_RA);
+            player.combineNew.ratioCombine = (float) CombineConfig.getRate("craft.recycleActiveEquipmentRate",
+                    RATIO_PHAN_RA);
 
             String npcSay = "|2|Tỉ lệ thành công: " + player.combineNew.ratioCombine + "%\n"
                     + "|2|Cần: " + Util.numberToMoney(GOLD_PHAN_RA) + " vàng\n";

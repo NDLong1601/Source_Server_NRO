@@ -4,12 +4,6 @@ import nro.models.services.Service;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class RewardBlackBall {
 
     private static final int TIME_REWARD = 79200000;

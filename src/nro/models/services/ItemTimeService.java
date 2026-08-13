@@ -13,12 +13,6 @@ import nro.models.map.phoban.SnakeWay;
 import nro.models.map.phoban.DestronGas;
 import nro.models.map.phoban.RedRibbonHQ;
 import nro.models.utils.Logger;
-
-/**
- *
- * @author By Mr Blue
- *
- */
 public class ItemTimeService {
 
     private static ItemTimeService i;

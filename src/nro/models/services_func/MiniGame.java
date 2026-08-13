@@ -3,10 +3,6 @@ package nro.models.services_func;
 import nro.models.minigame.ConSoMayManGem;
 import nro.models.minigame.ConSoMayManGold;
 
-/**
- *
- * @author By Mr Blue
- */
 public class MiniGame {
 
     private static MiniGame instance;

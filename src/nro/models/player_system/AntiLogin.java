@@ -1,10 +1,5 @@
 package nro.models.player_system;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
 
 import nro.models.utils.Util;public class AntiLogin {
 

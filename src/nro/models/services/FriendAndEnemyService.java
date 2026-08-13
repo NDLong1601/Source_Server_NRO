@@ -16,12 +16,6 @@ import nro.models.utils.Logger;
 import nro.models.utils.Util;
 import java.io.IOException;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class FriendAndEnemyService {
 
     private static final byte OPEN_LIST = 0;
@@ -68,10 +62,10 @@ public class FriendAndEnemyService {
                     openListEnemy(player);
                     break;
                 case REVENGE:
-//                    if (true) {
-//                        Service.gI().sendThongBao(player, "Không thể thực hiện");
-//                        break;
-//                    }
+                    // if (true) {
+                    // Service.gI().sendThongBao(player, "Không thể thực hiện");
+                    // break;
+                    // }
                     int id = msg.reader().readInt();
                     boolean flag = false;
                     for (Enemy e : player.enemies) {
@@ -201,7 +195,8 @@ public class FriendAndEnemyService {
                 } else {
                     npcSay = "Bạn có muốn kết bạn với " + pl.name + " ?";
                 }
-                NpcService.gI().createMenuConMeo(player, ConstNpc.MAKE_FRIEND, -1, npcSay, new String[]{"Đồng ý", "Từ chối"}, playerId);
+                NpcService.gI().createMenuConMeo(player, ConstNpc.MAKE_FRIEND, -1, npcSay,
+                        new String[] { "Đồng ý", "Từ chối" }, playerId);
             }
         }
     }
@@ -277,8 +272,14 @@ public class FriendAndEnemyService {
             if (pl != null) {
                 if (player.isAdmin() || player.nPoint.teleport) {
                     if (!pl.itemTime.isUseAnDanh || player.isAdmin()) {
-                        if ((player.isAdmin() || !pl.zone.isFullPlayer()) && !MapService.gI().isMapOffline(pl.zone.map.mapId) && !MapService.gI().isMapBlackBallWar(pl.zone.map.mapId) && !MapService.gI().isMapPhoBan(pl.zone.map.mapId) && !MapService.gI().isMapMaBu(pl.zone.map.mapId)) {
-                            ChangeMapService.gI().changeMapYardrat(player, ChangeMapService.gI().checkMapCanJoin(player, pl.zone), pl.location.x + Util.nextInt(-5, 5), pl.location.y);
+                        if ((player.isAdmin() || !pl.zone.isFullPlayer())
+                                && !MapService.gI().isMapOffline(pl.zone.map.mapId)
+                                && !MapService.gI().isMapBlackBallWar(pl.zone.map.mapId)
+                                && !MapService.gI().isMapPhoBan(pl.zone.map.mapId)
+                                && !MapService.gI().isMapMaBu(pl.zone.map.mapId)) {
+                            ChangeMapService.gI().changeMapYardrat(player,
+                                    ChangeMapService.gI().checkMapCanJoin(player, pl.zone),
+                                    pl.location.x + Util.nextInt(-5, 5), pl.location.y);
                         } else {
                             Service.gI().sendThongBao(player, "Không thể thực hiện");
                         }

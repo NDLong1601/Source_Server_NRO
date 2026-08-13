@@ -7,11 +7,6 @@ import nro.models.utils.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class RewardService {
 
     private static final int[][][] ACTIVATION_SET = {

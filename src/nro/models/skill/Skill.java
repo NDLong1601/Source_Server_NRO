@@ -2,12 +2,6 @@ package nro.models.skill;
 
 import nro.models.player_system.Template.SkillTemplate;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Skill {
 
     public static final int RANGE_ATTACK_CHIEU_DAM = 100;
@@ -70,7 +64,7 @@ public class Skill {
     public String moreInfo;
 
     public short price;
-    
+
     public long lastTimeUseThisSkillbot;
 
     public Skill() {

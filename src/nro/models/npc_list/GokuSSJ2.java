@@ -8,12 +8,6 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GokuSSJ2 extends Npc {
 
     public GokuSSJ2(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -23,7 +17,8 @@ public class GokuSSJ2 extends Npc {
     @Override
     public void openBaseMenu(Player player) {
         if (canOpenNpc(player)) {
-            this.createOtherMenu(player, ConstNpc.BASE_MENU, "Hãy cố gắng luyện tập\nThu thập 9.999 bí kiếp để đổi trang phục Yardrat nhé!",
+            this.createOtherMenu(player, ConstNpc.BASE_MENU,
+                    "Hãy cố gắng luyện tập\nThu thập 9.999 bí kiếp để đổi trang phục Yardrat nhé!",
                     "Nhận\nthưởng", "OK");
         }
     }

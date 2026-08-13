@@ -6,87 +6,81 @@ import nro.models.services.EffectSkillService;
 import nro.models.services.ItemTimeService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class EffectSkill {
 
     @Setter
     private Player player;
 
-    //thái dương hạ san
+    // thái dương hạ san
     public boolean isStun;
     public long lastTimeStartStun;
     public int timeStun;
 
-    //khiên năng lượng
+    // khiên năng lượng
     public boolean isShielding;
     public long lastTimeShieldUp;
     public int timeShield;
 
-    //biến khỉ
+    // biến khỉ
     public boolean isMonkey;
     public byte levelMonkey;
     public long lastTimeUpMonkey;
     public int timeMonkey;
 
-    //Bình
+    // Bình
     public boolean isBinh;
     public int typeBinh;
     public long lastTimeUpBinh;
     public int timeBinh;
     public Player playerUseMafuba;
 
-    //Hóa đá
+    // Hóa đá
     public boolean isStone;
     public long lastTimeStone;
     public int timeStone;
 
-    //Mabu Hold
+    // Mabu Hold
     public boolean isMabuHold;
 
-    //Làm chậm
+    // Làm chậm
     public boolean isLamCham;
     public long lastTimeLamCham;
     public int timeLamCham;
 
-    //Tàn hình
+    // Tàn hình
     public boolean isTanHinh;
     public long lastTimeTanHinh;
     public int timeTanHinh;
 
-    //PK Commeson
+    // PK Commeson
     public boolean isPKCommeson;
     public long lastTimePKCommeson;
     public int timePKCommeson;
 
-    //PK Sieu Than Thuy
+    // PK Sieu Than Thuy
     public boolean isPKSTT;
     public long lastTimePKSTT;
     public int timePKSTT;
 
-    //Chibi
+    // Chibi
     public boolean isChibi;
     public long lastTimeChibi;
     public int timeChibi;
 
-    //tái tạo năng lượng
+    // tái tạo năng lượng
     public boolean isCharging;
     public int countCharging;
 
-    //huýt sáo
+    // huýt sáo
     public int tiLeHPHuytSao;
     public long lastTimeHuytSao;
 
-    //thôi miên
+    // thôi miên
     public boolean isThoiMien;
     public long lastTimeThoiMien;
     public int timeThoiMien;
 
-    //trói
+    // trói
     public boolean useTroi;
     public boolean anTroi;
     public long lastTimeTroi;
@@ -95,40 +89,40 @@ public class EffectSkill {
     public Player plAnTroi;
     public Mob mobAnTroi;
 
-    //dịch chuyển tức thời
+    // dịch chuyển tức thời
     public boolean isBlindDCTT;
     public long lastTimeBlindDCTT;
     public int timeBlindDCTT;
 
-    //socola
+    // socola
     public boolean isSocola;
     public long lastTimeSocola;
     public int timeSocola;
     public int countPem1hp;
 
-    //halloween
+    // halloween
     public boolean isHalloween;
     public long lastTimeHalloween;
     public int timeHalloween;
     public int idOutfitHalloween;
 
-    //Use Mafuba
+    // Use Mafuba
     public boolean isUseMafuba;
     public long lastTimeUseMafuba;
     public int timeUseMafuba;
 
-    //Use Skill Monkey
+    // Use Skill Monkey
     public boolean isUseSkillMonkey;
     public long lastTimeUseSkillMonkey;
     public int timeUseSkillMonkey;
 
-    //Intrinsic
+    // Intrinsic
     public boolean isIntrinsic;
     public long lastTimeUseSkill;
     public int skillID;
     public int cooldown;
 
-    //Dame Buff
+    // Dame Buff
     public boolean isDameBuff;
     public long lastTimeDameBuff;
     public int timeDameBuff;
@@ -232,9 +226,9 @@ public class EffectSkill {
         if (isChibi && Util.canDoWithTime(lastTimeChibi, timeChibi)) {
             EffectSkillService.gI().removeChibi(this.player);
         }
-//        if (isHalloween && Util.canDoWithTime(lastTimeHalloween, timeHalloween)) {
-//            EffectSkillService.gI().removeHalloween(this.player);
-//        }
+        // if (isHalloween && Util.canDoWithTime(lastTimeHalloween, timeHalloween)) {
+        // EffectSkillService.gI().removeHalloween(this.player);
+        // }
         if (isUseMafuba && Util.canDoWithTime(lastTimeUseMafuba, timeUseMafuba)) {
             EffectSkillService.gI().finishUseMafuba(player);
         }
@@ -250,7 +244,8 @@ public class EffectSkill {
     }
 
     public boolean isHaveEffectSkill() {
-        return (isStun || isBlindDCTT || anTroi || isThoiMien || isStone || isMabuHold || isUseSkillMonkey) && !player.isDie();
+        return (isStun || isBlindDCTT || anTroi || isThoiMien || isStone || isMabuHold || isUseSkillMonkey)
+                && !player.isDie();
     }
 
     public void dispose() {

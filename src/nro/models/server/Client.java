@@ -23,12 +23,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import nro.models.services.shenron.SummonDragonNamek;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Client implements Runnable {
 
     private static Client instance;
@@ -80,7 +74,8 @@ public class Client implements Runnable {
         if (session.joinedGame) {
             session.joinedGame = false;
             try {
-                LocalManager.executeUpdate("update account set last_time_logout = ? where id = ?", new Timestamp(System.currentTimeMillis()), session.userId);
+                LocalManager.executeUpdate("update account set last_time_logout = ? where id = ?",
+                        new Timestamp(System.currentTimeMillis()), session.userId);
             } catch (Exception e) {
                 Logger.logException(Client.class, e);
             }
@@ -214,9 +209,10 @@ public class Client implements Runnable {
                 }
                 zoneId = player.zone.zoneId;
             }
-            LocalManager.executeUpdate("INSERT INTO admin_player_online (player_id,account_id,map_id,zone_id,last_seen) "
-                    + "VALUES (?,?,?,?,NOW()) ON DUPLICATE KEY UPDATE account_id=VALUES(account_id),"
-                    + "map_id=VALUES(map_id),zone_id=VALUES(zone_id),last_seen=NOW()",
+            LocalManager.executeUpdate(
+                    "INSERT INTO admin_player_online (player_id,account_id,map_id,zone_id,last_seen) "
+                            + "VALUES (?,?,?,?,NOW()) ON DUPLICATE KEY UPDATE account_id=VALUES(account_id),"
+                            + "map_id=VALUES(map_id),zone_id=VALUES(zone_id),last_seen=NOW()",
                     player.id, player.getSession().userId, mapId, zoneId);
         } catch (Exception e) {
             logAdminOnlineSyncError(e);
@@ -247,7 +243,8 @@ public class Client implements Runnable {
             for (Player player : snapshot) {
                 syncAdminOnlinePlayer(player);
             }
-            LocalManager.executeUpdate("DELETE FROM admin_player_online WHERE last_seen < DATE_SUB(NOW(), INTERVAL 2 MINUTE)");
+            LocalManager.executeUpdate(
+                    "DELETE FROM admin_player_online WHERE last_seen < DATE_SUB(NOW(), INTERVAL 2 MINUTE)");
         } catch (Exception e) {
             logAdminOnlineSyncError(e);
         }

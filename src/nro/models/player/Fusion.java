@@ -4,18 +4,13 @@ import nro.models.consts.ConstPlayer;
 import lombok.Setter;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Fusion {
 
     @Setter
     private Player player;
     public byte typeFusion;
     public long lastTimeFusion;
+
     public Fusion(Player player) {
         this.player = player;
     }
@@ -26,8 +21,8 @@ public class Fusion {
             this.player.pet.unFusion();
         }
     }
-    
-    public void dispose(){
+
+    public void dispose() {
         this.player = null;
     }
 

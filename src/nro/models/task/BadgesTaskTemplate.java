@@ -1,11 +1,5 @@
 package nro.models.task;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class BadgesTaskTemplate {
 
     public int id;
@@ -19,5 +13,5 @@ public class BadgesTaskTemplate {
         count = -1;
         idbadgesReward = -1;
     }
-    
+
 }

@@ -32,11 +32,6 @@ import nro.models.task.ClanTaskTemplate;
 import nro.models.task.TaskConfig;
 import nro.models.task.TaskRewardService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class TaskService {
 
     /**

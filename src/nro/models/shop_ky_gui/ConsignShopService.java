@@ -17,12 +17,6 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class ConsignShopService {
 
     private static ConsignShopService instance;
@@ -244,7 +238,10 @@ public class ConsignShopService {
             return;
         }
         pl.idMark.setIdItemUpTop(id);
-        NpcService.gI().createMenuConMeo(pl, ConstNpc.UP_TOP_ITEM, -1, "Bạn có muốn đưa vật phẩm ['" + ItemService.gI().createNewItem(it.itemId).template.name + "'] của bản thân lên trang đầu?\nYêu cầu 5 Ngọc Xanh.", "Đồng ý", "Từ Chối");
+        NpcService.gI().createMenuConMeo(pl, ConstNpc.UP_TOP_ITEM, -1,
+                "Bạn có muốn đưa vật phẩm ['" + ItemService.gI().createNewItem(it.itemId).template.name
+                        + "'] của bản thân lên trang đầu?\nYêu cầu 5 Ngọc Xanh.",
+                "Đồng ý", "Từ Chối");
     }
 
     public void StartupItemToTop(Player pl) {
@@ -322,11 +319,13 @@ public class ConsignShopService {
 
     public List<ConsignItem> getItemCanKiGui(Player pl) {
         List<ConsignItem> its = new ArrayList<>();
-        ConsignShopManager.gI().listItem.stream().filter((it) -> (it != null && it.player_sell == pl.id)).forEachOrdered((it) -> {
-            its.add(it);
-        });
+        ConsignShopManager.gI().listItem.stream().filter((it) -> (it != null && it.player_sell == pl.id))
+                .forEachOrdered((it) -> {
+                    its.add(it);
+                });
         pl.inventory.itemsBag.stream().filter((it) -> (itemCanConsign(it))).forEachOrdered((it) -> {
-            its.add(new ConsignItem(InventoryService.gI().getIndexBag(pl, it), it.template.id, (int) pl.id, (byte) 4, -1, -1, it.quantity, (byte) -1, it.itemOptions, false));
+            its.add(new ConsignItem(InventoryService.gI().getIndexBag(pl, it), it.template.id, (int) pl.id, (byte) 4,
+                    -1, -1, it.quantity, (byte) -1, it.itemOptions, false));
         });
         return its;
     }
@@ -406,7 +405,8 @@ public class ConsignShopService {
                         Service.gI().sendThongBao(pl, "không thể ký gửi quá 100000 thỏi vàng");
                     } else {
                         InventoryService.gI().subQuantityItemsBag(pl, pl.inventory.itemsBag.get(id), quantity);
-                        ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id, (int) pl.id, getTabKiGui(it), money, -1, quantity, (byte) 0, it.itemOptions, false));
+                        ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id,
+                                (int) pl.id, getTabKiGui(it), money, -1, quantity, (byte) 0, it.itemOptions, false));
                         InventoryService.gI().sendItemBags(pl);
                         openShopKyGui(pl);
                         Service.gI().sendMoney(pl);
@@ -419,7 +419,8 @@ public class ConsignShopService {
                         Service.gI().sendThongBao(pl, "không thể ký gửi quá 1000000 ngọc");
                     } else {
                         InventoryService.gI().subQuantityItemsBag(pl, pl.inventory.itemsBag.get(id), quantity);
-                        ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id, (int) pl.id, getTabKiGui(it), -1, money, quantity, (byte) 0, it.itemOptions, false));
+                        ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id,
+                                (int) pl.id, getTabKiGui(it), -1, money, quantity, (byte) 0, it.itemOptions, false));
                         InventoryService.gI().sendItemBags(pl);
                         openShopKyGui(pl);
                         Service.gI().sendMoney(pl);
@@ -504,7 +505,7 @@ public class ConsignShopService {
                         msg.writer().writeInt(itk.gemSell);
                         msg.writer().writeByte(0); // buy type
                         msg.writer().writeInt(itk.quantity);
-                        msg.writer().writeByte(itk.player_sell == pl.id ? 1 : 0); // isMe     
+                        msg.writer().writeByte(itk.player_sell == pl.id ? 1 : 0); // isMe
                         msg.writer().writeByte(it.itemOptions.size());
                         for (int a = 0; a < it.itemOptions.size(); a++) {
                             msg.writer().writeByte(it.itemOptions.get(a).optionTemplate.id);

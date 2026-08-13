@@ -1,11 +1,5 @@
 package nro.models.task;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class SideTaskTemplate {
 
     public int id;

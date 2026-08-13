@@ -6,12 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import nro.models.player.Player;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GiftCode {
 
     public String code;

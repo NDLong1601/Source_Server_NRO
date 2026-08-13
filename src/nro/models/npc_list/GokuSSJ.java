@@ -5,12 +5,6 @@ import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.map.service.ChangeMapService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class GokuSSJ extends Npc {
 
     public GokuSSJ(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -22,7 +16,8 @@ public class GokuSSJ extends Npc {
         if (canOpenNpc(player)) {
             switch (this.mapId) {
                 case 80 ->
-                    this.createOtherMenu(player, ConstNpc.BASE_MENU, "Ta mới hạ Fide, nhưng nó đã kịp đào 1 cái lỗ\nHành tinh này sắp nổ tung rồi\nMau lượn thôi",
+                    this.createOtherMenu(player, ConstNpc.BASE_MENU,
+                            "Ta mới hạ Fide, nhưng nó đã kịp đào 1 cái lỗ\nHành tinh này sắp nổ tung rồi\nMau lượn thôi",
                             "Chuồn");
                 case 131 ->
                     this.createOtherMenu(player, ConstNpc.BASE_MENU, "Đây là đâu? Xong cmnr", "Bó tay", "Về chỗ cũ");

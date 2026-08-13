@@ -11,12 +11,6 @@ import java.util.List;
 import nro.models.utils.Util;
 import nro.models.map.MaBuHold;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class EffectSkillService {
 
     public static final byte TURN_ON_EFFECT = 1;
@@ -62,14 +56,14 @@ public class EffectSkillService {
         Message msg;
         try {
             msg = new Message(-124);
-            msg.writer().writeByte(toggle); //0: hủy hiệu ứng, 1: bắt đầu hiệu ứng
-            msg.writer().writeByte(0); //0: vào phần phayer, 1: vào phần mob
+            msg.writer().writeByte(toggle); // 0: hủy hiệu ứng, 1: bắt đầu hiệu ứng
+            msg.writer().writeByte(0); // 0: vào phần phayer, 1: vào phần mob
             if (toggle == TURN_OFF_ALL_EFFECT) {
                 msg.writer().writeInt((int) plTarget.id);
             } else {
-                msg.writer().writeByte(effect); //loại hiệu ứng
-                msg.writer().writeInt((int) plTarget.id); //id player dính effect
-                msg.writer().writeInt((int) plUseSkill.id); //id player dùng skill
+                msg.writer().writeByte(effect); // loại hiệu ứng
+                msg.writer().writeInt((int) plTarget.id); // id player dính effect
+                msg.writer().writeInt((int) plUseSkill.id); // id player dùng skill
             }
             Service.gI().sendMessAllPlayerInMap(plUseSkill, msg);
             msg.cleanup();
@@ -82,11 +76,11 @@ public class EffectSkillService {
         Message msg;
         try {
             msg = new Message(-124);
-            msg.writer().writeByte(toggle); //0: hủy hiệu ứng, 1: bắt đầu hiệu ứng
-            msg.writer().writeByte(1); //0: vào phần phayer, 1: vào phần mob
-            msg.writer().writeByte(effect); //loại hiệu ứng
-            msg.writer().writeByte(mobTarget.id); //id mob dính effect
-            msg.writer().writeInt((int) plUseSkill.id); //id player dùng skill
+            msg.writer().writeByte(toggle); // 0: hủy hiệu ứng, 1: bắt đầu hiệu ứng
+            msg.writer().writeByte(1); // 0: vào phần phayer, 1: vào phần mob
+            msg.writer().writeByte(effect); // loại hiệu ứng
+            msg.writer().writeByte(mobTarget.id); // id mob dính effect
+            msg.writer().writeInt((int) plUseSkill.id); // id player dùng skill
             Service.gI().sendMessAllPlayerInMap(mobTarget.zone, msg);
             msg.cleanup();
         } catch (Exception e) {
@@ -166,8 +160,8 @@ public class EffectSkillService {
         try {
             msg = new Message(-112);
             msg.writer().writeByte(1);
-            msg.writer().writeByte(mob.id); //mob id
-            msg.writer().writeShort(4133); //icon socola
+            msg.writer().writeByte(mob.id); // mob id
+            msg.writer().writeShort(4133); // icon socola
             Service.gI().sendMessAllPlayerInMap(player, msg);
             msg.cleanup();
             mob.effectSkill.setSocola(System.currentTimeMillis(), timeSocola);
@@ -322,7 +316,8 @@ public class EffectSkillService {
             for (Player playerMap : player.newSkill.playersTaget) {
                 try {
                     if (player.location != null && playerMap.location != null) {
-                        EffectSkillService.gI().setIsBinh(player, playerMap, 11000 * (player.newSkill.typeItem == 0 ? 1 : 2));
+                        EffectSkillService.gI().setIsBinh(player, playerMap,
+                                11000 * (player.newSkill.typeItem == 0 ? 1 : 2));
                         int x = player.location.x + ((player.newSkill.dir == -1) ? (-75) : 75);
                         int y = player.location.y;
                         if (player.zone != null && !MapService.gI().isMapBlackBallWar(player.zone.map.mapId)) {
@@ -334,7 +329,8 @@ public class EffectSkillService {
                 }
             }
             for (Mob mobMap : player.newSkill.mobsTaget) {
-                mobMap.effectSkill.setBinh(player, System.currentTimeMillis(), 11000 * (player.effectSkill.typeBinh == 0 ? 1 : 2));
+                mobMap.effectSkill.setBinh(player, System.currentTimeMillis(),
+                        11000 * (player.effectSkill.typeBinh == 0 ? 1 : 2));
             }
         }
     }
@@ -350,7 +346,8 @@ public class EffectSkillService {
         player.effectSkill.lastTimeStone = System.currentTimeMillis();
         ItemTimeService.gI().sendItemTime(player, 4392, time / 1000);
         Service.gI().Send_Caitrang(player);
-        EffectSkillService.gI().sendEffectPlayer(player, player, EffectSkillService.TURN_ON_EFFECT, EffectSkillService.STONE_EFFECT);
+        EffectSkillService.gI().sendEffectPlayer(player, player, EffectSkillService.TURN_ON_EFFECT,
+                EffectSkillService.STONE_EFFECT);
     }
 
     public void removeStone(Player player) {
@@ -465,8 +462,8 @@ public class EffectSkillService {
         Service.gI().sendHaveChibiFollowToAllMap(player);
     }
 
-    //**************************************************************************
-    //Tái tạo năng lượng *******************************************************
+    // **************************************************************************
+    // Tái tạo năng lượng *******************************************************
     public void startCharge(Player player) {
         if (!player.effectSkill.isCharging) {
             player.effectSkill.isCharging = true;
@@ -476,7 +473,8 @@ public class EffectSkillService {
 
     public void stopCharge(Player player) {
         player.effectSkill.countCharging = 0;
-        player.effectSkill.isCharging = false;;
+        player.effectSkill.isCharging = false;
+        ;
         sendEffectStopCharge(player);
 
     }
