@@ -34,7 +34,7 @@ public class DataGame {
     public static byte vsData = 9;
     public static byte vsMap = 2;
     public static byte vsSkill = 1;
-    public static byte vsItem = 9;
+    public static byte vsItem = 19;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -322,13 +322,22 @@ public class DataGame {
             msg = new Message(-77);
             msg.writer().writeShort(maxSmallVersion);
             for (int i = 0; i < maxSmallVersion; i++) {
-                msg.writer().writeByte(0);
+                msg.writer().writeByte(getSmallImageVersion(i));
             }
             session.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static byte getSmallImageVersion(int iconId) {
+        return switch (iconId) {
+            case 19009, 19011, 19012, 19045, 19046, 19047, 19048, 19049,
+                    19050, 19051, 19052, 19053, 19054, 19055, 19056, 19057 -> 1;
+            case 19010 -> 2;
+            default -> 0;
+        };
     }
 
     public static void requestMobTemplate(MySession session, int id) {

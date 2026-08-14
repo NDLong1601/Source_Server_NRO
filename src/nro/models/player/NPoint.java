@@ -676,6 +676,7 @@ public class NPoint {
             try {
                 Item gtl = this.player.inventory.itemsBody.get(6);
                 if (gtl.isNotNullItem()) {
+                    ItemService.gI().ensureTrainArmorTimeOption(gtl);
                     this.wearingTrainArmor = true;
                     this.player.inventory.trainArmor = gtl;
                     this.tlSubSD += ItemService.gI().getPercentTrainArmor(gtl);

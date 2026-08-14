@@ -1,0 +1,2 @@
+﻿id	TYPE	gender	NAME	description	level	icon_id	part	is_up_to_up	power_require	gold	gem	head	body	leg
+2015	29	3	Trứng đệ tử Kid Jiren	Mở ra để nhận đệ tử Kid Jiren	0	19056	-1	1	0	0	0	-1	-1	-1

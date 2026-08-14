@@ -38,6 +38,16 @@
           <label for="combineAllowDuplicate">Cho phép hai dòng option bông tai cấp 3 bị trùng nhau</label>
         </div>
       </div>
+      <div id="combineRingBox" class="ring-upgrade-editor">
+        <div class="section-title">Cấu hình nâng cấp nhẫn theo từng cấp</div>
+        <div class="ring-upgrade-note">Thành công sẽ đổi template và icon sang nhẫn ở cột bên phải. Thất bại vẫn tiêu hao tài nguyên đã cấu hình.</div>
+        <div class="ring-upgrade-scroll">
+          <table class="ring-upgrade-table">
+            <thead><tr><th>Chuyển cấp / icon</th><th>Tỷ lệ %</th><th>Đá</th><th>Vàng</th><th>Ngọc</th></tr></thead>
+            <tbody id="combineRingLevels"></tbody>
+          </table>
+        </div>
+      </div>
       <label>Mô tả</label><textarea id="combineDescription" readonly></textarea>
       <div class="actions">
         <button type="button" class="primary" onclick="SaveCombineConfig()">Lưu &amp; áp dụng</button>
@@ -46,6 +56,7 @@
       <div class="split-small">
         <div class="section-title">Quy tắc nhập</div>
         <div>rate: số từ 0 đến 100, số lẻ dùng dấu chấm.</div>
+        <div>Nhẫn: mỗi dòng là một bước nâng cấp; Đá tối thiểu 1, Vàng/Ngọc có thể bằng 0.</div>
         <div>Option random: tick trực tiếp option mong muốn và nhập khoảng Param Min/Max.</div>
         <div>bool: true hoặc false. Thay đổi có hiệu lực trong tối đa 1 giây, không cần restart.</div>
       </div>

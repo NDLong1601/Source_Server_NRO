@@ -2,7 +2,6 @@ package nro.models.player;
 
 import nro.models.consts.ConstPlayer;
 import nro.models.item.Item;
-import lombok.Getter;
 import nro.models.map.service.MapService;
 import nro.models.mob.Mob;
 import nro.models.skill.Skill;
@@ -37,7 +36,6 @@ public class Pet extends Player {
     public static final byte HTVV = 5;
 
     public Player master;
-    @Getter
     public byte status = 0;
 
     public byte typePet;
@@ -75,6 +73,10 @@ public class Pet extends Player {
             fusion(false);
         }
         this.status = status;
+    }
+
+    public byte getStatus() {
+        return status;
     }
 
     public void joinMapMaster() {
@@ -978,6 +980,10 @@ public class Pet extends Player {
         }
     }
 
+    public void openSkill1() {
+        setRandomSkillFromPool(1);
+    }
+
     public void openSkill2() {
         setRandomSkillFromPool(2);
     }
@@ -994,10 +1000,14 @@ public class Pet extends Player {
         setRandomSkillFromPool(5);
     }
 
-    private void setRandomSkillFromPool(int skillSlot) {
+    public boolean rerollSkill(int skillSlot) {
+        return setRandomSkillFromPool(skillSlot);
+    }
+
+    private boolean setRandomSkillFromPool(int skillSlot) {
         int listIndex = skillSlot - 1;
         if (this.playerSkill == null || listIndex < 0 || listIndex >= this.playerSkill.skills.size()) {
-            return;
+            return false;
         }
         Skill current = this.playerSkill.skills.get(listIndex);
         int currentTemplateId = current != null && current.template != null ? current.template.id : -1;
@@ -1023,7 +1033,9 @@ public class Pet extends Player {
                 selected.coolDown = PetConfig.getAttackSkillCooldownMs();
             }
             this.playerSkill.skills.set(listIndex, selected);
+            return true;
         }
+        return false;
     }
 
     private Skill getSkill(int indexSkill) {

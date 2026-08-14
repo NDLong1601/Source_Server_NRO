@@ -4719,7 +4719,7 @@ CREATE TABLE `item_template` (
   `TYPE` int(11) NOT NULL,
   `gender` smallint(6) NOT NULL,
   `NAME` varchar(255) NOT NULL,
-  `description` varchar(75) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
   `level` int(11) NOT NULL DEFAULT 0,
   `icon_id` int(11) NOT NULL,
   `part` int(11) NOT NULL,
@@ -6739,7 +6739,34 @@ INSERT INTO `item_template` (`id`, `TYPE`, `gender`, `NAME`, `description`, `lev
 (1996, 75, 3, '', '', 0, 0, 0, 0, 0, 0, 0, -1, -1, -1),
 (1997, 75, 3, '', '', 0, 0, 0, 0, 0, 0, 0, -1, -1, -1),
 (1998, 75, 3, '', '', 0, 0, 0, 0, 0, 0, 0, -1, -1, -1),
-(1999, 75, 3, '', '', 0, 0, 0, 0, 0, 0, 0, -1, -1, -1);
+(1999, 75, 3, '', '', 0, 0, 0, 0, 0, 0, 0, -1, -1, -1),
+(2000, 29, 3, 'Kỹ Năng Bí Ẩn 2', 'Khi sử dụng đổi ngẫu nhiên Chiêu 2 của đệ tử', 0, 19010, -1, 1, 0, 0, 0, -1, -1, -1),
+(2001, 5, 3, 'Cải trang Luffy Mũ rơm', 'Cải trang thành Luffy Mũ rơm', 1, 5432, -1, 0, 0, 0, 0, 582, 583, 584),
+(2002, 5, 3, 'Cải trang Zoro', 'Cải trang thành Zoro', 1, 5465, -1, 0, 0, 0, 0, 585, 586, 587),
+(2003, 5, 3, 'Cải trang Sanji', 'Cải trang thành Sanji', 1, 5495, -1, 0, 0, 0, 0, 588, 589, 590),
+(2004, 5, 3, 'Cải trang Brook', 'Cải trang thành Brook', 1, 5526, -1, 0, 0, 0, 0, 591, 592, 593),
+(2005, 5, 3, 'Cải trang Franky', 'Cải trang thành Franky', 1, 5556, -1, 0, 0, 0, 0, 594, 595, 596),
+(2006, 5, 3, 'Cải trang Usop', 'Cải trang thành Usop', 1, 5587, -1, 0, 0, 0, 0, 597, 598, 599),
+(2007, 5, 3, 'Cải trang Nami', 'Cải trang thành Nami', 1, 5617, -1, 0, 0, 0, 0, 600, 601, 602),
+(2008, 5, 3, 'Cải trang Robin', 'Cải trang thành Robin', 1, 5649, -1, 0, 0, 0, 0, 603, 604, 605),
+(2009, 5, 3, 'Cải trang Chopper', 'Cải trang thành Chopper', 1, 5680, -1, 0, 0, 0, 0, 606, 607, 608),
+(2010, 29, 3, 'Hộp quà Cải trang Hải Tặc', 'Sử dụng nhận ngẫu nhiên 1 cải trang Hải Tặc', 0, 5721, -1, 1, 0, 0, 0, -1, -1, -1),
+(2011, 29, 3, 'Kỹ Năng Bí Ẩn 1', 'Khi sử dụng đổi ngẫu nhiên Chiêu 1 của đệ tử', 0, 19009, -1, 1, 0, 0, 0, -1, -1, -1),
+(2012, 29, 3, 'Kỹ Năng Bí Ẩn 3', 'Khi sử dụng đổi ngẫu nhiên Chiêu 3 của đệ tử', 0, 19011, -1, 1, 0, 0, 0, -1, -1, -1),
+(2013, 29, 3, 'Kỹ Năng Bí Ẩn 4', 'Khi sử dụng đổi ngẫu nhiên Chiêu 4 của đệ tử', 0, 19012, -1, 1, 0, 0, 0, -1, -1, -1),
+(2014, 29, 3, 'Trứng Đệ tử Ubu', 'Mở ra để nhận đệ tử Ubu', 0, 19055, -1, 1, 0, 0, 0, -1, -1, -1),
+(2015, 29, 3, 'Trứng đệ tử Kid Jiren', 'Mở ra để nhận đệ tử Kid Jiren', 0, 19056, -1, 1, 0, 0, 0, -1, -1, -1),
+(2016, 29, 3, 'Trứng đệ tử Bill', 'Mở ra nhận đệ tử Bill', 0, 19057, -1, 1, 0, 0, 0, -1, -1, -1),
+(2017, 25, 3, 'Nhẫn Sơ Cấp', 'Sự khởi đầu của 1 huyền thoại', 0, 19045, -1, 0, 0, 0, 0, -1, -1, -1),
+(2018, 25, 3, 'Nhẫn Quang Minh', 'Chiếc nhẫn được rèn từ vàng nguyên chất, tỏa ra ánh sáng dịu nhẹ của bình minh. Nó xua tan bóng tối và mang lại hy vọng cho người đeo.', 1, 19046, -1, 0, 0, 0, 0, -1, -1, -1),
+(2019, 25, 3, 'Nhẫn Băng Tinh', 'Một khối băng vĩnh cửu được nén lại thành hình chiếc nhẫn. Hơi lạnh tỏa ra từ nó có thể làm chậm kẻ thù và bảo vệ chủ nhân khỏi hỏa công.', 2, 19047, -1, 0, 0, 0, 0, -1, -1, -1),
+(2020, 25, 3, 'Nhẫn Lục Diệp', 'Được cho là chế tác từ cành cây của Cây Thế giới. Nó tràn đầy sức sống và kết nối người đeo với thiên nhiên.', 3, 19048, -1, 0, 0, 0, 0, -1, -1, -1),
+(2021, 25, 3, 'Nhẫn Hắc Ám', 'Ánh sáng tím sẫm bao quanh chiếc nhẫn như một màn đêm vô tận. Nó chứa đựng sức mạnh của hư không và bóng đêm.', 4, 19049, -1, 0, 0, 0, 0, -1, -1, -1),
+(2022, 25, 3, 'Nhẫn Dung Nham', 'Vòng kim loại nóng chảy đang sôi sục, mang trong mình sức nóng của lõi trái đất. Sức mạnh của nó có thể đốt cháy mọi thứ.', 5, 19050, -1, 0, 0, 0, 0, -1, -1, -1),
+(2023, 25, 3, 'Nhẫn Huyết Nguyệt', 'Chiếc nhẫn đỏ rực như máu, được cho là hấp thụ sức mạnh của mặt trăng đỏ. Nó mang lại sức mạnh cuồng bạo cho người sở hữu.', 6, 19051, -1, 0, 0, 0, 0, -1, -1, -1),
+(2024, 25, 3, 'Nhẫn Kim Quang', 'Một chiếc nhẫn vàng ròng, phát ra luồng hào quang chói lóa, như thể được các vị thần ban phước. Nó tượng trưng cho sự giàu có và quyền lực.', 7, 19052, -1, 0, 0, 0, 0, -1, -1, -1),
+(2025, 25, 3, 'Nhẫn Thiên Thạch', 'Viên ngọc trai phát sáng lấp lánh được đính trên một dải kim loại óng ánh. Nó mang trong mình sức mạnh của các vì sao.', 8, 19053, -1, 0, 0, 0, 0, -1, -1, -1),
+(2026, 14, 3, 'Đá hoàng kim', 'Sử dụng để nâng cấp nhẫn', 0, 19054, -1, 1, 0, 0, 0, -1, -1, -1);
 
 -- --------------------------------------------------------
 
@@ -12113,6 +12140,22 @@ CREATE TABLE IF NOT EXISTS `item_default_option` (
   CONSTRAINT `fk_item_default_option_template` FOREIGN KEY (`option_id`) REFERENCES `item_option_template` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Hộp quà cấu hình từ admin; mỗi hộp có thể random một hoặc nhiều phần thưởng.
+CREATE TABLE IF NOT EXISTS `gift_box_config` (
+  `box_template_id` int NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `min_empty_slots` int NOT NULL DEFAULT 1,
+  `consume_quantity` int NOT NULL DEFAULT 1,
+  `draw_count` int NOT NULL DEFAULT 1,
+  `config_json` text NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`box_template_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `gift_box_config` (`box_template_id`,`enabled`,`min_empty_slots`,`consume_quantity`,`draw_count`,`config_json`) VALUES
+(2010,1,1,1,1,'{"boxTemplateId":2010,"enabled":true,"minEmptySlots":1,"consumeQuantity":1,"drawCount":1,"rewards":[{"itemId":2001,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2002,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2003,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2004,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2005,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2006,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2007,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2008,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2009,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]}]}')
+ON DUPLICATE KEY UPDATE `enabled`=VALUES(`enabled`),`min_empty_slots`=VALUES(`min_empty_slots`),`consume_quantity`=VALUES(`consume_quantity`),`draw_count`=VALUES(`draw_count`),`config_json`=VALUES(`config_json`);
+
 -- Existing shop rows remain CUSTOM; new rows inherit the preset by default.
 ALTER TABLE `item_shop`
   ADD COLUMN IF NOT EXISTS `option_mode` tinyint NOT NULL DEFAULT 1 AFTER `icon_spec`;
@@ -12139,6 +12182,14 @@ JOIN (
      AND MAX(option_signature) <> ''
 ) unambiguous ON unambiguous.`temp_id` = s.`temp_id`
 GROUP BY s.`temp_id`, o.`option_id`, o.`param`;
+
+-- Giáp tập luyện cấp 5: giữ đầy đủ option mặc định và bộ đếm phút luyện tập.
+INSERT INTO `item_default_option` (`item_template_id`,`option_id`,`param`,`sort_order`) VALUES
+(1869,77,20,0),
+(1869,94,10,1),
+(1869,108,10,2),
+(1869,9,0,3)
+ON DUPLICATE KEY UPDATE `param`=VALUES(`param`),`sort_order`=VALUES(`sort_order`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

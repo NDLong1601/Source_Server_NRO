@@ -2,6 +2,7 @@ package nro.models.services;
 
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
+import nro.models.combine.NangCapNhan;
 import nro.models.npc.MabuEgg;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
@@ -25,6 +26,21 @@ import nro.models.task.BadgesTaskService;
 import nro.models.utils.Util;
 
 public class InventoryService {
+
+    public static final int PLAYER_BODY_SLOT_COUNT = 14;
+    public static final int PLAYER_TRAIN_ARMOR_SLOT = 6;
+    public static final int PLAYER_FOLLOW_PET_SLOT = 7;
+    public static final int PLAYER_BACK_SLOT = 8;
+    public static final int PLAYER_MOUNT_SLOT = 9;
+    public static final int PLAYER_RING_SLOT = 10;
+    public static final int PLAYER_SKILL_BOOK_SLOT = 11;
+    public static final int PLAYER_AURA_SLOT = 12;
+    public static final int PLAYER_TITLE_SLOT = 13;
+
+    public static final int PET_COSTUME_SLOT = 5;
+    public static final int PET_RING_SLOT = 6;
+    public static final int PET_BACK_SLOT = 7;
+    public static final int PET_SKILL_BOOK_SLOT = 8;
 
     private static InventoryService I;
 
@@ -284,6 +300,181 @@ public class InventoryService {
         return item;
     }
 
+    public static boolean isPlayerSkillBook(Item item) {
+        if (item == null || !item.isNotNullItem() || item.template.type != 25) {
+            return false;
+        }
+        return switch (item.template.id) {
+            case 1044, 1211, 1212 -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isPetSkillBook(Item item) {
+        if (item == null || !item.isNotNullItem() || item.template.type != 25) {
+            return false;
+        }
+        return switch (item.template.id) {
+            case 1278, 1279, 1280 -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isAuraItem(Item item) {
+        return item != null && item.isNotNullItem() && item.template.id == 1230;
+    }
+
+    private int getPlayerBodySlot(Item item) {
+        return switch (item.template.type) {
+            case 0, 1, 2, 3, 4, 5 -> item.template.type;
+            case 32 -> PLAYER_TRAIN_ARMOR_SLOT;
+            case 27 -> PLAYER_FOLLOW_PET_SLOT;
+            case 11 -> isAuraItem(item) ? PLAYER_AURA_SLOT : PLAYER_BACK_SLOT;
+            case 23, 24 -> PLAYER_MOUNT_SLOT;
+            case 25 -> isPlayerSkillBook(item) ? PLAYER_SKILL_BOOK_SLOT
+                    : (isPetSkillBook(item) ? -1 : PLAYER_RING_SLOT);
+            case 36 -> PLAYER_TITLE_SLOT;
+            default -> -1;
+        };
+    }
+
+    private int getPetBodySlot(Item item) {
+        return switch (item.template.type) {
+            case 0, 1, 2, 3, 4, 5 -> item.template.type;
+            case 11 -> PET_BACK_SLOT;
+            case 25 -> NangCapNhan.isRing(item) ? PET_RING_SLOT
+                    : (isPetSkillBook(item) ? PET_SKILL_BOOK_SLOT : -1);
+            default -> -1;
+        };
+    }
+
+    /**
+     * Chuyển dữ liệu trang bị đệ tử từ ánh xạ cũ sang bố cục mới:
+     * 5 cải trang, 6 nhẫn, 7 đeo lưng/cờ, 8 sách tuyệt kỹ.
+     */
+    public void normalizePetEquipmentSlots(Player master) {
+        if (master == null || master.pet == null
+                || master.pet.inventory == null
+                || master.pet.inventory.itemsBody.size() <= PET_SKILL_BOOK_SLOT) {
+            return;
+        }
+
+        List<Item> body = master.pet.inventory.itemsBody;
+        List<Item> oldExtraItems = new ArrayList<>();
+        for (int slot = PET_RING_SLOT; slot <= PET_SKILL_BOOK_SLOT; slot++) {
+            Item item = body.get(slot);
+            if (item != null && item.isNotNullItem()) {
+                oldExtraItems.add(item);
+            }
+            body.set(slot, ItemService.gI().createItemNull());
+        }
+
+        List<Item> overflowItems = new ArrayList<>();
+        for (Item item : oldExtraItems) {
+            int targetSlot = getPetBodySlot(item);
+            if (targetSlot >= PET_RING_SLOT && targetSlot <= PET_SKILL_BOOK_SLOT
+                    && !body.get(targetSlot).isNotNullItem()) {
+                body.set(targetSlot, item);
+            } else {
+                overflowItems.add(item);
+            }
+        }
+
+        for (Item item : overflowItems) {
+            Item remaining = putItemBag(master, item);
+            if (remaining.isNotNullItem()) {
+                remaining = putItemBox(master, remaining);
+            }
+            if (remaining.isNotNullItem()) {
+                boolean restored = false;
+                for (int slot = PET_RING_SLOT; slot <= PET_SKILL_BOOK_SLOT; slot++) {
+                    if (!body.get(slot).isNotNullItem()) {
+                        body.set(slot, remaining);
+                        restored = true;
+                        break;
+                    }
+                }
+                if (!restored) {
+                    body.add(remaining);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extends and normalizes the player's equipment layout through slot 13.
+     * Special items from the old shared slots are moved without deleting items
+     * when the destination is already occupied.
+     */
+    public void normalizePlayerEquipmentSlots(Player player) {
+        if (player == null || player.inventory == null) {
+            return;
+        }
+        List<Item> body = player.inventory.itemsBody;
+        while (body.size() < PLAYER_BODY_SLOT_COUNT) {
+            body.add(ItemService.gI().createItemNull());
+        }
+
+        for (int sourceSlot = 0; sourceSlot < body.size(); sourceSlot++) {
+            Item item = body.get(sourceSlot);
+            if (item == null || !item.isNotNullItem()) {
+                continue;
+            }
+
+            if (isPetSkillBook(item)) {
+                if (moveBookToPet(player, item) || storePlayerEquipmentItem(player, item)) {
+                    body.set(sourceSlot, ItemService.gI().createItemNull());
+                }
+                continue;
+            }
+
+            int targetSlot = -1;
+            if (isPlayerSkillBook(item)) {
+                targetSlot = PLAYER_SKILL_BOOK_SLOT;
+            } else if (isAuraItem(item)) {
+                targetSlot = PLAYER_AURA_SLOT;
+            } else if (item.template.type == 36) {
+                targetSlot = PLAYER_TITLE_SLOT;
+            }
+
+            if (targetSlot < 0 || targetSlot == sourceSlot) {
+                continue;
+            }
+            Item targetItem = body.get(targetSlot);
+            if (targetItem == null || !targetItem.isNotNullItem()) {
+                body.set(targetSlot, item);
+                body.set(sourceSlot, ItemService.gI().createItemNull());
+            } else if (storePlayerEquipmentItem(player, item)) {
+                body.set(sourceSlot, ItemService.gI().createItemNull());
+            }
+        }
+    }
+
+    private boolean moveBookToPet(Player player, Item item) {
+        if (player.pet == null
+                || !PetConfig.isTypeAllowed("pet.equipment.vipTypes", player.pet.typePet, 2, 3, 4)) {
+            return false;
+        }
+        while (player.pet.inventory.itemsBody.size() <= PET_SKILL_BOOK_SLOT) {
+            player.pet.inventory.itemsBody.add(ItemService.gI().createItemNull());
+        }
+        Item equippedBook = player.pet.inventory.itemsBody.get(PET_SKILL_BOOK_SLOT);
+        if (equippedBook != null && equippedBook.isNotNullItem()) {
+            return false;
+        }
+        player.pet.inventory.itemsBody.set(PET_SKILL_BOOK_SLOT, item);
+        return true;
+    }
+
+    private boolean storePlayerEquipmentItem(Player player, Item item) {
+        Item remaining = putItemBag(player, item);
+        if (!remaining.isNotNullItem()) {
+            return true;
+        }
+        remaining = putItemBox(player, remaining);
+        return !remaining.isNotNullItem();
+    }
+
     public Item putItemBody(Player player, Item item) {
         byte type = item.getType();
         Item sItem = item;
@@ -293,7 +484,7 @@ public class InventoryService {
 
         // Kiểm tra các loại item hợp lệ
         switch (item.template.type) {
-            case 0, 1, 2, 3, 4, 5, 32, 23, 24, 11, 27, 25 -> {
+            case 0, 1, 2, 3, 4, 5, 32, 23, 24, 11, 27, 25, 36 -> {
             }
             default -> {
                 Service.gI().sendThongBaoOK(player.isPet ? ((Pet) player).master : player, "Trang bị không phù hợp!1");
@@ -328,34 +519,16 @@ public class InventoryService {
             Service.gI().sendThongBaoOK(player.isPet ? ((Pet) player).master : player, "Sức mạnh không đủ yêu cầu!");
             return sItem;
         }
+        if (item.template.type == 32) {
+            ItemService.gI().ensureTrainArmorTimeOption(item);
+        }
         handleOption210(item);
         checkOption231(item);
         int index = -1;
-        switch (item.template.type) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                index = item.template.type;
-                break;
-            case 32:
-                index = 6;
-                break;
-            case 23:
-            case 24:
-                index = 9;
-                break;
-            case 11:
-                index = 8;
-                break;
-            case 27:
-                index = 7;
-                break;
-            case 25:
-                index = player.isPet ? 8 : 10;
-                break;
+        if (player.isPet) {
+            index = getPetBodySlot(item);
+        } else {
+            index = getPlayerBodySlot(item);
         }
         if (player.isPet && (item.template.type == 11 || item.template.type == 25)) {
             Pet pet = (Pet) player;
@@ -366,12 +539,18 @@ public class InventoryService {
             }
         }
 
-        if (player.isPet && (item.template.type == 23 || item.template.type == 24 || item.template.type == 27)) {
+        if (player.isPet && (item.template.type == 23 || item.template.type == 24
+                || item.template.type == 27 || item.template.type == 32 || index < 0)) {
             Player recipient = ((Pet) player).master;
             if (recipient == null) {
                 recipient = player;
             }
             Service.gI().sendThongBaoOK(recipient, "Đệ tử không thể sử dụng vật phẩm này!");
+            return sItem;
+        }
+
+        if (!player.isPet && index < 0) {
+            Service.gI().sendThongBaoOK(player, "Vật phẩm này chỉ có thể trang bị cho đệ tử!");
             return sItem;
         }
 
@@ -410,10 +589,7 @@ public class InventoryService {
     public void itemBodyToBag(Player player, int index) {
         Item item = player.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
-            if (index == 12) {
-                Service.gI().sendPetFollow(player, (short) 0);
-            }
-            if (index == 7 && !player.isPet && item.template.type != 25) {
+            if (index == PLAYER_FOLLOW_PET_SLOT && !player.isPet && item.template.type != 25) {
                 if (player.newPet != null) {
                     ChangeMapService.gI().exitMap(player.newPet);
                     player.newPet.dispose();
@@ -448,6 +624,9 @@ public class InventoryService {
                     }
                     Service.gI().Send_Caitrang(player.pet);
                     Service.gI().Send_Caitrang(player);
+                    if (player.pet.zone != null) {
+                        Service.gI().sendFlagBag(player.pet);
+                    }
                 }
             } else {
                 Service.gI().sendThongBao(player, "Đệ tử phải đạt " + Util.numberToMoney(minPower)
@@ -467,6 +646,9 @@ public class InventoryService {
             Service.gI().point(player);
             Service.gI().Send_Caitrang(player.pet);
             Service.gI().Send_Caitrang(player);
+            if (player.pet.zone != null) {
+                Service.gI().sendFlagBag(player.pet);
+            }
             Service.gI().showInfoPet(player);
         }
     }

@@ -213,8 +213,19 @@ function Write-Status {
     $port = [int](Get-ConfigValue -Key "server.port" -Default "14445")
     $listeningIds = @(Get-ListeningProcessIds -CandidateIds $processIds -Port $port)
     $displayIds = if ($listeningIds.Count -gt 0) { $listeningIds } else { $processIds }
+    $processStartTimes = @($processIds | ForEach-Object {
+        $process = Get-Process -Id $_ -ErrorAction SilentlyContinue
+        if ($process) { $process.StartTime }
+    })
+    $startupAgeSeconds = if ($processStartTimes.Count -gt 0) {
+        ((Get-Date) - ($processStartTimes | Sort-Object | Select-Object -First 1)).TotalSeconds
+    } else {
+        [double]::PositiveInfinity
+    }
     $status = if ($listeningIds.Count -gt 0) {
         "Đang chạy"
+    } elseif ($processIds.Count -gt 0 -and $startupAgeSeconds -lt 90) {
+        "Đang khởi động (chưa mở cổng $port)"
     } elseif ($processIds.Count -gt 0) {
         "Lỗi khởi động (chưa mở cổng $port)"
     } else {

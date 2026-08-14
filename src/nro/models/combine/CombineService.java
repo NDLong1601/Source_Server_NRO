@@ -51,6 +51,7 @@ public class CombineService {
     public static final int NANG_CHI_SO_BONG_TAI = 517;
     public static final int NANG_CAP_BONG_TAI3 = 455;
     public static final int NANG_CHI_SO_BONG_TAI3 = 457;
+    public static final int NANG_CAP_NHAN = 458;
     private static CombineService instance;
 
     public final Npc baHatMit;
@@ -117,6 +118,9 @@ public class CombineService {
                 break;
             case NANG_CAP_BONG_TAI3:
                 NangCapBongTai3.showInfoCombine(player);
+                break;
+            case NANG_CAP_NHAN:
+                NangCapNhan.showInfoCombine(player);
                 break;
             case NANG_CHI_SO_BONG_TAI3:
                 NangChiSoBongTai3.showInfoCombine(player);
@@ -199,6 +203,9 @@ public class CombineService {
                 break;
             case NANG_CAP_BONG_TAI3:
                 NangCapBongTai3.nangCapBongTai(player);
+                break;
+            case NANG_CAP_NHAN:
+                NangCapNhan.nangCapNhan(player);
                 break;
             case NANG_CHI_SO_BONG_TAI3:
                 NangChiSoBongTai3.nangChiSoBongTai(player);
@@ -624,6 +631,8 @@ public class CombineService {
                 return "Ta sẽ phù phép\ncho bông tai Porata cấp 2 của ngươi\ncó 1 chỉ số ngẫu nhiên";
             case NANG_CAP_BONG_TAI3:
                 return "Ta sẽ phù phép\ncho bông tai Porata của ngươi\nthành cấp 3";
+            case NANG_CAP_NHAN:
+                return "Ta sẽ dùng Đá hoàng kim\nnâng cấp nhẫn cho đệ tử của ngươi";
             case NANG_CHI_SO_BONG_TAI3:
                 return "Ta sẽ phù phép\ncho bông tai Porata cấp 3 của ngươi\ncó 2 chỉ số ngẫu nhiên";
             case NANG_CAP_SAO_PHA_LE:
@@ -694,6 +703,8 @@ public class CombineService {
             case NANG_CAP_BONG_TAI3:
                 return "Vào hành trang\nChọn bông tai Porata cấp 2\nChọn mảnh bông tai để nâng cấp, Số lượng 20000 cái"
                         + "\nSau đó chọn 'Nâng cấp'";
+            case NANG_CAP_NHAN:
+                return "Vào hành trang\nChọn 1 nhẫn đệ tử\nChọn Đá hoàng kim\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI3:
                 return "Vào hành trang\nChọn bông tai Porata Cấp 3\nChọn mảnh hồn porata số lượng 99"
                         + "\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";

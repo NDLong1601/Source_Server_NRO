@@ -687,7 +687,7 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");
 
             loadDefaultItemOptions(ConnectionDatabase);
-            GiftBoxConfigService.gI().load();
+            GiftBoxConfigService.gI().load(ConnectionDatabase);
 
             //load shop
             SHOPS = ShopDAO.getShops(ConnectionDatabase);
@@ -875,10 +875,6 @@ public final class Manager {
                 Logger.success(Logger.RED + "Successfully loaded map template (" + MAP_TEMPLATES.length + ")\n");
             }
 
-            try {
-                LocalManager.executeUpdate("ALTER TABLE radar ADD COLUMN IF NOT EXISTS milestones TEXT NOT NULL DEFAULT ('[]') AFTER options");
-            } catch (Exception ignored) {
-            }
             ps = ConnectionDatabase.prepareStatement("select * from radar");
             rs = ps.executeQuery();
             while (rs.next()) {

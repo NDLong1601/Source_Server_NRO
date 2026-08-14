@@ -1,6 +1,16 @@
 var combineRows = [];
 var selectedCombineKey = "";
 var filteredCombineRows = [];
+var ringUpgradeSteps = [
+  ["Nhẫn Sơ Cấp", 19045, "Nhẫn Quang Minh", 19046],
+  ["Nhẫn Quang Minh", 19046, "Nhẫn Băng Tinh", 19047],
+  ["Nhẫn Băng Tinh", 19047, "Nhẫn Lục Diệp", 19048],
+  ["Nhẫn Lục Diệp", 19048, "Nhẫn Hắc Ám", 19049],
+  ["Nhẫn Hắc Ám", 19049, "Nhẫn Dung Nham", 19050],
+  ["Nhẫn Dung Nham", 19050, "Nhẫn Huyết Nguyệt", 19051],
+  ["Nhẫn Huyết Nguyệt", 19051, "Nhẫn Kim Quang", 19052],
+  ["Nhẫn Kim Quang", 19052, "Nhẫn Thiên Thạch", 19053]
+];
 
 function LoadCombineConfig() {
   if (!optionRows || optionRows.length < 2) LoadOptions();
@@ -23,7 +33,13 @@ function IsCombineCompanionKey(key) {
   return key == "earring.level2.paramMin" || key == "earring.level2.paramMax" ||
     key == "earring.level3.paramMin" || key == "earring.level3.paramMax" ||
     key == "earring.level3.allowDuplicate" ||
-    key == "angel.bonusParamMin" || key == "angel.bonusParamMax";
+    key == "angel.bonusParamMin" || key == "angel.bonusParamMax" ||
+    key == "ring.upgrade.stoneCosts" || key == "ring.upgrade.goldCosts" ||
+    key == "ring.upgrade.gemCosts";
+}
+
+function IsRingUpgradeKey(key) {
+  return (key || "").indexOf("ring.upgrade.") == 0;
 }
 
 function VisibleCombineRows() {
@@ -89,8 +105,10 @@ function PickCombineConfig(index) {
   Set("combineKind", r[5]);
   Set("combineDescription", r[6]);
   var isOptionGroup = r[5] == "option-list" && OptionGroupKeys(r[0]) != null;
-  document.getElementById("combineValueBox").style.display = isOptionGroup ? "none" : "block";
+  var isRingGroup = IsRingUpgradeKey(r[0]);
+  document.getElementById("combineValueBox").style.display = isOptionGroup || isRingGroup ? "none" : "block";
   document.getElementById("combineOptionBox").style.display = isOptionGroup ? "block" : "none";
+  document.getElementById("combineRingBox").style.display = isRingGroup ? "block" : "none";
   if (isOptionGroup) {
     var keys = OptionGroupKeys(r[0]);
     Set("combineParamMin", CombineConfigValue(keys.min));
@@ -100,7 +118,77 @@ function PickCombineConfig(index) {
     document.getElementById("combineAllowDuplicate").checked = keys.duplicate ? IsTrueValue(CombineConfigValue(keys.duplicate)) : false;
     RenderCombineOptionPicker();
   }
+  if (isRingGroup) RenderRingUpgradeEditor();
   AdjustTableOffsets();
+}
+
+function RingConfigValues(key, fallback) {
+  var raw = CombineConfigValue(key) || fallback;
+  var values = raw.split(",");
+  var defaults = fallback.split(",");
+  while (values.length < 8) values.push(defaults[values.length] || "0");
+  return values;
+}
+
+function RenderRingUpgradeEditor() {
+  var rates = RingConfigValues("ring.upgrade.successRates", "100,100,100,100,100,100,100,100");
+  var stones = RingConfigValues("ring.upgrade.stoneCosts", "1,2,3,4,5,6,7,8");
+  var gold = RingConfigValues("ring.upgrade.goldCosts", "0,0,0,0,0,0,0,0");
+  var gems = RingConfigValues("ring.upgrade.gemCosts", "0,0,0,0,0,0,0,0");
+  var html = "";
+  for (var i = 0; i < 8; i++) {
+    var step = ringUpgradeSteps[i];
+    html += '<tr><td><div class="ring-upgrade-step">' +
+      '<img src="data/icon/x1/' + step[1] + '.png" alt="' + step[1] + '">' +
+      '<span><b>Cấp ' + i + ' → ' + (i + 1) + '</b><small>' + Html(step[0]) + ' (' + step[1] + ')<br>→ ' + Html(step[2]) + ' (' + step[3] + ')</small></span>' +
+      '<img src="data/icon/x1/' + step[3] + '.png" alt="' + step[3] + '"></div></td>' +
+      '<td><input id="ringRate' + i + '" value="' + HtmlAttr(Trim(rates[i])) + '"></td>' +
+      '<td><input id="ringStone' + i + '" value="' + HtmlAttr(Trim(stones[i])) + '"></td>' +
+      '<td><input id="ringGold' + i + '" value="' + HtmlAttr(Trim(gold[i])) + '"></td>' +
+      '<td><input id="ringGem' + i + '" value="' + HtmlAttr(Trim(gems[i])) + '"></td></tr>';
+  }
+  document.getElementById("combineRingLevels").innerHTML = html;
+}
+
+function CollectRingUpgradeValues() {
+  var result = { rates: [], stones: [], gold: [], gems: [] };
+  for (var i = 0; i < 8; i++) {
+    var rate = Trim(V("ringRate" + i));
+    var stone = Trim(V("ringStone" + i));
+    var gold = Trim(V("ringGold" + i));
+    var gem = Trim(V("ringGem" + i));
+    if (!/^\d+(\.\d+)?$/.test(rate) || parseFloat(rate) < 0 || parseFloat(rate) > 100) throw "Tỷ lệ cấp " + i + " phải từ 0 đến 100.";
+    if (!/^\d+$/.test(stone) || parseInt(stone, 10) < 1) throw "Đá hoàng kim cấp " + i + " phải là số nguyên từ 1 trở lên.";
+    if (!/^\d+$/.test(gold)) throw "Vàng cấp " + i + " phải là số nguyên không âm.";
+    if (!/^\d+$/.test(gem)) throw "Ngọc cấp " + i + " phải là số nguyên không âm.";
+    if (parseFloat(stone) > 2147483647 || parseFloat(gold) > 2147483647 || parseFloat(gem) > 2147483647) throw "Tài nguyên cấp " + i + " vượt giới hạn 2.147.483.647.";
+    result.rates.push(rate);
+    result.stones.push(stone);
+    result.gold.push(gold);
+    result.gems.push(gem);
+  }
+  return result;
+}
+
+function SaveRingUpgradeConfig() {
+  var values;
+  try { values = CollectRingUpgradeValues(); }
+  catch (e) { Msg("combineMessage", "Lỗi: " + e); return; }
+  var configs = [
+    ["ring.upgrade.successRates", values.rates.join(",")],
+    ["ring.upgrade.stoneCosts", values.stones.join(",")],
+    ["ring.upgrade.goldCosts", values.gold.join(",")],
+    ["ring.upgrade.gemCosts", values.gems.join(",")]
+  ];
+  var messages = [];
+  var text = "";
+  for (var i = 0; i < configs.length; i++) {
+    text = SaveCombineValue(configs[i][0], configs[i][1]);
+    messages.push(StatusText(text));
+    if (IsAdminError(text)) break;
+  }
+  Msg("combineMessage", messages.join("\r\n"));
+  if (!IsAdminError(text)) LoadCombineConfig();
 }
 
 function FindCombineRow(key) {
@@ -165,6 +253,7 @@ function SaveCombineValue(key, value) {
 
 function SaveCombineConfig() {
   if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+  if (IsRingUpgradeKey(V("combineKey"))) { SaveRingUpgradeConfig(); return; }
   var keys = OptionGroupKeys(V("combineKey"));
   if (keys) {
     var ids = ParseIdList(V("combineValue"));
@@ -197,6 +286,20 @@ function SaveCombineConfig() {
 
 function ResetCombineConfig() {
   if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+  if (IsRingUpgradeKey(V("combineKey"))) {
+    if (!window.confirm("Đưa toàn bộ cấu hình nâng cấp nhẫn về mặc định?")) return;
+    var ringKeys = ["ring.upgrade.successRates", "ring.upgrade.stoneCosts", "ring.upgrade.goldCosts", "ring.upgrade.gemCosts"];
+    var ringMessages = [];
+    var ringText = "";
+    for (var r = 0; r < ringKeys.length; r++) {
+      ringText = RunAdmin("resetcombineconfig", { ConfigKey: ringKeys[r] });
+      ringMessages.push(StatusText(ringText));
+      if (IsAdminError(ringText)) break;
+    }
+    Msg("combineMessage", ringMessages.join("\r\n"));
+    if (!IsAdminError(ringText)) LoadCombineConfig();
+    return;
+  }
   if (!window.confirm("Đưa " + V("combineName") + " về mặc định " + V("combineDefault") + "?")) return;
   var keys = OptionGroupKeys(V("combineKey"));
   var resetKeys = [V("combineKey")];

@@ -28,6 +28,7 @@ import nro.models.network.MySession;
 import nro.models.player_system.AntiLogin;
 import nro.models.services.ClanService;
 import nro.models.services.IntrinsicService;
+import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.map.service.MapService;
 import nro.models.services.Service;
@@ -378,7 +379,7 @@ public class MrFinn {
                 }
                 player.inventory.itemsBody.add(item);
             }
-            if (player.inventory.itemsBody.size() == 10) {
+            while (player.inventory.itemsBody.size() < InventoryService.PLAYER_BODY_SLOT_COUNT) {
                 player.inventory.itemsBody.add(ItemService.gI().createItemNull());
             }
             dataArray.clear();
@@ -938,7 +939,9 @@ public class MrFinn {
                 pet.nPoint.hp = hp;
                 pet.nPoint.mp = mp;
                 player.pet = pet;
+                InventoryService.gI().normalizePetEquipmentSlots(player);
             }
+            InventoryService.gI().normalizePlayerEquipmentSlots(player);
 
             // Data bảo vệ tài khoản
             try {

@@ -39,8 +39,17 @@ public final class GiftBoxConfigService {
     }
 
     public void load() {
-        configs.clear();
         try (Connection connection = LocalManager.getConnection()) {
+            load(connection);
+        } catch (Exception e) {
+            // The server must remain bootable before the optional migration is run.
+            Logger.error("Could not load gift box configs (using legacy handlers): " + e.getMessage());
+        }
+    }
+
+    public void load(Connection connection) {
+        configs.clear();
+        try {
             ensureSchema(connection);
             loadRows(connection);
             if (configs.isEmpty()) {
@@ -49,7 +58,7 @@ public final class GiftBoxConfigService {
             }
             Logger.success(Logger.PURPLE + "Successfully loaded gift box configs (" + configs.size() + ")\n");
         } catch (Exception e) {
-            // The server must remain bootable before the optional migration is run.
+            // Reuse the caller's startup connection so a single-connection pool cannot deadlock.
             Logger.error("Could not load gift box configs (using legacy handlers): " + e.getMessage());
         }
     }

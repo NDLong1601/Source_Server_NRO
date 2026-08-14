@@ -4,6 +4,7 @@ import nro.models.boss.Boss;
 import nro.models.boss.Boss_mini.SoiHecQuyn;
 import nro.models.services.shenron.SummonDragon;
 import nro.models.combine.CombineService;
+import nro.models.combine.NangCapNhan;
 import nro.models.boss.BossID;
 import nro.models.consts.ConstItem;
 import nro.models.radar.Card;
@@ -80,6 +81,13 @@ public class UseItem {
 
     private static UseItem instance;
     private static final Random rand = new Random();
+    private static final int PET_SKILL_1_REROLL_ITEM_ID = 2011;
+    private static final int PET_SKILL_2_REROLL_ITEM_ID = 2000;
+    private static final int PET_SKILL_3_REROLL_ITEM_ID = 2012;
+    private static final int PET_SKILL_4_REROLL_ITEM_ID = 2013;
+    private static final int UBU_DISCIPLE_EGG_ITEM_ID = 2014;
+    private static final int KID_JIREN_DISCIPLE_EGG_ITEM_ID = 2015;
+    private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
 
     private UseItem() {
 
@@ -295,8 +303,25 @@ public class UseItem {
                         Service.gI().sendFlagBag(pl);
                         break;
                     case 25: {
-                        InventoryService.gI().itemBagToBody(pl, indexBag);
+                        if (NangCapNhan.isRing(item)) {
+                            InventoryService.gI().itemBagToBody(pl, indexBag);
+                        } else if (InventoryService.isPetSkillBook(item)) {
+                            if (pl.pet == null) {
+                                Service.gI().sendThongBao(pl, "Bạn chưa có đệ tử");
+                            } else if (!PetConfig.isTypeAllowed("pet.equipment.vipTypes", pl.pet.typePet, 2, 3, 4)) {
+                                Service.gI().sendThongBao(pl,
+                                        "Sách tuyệt kỹ chỉ có thể trang bị cho đệ tử Ubu, Kid Jiren hoặc Bill");
+                            } else {
+                                InventoryService.gI().itemBagToPetBody(pl, indexBag);
+                            }
+                        } else {
+                            InventoryService.gI().itemBagToBody(pl, indexBag);
+                        }
+                        break;
                     }
+                    case 36: // danh hiệu trang bị
+                        InventoryService.gI().itemBagToBody(pl, indexBag);
+                        break;
                     default:
                         switch (item.template.id) {
                             case 992: // Nhan thoi khong
@@ -888,6 +913,41 @@ public class UseItem {
                                 break;
                             case 2006:
                                 Input.gI().createFormChangeNameByItem(pl);
+                                break;
+                            case PET_SKILL_1_REROLL_ITEM_ID:
+                                if (!rerollPetSkill(pl, item, 1)) {
+                                    return;
+                                }
+                                break;
+                            case PET_SKILL_2_REROLL_ITEM_ID:
+                                if (!rerollPetSkill(pl, item, 2)) {
+                                    return;
+                                }
+                                break;
+                            case PET_SKILL_3_REROLL_ITEM_ID:
+                                if (!rerollPetSkill(pl, item, 3)) {
+                                    return;
+                                }
+                                break;
+                            case PET_SKILL_4_REROLL_ITEM_ID:
+                                if (!rerollPetSkill(pl, item, 4)) {
+                                    return;
+                                }
+                                break;
+                            case UBU_DISCIPLE_EGG_ITEM_ID:
+                                if (!openDiscipleEgg(pl, item, 2, "Ubu")) {
+                                    return;
+                                }
+                                break;
+                            case KID_JIREN_DISCIPLE_EGG_ITEM_ID:
+                                if (!openDiscipleEgg(pl, item, 4, "Kid Jiren")) {
+                                    return;
+                                }
+                                break;
+                            case BILL_DISCIPLE_EGG_ITEM_ID:
+                                if (!openDiscipleEgg(pl, item, 3, "Bill")) {
+                                    return;
+                                }
                                 break;
                             case 1758: {
                                 Player player = pl;
@@ -1933,6 +1993,51 @@ public class UseItem {
             InventoryService.gI().subQuantityItemsBag(player, pea, 1);
             InventoryService.gI().sendItemBags(player);
         }
+    }
+
+    private boolean rerollPetSkill(Player pl, Item item, int skillSlot) {
+        int skillIndex = skillSlot - 1;
+        if (pl.pet == null || pl.pet.playerSkill == null || pl.pet.playerSkill.skills == null
+                || skillIndex < 0 || pl.pet.playerSkill.skills.size() <= skillIndex) {
+            Service.gI().sendThongBao(pl, "Vui lòng có skill " + skillSlot + " trước để sử dụng");
+            return false;
+        }
+        Skill currentSkill = pl.pet.playerSkill.skills.get(skillIndex);
+        if (currentSkill == null || currentSkill.skillId == -1) {
+            Service.gI().sendThongBao(pl, "Vui lòng có skill " + skillSlot + " trước để sử dụng");
+            return false;
+        }
+        if (!pl.pet.rerollSkill(skillSlot)) {
+            Service.gI().sendThongBao(pl, "Không thể đổi skill " + skillSlot + " lúc này");
+            return false;
+        }
+        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+        Service.gI().chatJustForMe(pl, pl.pet, "Cám ơn sư phụ");
+        return true;
+    }
+
+    private boolean openDiscipleEgg(Player pl, Item item, int petType, String petName) {
+        if (pl.pet != null && pl.pet.typePet == petType) {
+            Service.gI().sendThongBao(pl, "Bạn đã sở hữu đệ tử " + petName + ".");
+            return false;
+        }
+        switch (petType) {
+            case 2:
+                PetService.gI().changeUubPet(pl);
+                break;
+            case 3:
+                PetService.gI().changeKidBeerPet(pl);
+                break;
+            case 4:
+                PetService.gI().changeJirenPet(pl);
+                break;
+            default:
+                Service.gI().sendThongBao(pl, "Loại đệ tử không hợp lệ.");
+                return false;
+        }
+        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+        Service.gI().sendThongBao(pl, "Bạn đã nhận được đệ tử " + petName + "!");
+        return true;
     }
 
     private void upSkillPet(Player pl, Item item) {

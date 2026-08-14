@@ -453,6 +453,8 @@ public class ItemService {
                     return 30;
                 case 1716:
                     return 40;
+                case 1869:
+                    return 50;
                 default:
                     return 0;
             }
@@ -471,6 +473,7 @@ public class ItemService {
                 case 531:
                 case 536:
                 case 1716:
+                case 1869:
                     return true;
                 default:
                     return false;
@@ -478,6 +481,46 @@ public class ItemService {
         } else {
             return false;
         }
+    }
+
+    public int getMaxTrainArmorMinutes(Item item) {
+        if (!isTrainArmor(item)) {
+            return 0;
+        }
+        return switch (item.template.id) {
+            case 529, 534 -> 100;
+            case 530, 535 -> 1_000;
+            case 531, 536 -> 10_000;
+            case 1716 -> 20_000;
+            case 1869 -> 30_000;
+            default -> 0;
+        };
+    }
+
+    /**
+     * Bổ sung bộ đếm phút cho giáp tập luyện cũ được tạo trước khi option 9
+     * được cấu hình mặc định.
+     */
+    public boolean ensureTrainArmorTimeOption(Item item) {
+        if (!isTrainArmor(item)) {
+            return false;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option.optionTemplate != null && option.optionTemplate.id == 9) {
+                int normalizedMinutes = Math.max(0, Math.min(option.param, getMaxTrainArmorMinutes(item)));
+                if (option.param != normalizedMinutes) {
+                    option.param = normalizedMinutes;
+                    item.content = item.getContent();
+                    item.info = item.getInfo();
+                    return true;
+                }
+                return false;
+            }
+        }
+        item.itemOptions.add(new Item.ItemOption(9, 0));
+        item.content = item.getContent();
+        item.info = item.getInfo();
+        return true;
     }
 
     public boolean isOutOfDateTime(Item item) {
@@ -713,7 +756,7 @@ public class ItemService {
     }
 
     public Item vatphamsk(boolean hsd) {
-        int[] itemId = {2025, 2026, 2036, 2037, 2038, 2039, 2040, 2019, 2020, 2021, 2022, 2023, 2024, 954, 955, 952, 953, 924, 860, 742};
+        int[] itemId = {954, 955, 952, 953, 924, 860, 742};
         byte[] option = {77, 80, 81, 103, 50, 94, 5};
         byte[] option_v2 = {14, 16, 17, 19, 27, 28, 47, 87}; //77 %hp // 80 //81 //103 //50 //94 //5 % sdcm
         byte optionid = 0;

@@ -289,7 +289,7 @@ parameterizedCommands.put("upp", (player, text) -> {
                     if (typePet == 2 || typePet == 3 || typePet == 4) {
                         for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
                             Item item = player.inventory.itemsBag.get(i);
-                            if (item != null && item.isNotNullItem() && item.template.type == 25) {
+                            if (InventoryService.isPetSkillBook(item)) {
                                 long minPower = PetConfig.getLong("pet.equipment.minPower", 1_500_000L, 0L, Long.MAX_VALUE);
                                 if (player.pet.nPoint != null && player.pet.nPoint.power >= minPower) {
                                     Item old = InventoryService.gI().putItemBody(player.pet, item);

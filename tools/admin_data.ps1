@@ -232,6 +232,10 @@ function Get-CombineCatalog {
         [pscustomobject]@{ Key="equipment.upgrade.failStatLossPercent"; Category="Cường hóa trang bị"; Name="Chỉ số giảm khi rớt cấp"; Default="11"; Kind="int"; Description="Phần trăm trừ chỉ số khi thất bại ở mốc bị rớt cấp." },
         [pscustomobject]@{ Key="equipment.socket.rates"; Category="Đục lỗ / sao pha lê"; Name="Tỉ lệ đục lỗ 0 đến 8 sao"; Default="50,20,10,5,1,0.7,0.5,0.1,0.1"; Kind="rate-list"; Description="Tỉ lệ thật và tỉ lệ hiển thị dùng chung danh sách này." },
         [pscustomobject]@{ Key="equipment.socket.enhanceRate"; Category="Đục lỗ / sao pha lê"; Name="Cường hóa lỗ sao 8-9"; Default="25"; Kind="rate"; Description="Tỉ lệ cường hóa lỗ sao pha lê bằng Hematite và dùi đục." },
+        [pscustomobject]@{ Key="ring.upgrade.successRates"; Category="Nhẫn đệ tử"; Name="Nâng cấp nhẫn cấp 0 đến 8"; Default="100,100,100,100,100,100,100,100"; Kind="ring-rate-list"; Description="Tỉ lệ thành công cho từng bước cấp 0→1 đến 7→8. Thành công sẽ đổi sang template và icon nhẫn cấp kế tiếp." },
+        [pscustomobject]@{ Key="ring.upgrade.stoneCosts"; Category="Nhẫn đệ tử"; Name="Đá hoàng kim theo cấp"; Default="1,2,3,4,5,6,7,8"; Kind="ring-positive-int-list"; Description="Số Đá hoàng kim tiêu hao cho từng bước nâng cấp." },
+        [pscustomobject]@{ Key="ring.upgrade.goldCosts"; Category="Nhẫn đệ tử"; Name="Vàng theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số vàng tiêu hao cho từng bước nâng cấp." },
+        [pscustomobject]@{ Key="ring.upgrade.gemCosts"; Category="Nhẫn đệ tử"; Name="Ngọc xanh theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số ngọc xanh tiêu hao cho từng bước nâng cấp." },
         [pscustomobject]@{ Key="earring.level2.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 2"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 1 lên cấp 2." },
         [pscustomobject]@{ Key="earring.level3.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 3"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 2 lên cấp 3." },
         [pscustomobject]@{ Key="earring.level2.optionRate"; Category="Bông tai"; Name="Mở chỉ số bông tai cấp 2"; Default="45"; Kind="rate"; Description="Tỉ lệ random thành công một dòng option cấp 2." },
@@ -319,6 +323,24 @@ function Assert-CombineValue {
         foreach ($part in $parts) {
             $number = $part.Trim()
             if ($number -notmatch '^\d+(\.\d+)?$' -or [double]$number -lt 0 -or [double]$number -gt 100) { throw "Mỗi tỉ lệ phải từ 0 đến 100 và phân cách bằng dấu phẩy." }
+        }
+    }
+    if ($Entry.Kind -eq "ring-rate-list") {
+        $parts = $Value -split ','
+        if ($parts.Count -ne 8) { throw "Cấu hình nhẫn phải có đúng 8 giá trị cho cấp 0→1 đến 7→8." }
+        foreach ($part in $parts) {
+            $number = $part.Trim()
+            if ($number -notmatch '^\d+(\.\d+)?$' -or [double]$number -lt 0 -or [double]$number -gt 100) { throw "Mỗi tỉ lệ nhẫn phải từ 0 đến 100." }
+        }
+    }
+    if ($Entry.Kind -eq "ring-int-list" -or $Entry.Kind -eq "ring-positive-int-list") {
+        $parts = $Value -split ','
+        if ($parts.Count -ne 8) { throw "Cấu hình nhẫn phải có đúng 8 giá trị cho cấp 0→1 đến 7→8." }
+        foreach ($part in $parts) {
+            $number = $part.Trim()
+            if ($number -notmatch '^\d+$') { throw "Tài nguyên nâng nhẫn phải là số nguyên không âm." }
+            if ($Entry.Kind -eq "ring-positive-int-list" -and [long]$number -lt 1) { throw "Mỗi cấp phải tốn ít nhất 1 Đá hoàng kim." }
+            if ([decimal]$number -gt [int]::MaxValue) { throw "Tài nguyên mỗi cấp không được vượt quá $([int]::MaxValue)." }
         }
     }
     $Value

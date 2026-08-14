@@ -11,6 +11,7 @@ import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
 import nro.models.map.service.MapService;
+import nro.models.services.InventoryService;
 import nro.models.utils.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -105,7 +106,7 @@ public class PlayerDAO {
             JSONArray item = new JSONArray();
             JSONArray options = new JSONArray();
             JSONArray opt = new JSONArray();
-            for (int i = 0; i < 11; i++) {
+            for (int i = 0; i < InventoryService.PLAYER_BODY_SLOT_COUNT; i++) {
                 switch (i) {
                     case 0:
                         //áo

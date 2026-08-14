@@ -182,6 +182,7 @@ public final class PetConfig {
 
     public static int[] getSkillPool(int skillSlot) {
         int[] defaults = switch (skillSlot) {
+            case 1 -> new int[]{0, 2, 4};
             case 2 -> new int[]{1, 3, 5};
             case 3 -> new int[]{6, 8, 9};
             case 4 -> new int[]{13, 12, 19};

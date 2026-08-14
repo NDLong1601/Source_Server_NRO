@@ -310,7 +310,6 @@ textarea {
   font-size: 12px;
   line-height: 18px;
   cursor: pointer;
-  user-select: none;
 }
 
 .option-default-toggle:hover {
@@ -1276,6 +1275,93 @@ tr:hover td.gift-status-waiting {
 
 .admin-hidden {
   display: none;
+}
+.ring-upgrade-editor {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ring-upgrade-note {
+  margin-bottom: 8px;
+  padding: 7px 9px;
+  border-left: 3px solid #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.ring-upgrade-scroll {
+  overflow-x: auto;
+  max-height: 365px;
+  border: 1px solid #dbe3ed;
+  background: #ffffff;
+}
+
+.ring-upgrade-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+}
+
+.ring-upgrade-table th,
+.ring-upgrade-table td {
+  padding: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ring-upgrade-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+}
+
+.ring-upgrade-table td:first-child {
+  min-width: 285px;
+  text-align: left;
+}
+
+.ring-upgrade-table input {
+  width: 72px;
+  height: 30px;
+  padding: 0 5px;
+  text-align: right;
+}
+
+.ring-upgrade-step {
+  white-space: nowrap;
+}
+
+.ring-upgrade-step img {
+  width: 24px;
+  height: 24px;
+  margin: 0 5px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.ring-upgrade-step span {
+  display: inline-block;
+  min-width: 190px;
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.ring-upgrade-step b,
+.ring-upgrade-step small {
+  display: block;
+}
+
+.ring-upgrade-step small {
+  color: #64748b;
+  font-size: 10px;
+  line-height: 14px;
 }
 .task-badge-image {
   width: 48px;
