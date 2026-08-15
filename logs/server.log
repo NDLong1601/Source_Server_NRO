@@ -12,7 +12,7 @@
 [0m[0;32m[0;35mSuccessfully loaded task badges (18)
 [0m[0;32m[0;31mSuccessfully loaded clan task (59)
 [0m[0;32m[0;35mSuccessfully loaded achievement (20)
-[0m[0;32m[0;31mSuccessfully loaded map item template (2027 items)
+[0m[0;32m[0;31mSuccessfully loaded map item template (2052 items)
 [0m[0;32m[0;35mSuccessfully loaded map item option template (251)
 [0m[0;32m[0;35mSuccessfully loaded default item options (595)
 [0m[0;32m[0;35mSuccessfully loaded gift box configs (10)
@@ -29,10 +29,9 @@
 [0m[0;32m[0;31mSuccessfully loaded giftcode (2)
 [0m[0;32m[0;35mSuccessfully Top Su Kien (3)
 [0m[0;32m[0;31mSuccessfully top Thach Dau Whis (3)
-[0m[0;35mTotal database loading time: 1857 (ms)
+[0m[0;35mTotal database loading time: 1653 (ms)
 [0m[0;32m[0;31mUpdate maps thread started success!
 [0m[0;32mServer initialized and listening on port 14445
-[0m[0;35mReset AutoMaintenance sau th?i gian b?o trì.
 [0m[0;32mLoaded admin spawn config (custom boss=0, server boss override=7, mob=1)
 [0m[0;32mLoaded event config (profile=8, boss=8, item=15)
 [0m

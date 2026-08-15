@@ -52,6 +52,7 @@ public class CombineService {
     public static final int NANG_CAP_BONG_TAI3 = 455;
     public static final int NANG_CHI_SO_BONG_TAI3 = 457;
     public static final int NANG_CAP_NHAN = 458;
+    public static final int GHEP_MANH_HUY_DIET = 519;
     private static CombineService instance;
 
     public final Npc baHatMit;
@@ -161,6 +162,9 @@ public class CombineService {
             case DA_MAI:
                 TaoDaMai.showInfoCombine(player);
                 break;
+            case GHEP_MANH_HUY_DIET:
+                GhepManhHuyDiet.showInfoCombine(player);
+                break;
         }
     }
 
@@ -245,6 +249,9 @@ public class CombineService {
                 break;
             case DA_MAI:
                 TaoDaMai.CheTaoDuiDuc(player);
+                break;
+            case GHEP_MANH_HUY_DIET:
+                GhepManhHuyDiet.ghepManh(player);
                 break;
         }
 
@@ -659,6 +666,8 @@ public class CombineService {
                 return "Ta sẽ phù phép\nphân rã sách đó cho ngươi";
             case CHE_TAO_TRANG_BI_THIEN_SU:
                 return "Chế tạo\ntrang bị thiên sứ";
+            case GHEP_MANH_HUY_DIET:
+                return "Ta sẽ phù phép\nghép 4 mảnh Hủy Diệt\nthành 1 Rương trang bị";
             case LAM_PHEP_NHAP_DA:
                 return "Ta sẽ phù phép\n"
                         + "cho 10 mảnh đá vụn\n"
@@ -730,6 +739,8 @@ public class CombineService {
                 return "Vào hành trang chọn\nCác Sách Tuyệt Kỹ cần phục hồi";
             case PHAN_RA_SACH:
                 return "Vào hành trang chọn\n1 sách cần phân rã";
+            case GHEP_MANH_HUY_DIET:
+                return "Vào hành trang\nChọn 4 mảnh Hủy Diệt cùng loại\n(Mảnh 1, 2, 3, 4)\nPhí: 100 Tr vàng + 100 ngọc (50%)\nSau đó chọn 'Ghép mảnh'";
             case LAM_PHEP_NHAP_DA:
                 return "Vào hành trang\n"
                         + "Chọn 10 mảnh đá vụn\n"

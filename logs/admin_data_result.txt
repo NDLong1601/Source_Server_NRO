@@ -1,1 +1,1 @@
-﻿OK	Đã lưu vật phẩm ID 2016. Restart server để client/server nhận template mới.
+﻿

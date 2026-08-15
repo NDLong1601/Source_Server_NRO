@@ -79,30 +79,33 @@ public class MrFinn {
                 session.vnd = rs.getInt("vnd");
                 session.tongnap = rs.getInt("tongnap");
                 session.vip = rs.getInt("vip");
-                long lastTimeLogin = rs.getTimestamp("last_time_login").getTime();
-                int secondsPass1 = (int) ((System.currentTimeMillis() - lastTimeLogin) / 1000);
-                long lastTimeLogout = rs.getTimestamp("last_time_logout").getTime();
-                int secondsPass = (int) ((System.currentTimeMillis() - lastTimeLogout) / 1000);
-                long createTime = rs.getTimestamp("create_time").getTime();
+                java.sql.Timestamp tsLogin = rs.getTimestamp("last_time_login");
+                long lastTimeLogin = tsLogin != null ? tsLogin.getTime() : 0;
+                int secondsPass1 = lastTimeLogin > 0 ? (int) ((System.currentTimeMillis() - lastTimeLogin) / 1000) : 999999;
+                java.sql.Timestamp tsLogout = rs.getTimestamp("last_time_logout");
+                long lastTimeLogout = tsLogout != null ? tsLogout.getTime() : 0;
+                int secondsPass = lastTimeLogout > 0 ? (int) ((System.currentTimeMillis() - lastTimeLogout) / 1000) : 999999;
+                java.sql.Timestamp tsCreate = rs.getTimestamp("create_time");
+                long createTime = tsCreate != null ? tsCreate.getTime() : System.currentTimeMillis();
                 int deltaTime = (int) ((System.currentTimeMillis() - createTime) / 1000);
 
                 if (rs.getBoolean("ban")) {
                     Service.gI().sendThongBaoOK(session,
                             "Tài khoản này đang bị khóa. Liên hệ Admin để biết thêm thông tin");
-                } else if (secondsPass1 < Manager.SECOND_WAIT_LOGIN) {
-                    if (secondsPass < secondsPass1) {
+                } else if (Manager.SECOND_WAIT_LOGIN > 0 && secondsPass1 >= 0 && secondsPass1 < Manager.SECOND_WAIT_LOGIN) {
+                    if (secondsPass >= 0 && secondsPass < secondsPass1) {
                         Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass);
                         return null;
                     }
                     Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass1);
                     return null;
-                } else if (rs.getTimestamp("last_time_login").getTime() > session.lastTimeLogout
+                } else if (lastTimeLogin > session.lastTimeLogout
                         && (plInGame = Client.gI().getPlayerByUser(session.userId)) != null) {
                     if (plInGame != null) {
                         Client.gI().kickSession(plInGame.getSession());
                     }
                 } else {
-                    if (secondsPass < Manager.SECOND_WAIT_LOGIN) {
+                    if (Manager.SECOND_WAIT_LOGIN > 0 && secondsPass >= 0 && secondsPass < Manager.SECOND_WAIT_LOGIN) {
                         Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass);
                     } else {
                         rs = LocalManager.executeQuery("select * from player where account_id = ? limit 1",

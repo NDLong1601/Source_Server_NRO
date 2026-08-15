@@ -6766,7 +6766,32 @@ INSERT INTO `item_template` (`id`, `TYPE`, `gender`, `NAME`, `description`, `lev
 (2023, 25, 3, 'Nhẫn Huyết Nguyệt', 'Chiếc nhẫn đỏ rực như máu, được cho là hấp thụ sức mạnh của mặt trăng đỏ. Nó mang lại sức mạnh cuồng bạo cho người sở hữu.', 6, 19051, -1, 0, 0, 0, 0, -1, -1, -1),
 (2024, 25, 3, 'Nhẫn Kim Quang', 'Một chiếc nhẫn vàng ròng, phát ra luồng hào quang chói lóa, như thể được các vị thần ban phước. Nó tượng trưng cho sự giàu có và quyền lực.', 7, 19052, -1, 0, 0, 0, 0, -1, -1, -1),
 (2025, 25, 3, 'Nhẫn Thiên Thạch', 'Viên ngọc trai phát sáng lấp lánh được đính trên một dải kim loại óng ánh. Nó mang trong mình sức mạnh của các vì sao.', 8, 19053, -1, 0, 0, 0, 0, -1, -1, -1),
-(2026, 14, 3, 'Đá hoàng kim', 'Sử dụng để nâng cấp nhẫn', 0, 19054, -1, 1, 0, 0, 0, -1, -1, -1);
+(2026, 14, 3, 'Đá hoàng kim', 'Sử dụng để nâng cấp nhẫn', 0, 19054, -1, 1, 0, 0, 0, -1, -1, -1),
+(2027, 14, 3, 'Mảnh Áo Hủy Diệt 1', 'Mảnh thứ nhất của bộ áo Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Áo Hủy Diệt', 0, 19062, -1, 1, 0, 0, 0, -1, -1, -1),
+(2028, 14, 3, 'Mảnh Áo Hủy Diệt 2', 'Mảnh thứ hai của bộ áo Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Áo Hủy Diệt', 0, 19063, -1, 1, 0, 0, 0, -1, -1, -1),
+(2029, 14, 3, 'Mảnh Áo Hủy Diệt 3', 'Mảnh thứ ba của bộ áo Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Áo Hủy Diệt', 0, 19064, -1, 1, 0, 0, 0, -1, -1, -1),
+(2030, 14, 3, 'Mảnh Áo Hủy Diệt 4', 'Mảnh thứ tư của bộ áo Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Áo Hủy Diệt', 0, 19065, -1, 1, 0, 0, 0, -1, -1, -1),
+(2031, 14, 3, 'Mảnh Quần Hủy Diệt 1', 'Mảnh thứ nhất của bộ quần Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Quần Hủy Diệt', 0, 19066, -1, 1, 0, 0, 0, -1, -1, -1),
+(2032, 14, 3, 'Mảnh Quần Hủy Diệt 2', 'Mảnh thứ hai của bộ quần Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Quần Hủy Diệt', 0, 19067, -1, 1, 0, 0, 0, -1, -1, -1),
+(2033, 14, 3, 'Mảnh Quần Hủy Diệt 3', 'Mảnh thứ ba của bộ quần Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Quần Hủy Diệt', 0, 19068, -1, 1, 0, 0, 0, -1, -1, -1),
+(2034, 14, 3, 'Mảnh Quần Hủy Diệt 4', 'Mảnh thứ tư của bộ quần Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Quần Hủy Diệt', 0, 19069, -1, 1, 0, 0, 0, -1, -1, -1),
+(2035, 14, 3, 'Mảnh Giày Hủy Diệt 1', 'Mảnh thứ nhất của bộ giày Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Giày Hủy Diệt', 0, 19070, -1, 1, 0, 0, 0, -1, -1, -1),
+(2036, 14, 3, 'Mảnh Giày Hủy Diệt 2', 'Mảnh thứ hai của bộ giày Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Giày Hủy Diệt', 0, 19071, -1, 1, 0, 0, 0, -1, -1, -1),
+(2037, 14, 3, 'Mảnh Giày Hủy Diệt 3', 'Mảnh thứ ba của bộ giày Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Giày Hủy Diệt', 0, 19072, -1, 1, 0, 0, 0, -1, -1, -1),
+(2038, 14, 3, 'Mảnh Giày Hủy Diệt 4', 'Mảnh thứ tư của bộ giày Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Giày Hủy Diệt', 0, 19073, -1, 1, 0, 0, 0, -1, -1, -1),
+(2039, 14, 3, 'Mảnh Găng Hủy Diệt 1', 'Mảnh thứ nhất của bộ găng Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Găng Hủy Diệt', 0, 19074, -1, 1, 0, 0, 0, -1, -1, -1),
+(2040, 14, 3, 'Mảnh Găng Hủy Diệt 2', 'Mảnh thứ hai của bộ găng Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Găng Hủy Diệt', 0, 19075, -1, 1, 0, 0, 0, -1, -1, -1),
+(2041, 14, 3, 'Mảnh Găng Hủy Diệt 3', 'Mảnh thứ ba của bộ găng Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Găng Hủy Diệt', 0, 19076, -1, 1, 0, 0, 0, -1, -1, -1),
+(2042, 14, 3, 'Mảnh Găng Hủy Diệt 4', 'Mảnh thứ tư của bộ găng Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Găng Hủy Diệt', 0, 19077, -1, 1, 0, 0, 0, -1, -1, -1),
+(2043, 14, 3, 'Mảnh Nhẫn Hủy Diệt 1', 'Mảnh thứ nhất của bộ nhẫn Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Nhẫn Hủy Diệt', 0, 19078, -1, 1, 0, 0, 0, -1, -1, -1),
+(2044, 14, 3, 'Mảnh Nhẫn Hủy Diệt 2', 'Mảnh thứ hai của bộ nhẫn Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Nhẫn Hủy Diệt', 0, 19079, -1, 1, 0, 0, 0, -1, -1, -1),
+(2045, 14, 3, 'Mảnh Nhẫn Hủy Diệt 3', 'Mảnh thứ ba của bộ nhẫn Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Nhẫn Hủy Diệt', 0, 19080, -1, 1, 0, 0, 0, -1, -1, -1),
+(2046, 14, 3, 'Mảnh Nhẫn Hủy Diệt 4', 'Mảnh thứ tư của bộ nhẫn Hủy Diệt. Thu thập đủ 4 mảnh để ghép thành Rương Nhẫn Hủy Diệt', 0, 19081, -1, 1, 0, 0, 0, -1, -1, -1),
+(2047, 29, 3, 'Rương Áo Hủy Diệt', 'Sử dụng để nhận ngẫu nhiên 1 Áo Hủy Diệt theo hành tinh của bạn', 0, 19082, -1, 1, 0, 0, 0, -1, -1, -1),
+(2048, 29, 3, 'Rương Quần Hủy Diệt', 'Sử dụng để nhận ngẫu nhiên 1 Quần Hủy Diệt theo hành tinh của bạn', 0, 19083, -1, 1, 0, 0, 0, -1, -1, -1),
+(2049, 29, 3, 'Rương Găng Hủy Diệt', 'Sử dụng để nhận ngẫu nhiên 1 Găng Hủy Diệt theo hành tinh của bạn', 0, 19084, -1, 1, 0, 0, 0, -1, -1, -1),
+(2050, 29, 3, 'Rương Giày Hủy Diệt', 'Sử dụng để nhận ngẫu nhiên 1 Giày Hủy Diệt theo hành tinh của bạn', 0, 19085, -1, 1, 0, 0, 0, -1, -1, -1),
+(2051, 29, 3, 'Rương Nhẫn Hủy Diệt', 'Sử dụng để nhận ngẫu nhiên 1 Nhẫn Hủy Diệt', 0, 19086, -1, 1, 0, 0, 0, -1, -1, -1);
 
 -- --------------------------------------------------------
 

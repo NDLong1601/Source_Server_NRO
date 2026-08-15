@@ -34,7 +34,7 @@ public class DataGame {
     public static byte vsData = 9;
     public static byte vsMap = 2;
     public static byte vsSkill = 1;
-    public static byte vsItem = 19;
+    public static byte vsItem = 20;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -334,7 +334,11 @@ public class DataGame {
     private static byte getSmallImageVersion(int iconId) {
         return switch (iconId) {
             case 19009, 19011, 19012, 19045, 19046, 19047, 19048, 19049,
-                    19050, 19051, 19052, 19053, 19054, 19055, 19056, 19057 -> 1;
+                    19050, 19051, 19052, 19053, 19054, 19055, 19056, 19057,
+                    19062, 19063, 19064, 19065, 19066, 19067, 19068, 19069,
+                    19070, 19071, 19072, 19073, 19074, 19075, 19076, 19077,
+                    19078, 19079, 19080, 19081, 19082, 19083, 19084, 19085,
+                    19086 -> 1;
             case 19010 -> 2;
             default -> 0;
         };

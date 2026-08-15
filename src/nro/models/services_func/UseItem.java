@@ -748,6 +748,13 @@ public class UseItem {
                             case 1821:
                                 UseItem.gI().OpenTrungRongNhi(pl, item.template.id);
                                 break;
+                            case 2047: // Rương Áo Hủy Diệt
+                            case 2048: // Rương Quần Hủy Diệt
+                            case 2049: // Rương Găng Hủy Diệt
+                            case 2050: // Rương Giày Hủy Diệt
+                            case 2051: // Rương Nhẫn Hủy Diệt
+                                UseItem.gI().openRuongHuyDiet(pl, item);
+                                break;
                             case 1635: // co bon la
                                 UseItem.gI().useItemTime(pl, item);
                                 break;
@@ -2969,6 +2976,54 @@ public class UseItem {
         } else {
             Service.gI().sendThongBao(pl, "Hàng trang đã đầy");
         }
+    }
+
+    /**
+     * Mở Rương Hủy Diệt - nhận ngẫu nhiên 1 trang bị Hủy Diệt theo hành tinh.
+     * 2047: Rương Áo  → Trái Đất: 650, Namếc: 652, Xayda: 654
+     * 2048: Rương Quần → Trái Đất: 651, Namếc: 653, Xayda: 655
+     * 2049: Rương Găng → Trái Đất: 657, Namếc: 659, Xayda: 661
+     * 2050: Rương Giày → Trái Đất: 658, Namếc: 660, Xayda: 662
+     * 2051: Rương Nhẫn → 656 (chung 3 hành tinh)
+     */
+    public void openRuongHuyDiet(Player pl, Item item) {
+        if (InventoryService.gI().getCountEmptyBag(pl) <= 0) {
+            Service.gI().sendThongBao(pl, "Hành trang cần ít nhất 1 chỗ trống");
+            return;
+        }
+
+        // Mapping: [rương template id] → [Trái Đất, Namếc, Xayda]
+        int[][] mapping = {
+            {2047, 650, 652, 654}, // Áo
+            {2048, 651, 653, 655}, // Quần
+            {2049, 657, 659, 661}, // Găng
+            {2050, 658, 660, 662}, // Giày
+            {2051, 656, 656, 656}, // Nhẫn (chung)
+        };
+
+        int resultId = -1;
+        for (int[] row : mapping) {
+            if (item.template.id == row[0]) {
+                int randomGenderIndex = Util.nextInt(0, 2); // Random 0 (Trái Đất), 1 (Namếc), 2 (Xayda)
+                resultId = row[1 + randomGenderIndex];
+                break;
+            }
+        }
+
+        if (resultId < 0) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng vật phẩm này");
+            return;
+        }
+
+        // Tạo trang bị Hủy Diệt với chỉ số gốc
+        Item equipment = ItemService.gI().createNewItem((short) resultId);
+        RewardService.gI().initChiSoItem(equipment);
+
+        // Trừ 1 rương và thêm trang bị vào hành trang
+        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+        InventoryService.gI().addItemBag(pl, equipment);
+        InventoryService.gI().sendItemBags(pl);
+        Service.gI().sendThongBao(pl, "Bạn nhận được " + equipment.template.name + "!");
     }
 
 }
