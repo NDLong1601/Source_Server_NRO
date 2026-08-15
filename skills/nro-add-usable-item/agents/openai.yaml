@@ -1,0 +1,4 @@
+interface:
+  display_name: "NRO: Thêm vật phẩm sử dụng"
+  short_description: "Thêm item dùng được và chuẩn hóa icon NRO"
+  default_prompt: "Use $nro-add-usable-item to add a usable NRO item and prepare correctly sized cached icons."
