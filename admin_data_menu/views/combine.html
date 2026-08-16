@@ -1,4 +1,5 @@
 <div id="panelCombine" class="panel">
+  <div id="combineTabs" class="player-config-tabs"></div>
   <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
@@ -48,6 +49,22 @@
           </table>
         </div>
       </div>
+      <div id="combineDestroyBox" class="destroy-merge-editor">
+        <div class="section-title">Cấu hình ghép mảnh Hủy Diệt</div>
+        <div class="destroy-merge-note">Mỗi bộ cần đúng bốn mảnh khác ID. Khi thành công sẽ nhận rương kết quả; khi thất bại mất số mảnh ngẫu nhiên đã đặt.</div>
+        <div class="row">
+          <div class="cell"><label>Tỷ lệ thành công (%)</label><input type="text" id="destroyMergeRate"></div>
+          <div class="cell"><label>Vàng tiêu hao</label><input type="text" id="destroyMergeGold"></div>
+          <div class="cell"><label>Ngọc xanh tiêu hao</label><input type="text" id="destroyMergeGem"></div>
+          <div class="cell"><label>Mảnh mất khi thất bại</label><input type="text" id="destroyMergeFailLost"></div>
+        </div>
+        <div class="destroy-merge-scroll">
+          <table class="destroy-merge-table">
+            <thead><tr><th>Bộ</th><th>Mảnh 1 (ID)</th><th>Mảnh 2 (ID)</th><th>Mảnh 3 (ID)</th><th>Mảnh 4 (ID)</th><th>Rương kết quả (ID)</th></tr></thead>
+            <tbody id="destroyMergeRecipes"></tbody>
+          </table>
+        </div>
+      </div>
       <label>Mô tả</label><textarea id="combineDescription" readonly></textarea>
       <div class="actions">
         <button type="button" class="primary" onclick="SaveCombineConfig()">Lưu &amp; áp dụng</button>
@@ -57,6 +74,7 @@
         <div class="section-title">Quy tắc nhập</div>
         <div>rate: số từ 0 đến 100, số lẻ dùng dấu chấm.</div>
         <div>Nhẫn: mỗi dòng là một bước nâng cấp; Đá tối thiểu 1, Vàng/Ngọc có thể bằng 0.</div>
+        <div>Ghép mảnh Hủy Diệt: nhập ID nguyên liệu/rương từ 1 đến 32.767; một mảnh chỉ thuộc một bộ.</div>
         <div>Option random: tick trực tiếp option mong muốn và nhập khoảng Param Min/Max.</div>
         <div>bool: true hoặc false. Thay đổi có hiệu lực trong tối đa 1 giây, không cần restart.</div>
       </div>

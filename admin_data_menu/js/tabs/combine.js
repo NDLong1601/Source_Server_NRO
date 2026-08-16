@@ -1,5 +1,6 @@
 var combineRows = [];
 var selectedCombineKey = "";
+var selectedCombineCategory = "";
 var filteredCombineRows = [];
 var ringUpgradeSteps = [
   ["Nhẫn Sơ Cấp", 19045, "Nhẫn Quang Minh", 19046],
@@ -15,18 +16,25 @@ var ringUpgradeSteps = [
 function LoadCombineConfig() {
   if (!optionRows || optionRows.length < 2) LoadOptions();
   combineRows = ParseTsv(RunAdmin("listcombineconfig", {}));
-  filteredCombineRows = VisibleCombineRows();
-  RenderCombineRows(filteredCombineRows);
+  RenderCombineTabs();
+  FilterCombineRows();
+  var restored = false;
   if (selectedCombineKey) {
     for (var i = 1; i < combineRows.length; i++) {
       if (combineRows[i][0] == selectedCombineKey) {
         PickCombineConfig(i);
+        restored = true;
         break;
       }
     }
   }
+  if (!restored && filteredCombineRows.length > 1) PickFilteredCombineConfig(1);
   Msg("combineMessage", filteredCombineRows.length > 1 ? "Đã tải " + (filteredCombineRows.length - 1) + " nhóm cấu hình combine." : "Không tải được cấu hình combine.");
   AdjustTableOffsets();
+}
+
+function IsDestroyMergeKey(key) {
+  return (key || "").indexOf("destroy.merge.") == 0;
 }
 
 function IsCombineCompanionKey(key) {
@@ -35,7 +43,8 @@ function IsCombineCompanionKey(key) {
     key == "earring.level3.allowDuplicate" ||
     key == "angel.bonusParamMin" || key == "angel.bonusParamMax" ||
     key == "ring.upgrade.stoneCosts" || key == "ring.upgrade.goldCosts" ||
-    key == "ring.upgrade.gemCosts";
+    key == "ring.upgrade.gemCosts" ||
+    (IsDestroyMergeKey(key) && key != "destroy.merge.successRate");
 }
 
 function IsRingUpgradeKey(key) {
@@ -43,11 +52,55 @@ function IsRingUpgradeKey(key) {
 }
 
 function VisibleCombineRows() {
-  var rows = [combineRows[0]];
+  var rows = [combineRows[0] || []];
   for (var i = 1; i < combineRows.length; i++) {
     if (!IsCombineCompanionKey(combineRows[i][0])) rows.push(combineRows[i]);
   }
   return rows;
+}
+
+function CombineCategories() {
+  var rows = VisibleCombineRows();
+  var categories = [];
+  var seen = {};
+  for (var i = 1; i < rows.length; i++) {
+    var category = rows[i][1];
+    if (category && !seen[category]) {
+      seen[category] = true;
+      categories.push(category);
+    }
+  }
+  return categories;
+}
+
+function RenderCombineTabs() {
+  var categories = CombineCategories();
+  var categoryExists = false;
+  for (var i = 0; i < categories.length; i++) if (categories[i] == selectedCombineCategory) categoryExists = true;
+  if (!categoryExists) selectedCombineCategory = categories.length ? categories[0] : "";
+  var html = "";
+  for (var c = 0; c < categories.length; c++) {
+    var active = categories[c] == selectedCombineCategory ? " active" : "";
+    html += '<button class="player-config-tab' + active + '" onclick="SelectCombineCategory(' + c + ')">' + Html(categories[c]) + '</button>';
+  }
+  document.getElementById("combineTabs").innerHTML = html;
+  UpdateConfigColumnsOffset("panelCombine", "combineTabs");
+}
+
+function SelectCombineCategory(index) {
+  var categories = CombineCategories();
+  if (!categories[index]) return;
+  selectedCombineCategory = categories[index];
+  selectedCombineKey = "";
+  Set("combineKey", ""); Set("combineCategory", selectedCombineCategory); Set("combineName", "");
+  Set("combineValue", ""); Set("combineDefault", ""); Set("combineKind", ""); Set("combineDescription", "");
+  document.getElementById("combineValueBox").style.display = "block";
+  document.getElementById("combineOptionBox").style.display = "none";
+  document.getElementById("combineRingBox").style.display = "none";
+  document.getElementById("combineDestroyBox").style.display = "none";
+  RenderCombineTabs();
+  FilterCombineRows();
+  if (filteredCombineRows.length > 1) PickFilteredCombineConfig(1);
 }
 
 function RenderCombineRows(rows) {
@@ -76,10 +129,11 @@ function RenderCombineRows(rows) {
 
 function FilterCombineRows() {
   var q = V("combineSearch").toLowerCase();
-  var filtered = [combineRows[0]];
-  for (var i = 1; i < combineRows.length; i++) {
-    if (!IsCombineCompanionKey(combineRows[i][0]) &&
-        (combineRows[i].join(" ") || "").toLowerCase().indexOf(q) >= 0) filtered.push(combineRows[i]);
+  var source = VisibleCombineRows();
+  var filtered = [source[0] || []];
+  for (var i = 1; i < source.length; i++) {
+    if (source[i][1] == selectedCombineCategory &&
+        (source[i].join(" ") || "").toLowerCase().indexOf(q) >= 0) filtered.push(source[i]);
   }
   RenderCombineRows(filtered);
 }
@@ -96,7 +150,13 @@ function PickFilteredCombineConfig(index) {
 
 function PickCombineConfig(index) {
   var r = combineRows[index];
+  if (!r) return;
   selectedCombineKey = r[0];
+  if (selectedCombineCategory != r[1]) {
+    selectedCombineCategory = r[1];
+    RenderCombineTabs();
+    FilterCombineRows();
+  }
   Set("combineKey", r[0]);
   Set("combineCategory", r[1]);
   Set("combineName", r[2]);
@@ -106,9 +166,11 @@ function PickCombineConfig(index) {
   Set("combineDescription", r[6]);
   var isOptionGroup = r[5] == "option-list" && OptionGroupKeys(r[0]) != null;
   var isRingGroup = IsRingUpgradeKey(r[0]);
-  document.getElementById("combineValueBox").style.display = isOptionGroup || isRingGroup ? "none" : "block";
+  var isDestroyMergeGroup = IsDestroyMergeKey(r[0]);
+  document.getElementById("combineValueBox").style.display = isOptionGroup || isRingGroup || isDestroyMergeGroup ? "none" : "block";
   document.getElementById("combineOptionBox").style.display = isOptionGroup ? "block" : "none";
   document.getElementById("combineRingBox").style.display = isRingGroup ? "block" : "none";
+  document.getElementById("combineDestroyBox").style.display = isDestroyMergeGroup ? "block" : "none";
   if (isOptionGroup) {
     var keys = OptionGroupKeys(r[0]);
     Set("combineParamMin", CombineConfigValue(keys.min));
@@ -119,6 +181,7 @@ function PickCombineConfig(index) {
     RenderCombineOptionPicker();
   }
   if (isRingGroup) RenderRingUpgradeEditor();
+  if (isDestroyMergeGroup) RenderDestroyMergeEditor();
   AdjustTableOffsets();
 }
 
@@ -150,6 +213,46 @@ function RenderRingUpgradeEditor() {
   document.getElementById("combineRingLevels").innerHTML = html;
 }
 
+function DestroyMergeRecipeDefaults() {
+  return [
+    ["Áo", "2027", "2028", "2029", "2030", "2047"],
+    ["Quần", "2031", "2032", "2033", "2034", "2048"],
+    ["Giày", "2035", "2036", "2037", "2038", "2050"],
+    ["Găng", "2039", "2040", "2041", "2042", "2049"],
+    ["Nhẫn", "2043", "2044", "2045", "2046", "2051"]
+  ];
+}
+
+function DestroyMergeRecipeValues() {
+  var defaults = DestroyMergeRecipeDefaults();
+  var defaultValues = [];
+  for (var d = 0; d < defaults.length; d++) {
+    for (var c = 1; c <= 5; c++) defaultValues.push(defaults[d][c]);
+  }
+  var values = (CombineConfigValue("destroy.merge.recipes") || defaultValues.join(",")).split(",");
+  while (values.length < defaultValues.length) values.push(defaultValues[values.length]);
+  return values;
+}
+
+function RenderDestroyMergeEditor() {
+  Set("destroyMergeRate", CombineConfigValue("destroy.merge.successRate") || "50");
+  Set("destroyMergeGold", CombineConfigValue("destroy.merge.goldCost") || "100000000");
+  Set("destroyMergeGem", CombineConfigValue("destroy.merge.gemCost") || "100");
+  Set("destroyMergeFailLost", CombineConfigValue("destroy.merge.failLostFragments") || "2");
+  var defaults = DestroyMergeRecipeDefaults();
+  var values = DestroyMergeRecipeValues();
+  var html = "";
+  for (var i = 0; i < defaults.length; i++) {
+    var offset = i * 5;
+    html += "<tr><td>" + Html(defaults[i][0]) + "</td>";
+    for (var fragment = 0; fragment < 4; fragment++) {
+      html += '<td><input id="destroyMergeFragment' + i + '_' + fragment + '" value="' + HtmlAttr(Trim(values[offset + fragment])) + '" title="ID mảnh ' + (fragment + 1) + '"></td>';
+    }
+    html += '<td><input id="destroyMergeResult' + i + '" value="' + HtmlAttr(Trim(values[offset + 4])) + '" title="ID rương kết quả"></td></tr>';
+  }
+  document.getElementById("destroyMergeRecipes").innerHTML = html;
+}
+
 function CollectRingUpgradeValues() {
   var result = { rates: [], stones: [], gold: [], gems: [] };
   for (var i = 0; i < 8; i++) {
@@ -170,6 +273,43 @@ function CollectRingUpgradeValues() {
   return result;
 }
 
+function CollectDestroyMergeValues() {
+  var rate = Trim(V("destroyMergeRate"));
+  var gold = Trim(V("destroyMergeGold"));
+  var gem = Trim(V("destroyMergeGem"));
+  var failLost = Trim(V("destroyMergeFailLost"));
+  if (!/^\d+(\.\d+)?$/.test(rate) || parseFloat(rate) < 0 || parseFloat(rate) > 100) {
+    throw "Tỷ lệ thành công phải từ 0 đến 100.";
+  }
+  if (!/^\d+$/.test(gold) || parseFloat(gold) > 2147483647) throw "Vàng phải là số nguyên từ 0 đến 2.147.483.647.";
+  if (!/^\d+$/.test(gem) || parseFloat(gem) > 2147483647) throw "Ngọc phải là số nguyên từ 0 đến 2.147.483.647.";
+  if (!/^[1-4]$/.test(failLost)) throw "Số mảnh mất khi thất bại phải từ 1 đến 4.";
+
+  var recipeIds = [];
+  var usedFragments = {};
+  for (var recipe = 0; recipe < 5; recipe++) {
+    var recipeFragments = {};
+    for (var fragment = 0; fragment < 4; fragment++) {
+      var fragmentId = Trim(V("destroyMergeFragment" + recipe + "_" + fragment));
+      if (!/^\d+$/.test(fragmentId) || parseInt(fragmentId, 10) < 1 || parseInt(fragmentId, 10) > 32767) {
+        throw "ID mảnh " + (fragment + 1) + " của bộ " + (recipe + 1) + " phải từ 1 đến 32.767.";
+      }
+      if (recipeFragments[fragmentId]) throw "Bốn mảnh của bộ " + (recipe + 1) + " không được trùng ID.";
+      if (usedFragments[fragmentId]) throw "Mảnh ID " + fragmentId + " đang thuộc nhiều bộ Hủy Diệt.";
+      recipeFragments[fragmentId] = true;
+      usedFragments[fragmentId] = true;
+      recipeIds.push(fragmentId);
+    }
+    var resultId = Trim(V("destroyMergeResult" + recipe));
+    if (!/^\d+$/.test(resultId) || parseInt(resultId, 10) < 1 || parseInt(resultId, 10) > 32767) {
+      throw "ID rương kết quả của bộ " + (recipe + 1) + " phải từ 1 đến 32.767.";
+    }
+    if (recipeFragments[resultId]) throw "Rương kết quả của bộ " + (recipe + 1) + " không được trùng với mảnh nguyên liệu.";
+    recipeIds.push(resultId);
+  }
+  return { rate: rate, gold: gold, gem: gem, failLost: failLost, recipes: recipeIds.join(",") };
+}
+
 function SaveRingUpgradeConfig() {
   var values;
   try { values = CollectRingUpgradeValues(); }
@@ -179,6 +319,28 @@ function SaveRingUpgradeConfig() {
     ["ring.upgrade.stoneCosts", values.stones.join(",")],
     ["ring.upgrade.goldCosts", values.gold.join(",")],
     ["ring.upgrade.gemCosts", values.gems.join(",")]
+  ];
+  var messages = [];
+  var text = "";
+  for (var i = 0; i < configs.length; i++) {
+    text = SaveCombineValue(configs[i][0], configs[i][1]);
+    messages.push(StatusText(text));
+    if (IsAdminError(text)) break;
+  }
+  Msg("combineMessage", messages.join("\r\n"));
+  if (!IsAdminError(text)) LoadCombineConfig();
+}
+
+function SaveDestroyMergeConfig() {
+  var values;
+  try { values = CollectDestroyMergeValues(); }
+  catch (e) { Msg("combineMessage", "Lỗi: " + e); return; }
+  var configs = [
+    ["destroy.merge.successRate", values.rate],
+    ["destroy.merge.goldCost", values.gold],
+    ["destroy.merge.gemCost", values.gem],
+    ["destroy.merge.failLostFragments", values.failLost],
+    ["destroy.merge.recipes", values.recipes]
   ];
   var messages = [];
   var text = "";
@@ -254,6 +416,7 @@ function SaveCombineValue(key, value) {
 function SaveCombineConfig() {
   if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
   if (IsRingUpgradeKey(V("combineKey"))) { SaveRingUpgradeConfig(); return; }
+  if (IsDestroyMergeKey(V("combineKey"))) { SaveDestroyMergeConfig(); return; }
   var keys = OptionGroupKeys(V("combineKey"));
   if (keys) {
     var ids = ParseIdList(V("combineValue"));
@@ -300,6 +463,20 @@ function ResetCombineConfig() {
     if (!IsAdminError(ringText)) LoadCombineConfig();
     return;
   }
+  if (IsDestroyMergeKey(V("combineKey"))) {
+    if (!window.confirm("Đưa toàn bộ cấu hình ghép mảnh Hủy Diệt về mặc định?")) return;
+    var destroyKeys = ["destroy.merge.successRate", "destroy.merge.goldCost", "destroy.merge.gemCost", "destroy.merge.failLostFragments", "destroy.merge.recipes"];
+    var destroyMessages = [];
+    var destroyText = "";
+    for (var d = 0; d < destroyKeys.length; d++) {
+      destroyText = RunAdmin("resetcombineconfig", { ConfigKey: destroyKeys[d] });
+      destroyMessages.push(StatusText(destroyText));
+      if (IsAdminError(destroyText)) break;
+    }
+    Msg("combineMessage", destroyMessages.join("\r\n"));
+    if (!IsAdminError(destroyText)) LoadCombineConfig();
+    return;
+  }
   if (!window.confirm("Đưa " + V("combineName") + " về mặc định " + V("combineDefault") + "?")) return;
   var keys = OptionGroupKeys(V("combineKey"));
   var resetKeys = [V("combineKey")];
@@ -323,5 +500,6 @@ RegisterTab({
   id: "combine", view: "combine.html", panelId: "panelCombine", navId: "navCombine",
   title: "Quản lý Combine", subtitle: "Điều chỉnh tỉ lệ, mức tăng chỉ số và option random theo thời gian thực",
   onOpen: function () { LoadCombineConfig(); },
-  onRefresh: function () { LoadCombineConfig(); }
+  onRefresh: function () { LoadCombineConfig(); },
+  onLayout: function () { UpdateConfigColumnsOffset("panelCombine", "combineTabs"); }
 });

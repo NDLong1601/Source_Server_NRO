@@ -411,6 +411,42 @@ button.compact {
   margin-bottom: 5px;
 }
 
+#panelItems .table-wrap {
+  bottom: 43px;
+}
+
+.list-pagination {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  height: 43px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.list-pagination button {
+  height: 29px;
+  margin: 0 2px;
+  padding: 0 9px;
+}
+
+.pagination-info {
+  display: inline-block;
+  min-width: 150px;
+  margin: 0 5px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 29px;
+  text-align: center;
+  vertical-align: top;
+}
+
 .segmented {
   display: inline-block;
   margin-right: 6px;
@@ -1175,7 +1211,8 @@ tr:hover td.gift-status-waiting {
 }
 
 #panelPlayerConfig .columns,
-#panelPetConfig .columns {
+#panelPetConfig .columns,
+#panelCombine .columns {
   top: 58px;
 }
 
@@ -1362,6 +1399,65 @@ tr:hover td.gift-status-waiting {
   color: #64748b;
   font-size: 10px;
   line-height: 14px;
+}
+
+.destroy-merge-editor {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.destroy-merge-note {
+  margin-bottom: 8px;
+  padding: 7px 9px;
+  border-left: 3px solid #0f766e;
+  background: #ecfeff;
+  color: #155e75;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.destroy-merge-scroll {
+  margin-top: 10px;
+  overflow-x: auto;
+  border: 1px solid #dbe3ed;
+  background: #ffffff;
+}
+
+.destroy-merge-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.destroy-merge-table th,
+.destroy-merge-table td {
+  padding: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.destroy-merge-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+}
+
+.destroy-merge-table td:first-child {
+  min-width: 58px;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.destroy-merge-table input {
+  width: 98px;
+  height: 30px;
+  padding: 0 5px;
+  text-align: right;
 }
 .task-badge-image {
   width: 48px;

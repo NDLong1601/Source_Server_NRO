@@ -1,4 +1,8 @@
 var itemRows = [];
+var itemCurrentPage = 1;
+var itemPageSize = 60;
+var itemTotal = 0;
+var itemTotalPages = 0;
 var itemBrokenIconCache = {};
 var itemDefaultIconSrc = "data/icon/x3/544.png";
 var itemDefaultIconImage = new Image();
@@ -50,14 +54,66 @@ function RenderItems() {
     html += '<td>' + Html(row[6]) + '</td><td>' + Html(row[7]) + '</td></tr>';
   }
   document.getElementById("itemsTable").innerHTML = html + "</tbody>";
+  RenderItemPagination();
 }
 
-function LoadItems() {
-  var text = RunAdmin("listitems", { Type: V("itemTypeFilter"), Search: V("itemSearch") });
-  itemRows = ParseTsv(text);
+function RenderItemPagination() {
+  var hasItems = itemTotal > 0;
+  var start = hasItems ? ((itemCurrentPage - 1) * itemPageSize + 1) : 0;
+  var end = hasItems ? Math.min(itemCurrentPage * itemPageSize, itemTotal) : 0;
+  var info = document.getElementById("itemPageInfo");
+  var first = document.getElementById("itemFirstPage");
+  var previous = document.getElementById("itemPreviousPage");
+  var next = document.getElementById("itemNextPage");
+  var last = document.getElementById("itemLastPage");
+  if (info) info.innerText = hasItems
+    ? "Trang " + itemCurrentPage + "/" + itemTotalPages + " · " + start + "–" + end + "/" + itemTotal
+    : "Không có vật phẩm phù hợp";
+  if (first) first.disabled = !hasItems || itemCurrentPage <= 1;
+  if (previous) previous.disabled = !hasItems || itemCurrentPage <= 1;
+  if (next) next.disabled = !hasItems || itemCurrentPage >= itemTotalPages;
+  if (last) last.disabled = !hasItems || itemCurrentPage >= itemTotalPages;
+}
+
+function NormalizeItemRows(rows) {
+  itemRows = [];
+  itemTotal = 0;
+  if (!rows.length) return;
+
+  var header = [];
+  for (var h = 1; h < rows[0].length; h++) header.push(rows[0][h]);
+  itemRows.push(header);
+  if (rows.length > 1 && /^\d+$/.test(rows[1][0] || "")) itemTotal = parseInt(rows[1][0], 10);
+
+  for (var r = 1; r < rows.length; r++) {
+    var item = [];
+    for (var c = 1; c < rows[r].length; c++) item.push(rows[r][c]);
+    itemRows.push(item);
+  }
+}
+
+function LoadItems(page) {
+  itemCurrentPage = page == null ? 1 : parseInt(page, 10);
+  if (isNaN(itemCurrentPage) || itemCurrentPage < 1) itemCurrentPage = 1;
+  var text = RunAdmin("listitems", {
+    Type: V("itemTypeFilter"), Search: V("itemSearch"), Page: itemCurrentPage, PageSize: itemPageSize
+  });
+  NormalizeItemRows(ParseTsv(text));
+  itemTotalPages = itemTotal ? Math.ceil(itemTotal / itemPageSize) : 0;
+  if (itemTotalPages && itemCurrentPage > itemTotalPages) {
+    itemCurrentPage = itemTotalPages;
+    LoadItems(itemCurrentPage);
+    return;
+  }
   RenderItems();
-  Msg("itemMessage", itemRows.length > 1 ? "Đã tải " + (itemRows.length - 1) + " vật phẩm." : text);
+  Msg("itemMessage", itemTotal ? "Đã tải " + (itemRows.length - 1) + "/" + itemTotal + " vật phẩm ở trang " + itemCurrentPage + "." : (text || "Không có vật phẩm phù hợp."));
   AdjustTableOffsets();
+}
+
+function GoItemPage(page) {
+  page = parseInt(page, 10);
+  if (isNaN(page) || page < 1 || (itemTotalPages && page > itemTotalPages) || page == itemCurrentPage) return;
+  LoadItems(page);
 }
 
 function PickItem(index) {

@@ -15,6 +15,13 @@
       <div class="table-wrap">
         <table id="itemsTable"></table>
       </div>
+      <div class="list-pagination item-list-pagination">
+        <button type="button" id="itemFirstPage" onclick="GoItemPage(1)">Đầu</button>
+        <button type="button" id="itemPreviousPage" onclick="GoItemPage(itemCurrentPage - 1)">‹ Trước</button>
+        <span id="itemPageInfo" class="pagination-info">Chưa tải danh sách</span>
+        <button type="button" id="itemNextPage" onclick="GoItemPage(itemCurrentPage + 1)">Sau ›</button>
+        <button type="button" id="itemLastPage" onclick="GoItemPage(itemTotalPages)">Cuối</button>
+      </div>
     </div>
 
     <div class="right-pane">

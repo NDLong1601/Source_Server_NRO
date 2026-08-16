@@ -1,0 +1,2 @@
+﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
+859	1568	4	120	1	1	[{"head":144, "body":145, "leg":146, "bag":-1}]	Thẻ Độc Nhãn	Đầu não của Red Ribbon. Bị chột một mắt, Lúc nhỏ bị mọi người chê là 'thằng lùn'	[{"id": 94, "param": 5, "activeCard": 0},{"id": 77, "param": 5, "activeCard": 1},{"id": 103, "param": 5, "activeCard": 2}]	-1	0	-1	[]

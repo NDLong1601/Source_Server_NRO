@@ -84,6 +84,8 @@
     [string]$Notes = "",
     [string]$Notify = "",
     [string]$PayloadJson = "{}",
+    [string]$Page = "1",
+    [string]$PageSize = "60",
     [string]$Encoded = "0"
 )
 
@@ -109,7 +111,7 @@ foreach ($paramName in @(
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
-        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson"
+        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -236,6 +238,11 @@ function Get-CombineCatalog {
         [pscustomobject]@{ Key="ring.upgrade.stoneCosts"; Category="Nhẫn đệ tử"; Name="Đá hoàng kim theo cấp"; Default="1,2,3,4,5,6,7,8"; Kind="ring-positive-int-list"; Description="Số Đá hoàng kim tiêu hao cho từng bước nâng cấp." },
         [pscustomobject]@{ Key="ring.upgrade.goldCosts"; Category="Nhẫn đệ tử"; Name="Vàng theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số vàng tiêu hao cho từng bước nâng cấp." },
         [pscustomobject]@{ Key="ring.upgrade.gemCosts"; Category="Nhẫn đệ tử"; Name="Ngọc xanh theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số ngọc xanh tiêu hao cho từng bước nâng cấp." },
+        [pscustomobject]@{ Key="destroy.merge.successRate"; Category="Ghép mảnh Hủy Diệt"; Name="Cấu hình ghép mảnh Hủy Diệt"; Default="50"; Kind="rate"; Description="Tỉ lệ thành công, vàng, ngọc, số mảnh mất khi thất bại và 5 công thức nguyên liệu/rương được chỉnh trong cùng trình soạn." },
+        [pscustomobject]@{ Key="destroy.merge.goldCost"; Category="Ghép mảnh Hủy Diệt"; Name="Vàng tiêu hao"; Default="100000000"; Kind="destroy-cost"; Description="Số vàng tiêu hao cho mỗi lần ghép mảnh." },
+        [pscustomobject]@{ Key="destroy.merge.gemCost"; Category="Ghép mảnh Hủy Diệt"; Name="Ngọc xanh tiêu hao"; Default="100"; Kind="destroy-cost"; Description="Số ngọc xanh tiêu hao cho mỗi lần ghép mảnh." },
+        [pscustomobject]@{ Key="destroy.merge.failLostFragments"; Category="Ghép mảnh Hủy Diệt"; Name="Mảnh mất khi thất bại"; Default="2"; Kind="destroy-loss-count"; Description="Số mảnh ngẫu nhiên bị mất khi ghép thất bại, từ 1 đến 4." },
+        [pscustomobject]@{ Key="destroy.merge.recipes"; Category="Ghép mảnh Hủy Diệt"; Name="Công thức nguyên liệu"; Default="2027,2028,2029,2030,2047,2031,2032,2033,2034,2048,2035,2036,2037,2038,2050,2039,2040,2041,2042,2049,2043,2044,2045,2046,2051"; Kind="destroy-recipe-list"; Description="Năm bộ; mỗi bộ gồm 4 ID mảnh khác nhau và 1 ID rương kết quả." },
         [pscustomobject]@{ Key="earring.level2.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 2"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 1 lên cấp 2." },
         [pscustomobject]@{ Key="earring.level3.upgradeRate"; Category="Bông tai"; Name="Nâng bông tai cấp 3"; Default="50"; Kind="rate"; Description="Tỉ lệ Bông tai Porata cấp 2 lên cấp 3." },
         [pscustomobject]@{ Key="earring.level2.optionRate"; Category="Bông tai"; Name="Mở chỉ số bông tai cấp 2"; Default="45"; Kind="rate"; Description="Tỉ lệ random thành công một dòng option cấp 2." },
@@ -341,6 +348,36 @@ function Assert-CombineValue {
             if ($number -notmatch '^\d+$') { throw "Tài nguyên nâng nhẫn phải là số nguyên không âm." }
             if ($Entry.Kind -eq "ring-positive-int-list" -and [long]$number -lt 1) { throw "Mỗi cấp phải tốn ít nhất 1 Đá hoàng kim." }
             if ([decimal]$number -gt [int]::MaxValue) { throw "Tài nguyên mỗi cấp không được vượt quá $([int]::MaxValue)." }
+        }
+    }
+    if ($Entry.Kind -eq "destroy-cost") {
+        if ($Value -notmatch '^\d+$' -or [decimal]$Value -gt [int]::MaxValue) { throw "Chi phí ghép mảnh phải là số nguyên từ 0 đến $([int]::MaxValue)." }
+    }
+    if ($Entry.Kind -eq "destroy-loss-count") {
+        if ($Value -notmatch '^\d+$' -or [int]$Value -lt 1 -or [int]$Value -gt 4) { throw "Số mảnh mất khi thất bại phải từ 1 đến 4." }
+    }
+    if ($Entry.Kind -eq "destroy-recipe-list") {
+        $parts = $Value -split ','
+        if ($parts.Count -ne 25) { throw "Công thức Hủy Diệt phải có đúng 25 ID: 5 bộ × (4 mảnh + 1 rương)." }
+        $usedFragments = @{}
+        for ($recipe = 0; $recipe -lt 5; $recipe++) {
+            $offset = $recipe * 5
+            $resultId = $parts[$offset + 4].Trim()
+            if ($resultId -notmatch '^\d+$' -or [decimal]$resultId -lt 1 -or [decimal]$resultId -gt [int16]::MaxValue) {
+                throw "ID rương của bộ $($recipe + 1) phải từ 1 đến $([int16]::MaxValue)."
+            }
+            $recipeFragments = @{}
+            for ($part = 0; $part -lt 4; $part++) {
+                $fragmentId = $parts[$offset + $part].Trim()
+                if ($fragmentId -notmatch '^\d+$' -or [decimal]$fragmentId -lt 1 -or [decimal]$fragmentId -gt [int16]::MaxValue) {
+                    throw "ID mảnh $($part + 1) của bộ $($recipe + 1) phải từ 1 đến $([int16]::MaxValue)."
+                }
+                if ($recipeFragments.ContainsKey($fragmentId)) { throw "Bốn mảnh của bộ $($recipe + 1) không được trùng ID." }
+                if ($usedFragments.ContainsKey($fragmentId)) { throw "Mảnh ID $fragmentId đang thuộc nhiều bộ Hủy Diệt." }
+                $recipeFragments[$fragmentId] = $true
+                $usedFragments[$fragmentId] = $true
+            }
+            if ($recipeFragments.ContainsKey($resultId)) { throw "Rương kết quả của bộ $($recipe + 1) không được trùng với mảnh nguyên liệu." }
         }
     }
     $Value
@@ -1447,7 +1484,27 @@ function List-Items {
         }
     }
     $whereSql = if ($where.Count -gt 0) { "WHERE " + ($where -join " AND ") } else { "" }
-    Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template $whereSql ORDER BY id DESC LIMIT 300;"
+    $pageNumber = SqlInt $Page 1
+    if ($pageNumber -lt 1) { $pageNumber = 1 }
+    $pageSizeNumber = SqlInt $PageSize 60
+    if ($pageSizeNumber -lt 20 -or $pageSizeNumber -gt 100) { $pageSizeNumber = 60 }
+    $offset = ($pageNumber - 1) * $pageSizeNumber
+
+    Invoke-MySql @"
+SELECT totals.total,
+       item_page.id, item_page.`TYPE`, item_page.gender, item_page.`NAME`, item_page.description, item_page.level,
+       item_page.icon_id, item_page.part, item_page.is_up_to_up, item_page.power_require, item_page.gold,
+       item_page.gem, item_page.head, item_page.body, item_page.leg
+FROM (SELECT COUNT(*) AS total FROM item_template $whereSql) totals
+CROSS JOIN (
+  SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part,
+         is_up_to_up, power_require, gold, gem, head, body, leg
+  FROM item_template $whereSql
+  ORDER BY id DESC
+  LIMIT $offset,$pageSizeNumber
+) item_page
+ORDER BY item_page.id DESC;
+"@
 }
 
 function List-ItemCatalog {

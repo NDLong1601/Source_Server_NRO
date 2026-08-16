@@ -1,0 +1,2 @@
+﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
+833	7472	1	120	0	6	[{"head":1, "body":1, "leg":1, "bag":-1}]	Thẻ Quỷ đất mẹ	 Bản tính của Qủy đất khá nhút nhát, chúng thường núp vào cây khi gặp người lạ	[{"id":0,"param":100,"activeCard":0},{"id":0,"param":200,"activeCard":1},{"id":0,"param":300,"activeCard":2}]	-1	0	-1	[]

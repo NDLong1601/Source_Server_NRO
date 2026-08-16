@@ -1,0 +1,120 @@
+﻿config_id	template_id	NAME	enabled	has_drop	quantity_min	quantity_max	drop_rate
+0	0	Mộc nhân	1	0	1	1	0.0000
+2	1	Khủng long	1	0	1	1	0.0000
+0	2	Lợn lòi	1	0	1	1	0.0000
+0	3	Quỷ đất	1	0	1	1	0.0000
+0	4	Khủng long mẹ	1	0	1	1	0.0000
+0	5	Lợn lòi mẹ	1	0	1	1	0.0000
+0	6	Quỷ đất mẹ	1	0	1	1	0.0000
+0	7	Thằn lằn bay	1	0	1	1	0.0000
+0	8	Phi long	1	0	1	1	0.0000
+0	9	Quỷ bay	1	0	1	1	0.0000
+0	10	Thằn lằn mẹ	1	0	1	1	0.0000
+0	11	Phi long mẹ	1	0	1	1	0.0000
+0	12	Quỷ bay mẹ	1	0	1	1	0.0000
+0	13	Ốc mượn hồn	1	0	1	1	0.0000
+0	14	Ốc sên	1	0	1	1	0.0000
+0	15	Heo Xayda mẹ	1	0	1	1	0.0000
+0	16	Heo rừng	1	0	1	1	0.0000
+0	17	Heo da xanh	1	0	1	1	0.0000
+0	18	Heo Xayda	1	0	1	1	0.0000
+0	19	Heo rừng mẹ	1	0	1	1	0.0000
+0	20	Heo xanh mẹ	1	0	1	1	0.0000
+0	21	Alien	1	0	1	1	0.0000
+0	22	Bulon	1	0	1	1	0.0000
+0	23	Ukulele	1	0	1	1	0.0000
+0	24	Quỷ mập	1	0	1	1	0.0000
+0	25	Tambourine	1	0	1	1	0.0000
+0	26	Drum	1	0	1	1	0.0000
+0	27	Akkuman	1	0	1	1	0.0000
+0	28	Thằn lằn bay 2	1	0	1	1	0.0000
+0	29	Phi long 2	1	0	1	1	0.0000
+0	30	Quỷ bay 2	1	0	1	1	0.0000
+0	31	Không tặc	1	0	1	1	0.0000
+0	32	Quỷ đầu to	1	0	1	1	0.0000
+0	33	Quỷ địa ngục	1	0	1	1	0.0000
+0	34	Lính độc nhãn	1	0	1	1	0.0000
+0	35	Lính độc nhãn	1	0	1	1	0.0000
+0	36	Sói xám	1	0	1	1	0.0000
+0	37	Robot bay	1	0	1	1	0.0000
+0	38	Robot thép	1	0	1	1	0.0000
+0	39	Nappa	1	0	1	1	0.0000
+0	40	Soldier	1	0	1	1	0.0000
+0	41	Appule	1	0	1	1	0.0000
+0	42	Raspberry	1	0	1	1	0.0000
+0	43	Thằn lằn xanh	1	0	1	1	0.0000
+0	44	Quỷ đầu nhọn	1	0	1	1	0.0000
+0	45	Quỷ đầu vàng	1	0	1	1	0.0000
+0	46	Quỷ da tím	1	0	1	1	0.0000
+0	47	Quỷ già	1	0	1	1	0.0000
+0	48	Cá sấu	1	0	1	1	0.0000
+0	49	Dơi da xanh	1	0	1	1	0.0000
+0	50	Quỷ chim	1	0	1	1	0.0000
+0	51	Lính đầu trọc	1	0	1	1	0.0000
+0	52	Lính tai dài	1	0	1	1	0.0000
+0	53	Lính vũ trụ	1	0	1	1	0.0000
+0	54	Khỉ lông đen	1	0	1	1	0.0000
+0	55	Khỉ giáp sắt	1	0	1	1	0.0000
+0	56	Khỉ lông đỏ	1	0	1	1	0.0000
+0	57	Khỉ lông vàng	1	0	1	1	0.0000
+0	58	Xên con cấp 1	1	0	1	1	0.0000
+0	59	Xên con cấp 2	1	0	1	1	0.0000
+0	60	Xên con cấp 3	1	0	1	1	0.0000
+0	61	Xên con cấp  4	1	0	1	1	0.0000
+0	62	Xên con cấp  5	1	0	1	1	0.0000
+0	63	Xên con cấp  6	1	0	1	1	0.0000
+0	64	Xên con cấp  7	1	0	1	1	0.0000
+0	65	Xên con cấp  8	1	0	1	1	0.0000
+0	66	Tai tím	1	0	1	1	0.0000
+0	67	Abo	1	0	1	1	0.0000
+0	68	Kado	1	0	1	1	0.0000
+0	69	Da xanh	1	0	1	1	0.0000
+0	70	Hirudegarn	1	0	1	1	0.0000
+0	71	Vua Bạch Tuộc	1	0	1	1	0.0000
+0	72	Rôbốt bảo vệ	1	0	1	1	0.0000
+0	73	Kawazu	1	0	1	1	0.0000
+0	74	Kinkarn	1	0	1	1	0.0000
+0	75	Arbee	1	0	1	1	0.0000
+0	76	Cỗ máy hủy diệt	1	0	1	1	0.0000
+0	77	Gấu tướng cướp	1	0	1	1	0.0000
+0	78	Khỉ lông xanh	1	0	1	1	0.0000
+0	79	Taburine Đỏ	1	0	1	1	0.0000
+0	80	Cabira	1	0	1	1	0.0000
+0	81	Tobi	1	0	1	1	0.0000
+0	82	Voi Chín Ngà	1	0	1	1	0.0000
+0	83	Gà Chín Cựa	1	0	1	1	0.0000
+0	84	Ngựa Chín Lmao	1	0	1	1	0.0000
+0	85	Piano	1	0	1	1	0.0000
+0	86	Ếch mặt đỏ	1	0	1	1	0.0000
+0	87	Jinai	1	0	1	1	0.0000
+0	88	Quỷ đỏ	1	0	1	1	0.0000
+0	89	Quỷ xanh	1	0	1	1	0.0000
+0	90	Quỷ xanh lá	1	0	1	1	0.0000
+0	91	Quỷ vàng	1	0	1	1	0.0000
+0	92	Godzila	1	0	1	1	0.0000
+0	93		1	0	1	1	0.0000
+0	94	Toppo	1	0	1	1	0.0000
+0	95	Cadic M	1	0	1	1	0.0000
+0	96	Janemba	1	0	1	1	0.0000
+0	97	MEZ	1	0	1	1	0.0000
+0	98	GOZ	1	0	1	1	0.0000
+0	99	Đá đỏ	1	0	1	1	0.0000
+0	100	Đá vàng	1	0	1	1	0.0000
+0	101	Đá xanh	1	0	1	1	0.0000
+0	102	Thây ma	1	0	1	1	0.0000
+0	103	Bù nhìn ma quái	1	0	1	1	0.0000
+0	104	Phù thủy	1	0	1	1	0.0000
+0	105	Frostbite	1	0	1	1	0.0000
+0	106	Snowy Tangerine	1	0	1	1	0.0000
+0	107	Deinonychus	1	0	1	1	0.0000
+0	108	Snake	1	0	1	1	0.0000
+0	109	Blizzard bird	1	0	1	1	0.0000
+0	110	Snowman	1	0	1	1	0.0000
+0	111	Yeti	1	0	1	1	0.0000
+0	112	Grim Reaper	1	0	1	1	0.0000
+0	113	Demon 3	1	0	1	1	0.0000
+0	114	Golem	1	0	1	1	0.0000
+0	115	Dazing Stone	1	0	1	1	0.0000
+0	116	Demon 2	1	0	1	1	0.0000
+0	117	Máy đo sức mạnh	1	0	1	1	0.0000
+0	118	Cadic M	1	0	1	1	0.0000

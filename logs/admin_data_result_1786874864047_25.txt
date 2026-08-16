@@ -1,0 +1,2 @@
+﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
+829	7468	0	120	0	2	[{"head":1, "body":1, "leg":1, "bag":-1}]	Thẻ Lợn lòi	Lợn lòi có sở thích mài răng nanh dưới đất, vô tình tạo ra những rãnh đất để người Namec trồng trọt	[{"id":7,"param":1000,"activeCard":0},{"id":7,"param":2000,"activeCard":1},{"id":7,"param":3000,"activeCard":2}]	-1	0	-1	[]
