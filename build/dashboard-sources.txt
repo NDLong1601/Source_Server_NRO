@@ -179,6 +179,7 @@ C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\Bot\NewBot.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\clan\Clan.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\clan\ClanMember.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\clan\ClanMessage.java
+C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\AppearanceUpgradeCategory.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\CheTaoCuonSachCu.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\CheTaoDuiDuc.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\CheTaoTrangBiThienSu.java
@@ -199,6 +200,7 @@ C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\HoiPhucSach.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\LamPhepNhapDa.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapBongTai.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapBongTai3.java
+C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapNgoaiTrang.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapNhan.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapSachTuyetKy.java
 C:\Users\PC\Music\Teamobi2026\SRC\src\nro\models\combine\NangCapSaoPhaLe.java

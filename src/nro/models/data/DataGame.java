@@ -4,8 +4,12 @@ import nro.models.player_system.Template.HeadAvatar;
 import nro.models.player_system.Template.MapTemplate;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.CRC32;
 
 import nro.models.utils.FileIO;
 import nro.models.services.Service;
@@ -14,7 +18,6 @@ import nro.models.skill.Skill;
 import nro.models.player_system.Template.MobTemplate;
 import nro.models.player_system.Template.NpcTemplate;
 import nro.models.player_system.Template.SkillTemplate;
-import nro.models.interfaces.ISession;
 import java.io.ByteArrayOutputStream;
 import nro.models.network.Message;
 import java.io.IOException;
@@ -34,9 +37,14 @@ public class DataGame {
     public static byte vsData = 9;
     public static byte vsMap = 2;
     public static byte vsSkill = 1;
-    public static byte vsItem = 20;
+    // 21 invalidates item-template cache written by the multi-append build.
+    public static byte vsItem = 21;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
+
+    private static final Map<Byte, byte[]> SMALL_IMAGE_VERSIONS = new HashMap<>();
+    private static final Map<Byte, byte[]> BG_IMAGE_VERSIONS = new HashMap<>();
+    private static final Map<Byte, Integer> RESOURCE_VERSIONS = new HashMap<>();
 
     public static String LINK_IP_PORT = "Ngọc Rồng Online:36.50.134.190:14445:0";
     public static Map<Object, Object> MAP_MOUNT_NUM = new HashMap<>();
@@ -218,6 +226,9 @@ public class DataGame {
     }
 
     public static void sendEffectTemplate(MySession session, int id, int... idtemp) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         int idT = id;
         if (idtemp.length > 0 && idtemp[0] != 0) {
             idT = idtemp[0];
@@ -246,20 +257,26 @@ public class DataGame {
     }
 
     public static void sendBgItemVersion(MySession session) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
+            byte[] versions = getBgImageVersions(session.zoomLevel);
             msg = new Message(-93);
-            msg.writer().writeShort(Manager.BG_ITEMS.size());
-            for (BgItem bgItem : Manager.BG_ITEMS) {
-                msg.writer().writeByte(bgItem.id);
-            }
+            msg.writer().writeShort(versions.length);
+            msg.writer().write(versions);
             session.sendMessage(msg);
+            msg.cleanup();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
         }
     }
 
     public static void sendItemBGTemplate(MySession session, int id) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
             final byte[] bg_temp = FileIO.readFile("data/item_bg_temp/x" + session.zoomLevel + "/" + id + ".png");
@@ -297,6 +314,9 @@ public class DataGame {
     }
 
     public static void sendIcon(MySession session, int id) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
             final byte[] icon = FileIO.readFile("data/icon/x" + session.zoomLevel + "/" + id + ".png");
@@ -317,34 +337,66 @@ public class DataGame {
     }
 
     public static void sendSmallVersion(MySession session) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
+            byte[] versions = getSmallImageVersions(session.zoomLevel);
             msg = new Message(-77);
-            msg.writer().writeShort(maxSmallVersion);
-            for (int i = 0; i < maxSmallVersion; i++) {
-                msg.writer().writeByte(getSmallImageVersion(i));
-            }
+            msg.writer().writeShort(versions.length);
+            msg.writer().write(versions);
             session.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.logException(DataGame.class, e);
         }
     }
 
-    private static byte getSmallImageVersion(int iconId) {
-        return switch (iconId) {
-            case 19009, 19011, 19012, 19045, 19046, 19047, 19048, 19049,
-                    19050, 19051, 19052, 19053, 19054, 19055, 19056, 19057,
-                    19062, 19063, 19064, 19065, 19066, 19067, 19068, 19069,
-                    19070, 19071, 19072, 19073, 19074, 19075, 19076, 19077,
-                    19078, 19079, 19080, 19081, 19082, 19083, 19084, 19085,
-                    19086 -> 1;
-            case 19010 -> 2;
-            default -> 0;
-        };
+    private static synchronized byte[] getSmallImageVersions(byte zoomLevel) {
+        return SMALL_IMAGE_VERSIONS.computeIfAbsent(zoomLevel,
+                zoom -> buildNumericFileVersions(new File("data/icon/x" + zoom), maxSmallVersion));
+    }
+
+    private static synchronized byte[] getBgImageVersions(byte zoomLevel) {
+        return BG_IMAGE_VERSIONS.computeIfAbsent(zoomLevel, zoom -> {
+            int maxImageId = -1;
+            for (BgItem bgItem : Manager.BG_ITEMS) {
+                if (bgItem.idImage > maxImageId) {
+                    maxImageId = bgItem.idImage;
+                }
+            }
+            return buildNumericFileVersions(new File("data/item_bg_temp/x" + zoom), maxImageId + 1);
+        });
+    }
+
+    static byte[] buildNumericFileVersions(File directory, int size) {
+        byte[] versions = new byte[Math.max(0, size)];
+        File[] files = listRegularFiles(directory);
+        for (File file : files) {
+            String fileName = file.getName();
+            int extensionIndex = fileName.lastIndexOf('.');
+            String idText = extensionIndex > 0 ? fileName.substring(0, extensionIndex) : fileName;
+            try {
+                int id = Integer.parseInt(idText);
+                if (id >= 0 && id < versions.length) {
+                    versions[id] = fileVersion(file);
+                }
+            } catch (NumberFormatException ignored) {
+                // Các file animation dạng 41$1.png không phải một image_id độc lập.
+            }
+        }
+        return versions;
+    }
+
+    static byte fileVersion(File file) {
+        return file != null && file.isFile() ? (byte) (file.length() % 127) : 0;
     }
 
     public static void requestMobTemplate(MySession session, int id) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
 //            if (!session.check && id > 106) {
@@ -411,6 +463,9 @@ public class DataGame {
     }
 
     public static void sendImageByName(MySession session, String imgName) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
             msg = new Message(66);
@@ -433,75 +488,109 @@ public class DataGame {
         }
     }
 
-    public static void sendVersionRes(ISession session) {
+    public static void sendVersionRes(MySession session) {
+        if (!session.isAssetReady()) {
+            return;
+        }
         Message msg;
         try {
             msg = new Message(-74);
             msg.writer().writeByte(0);
-            msg.writer().writeInt(vsRes);
-            session.sendMessage(msg);
-            msg.cleanup();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void sendSizeRes(MySession session) {
-        Message msg;
-        try {
-            msg = new Message(-74);
-            msg.writer().writeByte(1);
-            final File[] files = new File("data/res/x" + session.zoomLevel).listFiles();
-            if (files != null) {
-                msg.writer().writeShort(files.length);
-            } else {
-                msg.writer().writeShort(0);
-            }
-            session.sendMessage(msg);
-            msg.cleanup();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void sendRes(MySession session) {
-        Message msg;
-        try {
-            File dir = new File("data/res/x" + session.zoomLevel);
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (final File fileEntry : files) {
-                    String original = fileEntry.getName();
-                    try (FileChannel fileChannel = FileChannel.open(fileEntry.toPath(), StandardOpenOption.READ)) {
-                        ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        int bytesRead;
-                        while ((bytesRead = fileChannel.read(buffer)) > 0) {
-                            buffer.flip();
-                            byteArrayOutputStream.write(buffer.array(), 0, bytesRead);
-                            buffer.clear();
-                        }
-                        byte[] res = byteArrayOutputStream.toByteArray();
-                        msg = new Message(-74);
-                        msg.writer().writeByte(2);
-                        msg.writer().writeUTF(original);
-                        msg.writer().writeInt(res.length);
-                        msg.writer().write(res);
-                        session.sendMessage(msg);
-                        msg.cleanup();
-                    } catch (IOException e) {
-                        Logger.logException(DataGame.class, e);
-                    }
-                }
-            }
-            msg = new Message(-74);
-            msg.writer().writeByte(3);
-            msg.writer().writeInt(vsRes);
+            msg.writer().writeInt(getResourceVersion(session.zoomLevel));
             session.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
         }
+    }
+
+    public static void sendSizeRes(MySession session) {
+        if (!session.isAssetReady()) {
+            return;
+        }
+        Message msg;
+        try {
+            msg = new Message(-74);
+            msg.writer().writeByte(1);
+            final File[] files = listRegularFiles(new File("data/res/x" + session.zoomLevel));
+            msg.writer().writeShort(files.length);
+            session.sendMessage(msg);
+            msg.cleanup();
+        } catch (Exception e) {
+            Logger.logException(DataGame.class, e);
+        }
+    }
+
+    public static void sendRes(MySession session) {
+        if (!session.isAssetReady()) {
+            return;
+        }
+        Message msg;
+        try {
+            File dir = new File("data/res/x" + session.zoomLevel);
+            File[] files = listRegularFiles(dir);
+            for (final File fileEntry : files) {
+                String original = fileEntry.getName();
+                try (FileChannel fileChannel = FileChannel.open(fileEntry.toPath(), StandardOpenOption.READ)) {
+                    ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    int bytesRead;
+                    while ((bytesRead = fileChannel.read(buffer)) > 0) {
+                        buffer.flip();
+                        byteArrayOutputStream.write(buffer.array(), 0, bytesRead);
+                        buffer.clear();
+                    }
+                    byte[] res = byteArrayOutputStream.toByteArray();
+                    msg = new Message(-74);
+                    msg.writer().writeByte(2);
+                    msg.writer().writeUTF(original);
+                    msg.writer().writeInt(res.length);
+                    msg.writer().write(res);
+                    session.sendMessage(msg);
+                    msg.cleanup();
+                } catch (IOException e) {
+                    Logger.logException(DataGame.class, e);
+                }
+            }
+            msg = new Message(-74);
+            msg.writer().writeByte(3);
+            msg.writer().writeInt(getResourceVersion(session.zoomLevel));
+            session.sendMessage(msg);
+            msg.cleanup();
+        } catch (Exception e) {
+            Logger.logException(DataGame.class, e);
+        }
+    }
+
+    private static File[] listRegularFiles(File directory) {
+        File[] files = directory.listFiles(File::isFile);
+        if (files == null) {
+            return new File[0];
+        }
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        return files;
+    }
+
+    private static synchronized int getResourceVersion(byte zoomLevel) {
+        return RESOURCE_VERSIONS.computeIfAbsent(zoomLevel, zoom -> {
+            CRC32 crc = new CRC32();
+            crc.update(vsRes);
+            byte[] buffer = new byte[8192];
+            for (File file : listRegularFiles(new File("data/res/x" + zoom))) {
+                byte[] name = file.getName().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                crc.update(name, 0, name.length);
+                try (InputStream input = java.nio.file.Files.newInputStream(file.toPath())) {
+                    int read;
+                    while ((read = input.read(buffer)) != -1) {
+                        crc.update(buffer, 0, read);
+                    }
+                } catch (IOException e) {
+                    Logger.logException(DataGame.class, e);
+                }
+            }
+            int version = (int) (crc.getValue() & 0x7FFFFFFF);
+            return version == 0 ? 1 : version;
+        });
     }
 
     public static void sendLinkIP(MySession session) {

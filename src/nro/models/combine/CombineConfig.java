@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import nro.models.utils.Util;
 
@@ -109,6 +112,35 @@ public final class CombineConfig {
             return result.length == 0 ? Arrays.copyOf(defaultValues, defaultValues.length) : result;
         } catch (NumberFormatException e) {
             return Arrays.copyOf(defaultValues, defaultValues.length);
+        }
+    }
+
+    /**
+     * Reads a comma-separated integer map, for example
+     * {@code 0:1,5:2,77:3}. Both ':' and '=' are accepted as separators.
+     */
+    public static Map<Integer, Integer> getIntMap(String key) {
+        String raw = values().getProperty(key, "").trim();
+        if (raw.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        if (raw.startsWith("{") && raw.endsWith("}")) {
+            raw = raw.substring(1, raw.length() - 1).trim();
+        }
+        Map<Integer, Integer> result = new LinkedHashMap<>();
+        try {
+            for (String entry : raw.split(",")) {
+                String[] pair = entry.trim().split("[:=]", 2);
+                if (pair.length != 2) {
+                    return Collections.emptyMap();
+                }
+                int mapKey = Integer.parseInt(pair[0].trim());
+                int mapValue = Integer.parseInt(pair[1].trim());
+                result.put(mapKey, mapValue);
+            }
+            return Collections.unmodifiableMap(result);
+        } catch (NumberFormatException e) {
+            return Collections.emptyMap();
         }
     }
 

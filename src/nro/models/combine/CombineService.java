@@ -53,6 +53,7 @@ public class CombineService {
     public static final int NANG_CHI_SO_BONG_TAI3 = 457;
     public static final int NANG_CAP_NHAN = 458;
     public static final int GHEP_MANH_HUY_DIET = 519;
+    public static final int NANG_CAP_NGOAI_TRANG = 520;
     private static CombineService instance;
 
     public final Npc baHatMit;
@@ -165,6 +166,9 @@ public class CombineService {
             case GHEP_MANH_HUY_DIET:
                 GhepManhHuyDiet.showInfoCombine(player);
                 break;
+            case NANG_CAP_NGOAI_TRANG:
+                NangCapNgoaiTrang.showInfoCombine(player);
+                break;
         }
     }
 
@@ -252,6 +256,9 @@ public class CombineService {
                 break;
             case GHEP_MANH_HUY_DIET:
                 GhepManhHuyDiet.ghepManh(player);
+                break;
+            case NANG_CAP_NGOAI_TRANG:
+                NangCapNgoaiTrang.nangCapNgoaiTrang(player);
                 break;
         }
 
@@ -630,6 +637,8 @@ public class CombineService {
                 return "Ta sẽ phù phép\ncho 7 viên Ngọc Rồng\nthành 1 viên Ngọc Rồng cấp cao";
             case NANG_CAP_VAT_PHAM:
                 return "Ta sẽ phù phép cho trang bị của ngươi trở lên mạnh mẽ";
+            case NANG_CAP_NGOAI_TRANG:
+                return "Ta sẽ nâng cấp cải trang, pet, cánh và thú cưỡi cho ngươi";
             case PHAN_RA_DO_THAN_LINH:
                 return "Ta sẽ phân rã \n  trang bị của người thành điểm!";
             case NANG_CAP_BONG_TAI:
@@ -696,6 +705,9 @@ public class CombineService {
             case NANG_CAP_VAT_PHAM:
                 return "vào hành trang\nChọn trang bị\n(Áo, quần, găng, giày hoặc rađa)\nChọn loại đá để nâng cấp\n"
                         + "Sau đó chọn 'Nâng cấp'";
+            case NANG_CAP_NGOAI_TRANG:
+                return "Vào hành trang\nChọn 1 ngoại trang và đá nâng cấp phù hợp\n"
+                        + "Có thể chọn thêm Cỏ, Sao hoặc Khiên bảo hộ\nSau đó chọn 'Nâng cấp'";
             case PHAN_RA_DO_THAN_LINH:
                 return "vào hành trang\nChọn trang bị\n(Áo, quần, găng, giày hoặc rađa)\nChọn loại đá để phân rã\n"
                         + "Sau đó chọn 'Phân Rã'";

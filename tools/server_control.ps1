@@ -9,6 +9,7 @@ $LogDir = Join-Path $Root "logs"
 $StatusPath = Join-Path $LogDir "menu_status.txt"
 $ServerLog = Join-Path $LogDir "server.log"
 $ServerErrorLog = Join-Path $LogDir "server-error.log"
+$ControlLog = Join-Path $LogDir "server-control.log"
 $PidPath = Join-Path $LogDir "server.pid"
 
 $ControlMutex = New-Object System.Threading.Mutex($false, "Global\NRO_SERVER_DASHBOARD_CONTROL")
@@ -83,6 +84,18 @@ function Write-FileAtomic {
 
 function Write-ControlLog {
     param([string]$Message)
+
+    $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
+    try {
+        [System.IO.File]::AppendAllText(
+            $ControlLog,
+            $line + [Environment]::NewLine,
+            [System.Text.Encoding]::UTF8
+        )
+    } catch {
+        # Control logging must never block server actions.
+    }
+    Write-Output $line
 }
 
 function Get-ServerProcessIds {
@@ -375,10 +388,67 @@ function Set-ExpRateAndRestart {
     Write-ControlLog "Hoàn tất áp dụng x$Rate tiềm năng/sức mạnh."
 }
 
+function Update-RuntimeJarClasses {
+    param(
+        [string]$TargetJar,
+        [string]$ClassesDirectory
+    )
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::Open(
+        $TargetJar,
+        [System.IO.Compression.ZipArchiveMode]::Update
+    )
+    try {
+        $classesRoot = (Resolve-Path -LiteralPath $ClassesDirectory).Path
+        $classFiles = @(Get-ChildItem -LiteralPath $classesRoot -Recurse -File -Filter "*.class")
+        if ($classFiles.Count -eq 0) {
+            throw "Thư mục build không có class: $classesRoot"
+        }
+        foreach ($classFile in $classFiles) {
+            $entryName = $classFile.FullName.Substring($classesRoot.Length + 1).Replace("\", "/")
+            $oldEntry = $archive.GetEntry($entryName)
+            if ($oldEntry) {
+                $oldEntry.Delete()
+            }
+            $newEntry = $archive.CreateEntry(
+                $entryName,
+                [System.IO.Compression.CompressionLevel]::Optimal
+            )
+            $input = [System.IO.File]::OpenRead($classFile.FullName)
+            $output = $newEntry.Open()
+            try {
+                $input.CopyTo($output)
+            } finally {
+                $output.Dispose()
+                $input.Dispose()
+            }
+        }
+        return $classFiles.Count
+    } finally {
+        $archive.Dispose()
+    }
+}
+
+function Test-RuntimeJar {
+    param([string]$TargetJar)
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($TargetJar)
+    try {
+        return $null -ne $archive.GetEntry("com/zaxxer/hikari/HikariConfig.class") -and
+            $null -ne $archive.GetEntry("nro/models/server/ServerManager.class")
+    } finally {
+        $archive.Dispose()
+    }
+}
+
 function Build-Server {
     $ant = Get-Command ant -ErrorAction SilentlyContinue
     $javac = Get-Command javac -ErrorAction SilentlyContinue
-    $jar = Get-Command jar -ErrorAction SilentlyContinue
+    $tempBuildRoot = $null
 
     if (@(Get-ServerProcessIds).Count -gt 0) {
         Write-ControlLog "Không thể build khi server đang chạy. Hãy dừng server trước rồi build lại."
@@ -390,9 +460,17 @@ function Build-Server {
     Push-Location $Root
     try {
         if ($ant) {
-            & ant clean jar 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                Write-ControlLog "Build bằng Ant thất bại với mã lỗi $LASTEXITCODE."
+            $previousErrorAction = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            try {
+                $antOutput = @(& ant clean jar 2>&1)
+                $antExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $previousErrorAction
+            }
+            if ($antExitCode -ne 0) {
+                $detail = ($antOutput | Select-Object -Last 5) -join " | "
+                Write-ControlLog "Build bằng Ant thất bại với mã lỗi $antExitCode. $detail"
                 return
             }
 
@@ -403,10 +481,6 @@ function Build-Server {
                 Write-ControlLog "Build xong nhưng thiếu dist\NgocRongOnline.jar hoặc build\classes."
                 return
             }
-            if (-not $jar) {
-                Write-ControlLog "Build xong nhưng không tìm thấy jar.exe để cập nhật JAR runtime."
-                return
-            }
             if (-not (Test-Path $targetJar)) {
                 Write-ControlLog "Không tìm thấy 20.jar nền chứa thư viện runtime."
                 return
@@ -414,34 +488,30 @@ function Build-Server {
 
             $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
             Copy-Item -Path $targetJar -Destination $backup -Force
-            & $jar.Source uf $targetJar -C $builtClasses . 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
+            try {
+                $updatedCount = Update-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $builtClasses
+                if (-not (Test-RuntimeJar -TargetJar $targetJar)) {
+                    throw "JAR sau build thiếu class runtime bắt buộc."
+                }
+            } catch {
                 Copy-Item -Path $backup -Destination $targetJar -Force
-                Write-ControlLog "Cập nhật class vào 20.jar thất bại; đã khôi phục backup."
+                Write-ControlLog "Cập nhật class vào 20.jar thất bại; đã khôi phục backup: $($_.Exception.Message)"
                 return
             }
-            $jarEntries = @(& $jar.Source tf $targetJar 2>&1)
-            if ($LASTEXITCODE -ne 0 -or $jarEntries -notcontains "com/zaxxer/hikari/HikariConfig.class") {
-                Copy-Item -Path $backup -Destination $targetJar -Force
-                Write-ControlLog "20.jar sau build thiếu thư viện HikariCP; đã khôi phục backup."
-                return
-            }
-            Write-ControlLog "Build hoàn tất. Đã cập nhật class vào JAR runtime đầy đủ và tạo backup $([System.IO.Path]::GetFileName($backup))."
+            Write-ControlLog "Build hoàn tất. Đã cập nhật $updatedCount class vào JAR runtime và tạo backup $([System.IO.Path]::GetFileName($backup))."
             return
         }
 
-        if (-not $javac -or -not $jar) {
-            Write-ControlLog "Không thể build: máy chưa có Ant hoặc JDK javac/jar trong PATH."
+        if (-not $javac) {
+            Write-ControlLog "Không thể build: máy chưa có Ant hoặc JDK javac trong PATH."
             return
         }
 
-        $tempClasses = Join-Path $Root "build\dashboard-classes"
-        if (Test-Path $tempClasses) {
-            Remove-Item -LiteralPath $tempClasses -Recurse -Force
-        }
+        $tempBuildRoot = Join-Path $Root ("build\server-build-{0}" -f $PID)
+        $tempClasses = Join-Path $tempBuildRoot "classes"
         New-Item -ItemType Directory -Path $tempClasses | Out-Null
 
-        $sourceList = Join-Path $Root "build\dashboard-sources.txt"
+        $sourceList = Join-Path $tempBuildRoot "sources.txt"
         Get-ChildItem -Path (Join-Path $Root "src") -Recurse -Filter "*.java" |
             ForEach-Object { $_.FullName } |
             Set-Content -Path $sourceList -Encoding ASCII
@@ -452,23 +522,39 @@ function Build-Server {
         ) -join ";"
 
         $processorPath = Join-Path $Root "lib\lombok.jar"
-        & javac --release 17 -encoding UTF-8 -cp $classpath -processorpath $processorPath -d $tempClasses "@$sourceList" 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-ControlLog "Build bằng javac thất bại với mã lỗi $LASTEXITCODE."
+        $previousErrorAction = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try {
+            $javacOutput = @(& javac --release 17 -encoding UTF-8 -cp $classpath -processorpath $processorPath -d $tempClasses "@$sourceList" 2>&1)
+            $javacExitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $previousErrorAction
+        }
+        if ($javacExitCode -ne 0) {
+            $detail = ($javacOutput | Select-Object -Last 5) -join " | "
+            Write-ControlLog "Build bằng javac thất bại với mã lỗi $javacExitCode. $detail"
             return
         }
 
         $targetJar = Join-Path $Root "20.jar"
         $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
         Copy-Item -Path $targetJar -Destination $backup -Force
-        & jar uf $targetJar -C $tempClasses . 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-ControlLog "Cập nhật 20.jar thất bại với mã lỗi $LASTEXITCODE."
+        try {
+            $updatedCount = Update-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $tempClasses
+            if (-not (Test-RuntimeJar -TargetJar $targetJar)) {
+                throw "JAR sau build thiếu class runtime bắt buộc."
+            }
+        } catch {
+            Copy-Item -Path $backup -Destination $targetJar -Force
+            Write-ControlLog "Cập nhật 20.jar thất bại; đã khôi phục backup: $($_.Exception.Message)"
             return
         }
-        Write-ControlLog "Build javac hoàn tất. Đã cập nhật class vào 20.jar và tạo backup $([System.IO.Path]::GetFileName($backup))."
+        Write-ControlLog "Build javac hoàn tất. Đã cập nhật $updatedCount class vào 20.jar và tạo backup $([System.IO.Path]::GetFileName($backup))."
     }
     finally {
+        if ($tempBuildRoot -and (Test-Path -LiteralPath $tempBuildRoot)) {
+            Remove-Item -LiteralPath $tempBuildRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
         Pop-Location
         Write-Status
     }

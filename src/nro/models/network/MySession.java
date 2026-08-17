@@ -19,10 +19,12 @@ import nro.models.utils.TimeUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MySession extends Session {
 
     private static final Map<String, AntiLogin> ANTILOGIN = new HashMap<>();
+    private static final Map<String, ClientProfile> CLIENT_PROFILES = new ConcurrentHashMap<>();
     public Player player;
 
     public byte timeWait = 100;
@@ -39,6 +41,8 @@ public class MySession extends Session {
 
     public int typeClient;
     public byte zoomLevel;
+    private volatile boolean clientInfoReady;
+    private boolean assetVersionsSent;
 
     public long lastTimeLogout;
     public boolean joinedGame;
@@ -68,6 +72,61 @@ public class MySession extends Session {
     public MySession(Socket socket) {
         super(socket);
         ipAddress = socket.getInetAddress().getHostAddress();
+        restoreClientProfile();
+    }
+
+    private static final class ClientProfile {
+
+        private final int typeClient;
+        private final byte zoomLevel;
+        private final int version;
+
+        private ClientProfile(int typeClient, byte zoomLevel, int version) {
+            this.typeClient = typeClient;
+            this.zoomLevel = zoomLevel;
+            this.version = version;
+        }
+    }
+
+    private void restoreClientProfile() {
+        ClientProfile profile = CLIENT_PROFILES.get(this.ipAddress);
+        if (profile != null && profile.zoomLevel >= 1 && profile.zoomLevel <= 4) {
+            this.typeClient = profile.typeClient;
+            this.zoomLevel = profile.zoomLevel;
+            this.version = profile.version;
+            this.clientInfoReady = true;
+        }
+    }
+
+    public void rememberClientProfile() {
+        if (this.zoomLevel >= 1 && this.zoomLevel <= 4) {
+            CLIENT_PROFILES.put(this.ipAddress,
+                    new ClientProfile(this.typeClient, this.zoomLevel, this.version));
+        }
+    }
+
+    public void markClientInfoReady() {
+        this.clientInfoReady = true;
+    }
+
+    public boolean isAssetReady() {
+        return this.clientInfoReady && this.zoomLevel >= 1 && this.zoomLevel <= 4;
+    }
+
+    public synchronized boolean markAssetVersionsSent() {
+        if (!this.isAssetReady() || this.assetVersionsSent) {
+            return false;
+        }
+        this.assetVersionsSent = true;
+        return true;
+    }
+
+    public void sendAssetVersionsIfNeeded() {
+        if (this.markAssetVersionsSent()) {
+            DataGame.sendSmallVersion(this);
+            DataGame.sendBgItemVersion(this);
+            DataGame.sendVersionRes(this);
+        }
     }
 
     @Override
@@ -123,9 +182,11 @@ public class MySession extends Session {
                 this.pp = password;
                 pl = MrFinn.login(this, al);
                 if (pl != null) {
-                    DataGame.sendSmallVersion(this);
-                    DataGame.sendBgItemVersion(this);
-
+                    // Some clients reconnect when switching accounts without
+                    // sending setClientType again. Reuse the last profile for
+                    // this local endpoint so icon/resource requests keep the
+                    // correct zoom directory.
+                    sendAssetVersionsIfNeeded();
                     this.timeWait = 0;
                     this.joinedGame = true;
                     pl.nPoint.calPoint();

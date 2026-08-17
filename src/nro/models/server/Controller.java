@@ -396,6 +396,11 @@ public class Controller implements IMessageHandler {
                     }
                     break;
                 case -74:
+                    if (!_session.isAssetReady()) {
+                        Logger.warning("[Asset] Bỏ qua yêu cầu resource trước setClientType từ "
+                                + _session.ipAddress + "\n");
+                        break;
+                    }
                     String ip = _session.ipAddress;
                     Logger.warning("Địa chỉ " + ip + " đang tải dữ liệu\n");
                     byte type = _msg.reader().readByte();
@@ -423,10 +428,15 @@ public class Controller implements IMessageHandler {
                     break;
                 case -67:
                     int id = _msg.reader().readInt();
-                    DataGame.sendIcon(_session, id);
+                    if (_session.isAssetReady()) {
+                        DataGame.sendIcon(_session, id);
+                    }
                     break;
                 case 66:
-                    DataGame.sendImageByName(_session, _msg.reader().readUTF());
+                    String imageName = _msg.reader().readUTF();
+                    if (_session.isAssetReady()) {
+                        DataGame.sendImageByName(_session, imageName);
+                    }
                     break;
                 case -66:
                     if (player != null) {
@@ -457,7 +467,9 @@ public class Controller implements IMessageHandler {
                     break;
                 case -32:
                     int bgId = _msg.reader().readShort();
-                    DataGame.sendItemBGTemplate(_session, bgId);
+                    if (_session.isAssetReady()) {
+                        DataGame.sendItemBGTemplate(_session, bgId);
+                    }
                     break;
                 case 22:
                     if (player != null) {
@@ -623,7 +635,6 @@ public class Controller implements IMessageHandler {
                     break;
                 case -27:
                     _session.sendKey();
-                    DataGame.sendVersionRes((ISession) _session);
                     break;
                 case -111:
                     DataGame.sendDataImageVersion(_session);

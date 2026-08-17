@@ -1,0 +1,4 @@
+interface:
+  display_name: "NRO Java Build"
+  short_description: "Safe full builds for the NRO Java server"
+  default_prompt: "Use $nro-java-build to compile, validate, and deploy 20.jar safely."

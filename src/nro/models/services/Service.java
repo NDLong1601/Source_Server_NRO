@@ -1907,8 +1907,8 @@ public class Service {
 
     public void setClientType(MySession session, Message msg) {
         try {
-            session.typeClient = (msg.reader().readByte());// client_type
-            session.zoomLevel = msg.reader().readByte();// zoom_level
+            int typeClient = msg.reader().readByte();// client_type
+            byte zoomLevel = msg.reader().readByte();// zoom_level
             msg.reader().readBoolean();// is_gprs
             msg.reader().readInt();// width
             msg.reader().readInt();// height
@@ -1916,13 +1916,27 @@ public class Service {
             msg.reader().readBoolean();// is_touch
             String platform = msg.reader().readUTF();
             String[] arrPlatform = platform.split("\\|");
-            session.version = Integer.parseInt(arrPlatform[1].replaceAll("\\.", ""));
+            int version = arrPlatform.length > 1
+                    ? Integer.parseInt(arrPlatform[1].replaceAll("[^0-9]", ""))
+                    : 0;
+
+            if (zoomLevel < 1 || zoomLevel > 4) {
+                Logger.warning("[Asset] Zoom không hợp lệ " + zoomLevel + " từ "
+                        + session.ipAddress + ", dùng zoom 1\n");
+                zoomLevel = 1;
+            }
+
+            session.typeClient = typeClient;
+            session.zoomLevel = zoomLevel;
+            session.version = version;
+            session.markClientInfoReady();
+            session.rememberClientProfile();
+
+            DataGame.sendLinkIP(session);
+            session.sendAssetVersionsIfNeeded();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            msg.cleanup();
+            Logger.logException(Service.class, e);
         }
-        DataGame.sendLinkIP(session);
     }
 
     public void dropSatellite(Player pl, Item item, Zone map, int x, int y) {

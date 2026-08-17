@@ -359,7 +359,8 @@ public class BaHatMit extends Npc {
                                 createOtherMenu(player, ConstNpc.MENU_NANG_CAP_TRANG_BI,
                                         "Ta có thể giúp gì cho ngươi?",
                                         "Nâng cấp\nTrang bị",
-                                        "Nâng cấp\nNhẫn");
+                                        "Nâng cấp\nNhẫn",
+                                        "Nâng cấp\nNgoại trang");
                                 break;
                             case 4:
                                 if (InventoryService.gI().findItemBongTaiCap2(player)) {
@@ -451,10 +452,12 @@ public class BaHatMit extends Npc {
                             CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_VAT_PHAM);
                         } else if (select == 1) {
                             CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_NHAN);
+                        } else if (select == 2) {
+                            CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_NGOAI_TRANG);
                         }
                     } else if (player.idMark.getIndexMenu() == ConstNpc.MENU_START_COMBINE) {
                         switch (player.combineNew.typeCombine) {
-                            case CombineService.NANG_CAP_BONG_TAI3, CombineService.NANG_CHI_SO_BONG_TAI3, CombineService.NANG_CAP_BONG_TAI, CombineService.NANG_CHI_SO_BONG_TAI, CombineService.LAM_PHEP_NHAP_DA, CombineService.NHAP_NGOC_RONG, CombineService.GIAM_DINH_SACH, CombineService.TAY_SACH, CombineService.NANG_CAP_SACH_TUYET_KY, CombineService.HOI_PHUC_SACH, CombineService.PHAN_RA_SACH, CombineService.NANG_CAP_NHAN, CombineService.GHEP_MANH_HUY_DIET -> {
+                            case CombineService.NANG_CAP_BONG_TAI3, CombineService.NANG_CHI_SO_BONG_TAI3, CombineService.NANG_CAP_BONG_TAI, CombineService.NANG_CHI_SO_BONG_TAI, CombineService.LAM_PHEP_NHAP_DA, CombineService.NHAP_NGOC_RONG, CombineService.GIAM_DINH_SACH, CombineService.TAY_SACH, CombineService.NANG_CAP_SACH_TUYET_KY, CombineService.HOI_PHUC_SACH, CombineService.PHAN_RA_SACH, CombineService.NANG_CAP_NHAN, CombineService.GHEP_MANH_HUY_DIET, CombineService.NANG_CAP_NGOAI_TRANG -> {
                                 if (select == 0) {
                                     CombineService.gI().startCombine(player);
                                 }

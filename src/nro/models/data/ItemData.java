@@ -9,16 +9,22 @@ import nro.models.player_system.Template;
 
 public class ItemData {
 
+    /*
+     * Command -28 uses a two-byte payload length. With the current 2,062
+     * templates, 1,000 entries serialize to about 63 KB and the remaining
+     * entries to about 54 KB. Keeping exactly one reload packet and one append
+     * packet also matches the cache flow used by older, working builds.
+     */
+    private static final int FIRST_TEMPLATE_PACKET_COUNT = 1_000;
+
     public static void updateItem(MySession session) {
         updateItemOptionItemplate(session);
         updateItemArrHead2FTemplate(session);
         int total = Manager.ITEM_TEMPLATES.size();
-        int chunkSize = 350;
-        int firstChunk = Math.min(chunkSize, total);
+        int firstChunk = Math.min(FIRST_TEMPLATE_PACKET_COUNT, total);
         updateItemTemplate(session, firstChunk);
-        for (int i = firstChunk; i < total; i += chunkSize) {
-            int end = Math.min(i + chunkSize, total);
-            updateItemTemplate(session, i, end);
+        if (firstChunk < total) {
+            updateItemTemplate(session, firstChunk, total);
         }
     }
 
