@@ -82,6 +82,11 @@ function LoadItemCatalog(force) {
   if (!force && itemCatalogRows.length > 1) return;
   var rows = ParseTsv(RunAdmin("listitemcatalog", {}));
   if (!rows.length || rows[0][0] != "id") return;
+  CacheItemCatalogRows(rows);
+}
+
+function CacheItemCatalogRows(rows) {
+  if (!rows || !rows.length || rows[0][0] != "id") return;
   itemCatalogRows = rows;
   itemCatalogById = {};
   for (var i = 1; i < rows.length; i++) {

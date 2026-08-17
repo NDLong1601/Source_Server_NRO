@@ -104,12 +104,30 @@ public class PlayerService {
     }
 
     public void hoiPhuc(Player player, long hp, long mp) {
-        if (!player.isDie()) {
-            player.nPoint.addHp(hp);
-            player.nPoint.addMp(mp);
+        if (player == null || player.nPoint == null || player.isDie()) {
+            return;
+        }
+
+        int oldHp = player.nPoint.hp;
+        int oldMp = player.nPoint.mp;
+        player.nPoint.addHp(hp);
+        player.nPoint.addMp(mp);
+
+        boolean hpChanged = player.nPoint.hp != oldHp;
+        boolean mpChanged = player.nPoint.mp != oldMp;
+        if (!hpChanged && !mpChanged) {
+            return;
+        }
+
+        if (hpChanged) {
             Service.gI().Send_Info_NV(player);
-            if (!player.isPet && !player.isNewPet) {
-                PlayerService.gI().sendInfoHpMp(player);
+        }
+        if (!player.isPet && !player.isNewPet) {
+            if (hpChanged) {
+                sendInfoHp(player);
+            }
+            if (mpChanged) {
+                sendInfoMp(player);
             }
         }
     }

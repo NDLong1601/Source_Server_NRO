@@ -7,6 +7,7 @@ function RegisterTab(config) {
     throw new Error("Tab registration is incomplete: " + config.id);
   }
   if (tabRegistry[config.id]) throw new Error("Duplicate tab registration: " + config.id);
+  config.isLoaded = false;
   tabRegistry[config.id] = config;
   tabOrder.push(config.id);
 }

@@ -2,3 +2,13 @@
 [2026-08-17 13:48:10] Đã dừng tiến trình server PID 460.
 [2026-08-17 13:48:17] Đã khởi chạy server từ 20.jar với PID 26180.
 [2026-08-17 13:48:20] Server đã mở cổng 14445 với PID 26248.
+[2026-08-17 14:12:30] Đã dừng tiến trình server PID 26180.
+[2026-08-17 14:12:30] Đã dừng tiến trình server PID 26248.
+[2026-08-17 14:12:41] Bắt đầu build.
+[2026-08-17 14:13:07] Build javac hoàn tất. Đã cập nhật 636 class vào 20.jar và tạo backup 20.jar.bak_20260817_141259.
+[2026-08-17 14:14:20] Đã khởi chạy server từ 20.jar với PID 18700.
+[2026-08-17 14:14:24] Server đã mở cổng 14445 với PID 14284.
+[2026-08-17 14:21:24] Đã dừng tiến trình server PID 18700.
+[2026-08-17 14:21:24] Đã dừng tiến trình server PID 14284.
+[2026-08-17 14:21:28] Đã khởi chạy server từ 20.jar với PID 27408.
+[2026-08-17 14:21:33] Server đã mở cổng 14445 với PID 19552.

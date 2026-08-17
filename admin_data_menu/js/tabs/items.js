@@ -1,4 +1,6 @@
 var itemRows = [];
+var itemAllRows = [];
+var itemFilteredRows = [];
 var itemCurrentPage = 1;
 var itemPageSize = 60;
 var itemTotal = 0;
@@ -66,6 +68,7 @@ function RenderItemPagination() {
   var previous = document.getElementById("itemPreviousPage");
   var next = document.getElementById("itemNextPage");
   var last = document.getElementById("itemLastPage");
+  var numbers = document.getElementById("itemPageNumbers");
   if (info) info.innerText = hasItems
     ? "Trang " + itemCurrentPage + "/" + itemTotalPages + " · " + start + "–" + end + "/" + itemTotal
     : "Không có vật phẩm phù hợp";
@@ -73,47 +76,101 @@ function RenderItemPagination() {
   if (previous) previous.disabled = !hasItems || itemCurrentPage <= 1;
   if (next) next.disabled = !hasItems || itemCurrentPage >= itemTotalPages;
   if (last) last.disabled = !hasItems || itemCurrentPage >= itemTotalPages;
+  if (numbers) {
+    var html = "";
+    var firstNumber = Math.max(1, itemCurrentPage - 2);
+    var lastNumber = Math.min(itemTotalPages, firstNumber + 4);
+    firstNumber = Math.max(1, lastNumber - 4);
+    for (var page = firstNumber; page <= lastNumber; page++) {
+      html += '<button type="button" class="pagination-page' + (page == itemCurrentPage ? ' active' : '') + '" onclick="GoItemPage(' + page + ')">' + page + '</button>';
+    }
+    numbers.innerHTML = html;
+  }
 }
 
-function NormalizeItemRows(rows) {
-  itemRows = [];
-  itemTotal = 0;
+function NormalizeAllItemRows(rows) {
+  itemAllRows = [];
   if (!rows.length) return;
 
   var header = [];
   for (var h = 1; h < rows[0].length; h++) header.push(rows[0][h]);
-  itemRows.push(header);
-  if (rows.length > 1 && /^\d+$/.test(rows[1][0] || "")) itemTotal = parseInt(rows[1][0], 10);
+  itemAllRows.push(header);
 
   for (var r = 1; r < rows.length; r++) {
     var item = [];
     for (var c = 1; c < rows[r].length; c++) item.push(rows[r][c]);
-    itemRows.push(item);
+    itemAllRows.push(item);
   }
+  SyncItemCaches();
 }
 
-function LoadItems(page) {
-  itemCurrentPage = page == null ? 1 : parseInt(page, 10);
-  if (isNaN(itemCurrentPage) || itemCurrentPage < 1) itemCurrentPage = 1;
-  var text = RunAdmin("listitems", {
-    Type: V("itemTypeFilter"), Search: V("itemSearch"), Page: itemCurrentPage, PageSize: itemPageSize
-  });
-  NormalizeItemRows(ParseTsv(text));
+function SyncItemCaches() {
+  var counts = {};
+  var catalog = [["id", "item_name", "description", "item_type", "gender", "icon_id"]];
+  for (var i = 1; i < itemAllRows.length; i++) {
+    var row = itemAllRows[i];
+    counts[row[1]] = (counts[row[1]] || 0) + 1;
+    catalog.push([row[0], row[3], row[4], row[1], row[2], row[6]]);
+  }
+  var filterTypes = [["", "Tất cả group (" + Math.max(0, itemAllRows.length - 1) + ")"]];
+  var detailTypes = [];
+  var ids = [];
+  for (var key in counts) ids.push(key);
+  ids.sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+  for (var t = 0; t < ids.length; t++) {
+    var label = ItemTypeBaseLabel(ids[t]);
+    filterTypes.push([ids[t], label + " (" + counts[ids[t]] + ")"]);
+    detailTypes.push([ids[t], label]);
+  }
+  SetComboItems("itemTypeFilter", filterTypes);
+  SetComboItems("itemType", detailTypes);
+  SetComboItems("equipTypeFilter", filterTypes);
+  CacheItemCatalogRows(catalog);
+}
+
+function LoadItems(force) {
+  var text = "";
+  if (force || itemAllRows.length < 2) {
+    text = RunAdmin("listitems", { Page: 1, PageSize: 0 });
+    NormalizeAllItemRows(ParseTsv(text));
+  }
+  ApplyItemFilters(true);
+  Msg("itemMessage", itemTotal ? "Đã nạp " + (itemAllRows.length - 1) + " vật phẩm; đang hiển thị " + itemTotal + " kết quả từ bộ nhớ." : (text || "Không có vật phẩm phù hợp."));
+  AdjustTableOffsets();
+}
+
+function ApplyItemFilters(resetPage) {
+  var type = V("itemTypeFilter");
+  var query = Trim(V("itemSearch")).toLowerCase();
+  itemFilteredRows = [itemAllRows[0] || []];
+  for (var i = 1; i < itemAllRows.length; i++) {
+    var row = itemAllRows[i];
+    if (type && row[1] != type) continue;
+    if (query && ((row[0] || "").toLowerCase().indexOf(query) < 0) && ((row[3] || "").toLowerCase().indexOf(query) < 0)) continue;
+    itemFilteredRows.push(row);
+  }
+  itemTotal = Math.max(0, itemFilteredRows.length - 1);
   itemTotalPages = itemTotal ? Math.ceil(itemTotal / itemPageSize) : 0;
+  if (resetPage) itemCurrentPage = 1;
   if (itemTotalPages && itemCurrentPage > itemTotalPages) {
     itemCurrentPage = itemTotalPages;
-    LoadItems(itemCurrentPage);
-    return;
   }
+  RenderItemPage();
+}
+
+function RenderItemPage() {
+  itemRows = [itemFilteredRows[0] || []];
+  var start = (itemCurrentPage - 1) * itemPageSize + 1;
+  var end = Math.min(start + itemPageSize, itemFilteredRows.length);
+  for (var i = start; i < end; i++) itemRows.push(itemFilteredRows[i]);
   RenderItems();
-  Msg("itemMessage", itemTotal ? "Đã tải " + (itemRows.length - 1) + "/" + itemTotal + " vật phẩm ở trang " + itemCurrentPage + "." : (text || "Không có vật phẩm phù hợp."));
-  AdjustTableOffsets();
 }
 
 function GoItemPage(page) {
   page = parseInt(page, 10);
   if (isNaN(page) || page < 1 || (itemTotalPages && page > itemTotalPages) || page == itemCurrentPage) return;
-  LoadItems(page);
+  itemCurrentPage = page;
+  RenderItemPage();
 }
 
 function PickItem(index) {
@@ -143,12 +200,12 @@ function SaveItem() {
     Head: V("itemHead"), Body: V("itemBody"), Leg: V("itemLeg")
   });
   Msg("itemMessage", StatusText(text));
-  if (!IsAdminError(text)) { LoadItems(); LoadItemCatalog(true); }
+  if (!IsAdminError(text)) LoadItems(true);
 }
 
 RegisterTab({
   id: "items", view: "items.html", panelId: "panelItems", navId: "navItems",
   title: "Vật phẩm", subtitle: "Lọc theo type, xem ảnh và sửa item template",
-  onOpen: function () { LoadItems(); },
-  onRefresh: function () { LoadItems(); }
+  onOpen: function () { LoadItems(false); },
+  onRefresh: function () { LoadItems(true); }
 });

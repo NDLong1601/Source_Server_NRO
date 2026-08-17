@@ -50,14 +50,18 @@ public final class NangCapNhan {
     }
 
     public static void showInfoCombine(Player player) {
-        if (player.combineNew.itemsCombine.size() != 2) {
+        boolean stoneEnabled = isStoneEnabled();
+        boolean goldEnabled = isGoldEnabled();
+        boolean gemEnabled = isGemEnabled();
+        int expectedItems = stoneEnabled ? 2 : 1;
+        if (player.combineNew.itemsCombine.size() != expectedItems) {
             showInvalidSelection(player);
             return;
         }
 
         Item ring = findRing(player);
         Item stone = findGoldenStone(player);
-        if (ring == null || stone == null) {
+        if (ring == null || (stoneEnabled && stone == null) || (!stoneEnabled && stone != null)) {
             showInvalidSelection(player);
             return;
         }
@@ -84,32 +88,46 @@ public final class NangCapNhan {
                 .append(ItemService.gI().getTemplate((short) (ring.template.id + 1)).name)
                 .append(" [Cấp ").append(level + 1).append("]\n");
         text.append("|2|Tỉ lệ thành công: ").append(successRate).append("%\n");
-        text.append(stone.quantity < stoneCost ? "|7|" : "|1|")
-                .append("Cần ").append(stoneCost).append(" ").append(stone.template.name);
-        if (goldCost > 0) {
-            text.append("\n").append(player.inventory.gold < goldCost ? "|7|" : "|1|")
-                    .append("Cần ").append(Util.numberToMoney(goldCost)).append(" vàng");
+        boolean hasResourceLine = false;
+        if (stoneEnabled) {
+            text.append(stone.quantity < stoneCost ? "|7|" : "|1|")
+                    .append("Cần ").append(stoneCost).append(" ").append(stone.template.name);
+            hasResourceLine = true;
         }
-        if (gemCost > 0) {
-            text.append("\n").append(player.inventory.gem < gemCost ? "|7|" : "|1|")
+        if (goldEnabled) {
+            if (hasResourceLine) {
+                text.append("\n");
+            }
+            text.append(player.inventory.gold < goldCost ? "|7|" : "|1|")
+                    .append("Cần ").append(Util.numberToMoney(goldCost)).append(" vàng");
+            hasResourceLine = true;
+        }
+        if (gemEnabled) {
+            if (hasResourceLine) {
+                text.append("\n");
+            }
+            text.append(player.inventory.gem < gemCost ? "|7|" : "|1|")
                     .append("Cần ").append(Util.numberToMoney(gemCost)).append(" ngọc xanh");
         }
 
-        if (stone.quantity < stoneCost) {
+        if (stoneEnabled && stone.quantity < stoneCost) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(),
                     "Còn thiếu\n" + (stoneCost - stone.quantity) + " " + stone.template.name);
-        } else if (player.inventory.gold < goldCost) {
+        } else if (goldEnabled && player.inventory.gold < goldCost) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(),
                     "Còn thiếu\n" + Util.numberToMoney(goldCost - player.inventory.gold) + " vàng");
-        } else if (player.inventory.gem < gemCost) {
+        } else if (gemEnabled && player.inventory.gem < gemCost) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(),
                     "Còn thiếu\n" + Util.numberToMoney(gemCost - player.inventory.gem) + " ngọc xanh");
         } else {
-            StringBuilder button = new StringBuilder("Nâng cấp\n").append(stoneCost).append(" đá");
-            if (goldCost > 0) {
+            StringBuilder button = new StringBuilder("Nâng cấp");
+            if (stoneEnabled) {
+                button.append("\n").append(stoneCost).append(" đá");
+            }
+            if (goldEnabled) {
                 button.append("\n").append(Util.numberToMoney(goldCost)).append(" vàng");
             }
-            if (gemCost > 0) {
+            if (gemEnabled) {
                 button.append("\n").append(Util.numberToMoney(gemCost)).append(" ngọc");
             }
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE,
@@ -118,13 +136,17 @@ public final class NangCapNhan {
     }
 
     public static void nangCapNhan(Player player) {
-        if (player.combineNew.itemsCombine.size() != 2) {
+        boolean stoneEnabled = isStoneEnabled();
+        boolean goldEnabled = isGoldEnabled();
+        boolean gemEnabled = isGemEnabled();
+        int expectedItems = stoneEnabled ? 2 : 1;
+        if (player.combineNew.itemsCombine.size() != expectedItems) {
             return;
         }
 
         Item ring = findRing(player);
         Item stone = findGoldenStone(player);
-        if (ring == null || stone == null) {
+        if (ring == null || (stoneEnabled && stone == null) || (!stoneEnabled && stone != null)) {
             return;
         }
 
@@ -138,22 +160,28 @@ public final class NangCapNhan {
         int goldCost = getGoldCost(level);
         int gemCost = getGemCost(level);
         double successRate = getSuccessRate(level);
-        if (stone.quantity < stoneCost) {
+        if (stoneEnabled && stone.quantity < stoneCost) {
             Service.gI().sendThongBao(player, "Không đủ Đá hoàng kim để thực hiện");
             return;
         }
-        if (player.inventory.gold < goldCost) {
+        if (goldEnabled && player.inventory.gold < goldCost) {
             Service.gI().sendThongBao(player, "Không đủ vàng để thực hiện");
             return;
         }
-        if (player.inventory.gem < gemCost) {
+        if (gemEnabled && player.inventory.gem < gemCost) {
             Service.gI().sendThongBao(player, "Không đủ ngọc xanh để thực hiện");
             return;
         }
 
-        InventoryService.gI().subQuantityItemsBag(player, stone, stoneCost);
-        player.inventory.gold -= goldCost;
-        player.inventory.gem -= gemCost;
+        if (stoneEnabled) {
+            InventoryService.gI().subQuantityItemsBag(player, stone, stoneCost);
+        }
+        if (goldEnabled) {
+            player.inventory.gold -= goldCost;
+        }
+        if (gemEnabled) {
+            player.inventory.gem -= gemCost;
+        }
         if (Util.isTrue((float) successRate, 100)) {
             short nextRingId = (short) (ring.template.id + 1);
             ring.template = ItemService.gI().getTemplate(nextRingId);
@@ -169,25 +197,40 @@ public final class NangCapNhan {
         }
 
         InventoryService.gI().sendItemBags(player);
-        if (goldCost > 0 || gemCost > 0) {
+        if (goldEnabled || gemEnabled) {
             Service.gI().sendMoney(player);
         }
-        if (!stone.isNotNullItem()) {
+        if (stoneEnabled && !stone.isNotNullItem()) {
             player.combineNew.clearItemCombine();
         }
         CombineService.gI().reOpenItemCombine(player);
     }
 
     private static int getStoneCost(int level) {
-        return Math.max(1, CombineConfig.getLevelInt("ring.upgrade.stoneCosts", level, DEFAULT_STONE_COSTS));
+        return isStoneEnabled()
+                ? Math.max(1, CombineConfig.getLevelInt("ring.upgrade.stoneCosts", level, DEFAULT_STONE_COSTS)) : 0;
     }
 
     private static int getGoldCost(int level) {
-        return Math.max(0, CombineConfig.getLevelInt("ring.upgrade.goldCosts", level, DEFAULT_GOLD_COSTS));
+        return isGoldEnabled()
+                ? Math.max(0, CombineConfig.getLevelInt("ring.upgrade.goldCosts", level, DEFAULT_GOLD_COSTS)) : 0;
     }
 
     private static int getGemCost(int level) {
-        return Math.max(0, CombineConfig.getLevelInt("ring.upgrade.gemCosts", level, DEFAULT_GEM_COSTS));
+        return isGemEnabled()
+                ? Math.max(0, CombineConfig.getLevelInt("ring.upgrade.gemCosts", level, DEFAULT_GEM_COSTS)) : 0;
+    }
+
+    private static boolean isStoneEnabled() {
+        return CombineConfig.getBoolean("ring.upgrade.stoneEnabled", true);
+    }
+
+    private static boolean isGoldEnabled() {
+        return CombineConfig.getBoolean("ring.upgrade.goldEnabled", false);
+    }
+
+    private static boolean isGemEnabled() {
+        return CombineConfig.getBoolean("ring.upgrade.gemEnabled", false);
     }
 
     private static double getSuccessRate(int level) {
@@ -195,7 +238,10 @@ public final class NangCapNhan {
     }
 
     private static void showInvalidSelection(Player player) {
+        String requirement = isStoneEnabled()
+                ? "Hãy chọn 1 nhẫn đệ tử và Đá hoàng kim"
+                : "Hãy chỉ chọn 1 nhẫn đệ tử";
         CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
-                "Hãy chọn 1 nhẫn đệ tử và Đá hoàng kim", "Đóng");
+                requirement, "Đóng");
     }
 }

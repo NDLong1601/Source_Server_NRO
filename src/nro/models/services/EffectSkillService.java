@@ -357,20 +357,22 @@ public class EffectSkillService {
     }
 
     public void setIsLamCham(Player player, int time) {
-        player.nPoint.speed = 1;
-        Service.gI().point(player);
-        Service.gI().sendSpeedPlayer(player, -1);
         player.effectSkill.isLamCham = true;
         player.effectSkill.timeLamCham = time;
         player.effectSkill.lastTimeLamCham = System.currentTimeMillis();
+        player.nPoint.speed = 1;
+        Service.gI().point(player);
+        Service.gI().sendSpeedPlayer(player, -1);
     }
 
     public void removeLamCham(Player player) {
-        player.nPoint.speed = 8;
+        player.effectSkill.isLamCham = false;
+        if (!player.isPl()) {
+            player.nPoint.speed = 8;
+        }
         Service.gI().point(player);
         Service.gI().sendSpeedPlayer(player, -1);
         Service.gI().chat(player, "Nhẹ lại rồi!");
-        player.effectSkill.isLamCham = false;
     }
 
     public void setIsTanHinh(Player player, int time) {

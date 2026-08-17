@@ -264,6 +264,6 @@ function DisableGiftBox() {
 RegisterTab({
   id: "giftbox", view: "gift-boxes.html", panelId: "panelGiftBox", navId: "navGiftBox",
   title: "Cấu hình Hộp quà", subtitle: "Checklist vật phẩm, pool trọng số, option random min–max và hạn sử dụng",
-  onOpen: function () { LoadGiftBoxItems(false); LoadGiftBoxes(); },
+  onOpen: function () { LoadOptions(false); LoadGiftBoxItems(false); LoadGiftBoxes(); },
   onRefresh: function () { LoadGiftBoxItems(true); LoadGiftBoxes(); }
 });

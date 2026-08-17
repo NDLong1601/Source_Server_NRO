@@ -4,9 +4,7 @@ window.onload = function () {
   FitWindowToScreen();
   LoadTabViews();
   InitCombos();
-  LoadItemTypes();
   LoadStatus();
-  LoadOptions();
   ShowTab(currentTab);
   AdjustTableOffsets();
   AdjustTableOffsetsLater();
@@ -106,7 +104,10 @@ function ShowTab(tab) {
   }
   document.getElementById("pageTitle").innerText = selected.title;
   document.getElementById("pageSub").innerText = selected.subtitle;
-  if (selected.onOpen) selected.onOpen();
+  if (!selected.isLoaded) {
+    if (selected.onOpen) selected.onOpen();
+    selected.isLoaded = true;
+  }
   AdjustTableOffsets();
   AdjustTableOffsetsLater();
 }
@@ -115,7 +116,10 @@ function ShowTab(tab) {
 function RefreshCurrent() {
   LoadStatus();
   var selected = GetTabConfig(currentTab) || GetDefaultTabConfig();
-  if (selected && selected.onRefresh) selected.onRefresh();
+  if (selected && selected.onRefresh) {
+    selected.onRefresh();
+    selected.isLoaded = true;
+  }
   AdjustTableOffsets();
   AdjustTableOffsetsLater();
 }

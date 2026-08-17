@@ -133,6 +133,6 @@ function RenderEquipPresets() {
 RegisterTab({
   id: "equip", view: "equipment.html", panelId: "panelEquip", navId: "navEquip",
   title: "Chỉ số trang bị", subtitle: "Quản lý option của trang bị bán trong shop theo gender",
-  onOpen: function () { LoadEquipItems(); },
+  onOpen: function () { LoadOptions(false); LoadEquipItems(); },
   onRefresh: function () { LoadEquipItems(); }
 });

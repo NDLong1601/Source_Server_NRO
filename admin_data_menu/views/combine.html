@@ -39,12 +39,50 @@
           <label for="combineAllowDuplicate">Cho phép hai dòng option bông tai cấp 3 bị trùng nhau</label>
         </div>
       </div>
+      <div id="combineAppearanceBox" class="appearance-upgrade-editor">
+        <div class="section-title">Cấu hình nâng cấp ngoại trang</div>
+        <div class="appearance-upgrade-note">Dữ liệu được giữ riêng cho từng nhóm. Tắt checkbox tài nguyên sẽ ẩn cột cấu hình và server sẽ không yêu cầu, không tiêu hao tài nguyên đó.</div>
+        <div class="row appearance-global-settings">
+          <div class="cell"><label>Cấp tối đa (1–20)</label><input type="text" id="appearanceMaxLevel" onchange="ChangeAppearanceMaxLevel()"></div>
+          <div class="cell"><label>Trần tỉ lệ sau bonus (%)</label><input type="text" id="appearanceRateCap"></div>
+          <div class="cell"><label>Mốc có nguy cơ tụt cấp</label><input type="text" id="appearanceDowngradeLevels" placeholder="2,4,6,8"></div>
+        </div>
+        <div id="appearanceCategoryTabs" class="appearance-category-tabs"></div>
+        <div class="appearance-category-head">
+          <div>
+            <div class="section-title" id="appearanceCategoryTitle">Nhóm ngoại trang</div>
+            <div class="inline-check">
+              <input type="checkbox" id="appearanceCategoryEnabled">
+              <label for="appearanceCategoryEnabled">Cho phép nâng cấp nhóm này</label>
+            </div>
+          </div>
+          <div class="appearance-stone-id"><label>ID đá nâng cấp</label><input type="text" id="appearanceStoneId"></div>
+        </div>
+        <div class="appearance-resource-toggles">
+          <span>Tài nguyên tiêu hao:</span>
+          <label><input type="checkbox" id="appearanceStoneEnabled" onclick="ToggleAppearanceResource()"> Đá nâng cấp</label>
+          <label><input type="checkbox" id="appearanceGoldEnabled" onclick="ToggleAppearanceResource()"> Vàng</label>
+          <label><input type="checkbox" id="appearanceGemEnabled" onclick="ToggleAppearanceResource()"> Ngọc xanh (gem)</label>
+        </div>
+        <div class="appearance-level-scroll">
+          <table class="appearance-level-table">
+            <thead><tr><th>Chuyển cấp</th><th>Tỉ lệ %</th><th class="appearance-resource-stone">Đá</th><th class="appearance-resource-gold">Vàng</th><th class="appearance-resource-gem">Ngọc</th></tr></thead>
+            <tbody id="appearanceLevelRows"></tbody>
+          </table>
+        </div>
+      </div>
       <div id="combineRingBox" class="ring-upgrade-editor">
         <div class="section-title">Cấu hình nâng cấp nhẫn theo từng cấp</div>
-        <div class="ring-upgrade-note">Thành công sẽ đổi template và icon sang nhẫn ở cột bên phải. Thất bại vẫn tiêu hao tài nguyên đã cấu hình.</div>
+        <div class="ring-upgrade-note">Thành công sẽ đổi template và icon sang nhẫn ở cột bên phải. Tắt checkbox sẽ ẩn cột và server không yêu cầu, không tiêu hao tài nguyên đó.</div>
+        <div class="ring-resource-toggles">
+          <span>Tài nguyên tiêu hao:</span>
+          <label><input type="checkbox" id="ringStoneEnabled" onclick="ToggleRingResource()"> Đá hoàng kim</label>
+          <label><input type="checkbox" id="ringGoldEnabled" onclick="ToggleRingResource()"> Vàng</label>
+          <label><input type="checkbox" id="ringGemEnabled" onclick="ToggleRingResource()"> Ngọc xanh (gem)</label>
+        </div>
         <div class="ring-upgrade-scroll">
           <table class="ring-upgrade-table">
-            <thead><tr><th>Chuyển cấp / icon</th><th>Tỷ lệ %</th><th>Đá</th><th>Vàng</th><th>Ngọc</th></tr></thead>
+            <thead><tr><th>Chuyển cấp / icon</th><th>Tỷ lệ %</th><th class="ring-resource-stone">Đá</th><th class="ring-resource-gold">Vàng</th><th class="ring-resource-gem">Ngọc</th></tr></thead>
             <tbody id="combineRingLevels"></tbody>
           </table>
         </div>
@@ -73,7 +111,8 @@
       <div class="split-small">
         <div class="section-title">Quy tắc nhập</div>
         <div>rate: số từ 0 đến 100, số lẻ dùng dấu chấm.</div>
-        <div>Nhẫn: mỗi dòng là một bước nâng cấp; Đá tối thiểu 1, Vàng/Ngọc có thể bằng 0.</div>
+        <div>Nhẫn: checkbox quyết định tài nguyên có được yêu cầu và tiêu hao; mỗi dòng là một bước nâng cấp.</div>
+        <div>Ngoại trang: checkbox quyết định tài nguyên có được yêu cầu và tiêu hao hay không; mỗi dòng ứng với cấp hiện tại.</div>
         <div>Ghép mảnh Hủy Diệt: nhập ID nguyên liệu/rương từ 1 đến 32.767; một mảnh chỉ thuộc một bộ.</div>
         <div>Option random: tick trực tiếp option mong muốn và nhập khoảng Param Min/Max.</div>
         <div>bool: true hoặc false. Thay đổi có hiệu lực trong tối đa 1 giây, không cần restart.</div>

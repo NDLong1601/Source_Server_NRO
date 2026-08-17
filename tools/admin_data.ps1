@@ -234,7 +234,53 @@ function Get-CombineCatalog {
         [pscustomobject]@{ Key="equipment.upgrade.failStatLossPercent"; Category="Cường hóa trang bị"; Name="Chỉ số giảm khi rớt cấp"; Default="11"; Kind="int"; Description="Phần trăm trừ chỉ số khi thất bại ở mốc bị rớt cấp." },
         [pscustomobject]@{ Key="equipment.socket.rates"; Category="Đục lỗ / sao pha lê"; Name="Tỉ lệ đục lỗ 0 đến 8 sao"; Default="50,20,10,5,1,0.7,0.5,0.1,0.1"; Kind="rate-list"; Description="Tỉ lệ thật và tỉ lệ hiển thị dùng chung danh sách này." },
         [pscustomobject]@{ Key="equipment.socket.enhanceRate"; Category="Đục lỗ / sao pha lê"; Name="Cường hóa lỗ sao 8-9"; Default="25"; Kind="rate"; Description="Tỉ lệ cường hóa lỗ sao pha lê bằng Hematite và dùi đục." },
+        [pscustomobject]@{ Key="appearance.upgrade.maxLevel"; Category="Nâng cấp ngoại trang"; Name="Cấu hình nâng cấp ngoại trang"; Default="10"; Kind="appearance-level"; Description="Cấu hình theo cấp cho Cải trang, Linh thú/Pet, Cánh/Đeo lưng và Ván bay/Thú cưỡi trong cùng trình soạn." },
+        [pscustomobject]@{ Key="appearance.upgrade.rateCap"; Category="Nâng cấp ngoại trang"; Name="Trần tỉ lệ thành công"; Default="95"; Kind="rate"; Description="Tỉ lệ tối đa sau khi cộng vật phẩm may mắn; cấp có tỉ lệ gốc 100% vẫn giữ 100%." },
+        [pscustomobject]@{ Key="appearance.upgrade.downgradeLevels"; Category="Nâng cấp ngoại trang"; Name="Các cấp có nguy cơ tụt"; Default="2,4,6,8"; Kind="appearance-levels"; Description="Danh sách cấp hiện tại sẽ bị tụt một cấp khi nâng thất bại và không có bảo hộ." },
+
+        [pscustomobject]@{ Key="appearance.costume.enabled"; Category="Nâng cấp ngoại trang"; Name="Bật nâng cấp Cải trang"; Default="true"; Kind="bool"; Description="Cho phép nhóm Cải trang tham gia nâng cấp." },
+        [pscustomobject]@{ Key="appearance.costume.stoneId"; Category="Nâng cấp ngoại trang"; Name="ID đá Cải trang"; Default="2052"; Kind="item-id"; Description="Template ID đá nâng cấp dành cho Cải trang." },
+        [pscustomobject]@{ Key="appearance.costume.stoneEnabled"; Category="Nâng cấp ngoại trang"; Name="Cải trang dùng đá"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao đá nâng cấp của Cải trang." },
+        [pscustomobject]@{ Key="appearance.costume.goldEnabled"; Category="Nâng cấp ngoại trang"; Name="Cải trang dùng vàng"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao vàng của Cải trang." },
+        [pscustomobject]@{ Key="appearance.costume.gemEnabled"; Category="Nâng cấp ngoại trang"; Name="Cải trang dùng ngọc"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao ngọc xanh của Cải trang." },
+        [pscustomobject]@{ Key="appearance.costume.stoneCosts"; Category="Nâng cấp ngoại trang"; Name="Đá Cải trang theo cấp"; Default="1,2,3,5,8,12,18,25,35,50"; Kind="appearance-int-list"; Description="Số đá tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.costume.goldCosts"; Category="Nâng cấp ngoại trang"; Name="Vàng Cải trang theo cấp"; Default="1000000,2000000,5000000,10000000,20000000,40000000,80000000,150000000,250000000,400000000"; Kind="appearance-long-list"; Description="Số vàng tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.costume.gemCosts"; Category="Nâng cấp ngoại trang"; Name="Ngọc Cải trang theo cấp"; Default="0,0,0,0,0,0,0,0,0,0"; Kind="appearance-int-list"; Description="Số ngọc xanh tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.costume.successRates"; Category="Nâng cấp ngoại trang"; Name="Tỉ lệ Cải trang theo cấp"; Default="100,80,60,40,25,15,10,5,3,1"; Kind="appearance-rate-list"; Description="Tỉ lệ thành công theo cấp hiện tại." },
+
+        [pscustomobject]@{ Key="appearance.followPet.enabled"; Category="Nâng cấp ngoại trang"; Name="Bật nâng cấp Linh thú/Pet"; Default="true"; Kind="bool"; Description="Cho phép nhóm Linh thú/Pet tham gia nâng cấp." },
+        [pscustomobject]@{ Key="appearance.followPet.stoneId"; Category="Nâng cấp ngoại trang"; Name="ID đá Linh thú/Pet"; Default="2053"; Kind="item-id"; Description="Template ID đá nâng cấp dành cho Linh thú/Pet." },
+        [pscustomobject]@{ Key="appearance.followPet.stoneEnabled"; Category="Nâng cấp ngoại trang"; Name="Linh thú/Pet dùng đá"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao đá nâng cấp của Linh thú/Pet." },
+        [pscustomobject]@{ Key="appearance.followPet.goldEnabled"; Category="Nâng cấp ngoại trang"; Name="Linh thú/Pet dùng vàng"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao vàng của Linh thú/Pet." },
+        [pscustomobject]@{ Key="appearance.followPet.gemEnabled"; Category="Nâng cấp ngoại trang"; Name="Linh thú/Pet dùng ngọc"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao ngọc xanh của Linh thú/Pet." },
+        [pscustomobject]@{ Key="appearance.followPet.stoneCosts"; Category="Nâng cấp ngoại trang"; Name="Đá Linh thú/Pet theo cấp"; Default="1,2,3,5,8,12,18,25,35,50"; Kind="appearance-int-list"; Description="Số đá tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.followPet.goldCosts"; Category="Nâng cấp ngoại trang"; Name="Vàng Linh thú/Pet theo cấp"; Default="1000000,2000000,5000000,10000000,20000000,40000000,80000000,150000000,250000000,400000000"; Kind="appearance-long-list"; Description="Số vàng tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.followPet.gemCosts"; Category="Nâng cấp ngoại trang"; Name="Ngọc Linh thú/Pet theo cấp"; Default="0,0,0,0,0,0,0,0,0,0"; Kind="appearance-int-list"; Description="Số ngọc xanh tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.followPet.successRates"; Category="Nâng cấp ngoại trang"; Name="Tỉ lệ Linh thú/Pet theo cấp"; Default="100,80,60,40,25,15,10,5,3,1"; Kind="appearance-rate-list"; Description="Tỉ lệ thành công theo cấp hiện tại." },
+
+        [pscustomobject]@{ Key="appearance.back.enabled"; Category="Nâng cấp ngoại trang"; Name="Bật nâng cấp Cánh/Đeo lưng"; Default="true"; Kind="bool"; Description="Cho phép nhóm Cánh/Đeo lưng tham gia nâng cấp." },
+        [pscustomobject]@{ Key="appearance.back.stoneId"; Category="Nâng cấp ngoại trang"; Name="ID đá Cánh/Đeo lưng"; Default="2054"; Kind="item-id"; Description="Template ID đá nâng cấp dành cho Cánh/Đeo lưng." },
+        [pscustomobject]@{ Key="appearance.back.stoneEnabled"; Category="Nâng cấp ngoại trang"; Name="Cánh/Đeo lưng dùng đá"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao đá nâng cấp của Cánh/Đeo lưng." },
+        [pscustomobject]@{ Key="appearance.back.goldEnabled"; Category="Nâng cấp ngoại trang"; Name="Cánh/Đeo lưng dùng vàng"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao vàng của Cánh/Đeo lưng." },
+        [pscustomobject]@{ Key="appearance.back.gemEnabled"; Category="Nâng cấp ngoại trang"; Name="Cánh/Đeo lưng dùng ngọc"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao ngọc xanh của Cánh/Đeo lưng." },
+        [pscustomobject]@{ Key="appearance.back.stoneCosts"; Category="Nâng cấp ngoại trang"; Name="Đá Cánh/Đeo lưng theo cấp"; Default="1,2,3,5,8,12,18,25,35,50"; Kind="appearance-int-list"; Description="Số đá tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.back.goldCosts"; Category="Nâng cấp ngoại trang"; Name="Vàng Cánh/Đeo lưng theo cấp"; Default="1000000,2000000,5000000,10000000,20000000,40000000,80000000,150000000,250000000,400000000"; Kind="appearance-long-list"; Description="Số vàng tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.back.gemCosts"; Category="Nâng cấp ngoại trang"; Name="Ngọc Cánh/Đeo lưng theo cấp"; Default="0,0,0,0,0,0,0,0,0,0"; Kind="appearance-int-list"; Description="Số ngọc xanh tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.back.successRates"; Category="Nâng cấp ngoại trang"; Name="Tỉ lệ Cánh/Đeo lưng theo cấp"; Default="100,80,60,40,25,15,10,5,3,1"; Kind="appearance-rate-list"; Description="Tỉ lệ thành công theo cấp hiện tại." },
+
+        [pscustomobject]@{ Key="appearance.mount.enabled"; Category="Nâng cấp ngoại trang"; Name="Bật nâng cấp Ván bay/Thú cưỡi"; Default="true"; Kind="bool"; Description="Cho phép nhóm Ván bay/Thú cưỡi tham gia nâng cấp." },
+        [pscustomobject]@{ Key="appearance.mount.stoneId"; Category="Nâng cấp ngoại trang"; Name="ID đá Ván bay/Thú cưỡi"; Default="2055"; Kind="item-id"; Description="Template ID đá nâng cấp dành cho Ván bay/Thú cưỡi." },
+        [pscustomobject]@{ Key="appearance.mount.stoneEnabled"; Category="Nâng cấp ngoại trang"; Name="Ván bay/Thú cưỡi dùng đá"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao đá nâng cấp của Ván bay/Thú cưỡi." },
+        [pscustomobject]@{ Key="appearance.mount.goldEnabled"; Category="Nâng cấp ngoại trang"; Name="Ván bay/Thú cưỡi dùng vàng"; Default="true"; Kind="bool"; Description="Bật/tắt tiêu hao vàng của Ván bay/Thú cưỡi." },
+        [pscustomobject]@{ Key="appearance.mount.gemEnabled"; Category="Nâng cấp ngoại trang"; Name="Ván bay/Thú cưỡi dùng ngọc"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao ngọc xanh của Ván bay/Thú cưỡi." },
+        [pscustomobject]@{ Key="appearance.mount.stoneCosts"; Category="Nâng cấp ngoại trang"; Name="Đá Ván bay/Thú cưỡi theo cấp"; Default="1,2,3,5,8,12,18,25,35,50"; Kind="appearance-int-list"; Description="Số đá tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.mount.goldCosts"; Category="Nâng cấp ngoại trang"; Name="Vàng Ván bay/Thú cưỡi theo cấp"; Default="1000000,2000000,5000000,10000000,20000000,40000000,80000000,150000000,250000000,400000000"; Kind="appearance-long-list"; Description="Số vàng tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.mount.gemCosts"; Category="Nâng cấp ngoại trang"; Name="Ngọc Ván bay/Thú cưỡi theo cấp"; Default="0,0,0,0,0,0,0,0,0,0"; Kind="appearance-int-list"; Description="Số ngọc xanh tiêu hao theo cấp hiện tại." },
+        [pscustomobject]@{ Key="appearance.mount.successRates"; Category="Nâng cấp ngoại trang"; Name="Tỉ lệ Ván bay/Thú cưỡi theo cấp"; Default="100,80,60,40,25,15,10,5,3,1"; Kind="appearance-rate-list"; Description="Tỉ lệ thành công theo cấp hiện tại." },
         [pscustomobject]@{ Key="ring.upgrade.successRates"; Category="Nhẫn đệ tử"; Name="Nâng cấp nhẫn cấp 0 đến 8"; Default="100,100,100,100,100,100,100,100"; Kind="ring-rate-list"; Description="Tỉ lệ thành công cho từng bước cấp 0→1 đến 7→8. Thành công sẽ đổi sang template và icon nhẫn cấp kế tiếp." },
+        [pscustomobject]@{ Key="ring.upgrade.stoneEnabled"; Category="Nhẫn đệ tử"; Name="Dùng Đá hoàng kim"; Default="true"; Kind="bool"; Description="Bật/tắt yêu cầu và tiêu hao Đá hoàng kim khi nâng cấp nhẫn." },
+        [pscustomobject]@{ Key="ring.upgrade.goldEnabled"; Category="Nhẫn đệ tử"; Name="Dùng vàng"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao vàng khi nâng cấp nhẫn." },
+        [pscustomobject]@{ Key="ring.upgrade.gemEnabled"; Category="Nhẫn đệ tử"; Name="Dùng ngọc xanh"; Default="false"; Kind="bool"; Description="Bật/tắt tiêu hao ngọc xanh khi nâng cấp nhẫn." },
         [pscustomobject]@{ Key="ring.upgrade.stoneCosts"; Category="Nhẫn đệ tử"; Name="Đá hoàng kim theo cấp"; Default="1,2,3,4,5,6,7,8"; Kind="ring-positive-int-list"; Description="Số Đá hoàng kim tiêu hao cho từng bước nâng cấp." },
         [pscustomobject]@{ Key="ring.upgrade.goldCosts"; Category="Nhẫn đệ tử"; Name="Vàng theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số vàng tiêu hao cho từng bước nâng cấp." },
         [pscustomobject]@{ Key="ring.upgrade.gemCosts"; Category="Nhẫn đệ tử"; Name="Ngọc xanh theo cấp"; Default="0,0,0,0,0,0,0,0"; Kind="ring-int-list"; Description="Số ngọc xanh tiêu hao cho từng bước nâng cấp." },
@@ -307,6 +353,46 @@ function Set-PropertyValue {
     Move-Item -LiteralPath $tempPath -Destination $Path -Force
 }
 
+function Set-PropertyValues {
+    param([string]$Path, [object[]]$Entries)
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path $Path) {
+        foreach ($line in (Get-Content -LiteralPath $Path -Encoding UTF8)) { $lines.Add($line) }
+    }
+    foreach ($entry in $Entries) {
+        $found = $false
+        for ($i = $lines.Count - 1; $i -ge 0; $i--) {
+            if ($lines[$i] -match "^\s*$([regex]::Escape([string]$entry.Key))\s*=") {
+                $lines[$i] = "$($entry.Key)=$($entry.Value)"
+                $found = $true
+            }
+        }
+        if (-not $found) { $lines.Add("$($entry.Key)=$($entry.Value)") }
+    }
+    $tempPath = "$Path.tmp.$PID"
+    [System.IO.File]::WriteAllText($tempPath, ($lines -join [Environment]::NewLine) + [Environment]::NewLine, $Utf8NoBom)
+    Move-Item -LiteralPath $tempPath -Destination $Path -Force
+}
+
+function Remove-PropertyValues {
+    param([string]$Path, [string[]]$Keys)
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path $Path) {
+        foreach ($line in (Get-Content -LiteralPath $Path -Encoding UTF8)) { $lines.Add($line) }
+    }
+    for ($i = $lines.Count - 1; $i -ge 0; $i--) {
+        foreach ($key in $Keys) {
+            if ($lines[$i] -match "^\s*$([regex]::Escape($key))\s*=") {
+                $lines.RemoveAt($i)
+                break
+            }
+        }
+    }
+    $tempPath = "$Path.tmp.$PID"
+    [System.IO.File]::WriteAllText($tempPath, ($lines -join [Environment]::NewLine) + [Environment]::NewLine, $Utf8NoBom)
+    Move-Item -LiteralPath $tempPath -Destination $Path -Force
+}
+
 function Get-CombineEntry {
     param([string]$Key)
     Get-CombineCatalog | Where-Object { $_.Key -eq $Key } | Select-Object -First 1
@@ -320,6 +406,37 @@ function Assert-CombineValue {
     if ($Entry.Kind -eq "rate" -and ([double]$Value -lt 0 -or [double]$Value -gt 100)) { throw "Tỉ lệ phải nằm trong khoảng 0 đến 100." }
     if ($Entry.Kind -eq "int" -and $Value -notmatch '^\d+$') { throw "Giá trị phải là số nguyên không âm." }
     if ($Entry.Kind -eq "bool" -and $Value -notmatch '^(true|false|0|1)$') { throw "Giá trị bật/tắt phải là true, false, 1 hoặc 0." }
+    if ($Entry.Kind -eq "appearance-level") {
+        if ($Value -notmatch '^\d+$' -or [int]$Value -lt 1 -or [int]$Value -gt 20) { throw "Cấp ngoại trang tối đa phải từ 1 đến 20." }
+    }
+    if ($Entry.Kind -eq "item-id") {
+        if ($Value -notmatch '^\d+$' -or [decimal]$Value -lt 1 -or [decimal]$Value -gt [int16]::MaxValue) { throw "ID vật phẩm phải từ 1 đến $([int16]::MaxValue)." }
+    }
+    if ($Entry.Kind -eq "appearance-levels") {
+        $seenLevels = @{}
+        foreach ($part in @($Value -split ',')) {
+            $number = $part.Trim()
+            if ($number -notmatch '^\d+$' -or [int]$number -lt 0 -or [int]$number -gt 19) { throw "Mỗi mốc tụt cấp phải là số nguyên từ 0 đến 19." }
+            if ($seenLevels.ContainsKey($number)) { throw "Danh sách mốc tụt cấp không được trùng nhau." }
+            $seenLevels[$number] = $true
+        }
+    }
+    if ($Entry.Kind -in @("appearance-rate-list", "appearance-int-list", "appearance-long-list")) {
+        $parts = @($Value -split ',')
+        if ($parts.Count -lt 1 -or $parts.Count -gt 20) { throw "Cấu hình ngoại trang phải có từ 1 đến 20 giá trị theo cấp." }
+        foreach ($part in $parts) {
+            $number = $part.Trim()
+            if ($Entry.Kind -eq "appearance-rate-list") {
+                if ($number -notmatch '^\d+(\.\d+)?$' -or [double]$number -lt 0 -or [double]$number -gt 100) { throw "Mỗi tỉ lệ ngoại trang phải từ 0 đến 100." }
+            } elseif ($number -notmatch '^\d+$') {
+                throw "Chi phí ngoại trang phải là số nguyên không âm."
+            } elseif ($Entry.Kind -eq "appearance-int-list" -and [decimal]$number -gt [int]::MaxValue) {
+                throw "Chi phí đá/ngọc mỗi cấp không được vượt quá $([int]::MaxValue)."
+            } elseif ($Entry.Kind -eq "appearance-long-list" -and [decimal]$number -gt [long]::MaxValue) {
+                throw "Chi phí vàng mỗi cấp vượt giới hạn 64-bit."
+            }
+        }
+    }
     if ($Entry.Kind -eq "option-list") {
         $parts = $Value -split ','
         if ($parts.Count -eq 0 -or @($parts | Where-Object { $_.Trim() -notmatch '^\d+$' }).Count -gt 0) { throw "Danh sách option chỉ gồm ID nguyên không âm, phân cách bằng dấu phẩy." }
@@ -396,6 +513,23 @@ function List-CombineConfig {
 }
 
 function Save-CombineConfig {
+    if (-not [string]::IsNullOrWhiteSpace($PayloadJson) -and $PayloadJson.Trim() -ne "{}") {
+        try { $requests = @($PayloadJson | ConvertFrom-Json) } catch { throw "Gói cấu hình Combine không hợp lệ." }
+        if ($requests.Count -lt 1 -or $requests.Count -gt 50) { throw "Mỗi lần chỉ được lưu từ 1 đến 50 cấu hình Combine." }
+        $seenKeys = @{}
+        $updates = New-Object System.Collections.Generic.List[object]
+        foreach ($request in $requests) {
+            $key = ([string]$request.key).Trim()
+            $value = [string]$request.value
+            if ($seenKeys.ContainsKey($key)) { throw "Khóa Combine bị trùng trong gói lưu: $key" }
+            $entry = Get-CombineEntry $key
+            if ($null -eq $entry) { throw "Khóa combine không hợp lệ: $key" }
+            $updates.Add([pscustomobject]@{ Key=$entry.Key; Value=(Assert-CombineValue $entry $value) })
+            $seenKeys[$key] = $true
+        }
+        Set-PropertyValues -Path (Join-Path $Root "combine.properties") -Entries $updates.ToArray()
+        return "OK`tĐã lưu đồng thời $($updates.Count) cấu hình Combine. Server tự áp dụng trong tối đa 1 giây."
+    }
     $entry = Get-CombineEntry $ConfigKey
     if ($null -eq $entry) { throw "Khóa combine không hợp lệ: $ConfigKey" }
     $validated = Assert-CombineValue $entry $ConfigValue
@@ -404,6 +538,19 @@ function Save-CombineConfig {
 }
 
 function Reset-CombineConfig {
+    if (-not [string]::IsNullOrWhiteSpace($PayloadJson) -and $PayloadJson.Trim() -ne "{}") {
+        try { $requests = @($PayloadJson | ConvertFrom-Json) } catch { throw "Danh sách khóa Combine cần khôi phục không hợp lệ." }
+        if ($requests.Count -lt 1 -or $requests.Count -gt 50) { throw "Mỗi lần chỉ được khôi phục từ 1 đến 50 cấu hình Combine." }
+        $keys = New-Object System.Collections.Generic.List[string]
+        foreach ($request in $requests) {
+            $key = ([string]$request).Trim()
+            if ($keys.Contains($key)) { throw "Khóa Combine bị trùng trong gói khôi phục: $key" }
+            if ($null -eq (Get-CombineEntry $key)) { throw "Khóa combine không hợp lệ: $key" }
+            $keys.Add($key)
+        }
+        Remove-PropertyValues -Path (Join-Path $Root "combine.properties") -Keys $keys.ToArray()
+        return "OK`tĐã đưa đồng thời $($keys.Count) cấu hình Combine về mặc định."
+    }
     $entry = Get-CombineEntry $ConfigKey
     if ($null -eq $entry) { throw "Khóa combine không hợp lệ: $ConfigKey" }
     Set-PropertyValue -Path (Join-Path $Root "combine.properties") -Key $entry.Key -Value "" -Remove
@@ -1487,12 +1634,16 @@ function List-Items {
     $pageNumber = SqlInt $Page 1
     if ($pageNumber -lt 1) { $pageNumber = 1 }
     $pageSizeNumber = SqlInt $PageSize 60
-    if ($pageSizeNumber -lt 20 -or $pageSizeNumber -gt 100) { $pageSizeNumber = 60 }
+    if ($pageSizeNumber -ne 0 -and ($pageSizeNumber -lt 20 -or $pageSizeNumber -gt 100)) { $pageSizeNumber = 60 }
     $offset = ($pageNumber - 1) * $pageSizeNumber
+    $limitSql = if ($pageSizeNumber -eq 0) { "" } else { "LIMIT $offset,$pageSizeNumber" }
 
     Invoke-MySql @"
 SELECT totals.total,
-       item_page.id, item_page.`TYPE`, item_page.gender, item_page.`NAME`, item_page.description, item_page.level,
+       item_page.id, item_page.`TYPE`, item_page.gender,
+       REPLACE(REPLACE(REPLACE(COALESCE(item_page.`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS `NAME`,
+       REPLACE(REPLACE(REPLACE(COALESCE(item_page.description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS description,
+       item_page.level,
        item_page.icon_id, item_page.part, item_page.is_up_to_up, item_page.power_require, item_page.gold,
        item_page.gem, item_page.head, item_page.body, item_page.leg
 FROM (SELECT COUNT(*) AS total FROM item_template $whereSql) totals
@@ -1501,7 +1652,7 @@ CROSS JOIN (
          is_up_to_up, power_require, gold, gem, head, body, leg
   FROM item_template $whereSql
   ORDER BY id DESC
-  LIMIT $offset,$pageSizeNumber
+  $limitSql
 ) item_page
 ORDER BY item_page.id DESC;
 "@
@@ -3148,7 +3299,7 @@ function Get-AuditSummary {
         "deleteeventboss" { "Xóa Boss $BossId khỏi $EventValue" }
         "saveeventitem" { "Gắn Item $TemplateId, nguồn $SourceType/$SourceId vào $EventValue" }
         "deleteeventitem" { "Xóa dòng vật phẩm sự kiện ID $Id khỏi $EventValue" }
-        "savecombineconfig" { "Đổi Combine $ConfigKey = $ConfigValue" }
+        "savecombineconfig" { if ($PayloadJson.Trim() -ne "{}") { "Đổi đồng thời $(Get-JsonArrayCount $PayloadJson) cấu hình Combine" } else { "Đổi Combine $ConfigKey = $ConfigValue" } }
         "resetcombineconfig" { "Khôi phục cấu hình Combine mặc định" }
         "setevent" { "Đổi sự kiện server thành $EventValue" }
         "setexp" { "Đổi tỉ lệ TNSM thành $ExpRate" }

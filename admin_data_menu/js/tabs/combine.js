@@ -2,6 +2,20 @@ var combineRows = [];
 var selectedCombineKey = "";
 var selectedCombineCategory = "";
 var filteredCombineRows = [];
+var appearanceSelectedCategory = 0;
+var appearanceDrafts = {};
+var appearanceRateCapDraft = "";
+var appearanceDowngradeDraft = "";
+var appearanceCategories = [
+  { key: "costume", label: "Cải trang", stoneId: "2052" },
+  { key: "followPet", label: "Linh thú / Pet", stoneId: "2053" },
+  { key: "back", label: "Cánh / Đeo lưng", stoneId: "2054" },
+  { key: "mount", label: "Ván bay / Thú cưỡi", stoneId: "2055" }
+];
+var appearanceDefaultRates = "100,80,60,40,25,15,10,5,3,1";
+var appearanceDefaultStones = "1,2,3,5,8,12,18,25,35,50";
+var appearanceDefaultGold = "1000000,2000000,5000000,10000000,20000000,40000000,80000000,150000000,250000000,400000000";
+var appearanceDefaultGems = "0,0,0,0,0,0,0,0,0,0";
 var ringUpgradeSteps = [
   ["Nhẫn Sơ Cấp", 19045, "Nhẫn Quang Minh", 19046],
   ["Nhẫn Quang Minh", 19046, "Nhẫn Băng Tinh", 19047],
@@ -16,6 +30,9 @@ var ringUpgradeSteps = [
 function LoadCombineConfig() {
   if (!optionRows || optionRows.length < 2) LoadOptions();
   combineRows = ParseTsv(RunAdmin("listcombineconfig", {}));
+  appearanceDrafts = {};
+  appearanceRateCapDraft = "";
+  appearanceDowngradeDraft = "";
   RenderCombineTabs();
   FilterCombineRows();
   var restored = false;
@@ -37,13 +54,20 @@ function IsDestroyMergeKey(key) {
   return (key || "").indexOf("destroy.merge.") == 0;
 }
 
+function IsAppearanceUpgradeKey(key) {
+  return (key || "").indexOf("appearance.") == 0;
+}
+
 function IsCombineCompanionKey(key) {
   return key == "earring.level2.paramMin" || key == "earring.level2.paramMax" ||
     key == "earring.level3.paramMin" || key == "earring.level3.paramMax" ||
     key == "earring.level3.allowDuplicate" ||
     key == "angel.bonusParamMin" || key == "angel.bonusParamMax" ||
+    key == "ring.upgrade.stoneEnabled" || key == "ring.upgrade.goldEnabled" ||
+    key == "ring.upgrade.gemEnabled" ||
     key == "ring.upgrade.stoneCosts" || key == "ring.upgrade.goldCosts" ||
     key == "ring.upgrade.gemCosts" ||
+    (IsAppearanceUpgradeKey(key) && key != "appearance.upgrade.maxLevel") ||
     (IsDestroyMergeKey(key) && key != "destroy.merge.successRate");
 }
 
@@ -98,6 +122,7 @@ function SelectCombineCategory(index) {
   document.getElementById("combineOptionBox").style.display = "none";
   document.getElementById("combineRingBox").style.display = "none";
   document.getElementById("combineDestroyBox").style.display = "none";
+  document.getElementById("combineAppearanceBox").style.display = "none";
   RenderCombineTabs();
   FilterCombineRows();
   if (filteredCombineRows.length > 1) PickFilteredCombineConfig(1);
@@ -110,6 +135,10 @@ function RenderCombineRows(rows) {
     var currentValue = rows[r][5] == "option-list" ? FormatCombineOptionValues(rows[r][3]) : rows[r][3];
     var defaultValue = rows[r][5] == "option-list" ? FormatCombineOptionValues(rows[r][4]) : rows[r][4];
     var optionKeys = OptionGroupKeys(rows[r][0]);
+    if (IsAppearanceUpgradeKey(rows[r][0])) {
+      currentValue = "4 nhóm · tối đa +" + rows[r][3] + " · chỉnh theo từng cấp";
+      defaultValue = "4 nhóm · tối đa +" + rows[r][4];
+    }
     if (optionKeys) {
       var minRow = FindCombineRow(optionKeys.min);
       var maxRow = FindCombineRow(optionKeys.max);
@@ -167,10 +196,12 @@ function PickCombineConfig(index) {
   var isOptionGroup = r[5] == "option-list" && OptionGroupKeys(r[0]) != null;
   var isRingGroup = IsRingUpgradeKey(r[0]);
   var isDestroyMergeGroup = IsDestroyMergeKey(r[0]);
-  document.getElementById("combineValueBox").style.display = isOptionGroup || isRingGroup || isDestroyMergeGroup ? "none" : "block";
+  var isAppearanceGroup = IsAppearanceUpgradeKey(r[0]);
+  document.getElementById("combineValueBox").style.display = isOptionGroup || isRingGroup || isDestroyMergeGroup || isAppearanceGroup ? "none" : "block";
   document.getElementById("combineOptionBox").style.display = isOptionGroup ? "block" : "none";
   document.getElementById("combineRingBox").style.display = isRingGroup ? "block" : "none";
   document.getElementById("combineDestroyBox").style.display = isDestroyMergeGroup ? "block" : "none";
+  document.getElementById("combineAppearanceBox").style.display = isAppearanceGroup ? "block" : "none";
   if (isOptionGroup) {
     var keys = OptionGroupKeys(r[0]);
     Set("combineParamMin", CombineConfigValue(keys.min));
@@ -182,7 +213,222 @@ function PickCombineConfig(index) {
   }
   if (isRingGroup) RenderRingUpgradeEditor();
   if (isDestroyMergeGroup) RenderDestroyMergeEditor();
+  if (isAppearanceGroup) RenderAppearanceUpgradeEditor();
   AdjustTableOffsets();
+}
+
+function AppearanceValues(key, fallback, count) {
+  var raw = CombineConfigValue(key) || fallback;
+  var values = raw.split(",");
+  var defaults = fallback.split(",");
+  while (values.length < count) {
+    var index = values.length;
+    values.push(defaults[index] || values[index - 1] || defaults[defaults.length - 1] || "0");
+  }
+  if (values.length > count) values.length = count;
+  for (var i = 0; i < values.length; i++) values[i] = Trim(values[i]);
+  return values;
+}
+
+function AppearanceMaxLevel() {
+  var maxLevel = parseInt(V("appearanceMaxLevel") || CombineConfigValue("appearance.upgrade.maxLevel") || "10", 10);
+  return isNaN(maxLevel) ? 10 : Math.max(1, Math.min(20, maxLevel));
+}
+
+function EnsureAppearanceDraft(info, maxLevel) {
+  var draft = appearanceDrafts[info.key];
+  if (!draft) {
+    var prefix = "appearance." + info.key + ".";
+    draft = {
+      enabled: IsTrueValue(CombineConfigValue(prefix + "enabled") || "true"),
+      stoneId: CombineConfigValue(prefix + "stoneId") || info.stoneId,
+      stoneEnabled: IsTrueValue(CombineConfigValue(prefix + "stoneEnabled") || "true"),
+      goldEnabled: IsTrueValue(CombineConfigValue(prefix + "goldEnabled") || "true"),
+      gemEnabled: IsTrueValue(CombineConfigValue(prefix + "gemEnabled") || "false"),
+      rates: AppearanceValues(prefix + "successRates", appearanceDefaultRates, maxLevel),
+      stones: AppearanceValues(prefix + "stoneCosts", appearanceDefaultStones, maxLevel),
+      gold: AppearanceValues(prefix + "goldCosts", appearanceDefaultGold, maxLevel),
+      gems: AppearanceValues(prefix + "gemCosts", appearanceDefaultGems, maxLevel)
+    };
+    appearanceDrafts[info.key] = draft;
+  } else {
+    draft.rates = ResizeAppearanceValues(draft.rates, maxLevel, appearanceDefaultRates);
+    draft.stones = ResizeAppearanceValues(draft.stones, maxLevel, appearanceDefaultStones);
+    draft.gold = ResizeAppearanceValues(draft.gold, maxLevel, appearanceDefaultGold);
+    draft.gems = ResizeAppearanceValues(draft.gems, maxLevel, appearanceDefaultGems);
+  }
+  return draft;
+}
+
+function ResizeAppearanceValues(values, count, fallback) {
+  var result = values ? values.slice(0) : [];
+  var defaults = fallback.split(",");
+  while (result.length < count) {
+    var index = result.length;
+    result.push(defaults[index] || result[index - 1] || defaults[defaults.length - 1] || "0");
+  }
+  if (result.length > count) result.length = count;
+  return result;
+}
+
+function CaptureAppearanceDraft() {
+  var info = appearanceCategories[appearanceSelectedCategory];
+  if (!info || !document.getElementById("appearanceRate0")) return;
+  var rowsHost = document.getElementById("appearanceLevelRows");
+  var rowCount = rowsHost ? rowsHost.getElementsByTagName("tr").length : AppearanceMaxLevel();
+  var draft = EnsureAppearanceDraft(info, rowCount);
+  appearanceRateCapDraft = Trim(V("appearanceRateCap"));
+  appearanceDowngradeDraft = Trim(V("appearanceDowngradeLevels"));
+  draft.enabled = document.getElementById("appearanceCategoryEnabled").checked;
+  draft.stoneId = V("appearanceStoneId");
+  draft.stoneEnabled = document.getElementById("appearanceStoneEnabled").checked;
+  draft.goldEnabled = document.getElementById("appearanceGoldEnabled").checked;
+  draft.gemEnabled = document.getElementById("appearanceGemEnabled").checked;
+  draft.rates = []; draft.stones = []; draft.gold = []; draft.gems = [];
+  for (var i = 0; i < rowCount; i++) {
+    draft.rates.push(Trim(V("appearanceRate" + i)));
+    draft.stones.push(Trim(V("appearanceStone" + i)));
+    draft.gold.push(Trim(V("appearanceGold" + i)));
+    draft.gems.push(Trim(V("appearanceGem" + i)));
+  }
+}
+
+function SelectAppearanceCategory(index) {
+  CaptureAppearanceDraft();
+  if (!appearanceCategories[index]) return;
+  appearanceSelectedCategory = index;
+  RenderAppearanceUpgradeEditor();
+}
+
+function ChangeAppearanceMaxLevel() {
+  CaptureAppearanceDraft();
+  var maxLevel = AppearanceMaxLevel();
+  Set("appearanceMaxLevel", maxLevel);
+  for (var i = 0; i < appearanceCategories.length; i++) EnsureAppearanceDraft(appearanceCategories[i], maxLevel);
+  RenderAppearanceUpgradeEditor();
+}
+
+function RenderAppearanceUpgradeEditor() {
+  var maxLevel = AppearanceMaxLevel();
+  Set("appearanceMaxLevel", maxLevel);
+  if (!appearanceRateCapDraft) appearanceRateCapDraft = CombineConfigValue("appearance.upgrade.rateCap") || "95";
+  if (!appearanceDowngradeDraft) appearanceDowngradeDraft = CombineConfigValue("appearance.upgrade.downgradeLevels") || "2,4,6,8";
+  Set("appearanceRateCap", appearanceRateCapDraft);
+  Set("appearanceDowngradeLevels", appearanceDowngradeDraft);
+  var tabs = "";
+  for (var t = 0; t < appearanceCategories.length; t++) {
+    tabs += '<button type="button" class="appearance-category-tab' + (t == appearanceSelectedCategory ? ' active' : '') +
+      '" onclick="SelectAppearanceCategory(' + t + ')">' + Html(appearanceCategories[t].label) + '</button>';
+  }
+  document.getElementById("appearanceCategoryTabs").innerHTML = tabs;
+  var info = appearanceCategories[appearanceSelectedCategory] || appearanceCategories[0];
+  var draft = EnsureAppearanceDraft(info, maxLevel);
+  document.getElementById("appearanceCategoryEnabled").checked = draft.enabled;
+  Set("appearanceStoneId", draft.stoneId);
+  document.getElementById("appearanceStoneEnabled").checked = draft.stoneEnabled;
+  document.getElementById("appearanceGoldEnabled").checked = draft.goldEnabled;
+  document.getElementById("appearanceGemEnabled").checked = draft.gemEnabled;
+  document.getElementById("appearanceCategoryTitle").innerText = info.label;
+  var html = "";
+  for (var i = 0; i < maxLevel; i++) {
+    html += '<tr><td><b>+' + i + ' → +' + (i + 1) + '</b></td>' +
+      '<td><input id="appearanceRate' + i + '" value="' + HtmlAttr(draft.rates[i]) + '"></td>' +
+      '<td class="appearance-resource-stone"><input id="appearanceStone' + i + '" value="' + HtmlAttr(draft.stones[i]) + '"></td>' +
+      '<td class="appearance-resource-gold"><input id="appearanceGold' + i + '" value="' + HtmlAttr(draft.gold[i]) + '"></td>' +
+      '<td class="appearance-resource-gem"><input id="appearanceGem' + i + '" value="' + HtmlAttr(draft.gems[i]) + '"></td></tr>';
+  }
+  document.getElementById("appearanceLevelRows").innerHTML = html;
+  ApplyAppearanceResourceVisibility();
+}
+
+function ToggleAppearanceResource() {
+  var info = appearanceCategories[appearanceSelectedCategory];
+  var draft = info ? EnsureAppearanceDraft(info, AppearanceMaxLevel()) : null;
+  if (draft) {
+    draft.stoneEnabled = document.getElementById("appearanceStoneEnabled").checked;
+    draft.goldEnabled = document.getElementById("appearanceGoldEnabled").checked;
+    draft.gemEnabled = document.getElementById("appearanceGemEnabled").checked;
+  }
+  ApplyAppearanceResourceVisibility();
+}
+
+function ApplyAppearanceResourceVisibility() {
+  var box = document.getElementById("combineAppearanceBox");
+  if (!box) return;
+  var states = {
+    "appearance-resource-stone": document.getElementById("appearanceStoneEnabled").checked,
+    "appearance-resource-gold": document.getElementById("appearanceGoldEnabled").checked,
+    "appearance-resource-gem": document.getElementById("appearanceGemEnabled").checked
+  };
+  var nodes = box.getElementsByTagName("th");
+  var cells = box.getElementsByTagName("td");
+  for (var kind in states) {
+    for (var i = 0; i < nodes.length; i++) if ((" " + nodes[i].className + " ").indexOf(" " + kind + " ") >= 0) nodes[i].style.display = states[kind] ? "" : "none";
+    for (var c = 0; c < cells.length; c++) if ((" " + cells[c].className + " ").indexOf(" " + kind + " ") >= 0) cells[c].style.display = states[kind] ? "" : "none";
+  }
+}
+
+function CollectAppearanceUpgradeValues() {
+  CaptureAppearanceDraft();
+  var maxLevel = AppearanceMaxLevel();
+  var rateCap = Trim(V("appearanceRateCap"));
+  var downgrade = Trim(V("appearanceDowngradeLevels"));
+  if (!/^\d+(\.\d+)?$/.test(rateCap) || parseFloat(rateCap) < 0 || parseFloat(rateCap) > 100) throw "Trần tỉ lệ phải từ 0 đến 100.";
+  if (!/^\d+(,\s*\d+)*$/.test(downgrade)) throw "Mốc tụt cấp phải là các số nguyên, phân cách bằng dấu phẩy.";
+  var downgradeParts = downgrade.split(",");
+  var seenLevels = {};
+  for (var d = 0; d < downgradeParts.length; d++) {
+    var level = Trim(downgradeParts[d]);
+    if (parseInt(level, 10) >= maxLevel) throw "Mốc tụt cấp " + level + " phải nhỏ hơn cấp tối đa " + maxLevel + ".";
+    if (seenLevels[level]) throw "Mốc tụt cấp " + level + " đang bị nhập trùng.";
+    seenLevels[level] = true;
+    downgradeParts[d] = level;
+  }
+  var configs = [
+    ["appearance.upgrade.maxLevel", "" + maxLevel],
+    ["appearance.upgrade.rateCap", rateCap],
+    ["appearance.upgrade.downgradeLevels", downgradeParts.join(",")]
+  ];
+  for (var i = 0; i < appearanceCategories.length; i++) {
+    var info = appearanceCategories[i];
+    var draft = EnsureAppearanceDraft(info, maxLevel);
+    if (!/^\d+$/.test(draft.stoneId) || parseInt(draft.stoneId, 10) < 1 || parseInt(draft.stoneId, 10) > 32767) throw "ID đá của " + info.label + " phải từ 1 đến 32.767.";
+    for (var row = 0; row < maxLevel; row++) {
+      if (!/^\d+(\.\d+)?$/.test(draft.rates[row]) || parseFloat(draft.rates[row]) < 0 || parseFloat(draft.rates[row]) > 100) throw "Tỉ lệ " + info.label + " cấp " + row + " phải từ 0 đến 100.";
+      if (!/^\d+$/.test(draft.stones[row]) || (draft.stoneEnabled && parseInt(draft.stones[row], 10) < 1) || parseFloat(draft.stones[row]) > 2147483647) throw "Đá " + info.label + " cấp " + row + " phải là số nguyên" + (draft.stoneEnabled ? " từ 1" : " không âm") + ".";
+      if (!/^\d+$/.test(draft.gold[row]) || parseFloat(draft.gold[row]) > 9007199254740991) throw "Vàng " + info.label + " cấp " + row + " phải là số nguyên không âm hợp lệ.";
+      if (!/^\d+$/.test(draft.gems[row]) || parseFloat(draft.gems[row]) > 2147483647) throw "Ngọc " + info.label + " cấp " + row + " phải là số nguyên không âm.";
+    }
+    var prefix = "appearance." + info.key + ".";
+    configs.push([prefix + "enabled", draft.enabled ? "true" : "false"]);
+    configs.push([prefix + "stoneId", draft.stoneId]);
+    configs.push([prefix + "stoneEnabled", draft.stoneEnabled ? "true" : "false"]);
+    configs.push([prefix + "goldEnabled", draft.goldEnabled ? "true" : "false"]);
+    configs.push([prefix + "gemEnabled", draft.gemEnabled ? "true" : "false"]);
+    configs.push([prefix + "stoneCosts", draft.stones.join(",")]);
+    configs.push([prefix + "goldCosts", draft.gold.join(",")]);
+    configs.push([prefix + "gemCosts", draft.gems.join(",")]);
+    configs.push([prefix + "successRates", draft.rates.join(",")]);
+  }
+  return configs;
+}
+
+function AppearanceConfigKeys() {
+  var keys = ["appearance.upgrade.maxLevel", "appearance.upgrade.rateCap", "appearance.upgrade.downgradeLevels"];
+  var suffixes = ["enabled", "stoneId", "stoneEnabled", "goldEnabled", "gemEnabled", "stoneCosts", "goldCosts", "gemCosts", "successRates"];
+  for (var i = 0; i < appearanceCategories.length; i++) {
+    for (var s = 0; s < suffixes.length; s++) keys.push("appearance." + appearanceCategories[i].key + "." + suffixes[s]);
+  }
+  return keys;
+}
+
+function SaveAppearanceUpgradeConfig() {
+  var configs;
+  try { configs = CollectAppearanceUpgradeValues(); }
+  catch (e) { Msg("combineMessage", "Lỗi: " + e); return; }
+  var text = SaveCombineValues(configs);
+  Msg("combineMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadCombineConfig();
 }
 
 function RingConfigValues(key, fallback) {
@@ -198,6 +444,9 @@ function RenderRingUpgradeEditor() {
   var stones = RingConfigValues("ring.upgrade.stoneCosts", "1,2,3,4,5,6,7,8");
   var gold = RingConfigValues("ring.upgrade.goldCosts", "0,0,0,0,0,0,0,0");
   var gems = RingConfigValues("ring.upgrade.gemCosts", "0,0,0,0,0,0,0,0");
+  document.getElementById("ringStoneEnabled").checked = IsTrueValue(CombineConfigValue("ring.upgrade.stoneEnabled") || "true");
+  document.getElementById("ringGoldEnabled").checked = IsTrueValue(CombineConfigValue("ring.upgrade.goldEnabled") || "false");
+  document.getElementById("ringGemEnabled").checked = IsTrueValue(CombineConfigValue("ring.upgrade.gemEnabled") || "false");
   var html = "";
   for (var i = 0; i < 8; i++) {
     var step = ringUpgradeSteps[i];
@@ -206,11 +455,32 @@ function RenderRingUpgradeEditor() {
       '<span><b>Cấp ' + i + ' → ' + (i + 1) + '</b><small>' + Html(step[0]) + ' (' + step[1] + ')<br>→ ' + Html(step[2]) + ' (' + step[3] + ')</small></span>' +
       '<img src="data/icon/x1/' + step[3] + '.png" alt="' + step[3] + '"></div></td>' +
       '<td><input id="ringRate' + i + '" value="' + HtmlAttr(Trim(rates[i])) + '"></td>' +
-      '<td><input id="ringStone' + i + '" value="' + HtmlAttr(Trim(stones[i])) + '"></td>' +
-      '<td><input id="ringGold' + i + '" value="' + HtmlAttr(Trim(gold[i])) + '"></td>' +
-      '<td><input id="ringGem' + i + '" value="' + HtmlAttr(Trim(gems[i])) + '"></td></tr>';
+      '<td class="ring-resource-stone"><input id="ringStone' + i + '" value="' + HtmlAttr(Trim(stones[i])) + '"></td>' +
+      '<td class="ring-resource-gold"><input id="ringGold' + i + '" value="' + HtmlAttr(Trim(gold[i])) + '"></td>' +
+      '<td class="ring-resource-gem"><input id="ringGem' + i + '" value="' + HtmlAttr(Trim(gems[i])) + '"></td></tr>';
   }
   document.getElementById("combineRingLevels").innerHTML = html;
+  ApplyRingResourceVisibility();
+}
+
+function ToggleRingResource() {
+  ApplyRingResourceVisibility();
+}
+
+function ApplyRingResourceVisibility() {
+  var box = document.getElementById("combineRingBox");
+  if (!box) return;
+  var states = {
+    "ring-resource-stone": document.getElementById("ringStoneEnabled").checked,
+    "ring-resource-gold": document.getElementById("ringGoldEnabled").checked,
+    "ring-resource-gem": document.getElementById("ringGemEnabled").checked
+  };
+  var headers = box.getElementsByTagName("th");
+  var cells = box.getElementsByTagName("td");
+  for (var kind in states) {
+    for (var h = 0; h < headers.length; h++) if ((" " + headers[h].className + " ").indexOf(" " + kind + " ") >= 0) headers[h].style.display = states[kind] ? "" : "none";
+    for (var c = 0; c < cells.length; c++) if ((" " + cells[c].className + " ").indexOf(" " + kind + " ") >= 0) cells[c].style.display = states[kind] ? "" : "none";
+  }
 }
 
 function DestroyMergeRecipeDefaults() {
@@ -254,7 +524,12 @@ function RenderDestroyMergeEditor() {
 }
 
 function CollectRingUpgradeValues() {
-  var result = { rates: [], stones: [], gold: [], gems: [] };
+  var result = {
+    rates: [], stones: [], gold: [], gems: [],
+    stoneEnabled: document.getElementById("ringStoneEnabled").checked,
+    goldEnabled: document.getElementById("ringGoldEnabled").checked,
+    gemEnabled: document.getElementById("ringGemEnabled").checked
+  };
   for (var i = 0; i < 8; i++) {
     var rate = Trim(V("ringRate" + i));
     var stone = Trim(V("ringStone" + i));
@@ -316,18 +591,15 @@ function SaveRingUpgradeConfig() {
   catch (e) { Msg("combineMessage", "Lỗi: " + e); return; }
   var configs = [
     ["ring.upgrade.successRates", values.rates.join(",")],
+    ["ring.upgrade.stoneEnabled", values.stoneEnabled ? "true" : "false"],
+    ["ring.upgrade.goldEnabled", values.goldEnabled ? "true" : "false"],
+    ["ring.upgrade.gemEnabled", values.gemEnabled ? "true" : "false"],
     ["ring.upgrade.stoneCosts", values.stones.join(",")],
     ["ring.upgrade.goldCosts", values.gold.join(",")],
     ["ring.upgrade.gemCosts", values.gems.join(",")]
   ];
-  var messages = [];
-  var text = "";
-  for (var i = 0; i < configs.length; i++) {
-    text = SaveCombineValue(configs[i][0], configs[i][1]);
-    messages.push(StatusText(text));
-    if (IsAdminError(text)) break;
-  }
-  Msg("combineMessage", messages.join("\r\n"));
+  var text = SaveCombineValues(configs);
+  Msg("combineMessage", StatusText(text));
   if (!IsAdminError(text)) LoadCombineConfig();
 }
 
@@ -342,14 +614,8 @@ function SaveDestroyMergeConfig() {
     ["destroy.merge.failLostFragments", values.failLost],
     ["destroy.merge.recipes", values.recipes]
   ];
-  var messages = [];
-  var text = "";
-  for (var i = 0; i < configs.length; i++) {
-    text = SaveCombineValue(configs[i][0], configs[i][1]);
-    messages.push(StatusText(text));
-    if (IsAdminError(text)) break;
-  }
-  Msg("combineMessage", messages.join("\r\n"));
+  var text = SaveCombineValues(configs);
+  Msg("combineMessage", StatusText(text));
   if (!IsAdminError(text)) LoadCombineConfig();
 }
 
@@ -413,8 +679,19 @@ function SaveCombineValue(key, value) {
   return RunAdmin("savecombineconfig", { ConfigKey: key, ConfigValue: value });
 }
 
+function SaveCombineValues(configs) {
+  var payload = [];
+  for (var i = 0; i < configs.length; i++) payload.push({ key: configs[i][0], value: configs[i][1] });
+  return RunAdmin("savecombineconfig", { PayloadJson: JSON.stringify(payload) });
+}
+
+function ResetCombineValues(keys) {
+  return RunAdmin("resetcombineconfig", { PayloadJson: JSON.stringify(keys) });
+}
+
 function SaveCombineConfig() {
   if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+  if (IsAppearanceUpgradeKey(V("combineKey"))) { SaveAppearanceUpgradeConfig(); return; }
   if (IsRingUpgradeKey(V("combineKey"))) { SaveRingUpgradeConfig(); return; }
   if (IsDestroyMergeKey(V("combineKey"))) { SaveDestroyMergeConfig(); return; }
   var keys = OptionGroupKeys(V("combineKey"));
@@ -425,20 +702,10 @@ function SaveCombineConfig() {
     if (ids.length < 1) { Msg("combineMessage", "Cần chọn ít nhất một option."); return; }
     if (!/^\d+$/.test(minValue) || !/^\d+$/.test(maxValue)) { Msg("combineMessage", "Param Min/Max phải là số nguyên không âm."); return; }
     if (parseInt(minValue, 10) > parseInt(maxValue, 10)) { Msg("combineMessage", "Param Min không được lớn hơn Param Max."); return; }
-    var messages = [];
-    var result = SaveCombineValue(V("combineKey"), ids.join(","));
-    messages.push(StatusText(result));
-    if (IsAdminError(result)) { Msg("combineMessage", messages.join("\r\n")); return; }
-    result = SaveCombineValue(keys.min, minValue);
-    messages.push(StatusText(result));
-    if (IsAdminError(result)) { Msg("combineMessage", messages.join("\r\n")); return; }
-    result = SaveCombineValue(keys.max, maxValue);
-    messages.push(StatusText(result));
-    if (keys.duplicate && !IsAdminError(result)) {
-      result = SaveCombineValue(keys.duplicate, document.getElementById("combineAllowDuplicate").checked ? "true" : "false");
-      messages.push(StatusText(result));
-    }
-    Msg("combineMessage", messages.join("\r\n"));
+    var optionConfigs = [[V("combineKey"), ids.join(",")], [keys.min, minValue], [keys.max, maxValue]];
+    if (keys.duplicate) optionConfigs.push([keys.duplicate, document.getElementById("combineAllowDuplicate").checked ? "true" : "false"]);
+    var result = SaveCombineValues(optionConfigs);
+    Msg("combineMessage", StatusText(result));
     if (!IsAdminError(result)) LoadCombineConfig();
   } else {
     var text = SaveCombineValue(V("combineKey"), V("combineValue"));
@@ -449,31 +716,26 @@ function SaveCombineConfig() {
 
 function ResetCombineConfig() {
   if (!V("combineKey")) { Msg("combineMessage", "Chọn một cấu hình trước."); return; }
+  if (IsAppearanceUpgradeKey(V("combineKey"))) {
+    if (!window.confirm("Đưa toàn bộ cấu hình nâng cấp ngoại trang về mặc định?")) return;
+    var appearanceText = ResetCombineValues(AppearanceConfigKeys());
+    Msg("combineMessage", StatusText(appearanceText));
+    if (!IsAdminError(appearanceText)) LoadCombineConfig();
+    return;
+  }
   if (IsRingUpgradeKey(V("combineKey"))) {
     if (!window.confirm("Đưa toàn bộ cấu hình nâng cấp nhẫn về mặc định?")) return;
-    var ringKeys = ["ring.upgrade.successRates", "ring.upgrade.stoneCosts", "ring.upgrade.goldCosts", "ring.upgrade.gemCosts"];
-    var ringMessages = [];
-    var ringText = "";
-    for (var r = 0; r < ringKeys.length; r++) {
-      ringText = RunAdmin("resetcombineconfig", { ConfigKey: ringKeys[r] });
-      ringMessages.push(StatusText(ringText));
-      if (IsAdminError(ringText)) break;
-    }
-    Msg("combineMessage", ringMessages.join("\r\n"));
+    var ringKeys = ["ring.upgrade.successRates", "ring.upgrade.stoneEnabled", "ring.upgrade.goldEnabled", "ring.upgrade.gemEnabled", "ring.upgrade.stoneCosts", "ring.upgrade.goldCosts", "ring.upgrade.gemCosts"];
+    var ringText = ResetCombineValues(ringKeys);
+    Msg("combineMessage", StatusText(ringText));
     if (!IsAdminError(ringText)) LoadCombineConfig();
     return;
   }
   if (IsDestroyMergeKey(V("combineKey"))) {
     if (!window.confirm("Đưa toàn bộ cấu hình ghép mảnh Hủy Diệt về mặc định?")) return;
     var destroyKeys = ["destroy.merge.successRate", "destroy.merge.goldCost", "destroy.merge.gemCost", "destroy.merge.failLostFragments", "destroy.merge.recipes"];
-    var destroyMessages = [];
-    var destroyText = "";
-    for (var d = 0; d < destroyKeys.length; d++) {
-      destroyText = RunAdmin("resetcombineconfig", { ConfigKey: destroyKeys[d] });
-      destroyMessages.push(StatusText(destroyText));
-      if (IsAdminError(destroyText)) break;
-    }
-    Msg("combineMessage", destroyMessages.join("\r\n"));
+    var destroyText = ResetCombineValues(destroyKeys);
+    Msg("combineMessage", StatusText(destroyText));
     if (!IsAdminError(destroyText)) LoadCombineConfig();
     return;
   }
@@ -485,14 +747,8 @@ function ResetCombineConfig() {
     resetKeys.push(keys.max);
     if (keys.duplicate) resetKeys.push(keys.duplicate);
   }
-  var messages = [];
-  var text = "";
-  for (var i = 0; i < resetKeys.length; i++) {
-    text = RunAdmin("resetcombineconfig", { ConfigKey: resetKeys[i] });
-    messages.push(StatusText(text));
-    if (IsAdminError(text)) break;
-  }
-  Msg("combineMessage", messages.join("\r\n"));
+  var text = ResetCombineValues(resetKeys);
+  Msg("combineMessage", StatusText(text));
   if (!IsAdminError(text)) LoadCombineConfig();
 }
 

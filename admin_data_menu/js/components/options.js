@@ -1,6 +1,7 @@
 var optionRows = [];
 
-function LoadOptions() {
+function LoadOptions(force) {
+  if (!force && optionRows.length > 1) return;
   optionRows = ParseTsv(RunAdmin("listoptions", {}));
   RenderOptionTable(optionRows);
   RenderEquipOptionPicker();

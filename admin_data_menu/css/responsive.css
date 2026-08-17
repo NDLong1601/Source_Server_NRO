@@ -72,7 +72,9 @@
   #panelGift .gift-left-pane,
   #panelGift .gift-right-pane,
   #panelPlayers .left-pane,
-  #panelPlayers .right-pane {
+  #panelPlayers .right-pane,
+  #panelCombine .left-pane,
+  #panelCombine .right-pane {
     width: auto;
   }
 

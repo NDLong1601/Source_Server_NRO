@@ -327,6 +327,6 @@ function DeleteBossOverride() {
 RegisterTab({
   id: "boss", view: "boss.html", panelId: "panelBoss", navId: "navBoss",
   title: "Quản lý Boss", subtitle: "Boss có trong server: skill, map, lịch xuất hiện và vật phẩm rơi",
-  onOpen: function () { LoadBossSkillCatalog(); LoadSpawnLookups(); LoadAdminBosses(); },
+  onOpen: function () { LoadOptions(false); LoadBossSkillCatalog(); LoadSpawnLookups(); LoadAdminBosses(); },
   onRefresh: function () { LoadAdminBosses(); }
 });

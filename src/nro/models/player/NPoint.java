@@ -651,7 +651,12 @@ public class NPoint {
 
     private void setSpeed() {
         if (player.isPl()) {
-            speed = (byte) (8 + 8 * (tlSpeed / 100));
+            if (isLamCham || (player.effectSkill != null && player.effectSkill.isLamCham)) {
+                speed = 1;
+                return;
+            }
+            long speedWithBonus = 8L + (8L * tlSpeed / 100L);
+            speed = (byte) Math.max(1L, Math.min(Byte.MAX_VALUE, speedWithBonus));
         }
     }
 
@@ -1866,7 +1871,9 @@ public class NPoint {
             }
 
             if (Util.canDoWithTime(lastTimeHoiPhuc, 30000)) {
-                PlayerService.gI().hoiPhuc(this.player, hpHoi, mpHoi);
+                if (hp < hpMax || mp < mpMax) {
+                    PlayerService.gI().hoiPhuc(this.player, hpHoi, mpHoi);
+                }
                 this.lastTimeHoiPhuc = System.currentTimeMillis();
             }
 

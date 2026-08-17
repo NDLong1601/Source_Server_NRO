@@ -148,6 +148,9 @@ public final class NangCapNgoaiTrang {
         public int stoneCost;
         public long goldCost;
         public int gemCost;
+        public boolean stoneEnabled;
+        public boolean goldEnabled;
+        public boolean gemEnabled;
         public double baseRate;
         public double cloverBonus;
         public double finalRate;
@@ -237,13 +240,21 @@ public final class NangCapNgoaiTrang {
             return sel;
         }
 
-        if (sel.stone == null) {
+        boolean stoneEnabled = CombineConfig.getBoolean(
+                "appearance." + sel.category.getConfigKey() + ".stoneEnabled", true);
+        if (stoneEnabled && sel.stone == null) {
             sel.valid = false;
             sel.errorMessage = "Thiếu đá nâng cấp phù hợp cho " + sel.category.getDisplayName();
             return sel;
         }
 
-        if (sel.stone.template.id != sel.category.getStoneId()) {
+        if (!stoneEnabled && sel.stone != null) {
+            sel.valid = false;
+            sel.errorMessage = sel.category.getDisplayName() + " đang tắt tiêu hao đá, hãy bỏ đá khỏi ô nâng cấp";
+            return sel;
+        }
+
+        if (sel.stone != null && sel.stone.template.id != sel.category.getStoneId()) {
             Item tempStone = ItemService.gI().createNewItem((short) sel.category.getStoneId());
             String expectedName = tempStone != null && tempStone.template != null ? tempStone.template.name : "đúng loại đá";
             sel.valid = false;
@@ -291,10 +302,16 @@ public final class NangCapNgoaiTrang {
         plan.currentLevel = currentLvl;
         plan.nextLevel = currentLvl + 1;
         plan.stoneId = sel.category.getStoneId();
+        plan.stoneEnabled = CombineConfig.getBoolean("appearance." + catKey + ".stoneEnabled", true);
+        plan.goldEnabled = CombineConfig.getBoolean("appearance." + catKey + ".goldEnabled", true);
+        plan.gemEnabled = CombineConfig.getBoolean("appearance." + catKey + ".gemEnabled", false);
 
-        plan.stoneCost = CombineConfig.getLevelInt("appearance." + catKey + ".stoneCosts", currentLvl, 1, 2, 3, 5, 8, 12, 18, 25, 35, 50);
-        plan.goldCost = (long) CombineConfig.getLevelValue("appearance." + catKey + ".goldCosts", currentLvl, 1000000, 2000000, 5000000, 10000000, 20000000, 40000000, 80000000, 150000000, 250000000, 400000000);
-        plan.gemCost = CombineConfig.getLevelInt("appearance." + catKey + ".gemCosts", currentLvl, 0);
+        plan.stoneCost = plan.stoneEnabled
+                ? CombineConfig.getLevelInt("appearance." + catKey + ".stoneCosts", currentLvl, 1, 2, 3, 5, 8, 12, 18, 25, 35, 50) : 0;
+        plan.goldCost = plan.goldEnabled
+                ? (long) CombineConfig.getLevelValue("appearance." + catKey + ".goldCosts", currentLvl, 1000000, 2000000, 5000000, 10000000, 20000000, 40000000, 80000000, 150000000, 250000000, 400000000) : 0L;
+        plan.gemCost = plan.gemEnabled
+                ? CombineConfig.getLevelInt("appearance." + catKey + ".gemCosts", currentLvl, 0) : 0;
         plan.baseRate = CombineConfig.getLevelRate("appearance." + catKey + ".successRates", currentLvl, 100, 80, 60, 40, 25, 15, 10, 5, 3, 1);
 
         plan.cloverBonus = 0;
@@ -342,26 +359,26 @@ public final class NangCapNgoaiTrang {
         if (player == null || sel == null || plan == null || !plan.valid) {
             return false;
         }
-        if (sel.stone == null || sel.stone.quantity < plan.stoneCost) {
+        if (plan.stoneEnabled && (sel.stone == null || sel.stone.quantity < plan.stoneCost)) {
             return false;
         }
-        if (player.inventory.gold < plan.goldCost) {
+        if (plan.goldEnabled && player.inventory.gold < plan.goldCost) {
             return false;
         }
-        if (plan.gemCost > 0 && player.inventory.gem < plan.gemCost) {
+        if (plan.gemEnabled && player.inventory.gem < plan.gemCost) {
             return false;
         }
         return true;
     }
 
     public static boolean selectedItemsStillInBag(Player player, UpgradeSelection sel) {
-        if (player == null || sel == null || sel.target == null || sel.stone == null) {
+        if (player == null || sel == null || sel.target == null) {
             return false;
         }
         if (InventoryService.gI().getIndexItemBag(player, sel.target) == -1) {
             return false;
         }
-        if (InventoryService.gI().getIndexItemBag(player, sel.stone) == -1) {
+        if (sel.stone != null && InventoryService.gI().getIndexItemBag(player, sel.stone) == -1) {
             return false;
         }
         if (sel.clover != null && InventoryService.gI().getIndexItemBag(player, sel.clover) == -1) {
@@ -400,18 +417,25 @@ public final class NangCapNgoaiTrang {
             }
         }
 
-        boolean hasEnoughStone = sel.stone != null && sel.stone.quantity >= plan.stoneCost;
-        sb.append(hasEnoughStone ? "|1|" : "|7|")
-          .append("Cần ").append(plan.stoneCost).append(" ").append(sel.stone.template.name)
-          .append(" (có ").append(sel.stone != null ? sel.stone.quantity : 0).append(")\n");
+        if (plan.stoneEnabled) {
+            boolean hasEnoughStone = sel.stone != null && sel.stone.quantity >= plan.stoneCost;
+            sb.append(hasEnoughStone ? "|1|" : "|7|")
+              .append("Cần ").append(plan.stoneCost).append(" ").append(sel.stone.template.name)
+              .append(" (có ").append(sel.stone.quantity).append(")\n");
+        }
 
-        boolean hasEnoughGold = player.inventory.gold >= plan.goldCost;
-        sb.append(hasEnoughGold ? "|1|" : "|7|")
-          .append("Cần ").append(Util.numberToMoney(plan.goldCost)).append(" vàng");
+        if (plan.goldEnabled) {
+            boolean hasEnoughGold = player.inventory.gold >= plan.goldCost;
+            sb.append(hasEnoughGold ? "|1|" : "|7|")
+              .append("Cần ").append(Util.numberToMoney(plan.goldCost)).append(" vàng");
+        }
 
-        if (plan.gemCost > 0) {
+        if (plan.gemEnabled) {
             boolean hasEnoughGem = player.inventory.gem >= plan.gemCost;
-            sb.append("\n").append(hasEnoughGem ? "|1|" : "|7|")
+            if (plan.goldEnabled) {
+                sb.append("\n");
+            }
+            sb.append(hasEnoughGem ? "|1|" : "|7|")
               .append("Cần ").append(plan.gemCost).append(" ngọc");
         }
 
@@ -440,11 +464,14 @@ public final class NangCapNgoaiTrang {
             return;
         }
 
+        String upgradeButton = plan.goldEnabled
+                ? "Nâng cấp\n" + Util.numberToMoney(plan.goldCost) + " vàng"
+                : "Nâng cấp";
         CombineService.gI().baHatMit.createOtherMenu(
                 player,
                 ConstNpc.MENU_START_COMBINE,
                 preview,
-                "Nâng cấp\n" + Util.numberToMoney(plan.goldCost) + " vàng",
+                upgradeButton,
                 "Từ chối"
         );
     }
@@ -484,11 +511,15 @@ public final class NangCapNgoaiTrang {
             }
 
             // Deduct basic costs
-            player.inventory.gold -= plan.goldCost;
-            if (plan.gemCost > 0) {
+            if (plan.goldEnabled) {
+                player.inventory.gold -= plan.goldCost;
+            }
+            if (plan.gemEnabled) {
                 player.inventory.gem -= plan.gemCost;
             }
-            InventoryService.gI().subQuantityItemsBag(player, sel.stone, plan.stoneCost);
+            if (plan.stoneEnabled) {
+                InventoryService.gI().subQuantityItemsBag(player, sel.stone, plan.stoneCost);
+            }
             if (sel.clover != null) {
                 InventoryService.gI().subQuantityItemsBag(player, sel.clover, 1);
             }
