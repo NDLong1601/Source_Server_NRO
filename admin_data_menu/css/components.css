@@ -1660,3 +1660,500 @@ tr:hover td.gift-status-waiting {
   object-fit: contain;
   vertical-align: middle;
 }
+
+.npc-preview-stage {
+  position: relative;
+  width: 100%;
+  height: 310px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+}
+
+.npc-preview-stage.show-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Background Map Themes */
+.npc-preview-stage.npc-bg-aru {
+  background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 45%, #86efac 75%, #22c55e 100%);
+}
+
+.npc-preview-stage.npc-bg-kame {
+  background: linear-gradient(180deg, #f97316 0%, #fbbf24 45%, #38bdf8 70%, #0284c7 100%);
+}
+
+.npc-preview-stage.npc-bg-doicuc {
+  background: linear-gradient(180deg, #60a5fa 0%, #bfdbfe 50%, #4ade80 80%, #15803d 100%);
+}
+
+.npc-preview-stage.npc-bg-bunma {
+  background: linear-gradient(180deg, #1e293b 0%, #334155 60%, #475569 100%);
+}
+
+.npc-preview-stage.npc-bg-namek {
+  background: linear-gradient(180deg, #059669 0%, #34d399 50%, #6ee7b7 80%, #047857 100%);
+}
+
+.npc-preview-stage.npc-bg-xayda {
+  background: linear-gradient(180deg, #4c0519 0%, #9f1239 50%, #e11d48 80%, #881337 100%);
+}
+
+.npc-preview-stage.npc-bg-studio {
+  background: #1e293b;
+}
+
+.npc-preview-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42px;
+  background: linear-gradient(180deg, #84cc16 0%, #65a30d 15%, #ca8a04 18%, #a16207 100%);
+  border-top: 2px solid #4d7c0f;
+  z-index: 1;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.npc-preview-stage.npc-bg-kame .npc-preview-ground {
+  background: linear-gradient(180deg, #fef08a 0%, #fde047 25%, #eab308 100%);
+  border-top: 2px solid #ca8a04;
+}
+
+.npc-preview-stage.npc-bg-bunma .npc-preview-ground {
+  background: linear-gradient(180deg, #64748b 0%, #475569 40%, #334155 100%);
+  border-top: 2px solid #94a3b8;
+}
+
+.npc-preview-stage.npc-bg-namek .npc-preview-ground {
+  background: linear-gradient(180deg, #10b981 0%, #047857 50%, #064e3b 100%);
+  border-top: 2px solid #34d399;
+}
+
+.npc-preview-stage.npc-bg-xayda .npc-preview-ground {
+  background: linear-gradient(180deg, #4c0519 0%, #31030e 100%);
+  border-top: 2px solid #be123c;
+}
+
+.npc-preview-stage.npc-bg-studio .npc-preview-ground {
+  background: #0f172a;
+  border-top: 2px solid #334155;
+}
+
+.npc-preview-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 72px;
+  height: 18px;
+  margin-left: -36px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  z-index: 2;
+  pointer-events: none;
+  filter: blur(1px);
+}
+
+.npc-ground-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 42px;
+  height: 1px;
+  background: rgba(239, 68, 68, 0.4);
+  z-index: 2;
+}
+
+.npc-origin-marker {
+  position: absolute;
+  left: 50%;
+  bottom: 38px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  background: #ef4444;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.npc-layer {
+  position: absolute;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.npc-layer.leg {
+  z-index: 4;
+}
+
+.npc-layer.body {
+  z-index: 5;
+}
+
+/* NPC Creator Panel Modern Theme & Resizable Layout */
+.npc-resizable-columns {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#panelNpcCreator .left-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 360px;
+  min-width: 220px;
+  max-width: 600px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.npc-splitter-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 360px;
+  width: 8px;
+  margin-left: 0;
+  background: #f1f5f9;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  cursor: col-resize;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.npc-splitter-handle:hover,
+.npc-splitter-handle.dragging {
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.npc-splitter-dots {
+  width: 2px;
+  height: 28px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.npc-splitter-handle:hover .npc-splitter-dots,
+.npc-splitter-handle.dragging .npc-splitter-dots {
+  background: #ffffff;
+}
+
+#panelNpcCreator .right-pane {
+  position: absolute;
+  left: 368px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.npc-card-group {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.npc-card-group .npc-part-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.npc-card-group .section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.npc-mode-tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+
+.npc-mode-tab {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.npc-mode-tab:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.npc-mode-tab.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.npc-preset-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.npc-preset-pills button {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  background: #e2e8f0;
+  color: #334155;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.npc-preset-pills button:hover {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.npc-layer {
+  position: absolute;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.npc-layer.fullbody {
+  z-index: 5;
+}
+
+.npc-layer.leg {
+  z-index: 4;
+}
+
+.npc-layer.body {
+  z-index: 5;
+}
+
+.npc-layer.head {
+  z-index: 6;
+}
+
+.avatar-preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: #1e293b;
+  border: 2px solid #475569;
+  border-radius: 8px;
+  margin-top: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.npc-creator-form-col {
+  flex: 3;
+  min-width: 300px;
+}
+
+.npc-preview-col {
+  flex: 2;
+  min-width: 280px;
+  padding-left: 18px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.npc-preview-stage {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+}
+
+.npc-offset-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.npc-offset-actions button.compact {
+  min-width: 32px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.npc-offset-input {
+  width: 52px;
+  height: 28px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.npc-size-input {
+  width: 60px;
+  height: 28px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.npc-size-times {
+  font-weight: bold;
+  color: #64748b;
+  padding: 0 2px;
+}
+
+.npc-lock-ratio-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  margin-left: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.npc-form-hidden {
+  display: none;
+}
+
+.npc-scale-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.npc-scale-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.npc-scale-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.npc-preview-actions {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.npc-preview-note {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.npc-avatar-box-wrap {
+  margin-top: 14px;
+}
+
+.npc-avatar-img {
+  max-width: 72px;
+  max-height: 72px;
+  display: none;
+  image-rendering: auto;
+}
+
+.npc-avatar-empty {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.npc-main-actions {
+  margin-top: 15px;
+}
+
+.npc-footer-note {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.npc-bg-select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.npc-bg-select {
+  flex: 1;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.npc-tool-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}

@@ -1,1 +1,1 @@
-﻿
+﻿{"Id":"112","Name":"Kanao","Mode":"fullbody","HeadPartId":"2132","BodyPartId":"2133","LegPartId":"2134","AvatarIconId":"25009","HeadIconId":"25001","HeadDx":"0","HeadDy":"0","HeadW":1,"HeadH":1,"BodyIconId":"25008","BodyDx":"-6","BodyDy":"-7","BodyW":122,"BodyH":218,"LegIconId":"25001","LegDx":"0","LegDy":"0","LegW":1,"LegH":1,"FullBodyIconId":"25008","FullBodyW":122,"FullBodyH":218,"FullBodyDx":"0","FullBodyDy":"0","AvatarW":180,"AvatarH":180,"MapId":"0","SpawnX":"514","SpawnY":"432","HasShop":"0","ShopTagName":"SHOP_MUA_BAN","ShopType":"0"}

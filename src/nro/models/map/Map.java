@@ -167,9 +167,12 @@ public class Map implements Runnable {
         }
     }
 
-    public void initNpc(byte[] npcId, short[] npcX, short[] npcY) {
+    public void initNpc(int[] npcId, short[] npcX, short[] npcY) {
         for (int i = 0; i < npcId.length; i++) {
-            this.npcs.add(NpcFactory.createNPC(this.mapId, 1, npcX[i], npcY[i], npcId[i]));
+            Npc npc = NpcFactory.createNPC(this.mapId, 1, npcX[i], npcY[i], npcId[i]);
+            if (npc != null) {
+                this.npcs.add(npc);
+            }
         }
     }
 

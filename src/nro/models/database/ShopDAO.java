@@ -25,7 +25,7 @@ public class ShopDAO {
             while (rs.next()) {
                 Shop shop = new Shop();
                 shop.id = rs.getInt("id");
-                shop.npcId = rs.getByte("npc_id");
+                shop.npcId = rs.getInt("npc_id");
                 shop.tagName = rs.getString("tag_name");
                 shop.typeShop = rs.getByte("type_shop");
                 loadShopTab(con, shop);

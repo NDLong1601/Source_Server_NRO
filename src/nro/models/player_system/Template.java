@@ -120,7 +120,7 @@ public class Template {
         public short[] mobX;
         public short[] mobY;
 
-        public byte[] npcId;
+        public int[] npcId;
         public short[] npcX;
         public short[] npcY;
 

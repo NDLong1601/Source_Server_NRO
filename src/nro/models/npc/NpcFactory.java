@@ -86,6 +86,7 @@ import nro.models.services.SubMenuService;
 import nro.models.services.shenron.Shenron_Service;
 import java.util.List;
 import nro.models.event.XeNuocMia;
+import nro.models.npc_list.Kanao;
 import nro.models.npc_list.ChiChi;
 import nro.models.npc_list.DrMyuu;
 import nro.models.npc_list.DuaHau;
@@ -96,13 +97,17 @@ import static nro.models.services.shenron.SummonDragon.SHENRON_1_STAR_WISHES_2;
 import static nro.models.services.shenron.SummonDragon.SHENRON_SAY;
 import nro.models.services.shenron.SummonDragonNamek;
 import nro.models.shop_ky_gui.ConsignShopService;
+import nro.models.player_system.Template.NpcTemplate;
+import nro.models.shop.Shop;
+import nro.models.shop.ShopService;
 
 public class NpcFactory {
 
     public static final java.util.Map<Long, Object> PLAYERID_OBJECT = new HashMap<>();
 
     public static Npc createNPC(int mapId, int status, int cx, int cy, int tempId) {
-        int avatar = Manager.NPC_TEMPLATES.get(tempId).avatar;
+        NpcTemplate temp = Manager.getNpcTemplate(tempId);
+        int avatar = temp != null ? temp.avatar : 0;
         try {
             return switch (tempId) {
                 case ConstNpc.GHI_DANH ->
@@ -229,18 +234,45 @@ public class NpcFactory {
                     new XeNuocMia(mapId, status, cx, cy, tempId, avatar);
                 case ConstNpc.BARDOCK ->
                     new Bardock(mapId, status, cx, cy, tempId, avatar);
+                case ConstNpc.KANAO ->
+                    new Kanao(mapId, status, cx, cy, tempId, avatar);
                 default ->
                     new Npc(mapId, status, cx, cy, tempId, avatar) {
                         @Override
                         public void openBaseMenu(Player player) {
                             if (canOpenNpc(player)) {
-                                super.openBaseMenu(player);
+                                Shop shop = null;
+                                for (Shop s : Manager.SHOPS) {
+                                    if (s.npcId == tempId) {
+                                        shop = s;
+                                        break;
+                                    }
+                                }
+                                if (shop != null && shop.tagName != null && !shop.tagName.isEmpty()) {
+                                    createOtherMenu(player, ConstNpc.BASE_MENU, "Ta có thể giúp gì cho ngươi?", "Cửa hàng", "Từ chối");
+                                } else {
+                                    super.openBaseMenu(player);
+                                }
                             }
                         }
 
                         @Override
                         public void confirmMenu(Player player, int select) {
                             if (canOpenNpc(player)) {
+                                if (player.idMark.getIndexMenu() == ConstNpc.BASE_MENU) {
+                                    if (select == 0) {
+                                        Shop shop = null;
+                                        for (Shop s : Manager.SHOPS) {
+                                            if (s.npcId == tempId) {
+                                                shop = s;
+                                                break;
+                                            }
+                                        }
+                                        if (shop != null && shop.tagName != null && !shop.tagName.isEmpty()) {
+                                            ShopService.gI().opendShop(player, shop.tagName, true);
+                                        }
+                                    }
+                                }
                             }
                         }
                     };

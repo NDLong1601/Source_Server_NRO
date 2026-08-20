@@ -34,8 +34,8 @@ import nro.models.player_system.Template.BgItem;
 
 public class DataGame {
 
-    public static byte vsData = 9;
-    public static byte vsMap = 2;
+    public static byte vsData = 18;
+    public static byte vsMap = 10;
     public static byte vsSkill = 1;
     // 21 invalidates item-template cache written by the multi-append build.
     public static byte vsItem = 21;
@@ -115,13 +115,29 @@ public class DataGame {
             for (MapTemplate temp : Manager.MAP_TEMPLATES) {
                 msg.writer().writeUTF(temp.name);
             }
-            msg.writer().writeByte(Manager.NPC_TEMPLATES.size());
+            int maxNpcId = -1;
             for (NpcTemplate temp : Manager.NPC_TEMPLATES) {
-                msg.writer().writeUTF(temp.name);
-                msg.writer().writeShort(temp.head);
-                msg.writer().writeShort(temp.body);
-                msg.writer().writeShort(temp.leg);
-                msg.writer().writeByte(0);
+                if (temp.id > maxNpcId) {
+                    maxNpcId = temp.id;
+                }
+            }
+            int totalNpcCount = maxNpcId + 1;
+            msg.writer().writeByte(totalNpcCount);
+            for (int id = 0; id <= maxNpcId; id++) {
+                NpcTemplate temp = Manager.getNpcTemplate(id);
+                if (temp != null) {
+                    msg.writer().writeUTF(temp.name);
+                    msg.writer().writeShort(temp.head);
+                    msg.writer().writeShort(temp.body);
+                    msg.writer().writeShort(temp.leg);
+                    msg.writer().writeByte(0);
+                } else {
+                    msg.writer().writeUTF("NPC");
+                    msg.writer().writeShort(0);
+                    msg.writer().writeShort(0);
+                    msg.writer().writeShort(0);
+                    msg.writer().writeByte(0);
+                }
             }
             msg.writer().writeByte(Manager.MOB_TEMPLATES.size());
             for (MobTemplate temp : Manager.MOB_TEMPLATES) {

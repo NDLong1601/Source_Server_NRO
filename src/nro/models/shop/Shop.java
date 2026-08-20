@@ -10,7 +10,7 @@ public class Shop {
 
     public int id;
 
-    public byte npcId;
+    public int npcId;
 
     public List<TabShop> tabShops;
 

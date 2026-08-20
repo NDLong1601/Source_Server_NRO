@@ -765,11 +765,11 @@ public final class Manager {
             rs = ps.executeQuery();
             while (rs.next()) {
                 NpcTemplate npcTemp = new NpcTemplate();
-                npcTemp.id = rs.getByte("id");
+                npcTemp.id = rs.getInt("id");
                 npcTemp.name = rs.getString("name");
-                npcTemp.head = rs.getShort("head");
-                npcTemp.body = rs.getShort("body");
-                npcTemp.leg = rs.getShort("leg");
+                npcTemp.head = rs.getInt("head");
+                npcTemp.body = rs.getInt("body");
+                npcTemp.leg = rs.getInt("leg");
                 npcTemp.avatar = rs.getInt("avatar");
                 NPC_TEMPLATES.add(npcTemp);
             }
@@ -859,12 +859,12 @@ public final class Manager {
                     dataArray.clear();
                     //load npcs
                     dataArray = (JSONArray) JSONValue.parse(rs.getString("npcs").replaceAll("\\\"", ""));
-                    mapTemplate.npcId = new byte[dataArray.size()];
+                    mapTemplate.npcId = new int[dataArray.size()];
                     mapTemplate.npcX = new short[dataArray.size()];
                     mapTemplate.npcY = new short[dataArray.size()];
                     for (int j = 0; j < dataArray.size(); j++) {
                         JSONArray dtn = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
-                        mapTemplate.npcId[j] = Byte.parseByte(String.valueOf(dtn.get(0)));
+                        mapTemplate.npcId[j] = Integer.parseInt(String.valueOf(dtn.get(0)));
                         mapTemplate.npcX[j] = Short.parseShort(String.valueOf(dtn.get(1)));
                         mapTemplate.npcY[j] = Short.parseShort(String.valueOf(dtn.get(2)));
                         dtn.clear();
@@ -1224,4 +1224,15 @@ public final class Manager {
         }
     }
 
+    public static NpcTemplate getNpcTemplate(int id) {
+        for (NpcTemplate temp : NPC_TEMPLATES) {
+            if (temp.id == id) {
+                return temp;
+            }
+        }
+        return null;
+    }
+
 }
+
+

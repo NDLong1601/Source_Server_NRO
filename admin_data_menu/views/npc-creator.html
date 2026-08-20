@@ -1,0 +1,404 @@
+<div id="panelNpcCreator" class="panel">
+  <div class="columns npc-resizable-columns">
+    <div class="left-pane" id="npcCreatorLeftPane">
+      <div class="toolbar">
+        <input type="text" id="npcCreatorSearch" placeholder="Tìm ID hoặc tên NPC" onkeyup="FilterNpcCreatorList()">
+        <button type="button" onclick="LoadNpcCreatorList()">Tìm</button>
+        <button type="button" class="compact primary" onclick="NewNpcCreator()">+ Tạo mới</button>
+      </div>
+      <div class="table-wrap"><table id="npcCreatorTable"></table></div>
+    </div>
+
+    <!-- RESIZABLE SPLITTER BAR -->
+    <div class="npc-splitter-handle" id="npcCreatorSplitter" title="Kéo để thay đổi độ rộng danh sách và cấu hình">
+      <div class="npc-splitter-dots"></div>
+    </div>
+
+    <div class="right-pane" id="npcCreatorRightPane">
+      <div class="section-title">Cấu hình NPC</div>
+      <input type="hidden" id="npcCreatorId">
+      <input type="hidden" id="npcCreatorHeadPartId" value="-1">
+      <input type="hidden" id="npcCreatorBodyPartId" value="-1">
+      <input type="hidden" id="npcCreatorLegPartId" value="-1">
+
+      <div class="row">
+        <div class="cell"><label>Tên NPC (*)</label><input type="text" id="npcCreatorName" placeholder="Ví dụ: Thần Rùa Mới, Thương Nhân..."></div>
+        <div class="cell"><label>Map xuất hiện</label><select id="npcCreatorMapSelect" onchange="SyncNpcCreatorMap()"><option value="-1">-- Không đặt vào Map --</option></select></div>
+        <div class="cell"><label>Tọa độ X</label><input type="text" id="npcCreatorSpawnX" value="300"></div>
+        <div class="cell"><label>Tọa độ Y</label><input type="text" id="npcCreatorSpawnY" value="336"></div>
+      </div>
+
+      <div class="row">
+        <div class="cell">
+          <div class="inline-check">
+            <input type="checkbox" id="npcCreatorHasShop">
+            <label for="npcCreatorHasShop">Tạo Cửa Hàng (Shop) cho NPC này</label>
+          </div>
+        </div>
+        <div class="cell">
+          <label>Tag Name của Shop</label>
+          <input type="text" id="npcCreatorShopTag" value="SHOP_MUA_BAN" placeholder="Ví dụ: SHOP_MUA_BAN, SHOP_SU_KIEN">
+        </div>
+      </div>
+
+      <input type="hidden" id="npcCreatorMode" value="fullbody">
+      <input type="hidden" id="npcCreatorFullBodyPartId" value="-1">
+
+      <div class="npc-mode-tabs">
+        <button type="button" id="btnNpcModeFullBody" class="npc-mode-tab active" onclick="SwitchNpcCreatorMode('fullbody')">&#11088; Chế độ 1: 1 Ảnh Toàn Thân (Khuyên dùng - Đẹp 100%, Siêu nhanh)</button>
+        <button type="button" id="btnNpcModeMultipart" class="npc-mode-tab" onclick="SwitchNpcCreatorMode('multipart')">&#129513; Chế độ 2: Ghép 3 Phần (Đầu / Thân / Chân)</button>
+      </div>
+
+      <div class="split-small">
+        <div class="row">
+          <div class="cell npc-creator-form-col">
+            <!-- FULLBODY MODE FORM -->
+            <div id="npcFullBodyFormWrap">
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#128248; 1. Ảnh Toàn Thân Nhân Vật (Full Body PNG)</div>
+                  <div class="actions npc-preset-pills">
+                    <button type="button" onclick="SetFullBodyPreset(150)">Vừa 150px</button>
+                    <button type="button" onclick="SetFullBodyPreset(180)">Cao 180px</button>
+                    <button type="button" onclick="SetFullBodyPreset(210)">To 210px</button>
+                    <button type="button" onclick="SetFullBodyPreset(250)">Boss 250px</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Tải file Ảnh Toàn Thân (PNG vẽ trọn vẹn cả người)</label>
+                    <input type="file" id="npcCreatorFullBodyFile" accept="image/png,image/*" onchange="HandleNpcFileChange('fullbody', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon ID có sẵn</label>
+                    <input type="text" id="npcCreatorFullBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Kích thước hiển thị W x H (px chuẩn x4)</label>
+                    <div class="actions npc-offset-actions">
+                      <input type="text" id="npcCreatorFullBodyW" value="0" class="npc-size-input" placeholder="W (px)" onkeyup="HandleNpcManualSizeChange('fullbody', 'w')">
+                      <span class="npc-size-times">&#215;</span>
+                      <input type="text" id="npcCreatorFullBodyH" value="0" class="npc-size-input" placeholder="H (px)" onkeyup="HandleNpcManualSizeChange('fullbody', 'h')">
+                      <button type="button" class="compact" onclick="AdjustNpcSize('fullbody', -0.1, -5)">-10%</button>
+                      <button type="button" class="compact" onclick="AdjustNpcSize('fullbody', 0.1, 5)">+10%</button>
+                      <label class="npc-lock-ratio-wrap"><input type="checkbox" id="npcCreatorFullBodyLockRatio" checked> Khóa tỷ lệ</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Cân chỉnh Trái / Phải (Offset Dx - Căn trúng tâm bóng)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'x', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'x', -1)">-1</button>
+                      <input type="text" id="npcCreatorFullBodyDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'x', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'x', 5)">+5</button>
+                      <button type="button" class="compact" onclick="ResetFullBodyDx()">Về giữa</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Cân chỉnh Chạm Đất (Offset Dy - Cao / Thấp)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'y', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'y', -1)">-1</button>
+                      <input type="text" id="npcCreatorFullBodyDy" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'y', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('fullbody', 'y', 5)">+5</button>
+                      <button type="button" class="compact" onclick="ResetFullBodyOffset()">Chạm đất</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AVATAR IN FULLBODY MODE -->
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#128100; 2. Avatar Đối Thoại</div>
+                  <button type="button" class="compact" onclick="ApplyNpcPreset('avatar')">Chuẩn NRO (180&#215;180px)</button>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Ảnh Avatar (PNG, để trống sẽ tự lấy từ ảnh toàn thân)</label>
+                    <input type="file" id="npcCreatorFbAvatarFile" accept="image/png,image/*" onchange="HandleNpcFileChange('avatar', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon Avatar có sẵn</label>
+                    <input type="text" id="npcCreatorFbAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MULTIPART MODE FORM -->
+            <div id="npcMultipartFormWrap" class="npc-form-hidden">
+              <!-- 1. HEAD PART -->
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#129497; 1. Đầu (Head Part)</div>
+                  <button type="button" class="compact" onclick="ApplyNpcPreset('head')">Chuẩn NRO (80&#215;92px)</button>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Ảnh Head (PNG)</label>
+                    <input type="file" id="npcCreatorHeadFile" accept="image/png,image/*" onchange="HandleNpcFileChange('head', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon ID có sẵn</label>
+                    <input type="text" id="npcCreatorHeadIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dx (Trái / Phải)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', -1)">-1</button>
+                      <input type="text" id="npcCreatorHeadDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dy (Cao / Thấp)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'y', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'y', -1)">-1</button>
+                      <input type="text" id="npcCreatorHeadDy" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'y', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'y', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Kích thước W x H (px chuẩn x4)</label>
+                    <div class="actions npc-offset-actions">
+                      <input type="text" id="npcCreatorHeadW" value="0" class="npc-size-input" placeholder="W (px)" onkeyup="HandleNpcManualSizeChange('head', 'w')">
+                      <span class="npc-size-times">&#215;</span>
+                      <input type="text" id="npcCreatorHeadH" value="0" class="npc-size-input" placeholder="H (px)" onkeyup="HandleNpcManualSizeChange('head', 'h')">
+                      <button type="button" class="compact" onclick="AdjustNpcSize('head', -0.1, -5)">-10%</button>
+                      <button type="button" class="compact" onclick="AdjustNpcSize('head', 0.1, 5)">+10%</button>
+                      <label class="npc-lock-ratio-wrap"><input type="checkbox" id="npcCreatorHeadLockRatio" checked> Khóa tỷ lệ</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. BODY PART -->
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#128085; 2. Thân (Body Part)</div>
+                  <button type="button" class="compact" onclick="ApplyNpcPreset('body')">Chuẩn NRO (76&#215;48px)</button>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Ảnh Body (PNG)</label>
+                    <input type="file" id="npcCreatorBodyFile" accept="image/png,image/*" onchange="HandleNpcFileChange('body', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon ID có sẵn</label>
+                    <input type="text" id="npcCreatorBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dx (Trái / Phải)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', -1)">-1</button>
+                      <input type="text" id="npcCreatorBodyDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dy (Cao / Thấp)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'y', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'y', -1)">-1</button>
+                      <input type="text" id="npcCreatorBodyDy" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'y', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'y', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Kích thước W x H (px chuẩn x4)</label>
+                    <div class="actions npc-offset-actions">
+                      <input type="text" id="npcCreatorBodyW" value="0" class="npc-size-input" placeholder="W (px)" onkeyup="HandleNpcManualSizeChange('body', 'w')">
+                      <span class="npc-size-times">&#215;</span>
+                      <input type="text" id="npcCreatorBodyH" value="0" class="npc-size-input" placeholder="H (px)" onkeyup="HandleNpcManualSizeChange('body', 'h')">
+                      <button type="button" class="compact" onclick="AdjustNpcSize('body', -0.1, -5)">-10%</button>
+                      <button type="button" class="compact" onclick="AdjustNpcSize('body', 0.1, 5)">+10%</button>
+                      <label class="npc-lock-ratio-wrap"><input type="checkbox" id="npcCreatorBodyLockRatio" checked> Khóa tỷ lệ</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. LEG PART -->
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#128086; 3. Chân (Leg Part)</div>
+                  <button type="button" class="compact" onclick="ApplyNpcPreset('leg')">Chuẩn NRO (52&#215;44px)</button>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Ảnh Leg (PNG)</label>
+                    <input type="file" id="npcCreatorLegFile" accept="image/png,image/*" onchange="HandleNpcFileChange('leg', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon ID có sẵn</label>
+                    <input type="text" id="npcCreatorLegIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dx (Trái / Phải)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', -1)">-1</button>
+                      <input type="text" id="npcCreatorLegDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Offset Dy (Cao / Thấp)</label>
+                    <div class="actions npc-offset-actions">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', -5)">-5</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', -1)">-1</button>
+                      <input type="text" id="npcCreatorLegDy" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', 1)">+1</button>
+                      <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', 5)">+5</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Kích thước W x H (px chuẩn x4)</label>
+                    <div class="actions npc-offset-actions">
+                      <input type="text" id="npcCreatorLegW" value="0" class="npc-size-input" placeholder="W (px)" onkeyup="HandleNpcManualSizeChange('leg', 'w')">
+                      <span class="npc-size-times">&#215;</span>
+                      <input type="text" id="npcCreatorLegH" value="0" class="npc-size-input" placeholder="H (px)" onkeyup="HandleNpcManualSizeChange('leg', 'h')">
+                      <button type="button" class="compact" onclick="AdjustNpcSize('leg', -0.1, -5)">-10%</button>
+                      <button type="button" class="compact" onclick="AdjustNpcSize('leg', 0.1, 5)">+10%</button>
+                      <label class="npc-lock-ratio-wrap"><input type="checkbox" id="npcCreatorLegLockRatio" checked> Khóa tỷ lệ</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. AVATAR IN MULTIPART -->
+              <div class="npc-card-group">
+                <div class="npc-part-header">
+                  <div class="section-title">&#128100; 4. Avatar Đối Thoại</div>
+                  <button type="button" class="compact" onclick="ApplyNpcPreset('avatar')">Chuẩn NRO (180&#215;180px)</button>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Ảnh Avatar (PNG, để trống sẽ dùng Head)</label>
+                    <input type="file" id="npcCreatorAvatarFile" accept="image/png,image/*" onchange="HandleNpcFileChange('avatar', this)">
+                  </div>
+                  <div class="cell">
+                    <label>Hoặc Icon Avatar có sẵn</label>
+                    <input type="text" id="npcCreatorAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label>Kích thước W x H (Avatar px)</label>
+                    <div class="actions npc-offset-actions">
+                      <input type="text" id="npcCreatorAvatarW" value="0" class="npc-size-input" placeholder="W (px)" onkeyup="HandleNpcManualSizeChange('avatar', 'w')">
+                      <span class="npc-size-times">&#215;</span>
+                      <input type="text" id="npcCreatorAvatarH" value="0" class="npc-size-input" placeholder="H (px)" onkeyup="HandleNpcManualSizeChange('avatar', 'h')">
+                      <button type="button" class="compact" onclick="AdjustNpcSize('avatar', -0.1, -5)">-10%</button>
+                      <button type="button" class="compact" onclick="AdjustNpcSize('avatar', 0.1, 5)">+10%</button>
+                      <label class="npc-lock-ratio-wrap"><input type="checkbox" id="npcCreatorAvatarLockRatio" checked> Khóa tỷ lệ</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cell npc-preview-col">
+            <div class="section-title">Xem Trước (Live Preview)</div>
+            <div class="npc-bg-select-row">
+              <label>Cảnh nền:</label>
+              <select id="npcCreatorBgSelect" class="npc-bg-select" onchange="ChangeNpcPreviewBg(this.value)">
+                <option value="auto">Tự động theo Map đã chọn</option>
+                <option value="npc-bg-aru">Làng Aru (Đồng cỏ &#38; rặng dừa)</option>
+                <option value="npc-bg-kame">Đảo Kamê (Bãi biển &#38; cát vàng)</option>
+                <option value="npc-bg-doicuc">Đồi hoa cúc (Rừng xanh hoa nở)</option>
+                <option value="npc-bg-bunma">Nhà Bunma (Phòng thí nghiệm)</option>
+                <option value="npc-bg-namek">Hành tinh Namek (Đất xanh nấm tím)</option>
+                <option value="npc-bg-xayda">Hành tinh Xayda (Vách đá nham thạch)</option>
+                <option value="npc-bg-studio">Nền Studio tối (Kỹ thuật)</option>
+              </select>
+            </div>
+            <div id="npcScaleRowWrap" class="npc-scale-row">
+              <label>Quy mô toàn thân:</label>
+              <div class="actions npc-scale-actions">
+                <button type="button" class="compact" onclick="ScaleNpcOverall(1.0)">100%</button>
+                <button type="button" class="compact" onclick="ScaleNpcOverall(1.2)">120%</button>
+                <button type="button" class="compact" onclick="ScaleNpcOverall(1.4)">140%</button>
+                <button type="button" class="compact" onclick="ScaleNpcOverall(1.6)">160%</button>
+                <button type="button" class="compact" onclick="ScaleNpcOverall(1.8)">180%</button>
+              </div>
+            </div>
+            <div class="npc-tool-btn-group">
+              <button type="button" class="compact" id="btnNpcGrid" onclick="ToggleNpcPreviewGrid()">Bật/Tắt lưới</button>
+              <button type="button" class="compact" onclick="ResetNpcOffsets()">Reset Offset</button>
+              <button type="button" class="compact primary" id="btnAutoSnap" onclick="AutoSnapJoints()">Khép khít khớp</button>
+              <button type="button" class="compact" id="btnPresetAll" onclick="ApplyNpcPreset('all')">Chuẩn NRO gốc</button>
+            </div>
+            <div id="npcPreviewBox" class="npc-preview-stage npc-bg-aru">
+              <div class="npc-preview-ground"></div>
+              <div class="npc-preview-shadow"></div>
+              <div class="npc-ground-line"></div>
+              <div class="npc-origin-marker"></div>
+              <img id="npcPrevFullBody" class="npc-layer fullbody" alt="FullBody" src="">
+              <img id="npcPrevLeg" class="npc-layer leg" alt="Leg" src="">
+              <img id="npcPrevBody" class="npc-layer body" alt="Body" src="">
+              <img id="npcPrevHead" class="npc-layer head" alt="Head" src="">
+            </div>
+            <div class="npc-preview-note">
+              * Tọa độ hiển thị: Ghép theo Layer: Chân (dưới) &#8594; Thân (giữa) &#8594; Đầu (trên).<br>
+              * Kích thước W &#215; H đã chỉnh sẽ được lấy làm gốc x4 để tự động sinh x3 (75%), x2 (50%), x1 (25%).
+            </div>
+            <div class="npc-avatar-box-wrap">
+              <label>Avatar Preview:</label>
+              <div class="avatar-preview-box">
+                <img id="npcPrevAvatar" class="npc-avatar-img" alt="Avatar" src="">
+                <span id="npcPrevAvatarText" class="npc-avatar-empty">Chưa có avatar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions npc-main-actions">
+        <button type="button" class="primary" onclick="SaveNpcCreator()">Lưu NPC &amp; Tạo Part</button>
+        <button type="button" class="danger" onclick="DeleteNpcCreator()">Xóa NPC khỏi Map / DB</button>
+        <button type="button" onclick="NewNpcCreator()">Làm mới Form</button>
+      </div>
+      <div class="split-small npc-footer-note">
+        * Sau khi Lưu, hệ thống tự động resize ảnh ra x4, x3, x2, x1 theo kích thước bạn đã điều chỉnh, tạo bản ghi trong bảng part, build file data/update_data/part, ghi npc_template và cập nhật Map.
+      </div>
+      <div id="npcCreatorMessage" class="message"></div>
+    </div>
+  </div>
+</div>

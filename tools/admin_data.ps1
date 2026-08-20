@@ -86,6 +86,40 @@
     [string]$PayloadJson = "{}",
     [string]$Page = "1",
     [string]$PageSize = "60",
+    [string]$HeadPath = "",
+    [string]$BodyPath = "",
+    [string]$LegPath = "",
+    [string]$AvatarPath = "",
+    [string]$HeadDx = "0",
+    [string]$HeadDy = "0",
+    [string]$BodyDx = "0",
+    [string]$BodyDy = "0",
+    [string]$LegDx = "0",
+    [string]$LegDy = "0",
+    [string]$HeadIconId = "0",
+    [string]$BodyIconId = "0",
+    [string]$LegIconId = "0",
+    [string]$AvatarIconId = "0",
+    [string]$HeadPartId = "-1",
+    [string]$BodyPartId = "-1",
+    [string]$LegPartId = "-1",
+    [string]$HeadW = "0",
+    [string]$HeadH = "0",
+    [string]$BodyW = "0",
+    [string]$BodyH = "0",
+    [string]$LegW = "0",
+    [string]$LegH = "0",
+    [string]$AvatarW = "0",
+    [string]$AvatarH = "0",
+    [string]$HasShop = "0",
+    [string]$NpcSay = "",
+    [string]$Mode = "multipart",
+    [string]$FullBodyPath = "",
+    [string]$FullBodyIconId = "0",
+    [string]$FullBodyW = "0",
+    [string]$FullBodyH = "0",
+    [string]$FullBodyDx = "0",
+    [string]$FullBodyDy = "0",
     [string]$Encoded = "0"
 )
 
@@ -94,6 +128,7 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [Console]::InputEncoding = $Utf8NoBom
 [Console]::OutputEncoding = $Utf8NoBom
 $OutputEncoding = $Utf8NoBom
+Add-Type -AssemblyName System.Drawing -ErrorAction SilentlyContinue
 
 function Decode-InputParam {
     param([string]$Value)
@@ -111,7 +146,11 @@ foreach ($paramName in @(
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
-        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize"
+        "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
+        "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
+        "HeadIconId", "BodyIconId", "LegIconId", "AvatarIconId", "HeadPartId", "BodyPartId", "LegPartId", "HasShop", "NpcSay",
+        "HeadW", "HeadH", "BodyW", "BodyH", "LegW", "LegH", "AvatarW", "AvatarH",
+        "Mode", "FullBodyPath", "FullBodyIconId", "FullBodyW", "FullBodyH", "FullBodyDx", "FullBodyDy"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -2109,6 +2148,720 @@ function List-Npcs {
     Invoke-MySql "SELECT id, `NAME`, head, body, leg, avatar FROM npc_template ORDER BY id;"
 }
 
+function Resize-PixelArtImage {
+    param(
+        [string]$SourcePath,
+        [string]$DestPath,
+        [int]$TargetWidth,
+        [int]$TargetHeight
+    )
+    if ([string]::IsNullOrWhiteSpace($SourcePath) -or -not (Test-Path -LiteralPath $SourcePath)) { return }
+    $srcImg = [System.Drawing.Image]::FromFile($SourcePath)
+    try {
+        $destBmp = New-Object System.Drawing.Bitmap($TargetWidth, $TargetHeight, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $g = [System.Drawing.Graphics]::FromImage($destBmp)
+        try {
+            $g.Clear([System.Drawing.Color]::Transparent)
+            $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+            $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+            $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+            $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+            $g.DrawImage($srcImg, 0, 0, $TargetWidth, $TargetHeight)
+            
+            $destDir = [System.IO.Path]::GetDirectoryName($DestPath)
+            if (-not (Test-Path -LiteralPath $destDir)) {
+                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            }
+            $destBmp.Save($DestPath, [System.Drawing.Imaging.ImageFormat]::Png)
+        }
+        finally {
+            $g.Dispose()
+            $destBmp.Dispose()
+        }
+    }
+    finally {
+        $srcImg.Dispose()
+    }
+}
+
+function Process-NpcIconUpload {
+    param(
+        [string]$SourcePath,
+        [int]$IconId,
+        [int]$CustomW = 0,
+        [int]$CustomH = 0
+    )
+    if ([string]::IsNullOrWhiteSpace($SourcePath) -or -not (Test-Path -LiteralPath $SourcePath)) {
+        return $false
+    }
+    
+    $origDir = Join-Path $Root "data\icon\orig"
+    if (-not (Test-Path -LiteralPath $origDir)) {
+        New-Item -ItemType Directory -Path $origDir -Force | Out-Null
+    }
+    $origDest = Join-Path $origDir ("{0}.png" -f $IconId)
+    if ($SourcePath -ne $origDest) {
+        Copy-Item -LiteralPath $SourcePath -Destination $origDest -Force
+    }
+
+    $srcImg = [System.Drawing.Image]::FromFile($SourcePath)
+    $origW = $srcImg.Width
+    $origH = $srcImg.Height
+    $srcImg.Dispose()
+    
+    $w4 = if ($CustomW -gt 0) { $CustomW } else { $origW }
+    $h4 = if ($CustomH -gt 0) { $CustomH } else { $origH }
+    $w3 = [Math]::Max(1, [int][Math]::Round($w4 * 3.0 / 4.0))
+    $h3 = [Math]::Max(1, [int][Math]::Round($h4 * 3.0 / 4.0))
+    $w2 = [Math]::Max(1, [int][Math]::Round($w4 * 2.0 / 4.0))
+    $h2 = [Math]::Max(1, [int][Math]::Round($h4 * 2.0 / 4.0))
+    $w1 = [Math]::Max(1, [int][Math]::Round($w4 * 1.0 / 4.0))
+    $h1 = [Math]::Max(1, [int][Math]::Round($h4 * 1.0 / 4.0))
+    
+    $path4 = Join-Path $Root ("data\icon\x4\{0}.png" -f $IconId)
+    $path3 = Join-Path $Root ("data\icon\x3\{0}.png" -f $IconId)
+    $path2 = Join-Path $Root ("data\icon\x2\{0}.png" -f $IconId)
+    $path1 = Join-Path $Root ("data\icon\x1\{0}.png" -f $IconId)
+    
+    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path4 -TargetWidth $w4 -TargetHeight $h4
+    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path3 -TargetWidth $w3 -TargetHeight $h3
+    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path2 -TargetWidth $w2 -TargetHeight $h2
+    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path1 -TargetWidth $w1 -TargetHeight $h1
+    
+    return $true
+}
+
+function Get-IconImageSize {
+    param([int]$TargetIconId)
+    if ($TargetIconId -le 0) { return @{ Width = 0; Height = 0 } }
+    $imgPath = Join-Path $Root ("data\icon\x4\{0}.png" -f $TargetIconId)
+    if (Test-Path -LiteralPath $imgPath) {
+        try {
+            $img = [System.Drawing.Image]::FromFile($imgPath)
+            $w = $img.Width
+            $h = $img.Height
+            $img.Dispose()
+            return @{ Width = $w; Height = $h }
+        } catch {}
+    }
+    return @{ Width = 0; Height = 0 }
+}
+
+function Get-MaxIconId {
+    $maxId = 0
+    $iconDir = Join-Path $Root "data\icon\x4"
+    if (Test-Path -LiteralPath $iconDir) {
+        Get-ChildItem -LiteralPath $iconDir -Filter "*.png" | ForEach-Object {
+            $baseName = $_.BaseName
+            if ($baseName -match '^\d+$') {
+                $num = [int]$baseName
+                if ($num -gt $maxId) { $maxId = $num }
+            }
+        }
+    }
+    
+    $dbMaxItem = Get-MySqlScalar "SELECT COALESCE(MAX(icon_id), 0) FROM item_template;" "0"
+    if ([int]$dbMaxItem -gt $maxId) { $maxId = [int]$dbMaxItem }
+    
+    $dbMaxAvatar = Get-MySqlScalar "SELECT COALESCE(MAX(avatar), 0) FROM npc_template;" "0"
+    if ([int]$dbMaxAvatar -gt $maxId) { $maxId = [int]$dbMaxAvatar }
+    
+    return $maxId
+}
+
+function Export-BinaryPartData {
+    param([string]$OutputPath)
+    
+    $rawPartData = Invoke-MySql "SELECT id, `TYPE`, `DATA` FROM part ORDER BY id ASC;"
+    $lines = @($rawPartData -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { return }
+    
+    $partsList = New-Object System.Collections.Generic.List[PSObject]
+    for ($i = 1; $i -lt $lines.Count; $i++) {
+        $cols = $lines[$i] -split "`t"
+        if ($cols.Count -ge 3) {
+            $partRecordId = [int]$cols[0]
+            $pType = [byte]$cols[1]
+            $pDataJson = $cols[2]
+            
+            $dataArr = @()
+            try {
+                $dataArr = ConvertFrom-Json $pDataJson
+            } catch {
+                $matchesAll = [regex]::Matches($pDataJson, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
+                foreach ($m in $matchesAll) {
+                    $dataArr += ,@([int]$m.Groups[1].Value, [int]$m.Groups[2].Value, [int]$m.Groups[3].Value)
+                }
+            }
+            
+            $partsList.Add([pscustomobject]@{
+                Id = $partRecordId
+                Type = $pType
+                Data = $dataArr
+            })
+        }
+    }
+    
+    $outDir = [System.IO.Path]::GetDirectoryName($OutputPath)
+    if (-not (Test-Path -LiteralPath $outDir)) {
+        New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+    }
+    
+    $fileStream = [System.IO.File]::Create($OutputPath)
+    try {
+        $writer = New-Object System.IO.BinaryWriter($fileStream)
+        try {
+            $count = [int]$partsList.Count
+            $writer.Write([byte](($count -shr 8) -band 0xFF))
+            $writer.Write([byte]($count -band 0xFF))
+            
+            foreach ($p in $partsList) {
+                $writer.Write([byte]$p.Type)
+                
+                foreach ($pd in $p.Data) {
+                    $iconId = [int]$pd[0]
+                    $dx = [int]$pd[1]
+                    $dy = [int]$pd[2]
+                    
+                    $writer.Write([byte](($iconId -shr 8) -band 0xFF))
+                    $writer.Write([byte]($iconId -band 0xFF))
+                    
+                    $writer.Write([byte]($dx -band 0xFF))
+                    $writer.Write([byte]($dy -band 0xFF))
+                }
+            }
+            $writer.Flush()
+        }
+        finally {
+            $writer.Dispose()
+        }
+    }
+    finally {
+        $fileStream.Dispose()
+    }
+}
+
+function List-NpcCreator {
+    $rawNpcs = Invoke-MySql "SELECT id, `NAME`, head, body, leg, avatar FROM npc_template ORDER BY id ASC;"
+    $npcLines = @($rawNpcs -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    
+    $rawMaps = Invoke-MySql "SELECT id, `NAME`, npcs FROM map_template WHERE npcs IS NOT NULL AND npcs != '' AND npcs != '[]';"
+    $mapLines = @($rawMaps -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    
+    $npcMapDict = @{}
+    for ($m = 1; $m -lt $mapLines.Count; $m++) {
+        $cols = $mapLines[$m] -split "`t"
+        if ($cols.Count -ge 3) {
+            $mapId = $cols[0]
+            $mapName = $cols[1]
+            $npcsJson = $cols[2]
+            
+            $npcEntries = @()
+            try {
+                $npcEntries = ConvertFrom-Json $npcsJson
+            } catch {
+                $matchesAll = [regex]::Matches($npcsJson, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
+                foreach ($ma in $matchesAll) {
+                    $npcEntries += ,@([int]$ma.Groups[1].Value, [int]$ma.Groups[2].Value, [int]$ma.Groups[3].Value)
+                }
+            }
+            
+            if ($null -ne $npcEntries) {
+                foreach ($entry in $npcEntries) {
+                    if ($entry.Count -ge 3) {
+                        $nId = [string]$entry[0]
+                        if (-not $npcMapDict.ContainsKey($nId)) {
+                            $npcMapDict[$nId] = @{
+                                MapId = $mapId
+                                MapName = $mapName
+                                X = $entry[1]
+                                Y = $entry[2]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    $rawShops = Invoke-MySql "SELECT npc_id, COUNT(id) FROM shop GROUP BY npc_id;"
+    $shopLines = @($rawShops -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $shopSet = @{}
+    for ($s = 1; $s -lt $shopLines.Count; $s++) {
+        $cols = $shopLines[$s] -split "`t"
+        if ($cols.Count -ge 1) {
+            $shopSet[$cols[0]] = $true
+        }
+    }
+    
+    $sb = New-Object System.Text.StringBuilder
+    $sb.AppendLine("id`tname`thead`tbody`tleg`tavatar`tmap_id`tmap_name`tx`ty`thas_shop") | Out-Null
+    
+    for ($i = 1; $i -lt $npcLines.Count; $i++) {
+        $cols = $npcLines[$i] -split "`t"
+        if ($cols.Count -ge 6) {
+            $nId = $cols[0]
+            $nName = $cols[1]
+            $nHead = $cols[2]
+            $nBody = $cols[3]
+            $nLeg = $cols[4]
+            $nAvatar = $cols[5]
+            
+            $mapId = ""
+            $mapName = ""
+            $posX = ""
+            $posY = ""
+            if ($npcMapDict.ContainsKey($nId)) {
+                $mapId = $npcMapDict[$nId].MapId
+                $mapName = $npcMapDict[$nId].MapName
+                $posX = $npcMapDict[$nId].X
+                $posY = $npcMapDict[$nId].Y
+            }
+            
+            $hasShop = if ($shopSet.ContainsKey($nId)) { "1" } else { "0" }
+            
+            $sb.AppendLine("$nId`t$nName`t$nHead`t$nBody`t$nLeg`t$nAvatar`t$mapId`t$mapName`t$posX`t$posY`t$hasShop") | Out-Null
+        }
+    }
+    
+    return $sb.ToString().TrimEnd("`r", "`n")
+}
+
+function Get-NpcCreatorDetail {
+    $npcIdNum = SqlInt $Id -1
+    if ($npcIdNum -lt 0) { throw "NPC ID không hợp lệ: $Id" }
+    
+    $rawNpc = Invoke-MySql "SELECT id, `NAME`, head, body, leg, avatar FROM npc_template WHERE id=$npcIdNum LIMIT 1;"
+    $lines = @($rawNpc -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { throw "Không tìm thấy NPC ID $npcIdNum" }
+    
+    $cols = $lines[1] -split "`t"
+    $nId = $cols[0]
+    $nName = $cols[1]
+    $headPartId = $cols[2]
+    $bodyPartId = $cols[3]
+    $legPartId = $cols[4]
+    $avatarIconId = $cols[5]
+    
+    $headPartIdNum = SqlInt $headPartId -1
+    $bodyPartIdNum = SqlInt $bodyPartId -1
+    $legPartIdNum = SqlInt $legPartId -1
+    
+    $partIds = @($headPartIdNum, $bodyPartIdNum, $legPartIdNum) | Where-Object { $_ -ge 0 }
+    $rawParts = if ($partIds.Count -gt 0) {
+        Invoke-MySql ("SELECT id, `TYPE`, `DATA` FROM part WHERE id IN (" + ($partIds -join ',') + ");")
+    } else { "" }
+    
+    $pLines = @($rawParts -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    
+    $headIcon = "0"; $headDx = "0"; $headDy = "0"
+    $bodyIcon = "0"; $bodyDx = "0"; $bodyDy = "0"
+    $legIcon = "0"; $legDx = "0"; $legDy = "0"
+    
+    for ($p = 1; $p -lt $pLines.Count; $p++) {
+        $pCols = $pLines[$p] -split "`t"
+        if ($pCols.Count -ge 3) {
+            $partRecordId = $pCols[0]
+            $pType = [int]$pCols[1]
+            $pData = $pCols[2]
+            
+            $arr = @()
+            try { $arr = ConvertFrom-Json $pData } catch {}
+            if ($pType -eq 0) {
+                if ($arr.Count -gt 0 -and $arr[0].Count -ge 3) {
+                    $headIcon = [string]$arr[0][0]
+                    $headDx = [string]$arr[0][1]
+                    $headDy = [string]$arr[0][2]
+                }
+            } elseif ($pType -eq 1) {
+                $targetSlot = if ($arr.Count -gt 1) { $arr[1] } elseif ($arr.Count -gt 0) { $arr[0] } else { $null }
+                if ($null -ne $targetSlot -and $targetSlot.Count -ge 3) {
+                    $bodyIcon = [string]$targetSlot[0]
+                    $bodyDx = [string]$targetSlot[1]
+                    $bodyDy = [string]$targetSlot[2]
+                }
+            } elseif ($pType -eq 2) {
+                $targetSlot = if ($arr.Count -gt 1) { $arr[1] } elseif ($arr.Count -gt 0) { $arr[0] } else { $null }
+                if ($null -ne $targetSlot -and $targetSlot.Count -ge 3) {
+                    $legIcon = [string]$targetSlot[0]
+                    $legDx = [string]$targetSlot[1]
+                    $legDy = [string]$targetSlot[2]
+                }
+            }
+        }
+    }
+    
+    $rawMaps = Invoke-MySql "SELECT id, `NAME`, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%';"
+    $mapLines = @($rawMaps -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $mapId = ""; $posX = "0"; $posY = "0"
+    for ($m = 1; $m -lt $mapLines.Count; $m++) {
+        $mCols = $mapLines[$m] -split "`t"
+        if ($mCols.Count -ge 3) {
+            $mId = $mCols[0]
+            $npcsJson = $mCols[2]
+            $npcEntries = @()
+            try { $npcEntries = ConvertFrom-Json $npcsJson } catch {}
+            foreach ($entry in $npcEntries) {
+                if ($entry.Count -ge 3 -and [int]$entry[0] -eq $npcIdNum) {
+                    $mapId = $mId
+                    $posX = [string]$entry[1]
+                    $posY = [string]$entry[2]
+                    break
+                }
+            }
+            if ($mapId -ne "") { break }
+        }
+    }
+    
+    $rawShop = Invoke-MySql "SELECT id, tag_name, type_shop FROM shop WHERE npc_id=$npcIdNum LIMIT 1;"
+    $sLines = @($rawShop -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $hasShop = "0"; $shopTag = "SHOP_MUA_BAN"; $shopType = "0"
+    if ($sLines.Count -ge 2) {
+        $sCols = $sLines[1] -split "`t"
+        $hasShop = "1"
+        $shopTag = $sCols[1]
+        $shopType = $sCols[2]
+    }
+    
+    $hSize = Get-IconImageSize ([int]$headIcon)
+    $bSize = Get-IconImageSize ([int]$bodyIcon)
+    $lSize = Get-IconImageSize ([int]$legIcon)
+    $aSize = Get-IconImageSize ([int]$avatarIconId)
+
+    $isFullBody = ($headIcon -eq "25001" -and $legIcon -eq "25001")
+    $mode = if ($isFullBody) { "fullbody" } else { "multipart" }
+    $fbIcon = if ($isFullBody) { $bodyIcon } else { "0" }
+    $fbSize = if ($isFullBody) { $bSize } else { @{ Width = 0; Height = 0 } }
+    $fbDx = if ($isFullBody) { [string]((SqlInt $bodyDx 0) - [int][Math]::Round(9.0 - ($bSize.Width / 8.0))) } else { "0" }
+    $fbDy = if ($isFullBody) { [string]((SqlInt $bodyDy 0) - [int][Math]::Round(20.0 - ($bSize.Height / 8.0))) } else { "0" }
+
+    $obj = [pscustomobject]@{
+        Id = $nId
+        Name = $nName
+        Mode = $mode
+        HeadPartId = $headPartId
+        BodyPartId = $bodyPartId
+        LegPartId = $legPartId
+        AvatarIconId = $avatarIconId
+        HeadIconId = $headIcon
+        HeadDx = $headDx
+        HeadDy = $headDy
+        HeadW = $hSize.Width
+        HeadH = $hSize.Height
+        BodyIconId = $bodyIcon
+        BodyDx = $bodyDx
+        BodyDy = $bodyDy
+        BodyW = $bSize.Width
+        BodyH = $bSize.Height
+        LegIconId = $legIcon
+        LegDx = $legDx
+        LegDy = $legDy
+        LegW = $lSize.Width
+        LegH = $lSize.Height
+        FullBodyIconId = $fbIcon
+        FullBodyW = $fbSize.Width
+        FullBodyH = $fbSize.Height
+        FullBodyDx = $fbDx
+        FullBodyDy = $fbDy
+        AvatarW = $aSize.Width
+        AvatarH = $aSize.Height
+        MapId = $mapId
+        SpawnX = $posX
+        SpawnY = $posY
+        HasShop = $hasShop
+        ShopTagName = $shopTag
+        ShopType = $shopType
+    }
+    
+    return (ConvertTo-Json $obj -Compress)
+}
+
+function Parse-MapNpcJson {
+    param([string]$JsonText)
+    $list = New-Object System.Collections.Generic.List[PSObject]
+    if ([string]::IsNullOrWhiteSpace($JsonText)) { return $list }
+    $matchesAll = [regex]::Matches($JsonText, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
+    foreach ($m in $matchesAll) {
+        $list.Add(@([int]$m.Groups[1].Value, [int]$m.Groups[2].Value, [int]$m.Groups[3].Value))
+    }
+    return $list
+}
+
+function Serialize-MapNpcJson {
+    param($NpcList)
+    if ($null -eq $NpcList -or $NpcList.Count -eq 0) { return "[]" }
+    $items = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in $NpcList) {
+        $items.Add("[" + [string]$entry[0] + "," + [string]$entry[1] + "," + [string]$entry[2] + "]")
+    }
+    return "[" + ($items -join ",") + "]"
+}
+
+function Save-NpcCreator {
+    $Name = $Name.Trim()
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        throw "Tên NPC không được để trống."
+    }
+    
+    $npcId = SqlInt $Id -1
+    $isCreateNewNpc = ($npcId -lt 0)
+    if ($isCreateNewNpc) {
+        $maxNpcId = Get-MySqlScalar "SELECT COALESCE(MAX(id), -1) FROM npc_template;" "-1"
+        $npcId = [int]$maxNpcId + 1
+    }
+    
+    $maxIconId = Get-MaxIconId
+    $nextIconId = $maxIconId + 1
+    
+    $aW = SqlInt $AvatarW 0
+    $aH = SqlInt $AvatarH 0
+    $avatarIcon = SqlInt $AvatarIconId 0
+    
+    $isFullBodyMode = ($Mode -eq "fullbody")
+    
+    if ($isFullBodyMode) {
+        $fbW = SqlInt $FullBodyW 0
+        $fbH = SqlInt $FullBodyH 0
+        if ($fbH -le 0) { $fbH = 180 }
+        
+        $fbIcon = SqlInt $FullBodyIconId 0
+        if (-not [string]::IsNullOrWhiteSpace($FullBodyPath) -and (Test-Path -LiteralPath $FullBodyPath)) {
+            if ($fbIcon -le 0) { $fbIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $FullBodyPath -IconId $fbIcon -CustomW $fbW -CustomH $fbH | Out-Null
+        } elseif ($fbIcon -gt 0) {
+            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $fbIcon)
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $fbIcon)
+            }
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root "data\icon\orig\25003.png"
+            }
+            if (Test-Path -LiteralPath $srcFile) {
+                Process-NpcIconUpload -SourcePath $srcFile -IconId $fbIcon -CustomW $fbW -CustomH $fbH | Out-Null
+            }
+        }
+        
+        if (-not [string]::IsNullOrWhiteSpace($AvatarPath) -and (Test-Path -LiteralPath $AvatarPath)) {
+            if ($avatarIcon -le 0) { $avatarIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
+        } elseif ($avatarIcon -le 0) {
+            $avatarIcon = $fbIcon
+        }
+        
+        # Căn chỉnh tâm ngang ở cx = 0: bDx = 9 - (fbW / 8) + FullBodyDx (9 là nửa chiều rộng body NRO gốc 18px ở x1)
+        # Điểm chân chạm đất ở cy = 0: bDy = 20 - (fbH / 8) + FullBodyDy
+        $bDx = [int][Math]::Round(9.0 - ($fbW / 8.0)) + (SqlInt $FullBodyDx 0)
+        $bDy = [int][Math]::Round(20.0 - ($fbH / 8.0)) + (SqlInt $FullBodyDy 0)
+        
+        $headDataJson = "[[25001,0,0],[0,0,0],[0,0,0]]"
+        $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $fbIcon, $bDx, $bDy
+        $legDataJson = "[[0,0,0],[25001,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]"
+    } else {
+        $hW = SqlInt $HeadW 0
+        $hH = SqlInt $HeadH 0
+        $bW = SqlInt $BodyW 0
+        $bH = SqlInt $BodyH 0
+        $lW = SqlInt $LegW 0
+        $lH = SqlInt $LegH 0
+
+        $headIcon = SqlInt $HeadIconId 0
+        if (-not [string]::IsNullOrWhiteSpace($HeadPath) -and (Test-Path -LiteralPath $HeadPath)) {
+            if ($headIcon -le 0) { $headIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $HeadPath -IconId $headIcon -CustomW $hW -CustomH $hH | Out-Null
+        } elseif ($headIcon -gt 0) {
+            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $headIcon)
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $headIcon)
+            }
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root "data\icon\orig\25002.png"
+            }
+            if (Test-Path -LiteralPath $srcFile) {
+                Process-NpcIconUpload -SourcePath $srcFile -IconId $headIcon -CustomW $hW -CustomH $hH | Out-Null
+            }
+        }
+        
+        $bodyIcon = SqlInt $BodyIconId 0
+        if (-not [string]::IsNullOrWhiteSpace($BodyPath) -and (Test-Path -LiteralPath $BodyPath)) {
+            if ($bodyIcon -le 0) { $bodyIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $BodyPath -IconId $bodyIcon -CustomW $bW -CustomH $bH | Out-Null
+        } elseif ($bodyIcon -gt 0) {
+            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $bodyIcon)
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $bodyIcon)
+            }
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root "data\icon\orig\25003.png"
+            }
+            if (Test-Path -LiteralPath $srcFile) {
+                Process-NpcIconUpload -SourcePath $srcFile -IconId $bodyIcon -CustomW $bW -CustomH $bH | Out-Null
+            }
+        }
+        
+        $legIcon = SqlInt $LegIconId 0
+        if (-not [string]::IsNullOrWhiteSpace($LegPath) -and (Test-Path -LiteralPath $LegPath)) {
+            if ($legIcon -le 0) { $legIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $LegPath -IconId $legIcon -CustomW $lW -CustomH $lH | Out-Null
+        } elseif ($legIcon -gt 0) {
+            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $legIcon)
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $legIcon)
+            }
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root "data\icon\orig\25004.png"
+            }
+            if (Test-Path -LiteralPath $srcFile) {
+                Process-NpcIconUpload -SourcePath $srcFile -IconId $legIcon -CustomW $lW -CustomH $lH | Out-Null
+            }
+        }
+        
+        if (-not [string]::IsNullOrWhiteSpace($AvatarPath) -and (Test-Path -LiteralPath $AvatarPath)) {
+            if ($avatarIcon -le 0) { $avatarIcon = $nextIconId++ }
+            Process-NpcIconUpload -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
+        } elseif ($avatarIcon -gt 0) {
+            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $avatarIcon)
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $avatarIcon)
+            }
+            if (-not (Test-Path -LiteralPath $srcFile)) {
+                $srcFile = Join-Path $Root "data\icon\orig\25005.png"
+            }
+            if (Test-Path -LiteralPath $srcFile) {
+                Process-NpcIconUpload -SourcePath $srcFile -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
+            }
+        } elseif ($avatarIcon -le 0) {
+            $avatarIcon = $headIcon
+        }
+        
+        $hDx = SqlInt $HeadDx 0
+        $hDy = SqlInt $HeadDy 0
+        $bDx = SqlInt $BodyDx 0
+        $bDy = SqlInt $BodyDy 0
+        $lDx = SqlInt $LegDx 0
+        $lDy = SqlInt $LegDy 0
+        
+        $headDataJson = "[[{0},{1},{2}],[0,0,0],[0,0,0]]" -f $headIcon, $hDx, $hDy
+        $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $bodyIcon, $bDx, $bDy
+        $legDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $legIcon, $lDx, $lDy
+    }
+    
+    $maxPartId = [int](Get-MySqlScalar "SELECT COALESCE(MAX(id), -1) FROM part;" "-1")
+    $nextPartId = $maxPartId + 1
+    
+    $headPart = SqlInt $HeadPartId -1
+    $bodyPart = SqlInt $BodyPartId -1
+    $legPart = SqlInt $LegPartId -1
+    
+    $sqlQueries = New-Object System.Collections.Generic.List[string]
+    $sqlQueries.Add("START TRANSACTION;")
+    
+    if ($headPart -ge 0 -and (Get-MySqlScalar "SELECT COUNT(*) FROM part WHERE id=$headPart;" "0") -eq "1") {
+        $sqlQueries.Add("UPDATE part SET `TYPE`=0, `DATA`='$headDataJson' WHERE id=$headPart;")
+    } else {
+        $headPart = $nextPartId++
+        $sqlQueries.Add("INSERT INTO part (id, `TYPE`, `DATA`) VALUES ($headPart, 0, '$headDataJson');")
+    }
+    
+    if ($bodyPart -ge 0 -and (Get-MySqlScalar "SELECT COUNT(*) FROM part WHERE id=$bodyPart;" "0") -eq "1") {
+        $sqlQueries.Add("UPDATE part SET `TYPE`=1, `DATA`='$bodyDataJson' WHERE id=$bodyPart;")
+    } else {
+        $bodyPart = $nextPartId++
+        $sqlQueries.Add("INSERT INTO part (id, `TYPE`, `DATA`) VALUES ($bodyPart, 1, '$bodyDataJson');")
+    }
+    
+    if ($legPart -ge 0 -and (Get-MySqlScalar "SELECT COUNT(*) FROM part WHERE id=$legPart;" "0") -eq "1") {
+        $sqlQueries.Add("UPDATE part SET `TYPE`=2, `DATA`='$legDataJson' WHERE id=$legPart;")
+    } else {
+        $legPart = $nextPartId++
+        $sqlQueries.Add("INSERT INTO part (id, `TYPE`, `DATA`) VALUES ($legPart, 2, '$legDataJson');")
+    }
+    
+    if ($isCreateNewNpc -or (Get-MySqlScalar "SELECT COUNT(*) FROM npc_template WHERE id=$npcId;" "0") -eq "0") {
+        $sqlQueries.Add("INSERT INTO npc_template (id, `NAME`, head, body, leg, avatar) VALUES ($npcId, $(SqlString $Name), $headPart, $bodyPart, $legPart, $avatarIcon);")
+    } else {
+        $sqlQueries.Add("UPDATE npc_template SET `NAME`=$(SqlString $Name), head=$headPart, body=$bodyPart, leg=$legPart, avatar=$avatarIcon WHERE id=$npcId;")
+    }
+    
+    if ($HasShop -eq "1") {
+        $shopTag = if ([string]::IsNullOrWhiteSpace($TagName)) { "SHOP_MUA_BAN" } else { $TagName }
+        $sCount = Get-MySqlScalar "SELECT COUNT(*) FROM shop WHERE npc_id=$npcId;" "0"
+        if ($sCount -eq "0") {
+            $sqlQueries.Add("INSERT INTO shop (npc_id, tag_name, type_shop) VALUES ($npcId, $(SqlString $shopTag), $(SqlInt $TypeShop 0));")
+        }
+    }
+    
+    $sqlQueries.Add("COMMIT;")
+    Invoke-MySql ($sqlQueries -join [Environment]::NewLine) | Out-Null
+    
+    Export-BinaryPartData (Join-Path $Root "data\update_data\part")
+    
+    $mapIdNum = SqlInt $MapId -1
+    $posX = SqlInt $SpawnX 0
+    $posY = SqlInt $SpawnY 0
+    
+    $allMapsWithNpc = Invoke-MySql "SELECT id, npcs FROM map_template WHERE npcs LIKE '%[$npcId,%' OR npcs LIKE '%[ $npcId,%';"
+    $mWithLines = @($allMapsWithNpc -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    for ($mw = 1; $mw -lt $mWithLines.Count; $mw++) {
+        $mwCols = $mWithLines[$mw] -split "`t"
+        if ($mwCols.Count -ge 2) {
+            $targetMId = $mwCols[0]
+            $npcsJson = $mwCols[1]
+            $npcEntries = Parse-MapNpcJson $npcsJson
+            $filtered = New-Object System.Collections.Generic.List[PSObject]
+            foreach ($ne in $npcEntries) {
+                if ($ne[0] -ne $npcId) { $filtered.Add($ne) }
+            }
+            $newNpcsJson = Serialize-MapNpcJson $filtered
+            Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $newNpcsJson) WHERE id=$targetMId;" | Out-Null
+        }
+    }
+    
+    if ($mapIdNum -ge 0) {
+        $currentMapNpcs = Get-MySqlScalar "SELECT npcs FROM map_template WHERE id=$mapIdNum;" "[]"
+        $rawEntries = Parse-MapNpcJson $currentMapNpcs
+        $mapNpcEntries = New-Object System.Collections.Generic.List[PSObject]
+        foreach ($entry in $rawEntries) {
+            $mapNpcEntries.Add($entry)
+        }
+        $mapNpcEntries.Add(@($npcId, $posX, $posY))
+        $updatedJson = Serialize-MapNpcJson $mapNpcEntries
+        Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $updatedJson) WHERE id=$mapIdNum;" | Out-Null
+    }
+    
+    return "OK`tĐã lưu NPC '$Name' (ID: $npcId) thành công! Các Part và Icon x1-x4 đã được tạo và build tự động."
+}
+
+function Delete-NpcCreator {
+    $npcIdNum = SqlInt $Id -1
+    if ($npcIdNum -lt 0) { throw "NPC ID không hợp lệ." }
+    
+    $allMapsWithNpc = Invoke-MySql "SELECT id, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%';"
+    $mWithLines = @($allMapsWithNpc -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    for ($mw = 1; $mw -lt $mWithLines.Count; $mw++) {
+        $mwCols = $mWithLines[$mw] -split "`t"
+        if ($mwCols.Count -ge 2) {
+            $targetMId = $mwCols[0]
+            $npcsJson = $mwCols[1]
+            $npcEntries = Parse-MapNpcJson $npcsJson
+            $filtered = New-Object System.Collections.Generic.List[PSObject]
+            foreach ($ne in $npcEntries) {
+                if ($ne[0] -ne $npcIdNum) { $filtered.Add($ne) }
+            }
+            $newNpcsJson = Serialize-MapNpcJson $filtered
+            Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $newNpcsJson) WHERE id=$targetMId;" | Out-Null
+        }
+    }
+    
+    Invoke-MySql "DELETE FROM shop WHERE npc_id=$npcIdNum;" | Out-Null
+    Invoke-MySql "DELETE FROM npc_template WHERE id=$npcIdNum;" | Out-Null
+    
+    return "OK`tĐã xóa NPC ID $npcIdNum và gỡ khỏi Map."
+}
+
+function List-MapCatalog {
+    Invoke-MySql "SELECT id, `NAME`, planet_id FROM map_template ORDER BY id ASC;"
+}
+
 function Save-Shop {
     $shopIdNum = SqlInt $ShopId
     if ($shopIdNum -gt 0) {
@@ -3687,6 +4440,11 @@ try {
         "getplayerdetail" { Get-PlayerDetail }
         "saveplayercore" { Save-PlayerCore }
         "rescueplayer" { Rescue-Player }
+        "listnpccreator" { List-NpcCreator }
+        "getnpccreator" { Get-NpcCreatorDetail }
+        "savenpccreator" { Save-NpcCreator }
+        "deletenpccreator" { Delete-NpcCreator }
+        "listmapcatalog" { List-MapCatalog }
         "setevent" {
             $EventValue = Normalize-EventValue $EventValue
             Set-ConfigValue -Key "server.event" -NewValue $EventValue
