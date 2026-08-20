@@ -1,2 +1,0 @@
-﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
-835	7474	2	120	0	8	[{"head":1, "body":1, "leg":1, "bag":-1}]	Thẻ Phi long	Dùng tốc độ cực nhanh để tiếp cận và hạ gục mục tiêu, Phi long cũng có sở thích hơi lạ là khi bay luôn mở to miệng để đón gió	[{"id":81,"param":2,"activeCard":0},{"id":81,"param":3,"activeCard":1},{"id":81,"param":5,"activeCard":2}]	-1	0	-1	[]

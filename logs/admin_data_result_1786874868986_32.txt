@@ -1,2 +1,0 @@
-﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
-831	7470	1	120	0	4	[{"head":1, "body":1, "leg":1, "bag":-1}]	Thẻ Khủng long mẹ	Hai chi trước của Khủng long rất ngắn nên chúng không thể cầm thức ăn được	[{"id": 6, "param": 10000, "activeCard": 0},{"id": 6, "param": 20000, "activeCard": 1},{"id": 6, "param": 30000, "activeCard": 2}]	-1	0	-1	[]

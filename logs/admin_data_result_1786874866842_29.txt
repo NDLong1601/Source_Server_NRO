@@ -1,2 +1,0 @@
-﻿id	iconId	rank	max	type	mob_id	body_json	name	info	options_json	require	require_level	aura_id	milestones_json
-834	7473	2	120	0	7	[{"head":1, "body":1, "leg":1, "bag":-1}]	Thẻ Thằn lằn bay	Thằn lằn bay dùng cái mỏ dài và cứng để tấn công kẻ thù, đôi khi chúng vẫn dùng để gõ hạt óc chó ăn	[{"id":80,"param":2,"activeCard":0},{"id":80,"param":3,"activeCard":1},{"id":80,"param":5,"activeCard":2}]	-1	0	-1	[]
