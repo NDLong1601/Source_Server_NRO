@@ -143,6 +143,7 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [Console]::OutputEncoding = $Utf8NoBom
 $OutputEncoding = $Utf8NoBom
 Add-Type -AssemblyName System.Drawing -ErrorAction SilentlyContinue
+Add-Type -AssemblyName System.Runtime.Serialization -ErrorAction SilentlyContinue
 
 function Decode-InputParam {
     param([string]$Value)
@@ -3049,7 +3050,22 @@ function ConvertTo-MapCanonicalJson {
     param([object]$Value)
     $normalized = $Value
     if ($Value -is [string]) {
-        try { $normalized = $Value | ConvertFrom-Json }
+        try {
+            # ConvertFrom-Json in Windows PowerShell 5.1 unwraps a top-level
+            # array when it contains exactly one nested array. That made valid
+            # values such as [[112,59,360]] look different after publish.
+            # DataContractJsonSerializer preserves the outer array on both
+            # Windows PowerShell 5.1 and PowerShell 7.
+            $jsonBytes = [Text.Encoding]::UTF8.GetBytes($Value)
+            $jsonStream = New-Object IO.MemoryStream(,$jsonBytes)
+            try {
+                $serializer = New-Object System.Runtime.Serialization.Json.DataContractJsonSerializer([object])
+                $normalized = $serializer.ReadObject($jsonStream)
+            }
+            finally {
+                $jsonStream.Dispose()
+            }
+        }
         catch { $normalized = $Value }
     }
     # Windows PowerShell 5.1 serializes an Object[] produced by

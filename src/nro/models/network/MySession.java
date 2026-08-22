@@ -43,7 +43,7 @@ public class MySession extends Session {
     public byte zoomLevel;
     private volatile boolean clientInfoReady;
     private boolean assetVersionsSent;
-    private boolean infinityCastleBackgroundSent;
+    private boolean infinityCastleAssetsSent;
 
     public long lastTimeLogout;
     public boolean joinedGame;
@@ -122,11 +122,11 @@ public class MySession extends Session {
         return true;
     }
 
-    public synchronized boolean markInfinityCastleBackgroundSent() {
-        if (!this.isAssetReady() || this.infinityCastleBackgroundSent) {
+    public synchronized boolean markInfinityCastleAssetsSent() {
+        if (!this.isAssetReady() || this.infinityCastleAssetsSent) {
             return false;
         }
-        this.infinityCastleBackgroundSent = true;
+        this.infinityCastleAssetsSent = true;
         return true;
     }
 

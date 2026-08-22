@@ -617,7 +617,7 @@ public class Zone {
         Message msg;
         try {
             if (this.map.mapId >= 187 && this.map.mapId <= 190) {
-                DataGame.preloadInfinityCastleBackground(pl.getSession());
+                DataGame.preloadInfinityCastleAssets(pl.getSession());
             }
             msg = new Message(-24);
             msg.writer().writeByte(this.map.mapId);

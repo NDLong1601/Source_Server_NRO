@@ -744,7 +744,7 @@ public final class Manager {
             Logger.success(Logger.RED + "Successfully loaded Consign Item (" + ConsignShopManager.gI().listItem.size() + ")\n");
 
             //load mob template
-            ps = ConnectionDatabase.prepareStatement("select * from mob_template");
+            ps = ConnectionDatabase.prepareStatement("select * from mob_template order by id asc");
             rs = ps.executeQuery();
             while (rs.next()) {
                 MobTemplate mobTemp = new MobTemplate();

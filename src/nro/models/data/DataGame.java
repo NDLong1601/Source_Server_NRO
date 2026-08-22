@@ -36,8 +36,12 @@ import nro.models.player_system.Template.BgItem;
 public class DataGame {
 
     private static final byte DEFAULT_MAP_VERSION = 10;
+    private static final int MAX_SIGNED_TEMPLATE_COUNT = 127;
+    private static final int[] INFINITY_CASTLE_MOB_IDS = {
+        110, 111, 119, 120, 121, 122, 123, 124, 125, 126
+    };
 
-    public static byte vsData = 18;
+    public static byte vsData = 21;
     public static byte vsMap = loadMapVersion();
     public static byte vsSkill = 1;
     // 21 invalidates item-template cache written by the multi-append build.
@@ -112,6 +116,23 @@ public class DataGame {
     public static void updateMap(MySession session) {
         Message msg;
         try {
+            int mobTemplateCount = Manager.MOB_TEMPLATES.size();
+            if (mobTemplateCount > MAX_SIGNED_TEMPLATE_COUNT) {
+                throw new IllegalStateException(
+                        "updateMap chỉ hỗ trợ tối đa " + MAX_SIGNED_TEMPLATE_COUNT
+                                + " mob template; hiện có " + mobTemplateCount
+                                + ". Client đọc count bằng byte có dấu và sẽ bỏ dở dữ liệu map."
+                );
+            }
+            for (int id = 0; id < mobTemplateCount; id++) {
+                MobTemplate temp = Manager.MOB_TEMPLATES.get(id);
+                if (temp.id != id) {
+                    throw new IllegalStateException(
+                            "mob_template phải liên tục từ ID 0: vị trí " + id
+                                    + " đang chứa ID " + temp.id
+                    );
+                }
+            }
             msg = Service.gI().messageNotMap((byte) 6);
             msg.writer().writeByte(vsMap);
             String[] mapNames = buildMapNamesById(Manager.MAP_TEMPLATES);
@@ -143,7 +164,7 @@ public class DataGame {
                     msg.writer().writeByte(0);
                 }
             }
-            msg.writer().writeByte(Manager.MOB_TEMPLATES.size());
+            msg.writer().writeByte(mobTemplateCount);
             for (MobTemplate temp : Manager.MOB_TEMPLATES) {
                 msg.writer().writeByte(temp.type);
                 msg.writer().writeUTF(temp.name);
@@ -367,13 +388,19 @@ public class DataGame {
         }
     }
 
-    public static void preloadInfinityCastleBackground(MySession session) {
-        if (session == null || !session.markInfinityCastleBackgroundSent()) {
+    public static void preloadInfinityCastleAssets(MySession session) {
+        if (session == null || !session.markInfinityCastleAssetsSent()) {
             return;
         }
-        // Both halves are shared by maps 187..190. Sending them before map-info
-        // keeps the client on the current screen until the real background is
-        // available instead of briefly rendering the default Earth backdrop.
+        // Some clients do not request every custom mob after their cached map
+        // data changes. Proactively replace all Infinity Castle MobTemplate.data
+        // entries so a missing request cannot leave only the default shadow.
+        for (int mobId : INFINITY_CASTLE_MOB_IDS) {
+            requestMobTemplate(session, mobId);
+        }
+
+        // Both background halves are shared by maps 187..190. Send them before
+        // map-info so the client never falls back to the default Earth backdrop.
         sendItemBGTemplate(session, 516);
         sendItemBGTemplate(session, 565);
     }
@@ -529,12 +556,17 @@ public class DataGame {
 //                return;
 //            }
             final byte[] mob = FileIO.readFile("data/mob/x" + session.zoomLevel + "/" + id);
+            if (mob == null) {
+                Logger.errorln("[MobAsset] Missing mob asset ID " + id + " x" + session.zoomLevel);
+                return;
+            }
             msg = new Message(11);
             msg.writer().writeByte(id);
             msg.writer().write(mob);
             session.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
+            Logger.logException(DataGame.class, e, "Cannot send mob asset ID " + id);
         }
     }
 

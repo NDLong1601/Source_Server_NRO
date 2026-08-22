@@ -1,0 +1,5 @@
+interface:
+  display_name: "NRO Create Mob"
+  short_description: "Create and validate custom Teamobi NRO mobs"
+  default_prompt: "Use $nro-create-mob to create a complete new NRO mob from my action images and deploy it safely."
+

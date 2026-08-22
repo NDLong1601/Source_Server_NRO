@@ -1,0 +1,18 @@
+{
+  "mobId": 119,
+  "cell": {
+    "width": 56,
+    "height": 56
+  },
+  "anchor": {
+    "dx": -28,
+    "dy": -54
+  },
+  "poses": {
+    "stand": "source/stand-a.png",
+    "walk": "source/stand-b.png",
+    "attack": "source/attack-web.png",
+    "hurt": "source/hurt.png",
+    "die": "source/die.png"
+  }
+}

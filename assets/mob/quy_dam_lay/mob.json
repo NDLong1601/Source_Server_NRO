@@ -1,0 +1,15 @@
+{
+  "mobId": 123,
+  "cell": { "width": 56, "height": 56 },
+  "anchor": { "dx": -28, "dy": -54 },
+  "poses": {
+    "stand": "source/stand.png",
+    "walk": "source/walk.png",
+    "attack": "source/attack.png",
+    "hurt": "source/hurt.png",
+    "die": {
+      "source": "source/die.png",
+      "crop": { "x": 0, "y": 0, "width": 512, "height": 360 }
+    }
+  }
+}
