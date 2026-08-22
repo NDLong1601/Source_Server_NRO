@@ -1,0 +1,21 @@
+# Java/NetBeans generated output
+/build/
+/dist/
+*.class
+
+# Runtime logs and transient server state
+/logs/
+
+# Server JAR backups and staging files
+/20.jar.bak_*
+/20.jar.pending
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Temporary and operating-system files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

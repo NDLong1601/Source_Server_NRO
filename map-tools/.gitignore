@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+
+# Compiler output, previews and diagnostics are reproducible.
+output/
+
+# Project source and release snapshots are local authoring state.
+projects/*
+!projects/.gitkeep
+releases/*
+!releases/.gitkeep

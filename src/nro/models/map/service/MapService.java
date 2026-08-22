@@ -12,6 +12,7 @@ import nro.models.services.Service;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,19 +72,24 @@ public class MapService {
     //tilemap for paint
     public int[][] readTileMap(int mapId) {
         int[][] tileMap = null;
-        try {
-            DataInputStream dis = new DataInputStream(new FileInputStream("data/map/tile_map_data/" + mapId));
-            dis.readByte();
-            int w = dis.readByte();
-            int h = dis.readByte();
+        File tileMapFile = new File("data/map/tile_map_data/" + mapId);
+        if (!tileMapFile.isFile()) {
+            return null;
+        }
+        try (DataInputStream dis = new DataInputStream(new FileInputStream(tileMapFile))) {
+            int w = dis.readUnsignedByte();
+            int h = dis.readUnsignedByte();
+            if (w < 1 || w > 127 || h < 1 || h > 127) {
+                throw new IllegalStateException("Kích thước tile map không hợp lệ: " + w + "x" + h);
+            }
             tileMap = new int[h][w];
             for (int i = 0; i < tileMap.length; i++) {
                 for (int j = 0; j < tileMap[i].length; j++) {
                     tileMap[i][j] = dis.readByte();
                 }
             }
-            dis.close();
         } catch (Exception e) {
+            Logger.warningln("Invalid tile map ID " + mapId + ": " + e.getMessage());
         }
         return tileMap;
     }

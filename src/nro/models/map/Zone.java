@@ -3,6 +3,7 @@ package nro.models.map;
 import nro.models.consts.ConstTask;
 import nro.models.boss.Boss;
 import nro.models.boss.BossID;
+import nro.models.data.DataGame;
 import nro.models.item.Item;
 import nro.models.mob.Mob;
 import nro.models.npc.Npc;
@@ -615,6 +616,9 @@ public class Zone {
     public void mapInfo(Player pl) {
         Message msg;
         try {
+            if (this.map.mapId >= 187 && this.map.mapId <= 190) {
+                DataGame.preloadInfinityCastleBackground(pl.getSession());
+            }
             msg = new Message(-24);
             msg.writer().writeByte(this.map.mapId);
             msg.writer().writeByte(this.map.planetId);

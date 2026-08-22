@@ -30,6 +30,7 @@ import nro.models.map.service.MapService;
 import nro.models.utils.Logger;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -327,7 +328,7 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded part (" + parts.size() + ")\n");
 
             //load bg item template
-            ps = ConnectionDatabase.prepareStatement("select * from bg_item_template");
+            ps = ConnectionDatabase.prepareStatement("select * from bg_item_template ORDER BY id ASC");
             rs = ps.executeQuery();
             while (rs.next()) {
                 BgItem bgItem = new BgItem();
@@ -801,7 +802,7 @@ public final class Manager {
             if (rs.first()) {
                 int countRow = rs.getShort(1);
                 MAP_TEMPLATES = new MapTemplate[countRow];
-                ps = ConnectionDatabase.prepareStatement("select * from map_template");
+                ps = ConnectionDatabase.prepareStatement("select * from map_template ORDER BY id ASC");
                 rs = ps.executeQuery();
                 short i = 0;
                 while (rs.next()) {
@@ -1142,10 +1143,17 @@ public final class Manager {
      */
     private int[][] readTileMap(int mapId) {
         int[][] tileMap = null;
+        File tileMapFile = new File("data/map/tile_map_data/" + mapId);
+        if (!tileMapFile.isFile()) {
+            return null;
+        }
         try {
-            try (DataInputStream dis = new DataInputStream(new FileInputStream("data/map/tile_map_data/" + mapId))) {
-                int w = dis.readByte();
-                int h = dis.readByte();
+            try (DataInputStream dis = new DataInputStream(new FileInputStream(tileMapFile))) {
+                int w = dis.readUnsignedByte();
+                int h = dis.readUnsignedByte();
+                if (w < 1 || w > 127 || h < 1 || h > 127) {
+                    throw new IOException("Kích thước tile map không hợp lệ: " + w + "x" + h);
+                }
                 tileMap = new int[h][w];
                 for (int[] tm : tileMap) {
                     for (int j = 0; j < tm.length; j++) {
@@ -1154,6 +1162,7 @@ public final class Manager {
                 }
             }
         } catch (IOException e) {
+            Logger.warningln("Invalid tile map ID " + mapId + ": " + e.getMessage());
         }
         return tileMap;
     }

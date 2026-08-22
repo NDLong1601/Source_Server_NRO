@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://teamobi.local/schemas/teamobi-map-plan-v1.json",
+  "title": "TeamobiMapPlanV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "map", "terrain", "bgItems", "gameplay"],
+  "properties": {
+    "formatVersion": { "const": 1 },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mapId", "name", "widthTiles", "heightTiles", "tileSetId"],
+      "properties": {
+        "mapId": { "type": "integer", "minimum": 0, "maximum": 254 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "widthTiles": { "type": "integer", "minimum": 1, "maximum": 127 },
+        "heightTiles": { "type": "integer", "minimum": 1, "maximum": 127 },
+        "tileSize": { "type": "integer", "enum": [24], "default": 24 },
+        "tileSetId": { "type": "integer", "minimum": 1, "maximum": 42 },
+        "planetId": { "type": "integer", "minimum": 0, "maximum": 2, "default": 0 },
+        "bgType": { "type": "integer", "minimum": -128, "maximum": 127, "default": 0 },
+        "bgId": { "type": "integer", "minimum": -128, "maximum": 127, "default": 0 },
+        "type": { "type": "integer", "minimum": -128, "maximum": 127, "default": 0 },
+        "zones": { "type": "integer", "minimum": 1, "maximum": 127, "default": 10 },
+        "maxPlayersPerZone": { "type": "integer", "minimum": 1, "maximum": 127, "default": 15 },
+        "isMapDouble": { "type": "boolean", "default": false }
+      }
+    },
+    "terrain": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseTile": { "$ref": "#/definitions/tileId" },
+        "matrix": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/tileId" }
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["startTileX", "endTileX", "tileY"],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "thicknessTiles": { "type": "integer", "minimum": 1, "maximum": 127, "default": 1 },
+              "topTile": { "$ref": "#/definitions/nonEmptyTileId" },
+              "leftCap": { "$ref": "#/definitions/nonEmptyTileId" },
+              "rightCap": { "$ref": "#/definitions/nonEmptyTileId" },
+              "fillTile": { "$ref": "#/definitions/nonEmptyTileId" }
+            }
+          }
+        },
+        "slopes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["startTileX", "endTileX", "startTileY", "endTileY"],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "startTileY": { "type": "integer" },
+              "endTileY": { "type": "integer" },
+              "slopeTile": { "$ref": "#/definitions/nonEmptyTileId" },
+              "fillTile": { "$ref": "#/definitions/nonEmptyTileId" }
+            }
+          }
+        },
+        "bridges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["startTileX", "endTileX", "tileY"],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "bridgeTile": { "$ref": "#/definitions/nonEmptyTileId" }
+            }
+          }
+        },
+        "water": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["startTileX", "endTileX", "tileY"],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "depthTiles": { "type": "integer", "minimum": 1, "maximum": 127, "default": 2 },
+              "surfaceTile": { "$ref": "#/definitions/nonEmptyTileId" },
+              "bodyTile": { "$ref": "#/definitions/nonEmptyTileId" }
+            }
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["startTileX", "endTileX", "startTileY", "endTileY"],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "startTileY": { "type": "integer" },
+              "endTileY": { "type": "integer" },
+              "blockerTile": { "$ref": "#/definitions/nonEmptyTileId" }
+            }
+          }
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tileX", "tileY", "tileId"],
+            "properties": {
+              "tileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "tileId": { "$ref": "#/definitions/tileId" }
+            }
+          }
+        }
+      }
+    },
+    "bgItems": {
+      "type": "array",
+      "maxItems": 32767,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["templateId", "tileX", "tileY"],
+        "properties": {
+          "templateId": { "type": "integer", "minimum": 0, "maximum": 32767 },
+          "tileX": { "$ref": "#/definitions/signedShort" },
+          "tileY": { "$ref": "#/definitions/signedShort" },
+          "offsetX": { "type": "integer", "minimum": -23, "maximum": 23 },
+          "offsetY": { "type": "integer", "minimum": -23, "maximum": 23 }
+        }
+      }
+    },
+    "gameplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["playerSpawn"],
+      "properties": {
+        "playerSpawn": { "$ref": "#/definitions/pixelPoint" },
+        "mobs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mobTemp", "mobLevel", "mobHp", "mobX", "mobY"],
+            "properties": {
+              "mobTemp": { "type": "integer", "minimum": 0, "maximum": 127 },
+              "mobLevel": { "type": "integer", "minimum": 0, "maximum": 127 },
+              "mobHp": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+              "mobX": { "$ref": "#/definitions/signedShort" },
+              "mobY": { "$ref": "#/definitions/signedShort" }
+            }
+          }
+        },
+        "npcs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["npcId", "npcX", "npcY"],
+            "properties": {
+              "npcId": { "type": "integer", "minimum": 0, "maximum": 2147483647 },
+              "npcX": { "$ref": "#/definitions/signedShort" },
+              "npcY": { "$ref": "#/definitions/signedShort" }
+            }
+          }
+        },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "minX", "minY", "maxX", "maxY", "goMap", "goX", "goY"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "minX": { "$ref": "#/definitions/signedShort" },
+              "minY": { "$ref": "#/definitions/signedShort" },
+              "maxX": { "$ref": "#/definitions/signedShort" },
+              "maxY": { "$ref": "#/definitions/signedShort" },
+              "isEnter": { "type": "boolean", "default": false },
+              "isOffline": { "type": "boolean", "default": false },
+              "goMap": { "type": "integer", "minimum": 0, "maximum": 254 },
+              "goX": { "$ref": "#/definitions/signedShort" },
+              "goY": { "$ref": "#/definitions/signedShort" }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "maxLength": 1000 },
+        "author": { "type": "string", "maxLength": 100 },
+        "tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 50 }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "tileId": { "type": "integer", "minimum": 0, "maximum": 127 },
+    "nonEmptyTileId": { "type": "integer", "minimum": 1, "maximum": 127 },
+    "signedShort": { "type": "integer", "minimum": -32768, "maximum": 32767 },
+    "pixelPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "$ref": "#/definitions/signedShort" },
+        "y": { "$ref": "#/definitions/signedShort" }
+      }
+    }
+  }
+}

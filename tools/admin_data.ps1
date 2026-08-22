@@ -120,6 +120,20 @@
     [string]$FullBodyH = "0",
     [string]$FullBodyDx = "0",
     [string]$FullBodyDy = "0",
+    [string]$ProjectId = "",
+    [string]$RequestPath = "",
+    [string]$ReleaseId = "",
+    [string]$WidthTiles = "40",
+    [string]$HeightTiles = "20",
+    [string]$TileSetId = "2",
+    [string]$AssetPath = "",
+    [string]$ImageId = "",
+    [string]$Layer = "1",
+    [string]$Dx = "0",
+    [string]$Dy = "0",
+    [string]$AssetWidth = "0",
+    [string]$AssetHeight = "0",
+    [string]$Anchor = "top-left",
     [string]$Encoded = "0"
 )
 
@@ -150,7 +164,9 @@ foreach ($paramName in @(
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
         "HeadIconId", "BodyIconId", "LegIconId", "AvatarIconId", "HeadPartId", "BodyPartId", "LegPartId", "HasShop", "NpcSay",
         "HeadW", "HeadH", "BodyW", "BodyH", "LegW", "LegH", "AvatarW", "AvatarH",
-        "Mode", "FullBodyPath", "FullBodyIconId", "FullBodyW", "FullBodyH", "FullBodyDx", "FullBodyDy"
+        "Mode", "FullBodyPath", "FullBodyIconId", "FullBodyW", "FullBodyH", "FullBodyDx", "FullBodyDy",
+        "ProjectId", "RequestPath", "ReleaseId", "WidthTiles", "HeightTiles", "TileSetId",
+        "AssetPath", "ImageId", "Layer", "Dx", "Dy", "AssetWidth", "AssetHeight", "Anchor"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -2862,6 +2878,690 @@ function List-MapCatalog {
     Invoke-MySql "SELECT id, `NAME`, planet_id FROM map_template ORDER BY id ASC;"
 }
 
+function Find-MapPython {
+    foreach ($commandName in @("python.exe", "python")) {
+        $command = Get-Command $commandName -ErrorAction SilentlyContinue
+        if ($command) { return $command.Source }
+    }
+    throw "Không tìm thấy Python trong PATH. Hãy cài dependency ở map-tools\requirements.txt."
+}
+
+function Invoke-MapProjectTool {
+    param([string[]]$ToolArguments)
+
+    $python = Find-MapPython
+    $toolPath = Join-Path $Root "map-tools\tools\manage_map_projects.py"
+    if (-not (Test-Path -LiteralPath $toolPath)) {
+        throw "Thiếu Map Project Service: $toolPath"
+    }
+    $allArguments = @($toolPath, "--repo-root", [string]$Root) + $ToolArguments
+    $previousPythonIoEncoding = $env:PYTHONIOENCODING
+    try {
+        $env:PYTHONIOENCODING = "utf-8"
+        $toolOutput = @(& $python @allArguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        if ($null -eq $previousPythonIoEncoding) {
+            Remove-Item Env:\PYTHONIOENCODING -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:PYTHONIOENCODING = $previousPythonIoEncoding
+        }
+    }
+    $text = ($toolOutput -join [Environment]::NewLine).Trim()
+    if ($exitCode -ne 0) {
+        if ([string]::IsNullOrWhiteSpace($text)) { $text = "Map Project Service thoát với mã $exitCode." }
+        throw $text
+    }
+    return $text
+}
+
+function Assert-MapEditorMapId {
+    param([string]$Value)
+    if ($Value -notmatch '^\d+$') { throw "Map ID phải là số nguyên 0..254." }
+    $number = [int]$Value
+    if ($number -lt 0 -or $number -gt 254) { throw "Map ID phải nằm trong khoảng 0..254." }
+    return $number
+}
+
+function Resolve-MapRequestPath {
+    if ([string]::IsNullOrWhiteSpace($RequestPath)) { throw "Thiếu file request JSON của Map Editor." }
+    $fullPath = [IO.Path]::GetFullPath($RequestPath)
+    $allowedRoot = [IO.Path]::GetFullPath($LogDir).TrimEnd('\') + '\'
+    if (-not $fullPath.StartsWith($allowedRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Map Editor chỉ được đọc request JSON tạm trong thư mục logs."
+    }
+    if ([IO.Path]::GetExtension($fullPath) -ne '.json' -or -not (Test-Path -LiteralPath $fullPath)) {
+        throw "File request JSON không tồn tại hoặc sai phần mở rộng."
+    }
+    return $fullPath
+}
+
+function Get-MapTemplateSnapshot {
+    param(
+        [int]$TargetMapId,
+        [bool]$Required = $false
+    )
+    $raw = Invoke-MySql "SELECT id,`NAME`,zones,max_player,data,type,planet_id,bg_type,tile_id,bg_id,waypoints,mobs,npcs,is_map_double FROM map_template WHERE id=$TargetMapId LIMIT 1;"
+    $lines = @($raw -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) {
+        if ($Required) { throw "Không tìm thấy map_template ID $TargetMapId trong database." }
+        return $null
+    }
+    $row = $lines[-1].Split("`t")
+    if ($row.Count -lt 14) { throw "Không đọc đủ 14 cột map_template ID $TargetMapId." }
+    return [ordered]@{
+        id = [int]$row[0]
+        name = [string]$row[1]
+        zones = [int]$row[2]
+        maxPlayer = [int]$row[3]
+        data = [string]$row[4]
+        type = [int]$row[5]
+        planetId = [int]$row[6]
+        bgType = [int]$row[7]
+        tileId = [int]$row[8]
+        bgId = [int]$row[9]
+        waypoints = [string]$row[10]
+        mobs = [string]$row[11]
+        npcs = [string]$row[12]
+        isMapDouble = [int]$row[13]
+    }
+}
+
+function Get-BgTemplateSnapshot {
+    param([int]$TargetTemplateId)
+    $raw = Invoke-MySql "SELECT id,image_id,layer,dx,dy FROM bg_item_template WHERE id=$TargetTemplateId LIMIT 1;"
+    $lines = @($raw -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { return $null }
+    $row = $lines[-1].Split("`t")
+    if ($row.Count -lt 5) { throw "Không đọc đủ 5 cột bg_item_template ID $TargetTemplateId." }
+    return [ordered]@{
+        id = [int]$row[0]
+        imageId = [int]$row[1]
+        layer = [int]$row[2]
+        dx = [int]$row[3]
+        dy = [int]$row[4]
+    }
+}
+
+function Write-MapTempJson {
+    param(
+        [string]$Prefix,
+        [object]$Value
+    )
+    $path = Join-Path $LogDir ("{0}_{1}_{2}.json" -f $Prefix, $PID, ([Guid]::NewGuid().ToString("N")))
+    $json = ConvertTo-Json -InputObject $Value -Compress -Depth 30
+    [IO.File]::WriteAllText($path, $json, $Utf8NoBom)
+    return $path
+}
+
+function Test-MapServerRunning {
+    $pidPath = Join-Path $Root "logs\server.pid"
+    if (Test-Path -LiteralPath $pidPath) {
+        foreach ($line in ([IO.File]::ReadAllLines($pidPath))) {
+            if ($line -match '^\d+$') {
+                $process = Get-Process -Id ([int]$line) -ErrorAction SilentlyContinue
+                if ($process -and ($process.ProcessName -in @("java", "javaw"))) { return $true }
+            }
+        }
+    }
+    try {
+        $javaProcess = Get-CimInstance Win32_Process -ErrorAction Stop |
+            Where-Object {
+                ($_.Name -eq "java.exe" -or $_.Name -eq "javaw.exe") -and
+                $_.CommandLine -like "*20.jar*"
+            } |
+            Select-Object -First 1
+        return $null -ne $javaProcess
+    }
+    catch {
+        throw "Không xác minh được trạng thái server qua WMI; publish bị khóa an toàn: $($_.Exception.Message)"
+    }
+}
+
+function List-MapProjects {
+    Invoke-MapProjectTool -ToolArguments @("list")
+}
+
+function Get-MapProject {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    Invoke-MapProjectTool -ToolArguments @("get", "--project-id", $ProjectId)
+}
+
+function Get-MapEditorState {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    Invoke-MapProjectTool -ToolArguments @("editor-state", "--project-id", $ProjectId)
+}
+
+function List-MapProjectReleases {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    Invoke-MapProjectTool -ToolArguments @("list-releases", "--project-id", $ProjectId)
+}
+
+function Get-MapProjectRelease {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($ReleaseId)) { throw "Thiếu Release ID." }
+    Invoke-MapProjectTool -ToolArguments @("get-release", "--project-id", $ProjectId, "--release-id", $ReleaseId)
+}
+
+function ConvertTo-MapCanonicalJson {
+    param([object]$Value)
+    $normalized = $Value
+    if ($Value -is [string]) {
+        try { $normalized = $Value | ConvertFrom-Json }
+        catch { $normalized = $Value }
+    }
+    # Windows PowerShell 5.1 serializes an Object[] produced by
+    # ConvertFrom-Json as {"value":[...],"Count":...} when passed directly
+    # via -InputObject. Re-wrapping it produces the intended JSON array and
+    # keeps release-vs-database comparisons stable.
+    if ($normalized -is [System.Array]) {
+        return ConvertTo-Json -InputObject @($normalized) -Compress -Depth 30
+    }
+    return ConvertTo-Json -InputObject $normalized -Compress -Depth 30
+}
+
+function Test-MapReleaseDatabase {
+    param([object]$Release, [object]$DatabaseBefore)
+    $issues = New-Object System.Collections.Generic.List[object]
+    $rolledBack = [string]$Release.status -eq "runtime-rolled-back"
+    $expectedPackage = if ($rolledBack) { $DatabaseBefore } else { $Release.databaseExpected }
+    if ($null -eq $expectedPackage) {
+        $issues.Add([ordered]@{ scope="database"; code="LEGACY_RELEASE_NO_DATABASE_EXPECTED"; message="Release không có snapshot database để verify." })
+        return [ordered]@{ verified=$false; issues=$issues.ToArray() }
+    }
+    $expected = $expectedPackage.mapTemplate
+    $current = Get-MapTemplateSnapshot -TargetMapId ([int]$Release.mapId) -Required $false
+    if ($null -eq $expected -and $null -ne $current) {
+        $issues.Add([ordered]@{ scope="database"; code="MAP_TEMPLATE_SHOULD_BE_MISSING"; message="map_template phải không tồn tại sau rollback." })
+    }
+    elseif ($null -ne $expected -and $null -eq $current) {
+        $issues.Add([ordered]@{ scope="database"; code="MAP_TEMPLATE_MISSING"; message="Không tìm thấy map_template ID $($Release.mapId)." })
+    }
+    elseif ($null -ne $expected) {
+        foreach ($pair in @(
+            @{ Expected="id"; Current="id" }, @{ Expected="name"; Current="name" },
+            @{ Expected="zones"; Current="zones" }, @{ Expected="maxPlayer"; Current="maxPlayer" },
+            @{ Expected="type"; Current="type" }, @{ Expected="planetId"; Current="planetId" },
+            @{ Expected="bgType"; Current="bgType" }, @{ Expected="tileId"; Current="tileId" },
+            @{ Expected="bgId"; Current="bgId" }, @{ Expected="isMapDouble"; Current="isMapDouble" }
+        )) {
+            $expectedValue = [string]$expected.($pair.Expected)
+            $currentValue = [string]$current.($pair.Current)
+            if ($expectedValue -cne $currentValue) {
+                $issues.Add([ordered]@{ scope="database"; code="MAP_TEMPLATE_FIELD_DRIFT"; field=$pair.Expected; expected=$expectedValue; current=$currentValue; message="map_template.$($pair.Expected) khác release." })
+            }
+        }
+        foreach ($field in @("data", "waypoints", "mobs", "npcs")) {
+            $expectedJson = ConvertTo-MapCanonicalJson $expected.$field
+            $currentJson = ConvertTo-MapCanonicalJson $current.$field
+            if ($expectedJson -cne $currentJson) {
+                $issues.Add([ordered]@{ scope="database"; code="MAP_TEMPLATE_JSON_DRIFT"; field=$field; expected=$expectedJson; current=$currentJson; message="JSON map_template.$field khác release." })
+            }
+        }
+    }
+    foreach ($expectedBgEntry in @($expectedPackage.bgTemplates)) {
+        $templateIdValue = [int]$expectedBgEntry.id
+        $expectedBg = if ($rolledBack) { $expectedBgEntry.row } else { $expectedBgEntry }
+        $currentBg = Get-BgTemplateSnapshot -TargetTemplateId $templateIdValue
+        if ($null -eq $expectedBg -and $null -ne $currentBg) {
+            $issues.Add([ordered]@{ scope="database"; code="BG_TEMPLATE_SHOULD_BE_MISSING"; templateId=$templateIdValue; message="bg_item_template $templateIdValue phải không tồn tại sau rollback." })
+            continue
+        }
+        if ($null -ne $expectedBg -and $null -eq $currentBg) {
+            $issues.Add([ordered]@{ scope="database"; code="BG_TEMPLATE_MISSING"; templateId=$templateIdValue; message="Thiếu bg_item_template ID $templateIdValue." })
+            continue
+        }
+        if ($null -eq $expectedBg) { continue }
+        foreach ($field in @("imageId", "layer", "dx", "dy")) {
+            if ([string]$expectedBg.$field -cne [string]$currentBg.$field) {
+                $issues.Add([ordered]@{ scope="database"; code="BG_TEMPLATE_DRIFT"; templateId=$templateIdValue; field=$field; expected=[string]$expectedBg.$field; current=[string]$currentBg.$field; message="bg_item_template $templateIdValue.$field khác release." })
+            }
+        }
+    }
+    return [ordered]@{ verified=($issues.Count -eq 0); issues=$issues.ToArray() }
+}
+
+function Verify-MapProjectRelease {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($ReleaseId)) { throw "Thiếu Release ID." }
+    $runtime = (Invoke-MapProjectTool -ToolArguments @("verify-release", "--project-id", $ProjectId, "--release-id", $ReleaseId)) | ConvertFrom-Json
+    $detail = (Invoke-MapProjectTool -ToolArguments @("get-release", "--project-id", $ProjectId, "--release-id", $ReleaseId)) | ConvertFrom-Json
+    $database = Test-MapReleaseDatabase -Release $detail.release -DatabaseBefore $detail.databaseBefore
+    $result = [ordered]@{
+        status = "ok"
+        projectId = $ProjectId
+        releaseId = $ReleaseId
+        releaseStatus = [string]$detail.release.status
+        verified = ([bool]$runtime.verified -and [bool]$database.verified)
+        serverRunning = [bool](Test-MapServerRunning)
+        runtime = $runtime
+        database = $database
+    }
+    return ConvertTo-Json -InputObject $result -Depth 30
+}
+
+function Get-MapServerHealth {
+    $config = Get-ConfigMap
+    $serverPort = 14445
+    if ($config.ContainsKey("server.port") -and [string]$config["server.port"] -match '^\d+$') {
+        $configuredPort = [int]$config["server.port"]
+        if ($configuredPort -ge 1 -and $configuredPort -le 65535) { $serverPort = $configuredPort }
+    }
+    $processRunning = [bool](Test-MapServerRunning)
+    $listeningPids = New-Object System.Collections.Generic.List[int]
+    try {
+        foreach ($connection in @(Get-NetTCPConnection -LocalPort $serverPort -State Listen -ErrorAction Stop)) {
+            $candidatePid = [int]$connection.OwningProcess
+            $candidate = Get-Process -Id $candidatePid -ErrorAction SilentlyContinue
+            if ($candidate -and $candidate.ProcessName -in @("java", "javaw") -and -not $listeningPids.Contains($candidatePid)) {
+                $listeningPids.Add($candidatePid)
+            }
+        }
+    }
+    catch {
+        foreach ($line in @(& netstat.exe -ano -p tcp 2>$null)) {
+            if ($line -match "^\s*TCP\s+\S+:$serverPort\s+\S+\s+LISTENING\s+(\d+)\s*$") {
+                $candidatePid = [int]$matches[1]
+                $candidate = Get-Process -Id $candidatePid -ErrorAction SilentlyContinue
+                if ($candidate -and $candidate.ProcessName -in @("java", "javaw") -and -not $listeningPids.Contains($candidatePid)) {
+                    $listeningPids.Add($candidatePid)
+                }
+            }
+        }
+    }
+    return [ordered]@{
+        processRunning = $processRunning
+        port = $serverPort
+        portListening = ($listeningPids.Count -gt 0)
+        listeningPids = $listeningPids.ToArray()
+    }
+}
+
+function Get-MapProjectAcceptance {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($ReleaseId)) { throw "Thiếu Release ID." }
+    $manual = (Invoke-MapProjectTool -ToolArguments @(
+        "get-acceptance", "--project-id", $ProjectId, "--release-id", $ReleaseId
+    )) | ConvertFrom-Json
+    $verification = (Verify-MapProjectRelease) | ConvertFrom-Json
+    $health = Get-MapServerHealth
+    $automaticChecks = @(
+        [ordered]@{ code="RELEASE_PUBLISHED"; passed=([string]$manual.releaseStatus -eq "published"); message=$(if ([string]$manual.releaseStatus -eq "published") { "Release đang ở trạng thái published." } else { "Release hiện ở trạng thái $($manual.releaseStatus), không thể nghiệm thu production." }) },
+        [ordered]@{ code="SERVER_PROCESS"; passed=[bool]$health.processRunning; message=$(if ($health.processRunning) { "Tiến trình Java 20.jar đang chạy." } else { "Không phát hiện tiến trình Java 20.jar đang chạy." }) },
+        [ordered]@{ code="SERVER_PORT"; passed=[bool]$health.portListening; message=$(if ($health.portListening) { "Java đang lắng nghe cổng $($health.port)." } else { "Java chưa lắng nghe cổng $($health.port)." }) },
+        [ordered]@{ code="RUNTIME_DATABASE"; passed=[bool]$verification.verified; message=$(if ($verification.verified) { "Runtime, map version, gói release và database khớp checksum." } else { "Runtime hoặc database đang drift so với release." }) }
+    )
+    $automaticPassed = (@($automaticChecks | Where-Object { -not [bool]$_.passed }).Count -eq 0)
+    $blockers = New-Object System.Collections.Generic.List[object]
+    foreach ($check in $automaticChecks) {
+        if (-not [bool]$check.passed) {
+            $blockers.Add([ordered]@{ code=[string]$check.code; message=[string]$check.message })
+        }
+    }
+    if (-not [bool]$manual.manualComplete) {
+        $blockers.Add([ordered]@{ code="MANUAL_CLIENT_QA"; message="Checklist kiểm tra trực tiếp trong client chưa hoàn tất hoặc chưa có người kiểm tra." })
+    }
+    $result = [ordered]@{
+        status = "ok"
+        projectId = $ProjectId
+        releaseId = $ReleaseId
+        mapId = [int]$manual.mapId
+        releaseStatus = [string]$manual.releaseStatus
+        ready = ($automaticPassed -and [bool]$manual.manualComplete)
+        automaticPassed = $automaticPassed
+        manualComplete = [bool]$manual.manualComplete
+        automaticChecks = $automaticChecks
+        server = $health
+        verification = $verification
+        requiredChecks = @($manual.requiredChecks)
+        optionalChecks = @($manual.optionalChecks)
+        acceptance = $manual.acceptance
+        saved = [bool]$manual.saved
+        blockers = $blockers.ToArray()
+    }
+    return ConvertTo-Json -InputObject $result -Depth 30
+}
+
+function Save-MapProjectAcceptance {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($ReleaseId)) { throw "Thiếu Release ID." }
+    $requestFile = Resolve-MapRequestPath
+    try {
+        Invoke-MapProjectTool -ToolArguments @(
+            "save-acceptance", "--project-id", $ProjectId, "--release-id", $ReleaseId,
+            "--acceptance-json", $requestFile
+        ) | Out-Null
+    }
+    finally {
+        Remove-Item -LiteralPath $requestFile -Force -ErrorAction SilentlyContinue
+    }
+    Write-AuditEntry -ActionName "savemapprojectacceptance" -Summary "Cập nhật nghiệm thu release $ReleaseId của project $ProjectId" -Status "success" -Reversible $false -Payload "" -ResultMessage "Đã lưu checklist kiểm tra trong client."
+    return Get-MapProjectAcceptance
+}
+
+function Test-MapProjectDependencies {
+    param([object]$Detail)
+    $missingMaps = New-Object System.Collections.Generic.List[int]
+    $compiledProjectMaps = New-Object System.Collections.Generic.List[int]
+    $missingNpcs = New-Object System.Collections.Generic.List[int]
+    $missingMobs = New-Object System.Collections.Generic.List[int]
+    $currentMapId = [int]$Detail.plan.map.mapId
+    $projectCatalog = $null
+    try {
+        $projectCatalog = (Invoke-MapProjectTool -ToolArguments @("list")) | ConvertFrom-Json
+    }
+    catch {
+        $projectCatalog = $null
+    }
+    foreach ($waypoint in @($Detail.plan.gameplay.waypoints)) {
+        $targetId = [int]$waypoint.goMap
+        if ($targetId -eq $currentMapId) { continue }
+        if ($missingMaps -contains $targetId) { continue }
+        if ([int](Get-MySqlScalar "SELECT COUNT(*) FROM map_template WHERE id=$targetId;" "0") -gt 0) { continue }
+
+        $verifiedProject = $false
+        if ($null -ne $projectCatalog) {
+            foreach ($project in @($projectCatalog.projects | Where-Object { [int]$_.mapId -eq $targetId })) {
+                try {
+                    $verification = (Invoke-MapProjectTool -ToolArguments @(
+                        "verify", "--project-id", [string]$project.projectId
+                    )) | ConvertFrom-Json
+                    if ([bool]$verification.verified) {
+                        $verifiedProject = $true
+                        break
+                    }
+                }
+                catch {
+                    $verifiedProject = $false
+                }
+            }
+        }
+        if ($verifiedProject) {
+            if (-not ($compiledProjectMaps -contains $targetId)) { $compiledProjectMaps.Add($targetId) }
+            continue
+        }
+        $missingMaps.Add($targetId)
+    }
+    foreach ($npc in @($Detail.plan.gameplay.npcs)) {
+        $targetId = [int]$npc.npcId
+        if ($missingNpcs -contains $targetId) { continue }
+        if ([int](Get-MySqlScalar "SELECT COUNT(*) FROM npc_template WHERE id=$targetId;" "0") -eq 0) { $missingNpcs.Add($targetId) }
+    }
+    foreach ($mob in @($Detail.plan.gameplay.mobs)) {
+        $targetId = [int]$mob.mobTemp
+        if ($missingMobs -contains $targetId) { continue }
+        if ([int](Get-MySqlScalar "SELECT COUNT(*) FROM mob_template WHERE id=$targetId;" "0") -eq 0) { $missingMobs.Add($targetId) }
+    }
+    return [ordered]@{
+        verified = ($missingMaps.Count -eq 0 -and $missingNpcs.Count -eq 0 -and $missingMobs.Count -eq 0)
+        missingMapIds = $missingMaps.ToArray()
+        compiledProjectMapIds = $compiledProjectMaps.ToArray()
+        missingNpcIds = $missingNpcs.ToArray()
+        missingMobTemplateIds = $missingMobs.ToArray()
+    }
+}
+
+function Resize-MapProjectPlan {
+    if ($WidthTiles -notmatch '^\d+$' -or $HeightTiles -notmatch '^\d+$') {
+        throw "Kích thước resize phải là số nguyên 1..127."
+    }
+    $widthValue = [int]$WidthTiles
+    $heightValue = [int]$HeightTiles
+    if ($widthValue -lt 1 -or $widthValue -gt 127 -or $heightValue -lt 1 -or $heightValue -gt 127) {
+        throw "Kích thước resize phải nằm trong khoảng 1..127 tile."
+    }
+    if ($Anchor -notin @('top-left','top','top-right','left','center','right','bottom-left','bottom','bottom-right')) {
+        throw "Anchor resize không hợp lệ."
+    }
+    $planPath = Resolve-MapRequestPath
+    try {
+        Invoke-MapProjectTool -ToolArguments @(
+            "resize-plan", "--plan-json", $planPath,
+            "--width", [string]$widthValue, "--height", [string]$heightValue, "--anchor", $Anchor
+        )
+    }
+    finally {
+        Remove-Item -LiteralPath $planPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function New-MapProject {
+    $targetMapId = Assert-MapEditorMapId $MapId
+    if ([string]::IsNullOrWhiteSpace($Name)) { throw "Thiếu tên map." }
+    Invoke-MapProjectTool -ToolArguments @(
+        "create", "--map-id", [string]$targetMapId, "--name", $Name,
+        "--width", $WidthTiles, "--height", $HeightTiles, "--tile-set-id", $TileSetId
+    )
+}
+
+function Import-MapProject {
+    $targetMapId = Assert-MapEditorMapId $MapId
+    $snapshot = Get-MapTemplateSnapshot -TargetMapId $targetMapId -Required $true
+    $snapshotPath = Write-MapTempJson -Prefix "admin_map_import" -Value $snapshot
+    try {
+        Invoke-MapProjectTool -ToolArguments @(
+            "import-runtime", "--map-id", [string]$targetMapId, "--template-json", $snapshotPath
+        )
+    }
+    finally {
+        Remove-Item -LiteralPath $snapshotPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Save-MapProject {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    $planPath = Resolve-MapRequestPath
+    try {
+        Invoke-MapProjectTool -ToolArguments @("save", "--project-id", $ProjectId, "--plan-json", $planPath)
+    }
+    finally {
+        Remove-Item -LiteralPath $planPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Upload-MapProjectAsset {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($AssetPath) -or -not (Test-Path -LiteralPath $AssetPath -PathType Leaf)) {
+        throw "Không tìm thấy file asset PNG đã chọn."
+    }
+    foreach ($pair in @(
+        @{ Name="Layer"; Value=$Layer; Pattern='^[1-4]$' },
+        @{ Name="Dx"; Value=$Dx; Pattern='^-?\d+$' },
+        @{ Name="Dy"; Value=$Dy; Pattern='^-?\d+$' },
+        @{ Name="AssetWidth"; Value=$AssetWidth; Pattern='^\d+$' },
+        @{ Name="AssetHeight"; Value=$AssetHeight; Pattern='^\d+$' }
+    )) {
+        if ([string]$pair.Value -notmatch $pair.Pattern) { throw "$($pair.Name) không hợp lệ." }
+    }
+    $nextTemplateId = [int](Get-MySqlScalar "SELECT COALESCE(MAX(id),-1) FROM bg_item_template;" "-1") + 1
+    $nextImageId = [int](Get-MySqlScalar "SELECT COALESCE(MAX(image_id),-1) FROM bg_item_template;" "-1") + 1
+    Invoke-MapProjectTool -ToolArguments @(
+        "upload-asset", "--project-id", $ProjectId, "--source", $AssetPath,
+        "--name", $Name, "--layer", $Layer, "--dx", $Dx, "--dy", $Dy,
+        "--template-id", [string]$nextTemplateId, "--image-id", [string]$nextImageId,
+        "--width", $AssetWidth, "--height", $AssetHeight
+    )
+}
+
+function Compile-MapProject {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    $nextTemplateId = [int](Get-MySqlScalar "SELECT COALESCE(MAX(id),-1) FROM bg_item_template;" "-1") + 1
+    Invoke-MapProjectTool -ToolArguments @(
+        "compile", "--project-id", $ProjectId,
+        "--minimum-template-id", [string]$nextTemplateId
+    )
+}
+
+function Get-MapProjectReleasePlan {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    $running = Test-MapServerRunning
+    $plan = (Invoke-MapProjectTool -ToolArguments @(
+        "release-plan", "--project-id", $ProjectId, "--server-running", $(if ($running) { "1" } else { "0" })
+    )) | ConvertFrom-Json
+    $detail = (Invoke-MapProjectTool -ToolArguments @("get", "--project-id", $ProjectId)) | ConvertFrom-Json
+    $dependencies = Test-MapProjectDependencies -Detail $detail
+    $blockers = @($plan.blockers)
+    foreach ($entry in @(
+        @{ Code="MISSING_WAYPOINT_MAP"; Values=@($dependencies.missingMapIds); Label="Waypoint tham chiếu Map ID không tồn tại" },
+        @{ Code="MISSING_NPC_TEMPLATE"; Values=@($dependencies.missingNpcIds); Label="NPC ID không tồn tại" },
+        @{ Code="MISSING_MOB_TEMPLATE"; Values=@($dependencies.missingMobTemplateIds); Label="Mob template ID không tồn tại" }
+    )) {
+        if ($entry.Values.Count -gt 0) {
+            $blockers += [pscustomobject][ordered]@{
+                code = $entry.Code
+                message = "$($entry.Label): $($entry.Values -join ', ')"
+            }
+        }
+    }
+    foreach ($template in @($plan.customBgTemplates)) {
+        $templateIdValue = [int]$template.templateId
+        $currentTemplate = Get-BgTemplateSnapshot -TargetTemplateId $templateIdValue
+        if ($null -eq $currentTemplate) { continue }
+        $matchesExpected = (
+            [int]$currentTemplate.imageId -eq [int]$template.imageId -and
+            [int]$currentTemplate.layer -eq [int]$template.layer -and
+            [int]$currentTemplate.dx -eq [int]$template.dx -and
+            [int]$currentTemplate.dy -eq [int]$template.dy
+        )
+        if (-not $matchesExpected) {
+            $blockers += [pscustomobject][ordered]@{
+                code = "BG_TEMPLATE_ID_COLLISION"
+                message = "bg_item_template ID $templateIdValue đã thuộc asset khác; publish bị khóa để tránh ghi đè và cần cấp lại ID fine-offset."
+            }
+        }
+    }
+    $plan.blockers = $blockers
+    $plan.canPublish = ([bool]$plan.canPublish -and [bool]$dependencies.verified)
+    $plan | Add-Member -NotePropertyName dependencyChecks -NotePropertyValue $dependencies -Force
+    return ConvertTo-Json -InputObject $plan -Depth 30
+}
+
+function Rollback-MapProjectRelease {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if ([string]::IsNullOrWhiteSpace($ReleaseId)) { throw "Thiếu Release ID." }
+    if (Test-MapServerRunning) { throw "Server đang chạy. Hãy dừng server trước khi rollback release map." }
+    $detail = (Invoke-MapProjectTool -ToolArguments @("get-release", "--project-id", $ProjectId, "--release-id", $ReleaseId)) | ConvertFrom-Json
+    if ([string]$detail.release.status -ne "published") {
+        throw "Chỉ rollback chủ động release ở trạng thái published. Trạng thái hiện tại: $($detail.release.status)."
+    }
+    $verification = (Verify-MapProjectRelease) | ConvertFrom-Json
+    if (-not [bool]$verification.verified) {
+        $codes = @($verification.runtime.issues | ForEach-Object { $_.code }) + @($verification.database.issues | ForEach-Object { $_.code })
+        throw "Release đã drift; rollback bị khóa để tránh ghi đè dữ liệu khác: $($codes -join ', ')."
+    }
+    $releaseDir = [IO.Path]::GetFullPath((Join-Path (Join-Path (Join-Path $Root "map-tools\releases") $ProjectId) $ReleaseId))
+    $publishSqlPath = [IO.Path]::GetFullPath([string]$detail.paths.publishSql)
+    $rollbackSqlPath = [IO.Path]::GetFullPath([string]$detail.paths.rollbackDatabaseSql)
+    $allowedPrefix = $releaseDir.TrimEnd('\') + '\'
+    if (-not $publishSqlPath.StartsWith($allowedPrefix, [StringComparison]::OrdinalIgnoreCase) -or [IO.Path]::GetFileName($publishSqlPath) -ne "publish.sql") {
+        throw "Publish SQL của release nằm ngoài đường dẫn an toàn."
+    }
+    if (-not $rollbackSqlPath.StartsWith($allowedPrefix, [StringComparison]::OrdinalIgnoreCase) -or [IO.Path]::GetFileName($rollbackSqlPath) -ne "rollback-database.sql") {
+        throw "Rollback SQL của release nằm ngoài đường dẫn an toàn."
+    }
+    if (-not (Test-Path -LiteralPath $publishSqlPath -PathType Leaf) -or -not (Test-Path -LiteralPath $rollbackSqlPath -PathType Leaf)) {
+        throw "Release thiếu publish.sql hoặc rollback-database.sql."
+    }
+    $publishSql = [IO.File]::ReadAllText($publishSqlPath, [Text.Encoding]::UTF8)
+    $rollbackSql = [IO.File]::ReadAllText($rollbackSqlPath, [Text.Encoding]::UTF8)
+    Invoke-MySql ("START TRANSACTION;`n" + $rollbackSql + "`nCOMMIT;") | Out-Null
+    try {
+        $runtime = (Invoke-MapProjectTool -ToolArguments @(
+            "rollback-runtime", "--project-id", $ProjectId, "--release-id", $ReleaseId, "--server-running", "0"
+        )) | ConvertFrom-Json
+    }
+    catch {
+        $runtimeError = $_.Exception.Message
+        try {
+            Invoke-MySql ("START TRANSACTION;`n" + $publishSql + "`nCOMMIT;") | Out-Null
+        }
+        catch {
+            throw "NGHIÊM TRỌNG: rollback runtime lỗi ($runtimeError) và database compensation cũng lỗi: $($_.Exception.Message)"
+        }
+        throw "Rollback runtime lỗi; database đã được compensation về release published: $runtimeError"
+    }
+    $after = (Verify-MapProjectRelease) | ConvertFrom-Json
+    if (-not [bool]$after.verified) {
+        $afterCodes = @($after.runtime.issues | ForEach-Object { $_.code }) + @($after.database.issues | ForEach-Object { $_.code })
+        throw "NGHIÊM TRỌNG: rollback đã chạy nhưng trạng thái sau rollback không khớp snapshot: $($afterCodes -join ', ')."
+    }
+    Write-AuditEntry -ActionName "rollbackmapprojectrelease" -Summary "Rollback release $ReleaseId của project $ProjectId" -Status "success" -Reversible $false -Payload "" -ResultMessage "Runtime/database rollback verified=$($after.verified)"
+    return ConvertTo-Json -InputObject ([ordered]@{ status="ok"; runtime=$runtime; verification=$after }) -Depth 30
+}
+
+function Publish-MapProject {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) { throw "Thiếu Project ID." }
+    if (Test-MapServerRunning) { throw "Server đang chạy. Hãy dừng server trước khi publish map." }
+
+    $detailRaw = Invoke-MapProjectTool -ToolArguments @("get", "--project-id", $ProjectId)
+    $detail = $detailRaw | ConvertFrom-Json
+    $targetMapId = [int]$detail.metadata.mapId
+    $snapshot = Get-MapTemplateSnapshot -TargetMapId $targetMapId -Required $false
+    $releasePlanRaw = Get-MapProjectReleasePlan
+    $releasePlan = $releasePlanRaw | ConvertFrom-Json
+    if (-not $releasePlan.canPublish) { throw "Release plan không cho phép publish project $ProjectId." }
+    $bgSnapshots = New-Object System.Collections.Generic.List[object]
+    foreach ($template in @($releasePlan.customBgTemplates)) {
+        $templateIdValue = [int]$template.templateId
+        $bgSnapshots.Add([ordered]@{
+            id = $templateIdValue
+            row = Get-BgTemplateSnapshot -TargetTemplateId $templateIdValue
+        })
+    }
+    $databaseSnapshot = [ordered]@{
+        mapTemplate = $snapshot
+        bgTemplates = $bgSnapshots.ToArray()
+    }
+    $snapshotPath = Write-MapTempJson -Prefix "admin_map_publish_before" -Value $databaseSnapshot
+    $publish = $null
+    try {
+        $publishRaw = Invoke-MapProjectTool -ToolArguments @(
+            "publish-runtime", "--project-id", $ProjectId,
+            "--database-before-json", $snapshotPath, "--server-running", "0"
+        )
+        $publish = $publishRaw | ConvertFrom-Json
+        $releaseRoot = [IO.Path]::GetFullPath((Join-Path $Root "map-tools\releases")).TrimEnd('\') + '\'
+        $sqlPath = [IO.Path]::GetFullPath([string]$publish.databaseSqlPath)
+        if (-not $sqlPath.StartsWith($releaseRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Publish SQL nằm ngoài release directory an toàn."
+        }
+        $publishSql = [IO.File]::ReadAllText($sqlPath, [Text.Encoding]::UTF8)
+        try {
+            Invoke-MySql ("START TRANSACTION;`n" + $publishSql + "`nCOMMIT;") | Out-Null
+        }
+        catch {
+            $databaseError = $_.Exception.Message
+            $rollbackError = ""
+            try {
+                Invoke-MapProjectTool -ToolArguments @(
+                    "rollback-runtime", "--project-id", $ProjectId,
+                    "--release-id", [string]$publish.releaseId, "--server-running", "0"
+                ) | Out-Null
+            }
+            catch {
+                $rollbackError = " Runtime rollback cũng lỗi: $($_.Exception.Message)"
+            }
+            throw "Database publish thất bại; runtime đã được yêu cầu hoàn tác. $databaseError$rollbackError"
+        }
+
+        try {
+            $finalRaw = Invoke-MapProjectTool -ToolArguments @(
+                "finalize-release", "--project-id", $ProjectId, "--release-id", [string]$publish.releaseId
+            )
+        }
+        catch {
+            throw "Runtime và database đã publish nhất quán nhưng không chốt được metadata release. Release ID $($publish.releaseId): $($_.Exception.Message)"
+        }
+        Write-AuditEntry -ActionName "publishmapproject" -Summary "Publish Map $targetMapId từ project $ProjectId" -Status "success" -Reversible $false -Payload "" -ResultMessage "Release $($publish.releaseId), map version $($publish.mapVersion)"
+        return $finalRaw
+    }
+    finally {
+        Remove-Item -LiteralPath $snapshotPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Save-Shop {
     $shopIdNum = SqlInt $ShopId
     if ($shopIdNum -gt 0) {
@@ -4445,6 +5145,23 @@ try {
         "savenpccreator" { Save-NpcCreator }
         "deletenpccreator" { Delete-NpcCreator }
         "listmapcatalog" { List-MapCatalog }
+        "listmapprojects" { List-MapProjects }
+        "getmapproject" { Get-MapProject }
+        "getmapeditorstate" { Get-MapEditorState }
+        "listmapprojectreleases" { List-MapProjectReleases }
+        "getmapprojectrelease" { Get-MapProjectRelease }
+        "verifymapprojectrelease" { Verify-MapProjectRelease }
+        "rollbackmapprojectrelease" { Rollback-MapProjectRelease }
+        "getmapprojectacceptance" { Get-MapProjectAcceptance }
+        "savemapprojectacceptance" { Save-MapProjectAcceptance }
+        "resizemapprojectplan" { Resize-MapProjectPlan }
+        "createmapproject" { New-MapProject }
+        "importmapproject" { Import-MapProject }
+        "savemapproject" { Save-MapProject }
+        "uploadmapprojectasset" { Upload-MapProjectAsset }
+        "compilemapproject" { Compile-MapProject }
+        "releasemapprojectplan" { Get-MapProjectReleasePlan }
+        "publishmapproject" { Publish-MapProject }
         "setevent" {
             $EventValue = Normalize-EventValue $EventValue
             Set-ConfigValue -Key "server.event" -NewValue $EventValue

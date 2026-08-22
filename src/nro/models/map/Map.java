@@ -7,6 +7,7 @@ import nro.models.boss.BossID;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.consts.ConstMob;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import nro.models.services_dungeon.MajinBuuService;
@@ -476,11 +477,17 @@ public class Map implements Runnable {
     }
 
     public final void readTileMap(int mapId) {
+        File tileMapFile = new File("data/map/tile_map_data/" + mapId);
+        if (!tileMapFile.isFile()) {
+            return;
+        }
         try {
-            try (DataInputStream dis = new DataInputStream(new FileInputStream("data/map/tile_map_data/" + mapId))) {
-                dis.readByte();
-                tmw = dis.readByte();
-                tmh = dis.readByte();
+            try (DataInputStream dis = new DataInputStream(new FileInputStream(tileMapFile))) {
+                tmw = dis.readUnsignedByte();
+                tmh = dis.readUnsignedByte();
+                if (tmw < 1 || tmw > 127 || tmh < 1 || tmh > 127) {
+                    throw new IOException("Kích thước tile map không hợp lệ: " + tmw + "x" + tmh);
+                }
                 pxw = tmw * SIZE;
                 pxh = tmh * SIZE;
                 maps = new int[tmw * tmh];
@@ -490,6 +497,7 @@ public class Map implements Runnable {
                 types = new int[maps.length];
             }
         } catch (IOException e) {
+            Logger.warningln("Invalid tile map ID " + mapId + ": " + e.getMessage());
         }
     }
 

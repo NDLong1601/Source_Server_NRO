@@ -23,6 +23,7 @@ import nro.models.network.Message;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,8 +35,10 @@ import nro.models.player_system.Template.BgItem;
 
 public class DataGame {
 
+    private static final byte DEFAULT_MAP_VERSION = 10;
+
     public static byte vsData = 18;
-    public static byte vsMap = 10;
+    public static byte vsMap = loadMapVersion();
     public static byte vsSkill = 1;
     // 21 invalidates item-template cache written by the multi-append build.
     public static byte vsItem = 21;
@@ -111,9 +114,10 @@ public class DataGame {
         try {
             msg = Service.gI().messageNotMap((byte) 6);
             msg.writer().writeByte(vsMap);
-            msg.writer().writeByte(Manager.MAP_TEMPLATES.length);
-            for (MapTemplate temp : Manager.MAP_TEMPLATES) {
-                msg.writer().writeUTF(temp.name);
+            String[] mapNames = buildMapNamesById(Manager.MAP_TEMPLATES);
+            msg.writer().writeByte(mapNames.length);
+            for (String mapName : mapNames) {
+                msg.writer().writeUTF(mapName);
             }
             int maxNpcId = -1;
             for (NpcTemplate temp : Manager.NPC_TEMPLATES) {
@@ -152,6 +156,59 @@ public class DataGame {
             msg.cleanup();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
+        }
+    }
+
+    static String[] buildMapNamesById(MapTemplate[] templates) {
+        if (templates == null || templates.length == 0) {
+            return new String[0];
+        }
+
+        int maxMapId = -1;
+        for (MapTemplate template : templates) {
+            if (template == null) {
+                continue;
+            }
+            if (template.id < 0 || template.id > 254) {
+                throw new IllegalStateException("Map ID ngoài giới hạn packet 0..254: " + template.id);
+            }
+            maxMapId = Math.max(maxMapId, template.id);
+        }
+
+        String[] names = new String[maxMapId + 1];
+        for (MapTemplate template : templates) {
+            if (template == null) {
+                continue;
+            }
+            if (names[template.id] != null) {
+                throw new IllegalStateException("Trùng map ID: " + template.id);
+            }
+            String name = template.name == null ? "" : template.name.trim();
+            names[template.id] = name.isEmpty() ? "Map " + template.id : name;
+        }
+        for (int id = 0; id < names.length; id++) {
+            if (names[id] == null) {
+                names[id] = "Map " + id;
+            }
+        }
+        return names;
+    }
+
+    static byte loadMapVersion() {
+        File versionFile = new File("data/map/version.txt");
+        if (!versionFile.isFile()) {
+            return DEFAULT_MAP_VERSION;
+        }
+        try {
+            String text = new String(Files.readAllBytes(versionFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
+            int version = Integer.parseInt(text);
+            if (version < 1 || version > 127) {
+                throw new IllegalArgumentException("Map version phải nằm trong khoảng 1..127: " + version);
+            }
+            return (byte) version;
+        } catch (Exception e) {
+            Logger.logException(DataGame.class, e, "Không thể đọc data/map/version.txt; dùng map version mặc định " + DEFAULT_MAP_VERSION);
+            return DEFAULT_MAP_VERSION;
         }
     }
 
@@ -310,16 +367,31 @@ public class DataGame {
         }
     }
 
+    public static void preloadInfinityCastleBackground(MySession session) {
+        if (session == null || !session.markInfinityCastleBackgroundSent()) {
+            return;
+        }
+        // Both halves are shared by maps 187..190. Sending them before map-info
+        // keeps the client on the current screen until the real background is
+        // available instead of briefly rendering the default Earth backdrop.
+        sendItemBGTemplate(session, 516);
+        sendItemBGTemplate(session, 565);
+    }
+
     public static void sendDataItemBG(MySession session) {
         Message msg;
         try {
+            BgItem[] bgItemsById = buildBgItemTable();
             msg = new Message(-31);
-            msg.writer().writeShort(Manager.BG_ITEMS.size());
-            for (BgItem bgItem : Manager.BG_ITEMS) {
-                msg.writer().writeShort(bgItem.idImage);
-                msg.writer().writeByte(bgItem.layer);
-                msg.writer().writeShort(bgItem.dx);
-                msg.writer().writeShort(bgItem.dy);
+            msg.writer().writeShort(bgItemsById.length);
+            for (BgItem bgItem : bgItemsById) {
+                // The client treats the array position as bg_item_template.id.
+                // Preserve sparse database IDs with harmless placeholders so
+                // runtime map binaries never resolve to the wrong image/layer.
+                msg.writer().writeShort(bgItem == null ? 0 : bgItem.idImage);
+                msg.writer().writeByte(bgItem == null ? 1 : bgItem.layer);
+                msg.writer().writeShort(bgItem == null ? 0 : bgItem.dx);
+                msg.writer().writeShort(bgItem == null ? 0 : bgItem.dy);
                 msg.writer().writeByte(0);
             }
             session.sendMessage(msg);
@@ -406,7 +478,39 @@ public class DataGame {
     }
 
     static byte fileVersion(File file) {
-        return file != null && file.isFile() ? (byte) (file.length() % 127) : 0;
+        if (file == null || !file.isFile()) {
+            return 0;
+        }
+
+        CRC32 crc = new CRC32();
+        byte[] buffer = new byte[8192];
+        try (InputStream input = Files.newInputStream(file.toPath())) {
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                crc.update(buffer, 0, read);
+            }
+            // 0 được dành cho asset không tồn tại trong packet version.
+            return (byte) ((crc.getValue() % 126) + 1);
+        } catch (IOException e) {
+            Logger.logException(DataGame.class, e, "Không thể tính CRC asset: " + file.getPath());
+            return 0;
+        }
+    }
+
+    static BgItem[] buildBgItemTable() {
+        int maxTemplateId = -1;
+        for (BgItem bgItem : Manager.BG_ITEMS) {
+            if (bgItem != null && bgItem.id > maxTemplateId) {
+                maxTemplateId = bgItem.id;
+            }
+        }
+        BgItem[] bgItemsById = new BgItem[maxTemplateId + 1];
+        for (BgItem bgItem : Manager.BG_ITEMS) {
+            if (bgItem != null && bgItem.id >= 0 && bgItem.id < bgItemsById.length) {
+                bgItemsById[bgItem.id] = bgItem;
+            }
+        }
+        return bgItemsById;
     }
 
     public static void requestMobTemplate(MySession session, int id) {

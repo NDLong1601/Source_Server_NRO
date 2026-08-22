@@ -1,0 +1,101 @@
+{
+  "formatVersion": 1,
+  "map": {
+    "mapId": 186,
+    "name": "Bản đồ thử nghiệm Giai đoạn 1",
+    "widthTiles": 40,
+    "heightTiles": 20,
+    "tileSize": 24,
+    "tileSetId": 2,
+    "planetId": 0,
+    "bgType": 0,
+    "bgId": 1,
+    "type": 0,
+    "zones": 10,
+    "maxPlayersPerZone": 15,
+    "isMapDouble": false
+  },
+  "terrain": {
+    "baseTile": 0,
+    "platforms": [
+      {
+        "startTileX": 0,
+        "endTileX": 39,
+        "tileY": 18,
+        "thicknessTiles": 2
+      },
+      {
+        "startTileX": 8,
+        "endTileX": 15,
+        "tileY": 13,
+        "thicknessTiles": 2
+      }
+    ],
+    "bridges": [
+      {
+        "startTileX": 20,
+        "endTileX": 27,
+        "tileY": 11
+      }
+    ],
+    "blockers": [
+      {
+        "startTileX": 31,
+        "endTileX": 32,
+        "startTileY": 15,
+        "endTileY": 17,
+        "blockerTile": 35
+      }
+    ],
+    "patches": [
+      { "tileX": 2, "tileY": 17, "tileId": 35 },
+      { "tileX": 37, "tileY": 17, "tileId": 35 }
+    ]
+  },
+  "bgItems": [
+    { "templateId": 0, "tileX": 5, "tileY": 7 },
+    { "templateId": 4, "tileX": 12, "tileY": 18 },
+    { "templateId": 1, "tileX": 30, "tileY": 10 }
+  ],
+  "gameplay": {
+    "playerSpawn": { "x": 72, "y": 432 },
+    "mobs": [
+      { "mobTemp": 1, "mobLevel": 5, "mobHp": 500, "mobX": 240, "mobY": 312 },
+      { "mobTemp": 4, "mobLevel": 7, "mobHp": 1200, "mobX": 576, "mobY": 264 }
+    ],
+    "npcs": [
+      { "npcId": 6, "npcX": 120, "npcY": 432 }
+    ],
+    "waypoints": [
+      {
+        "name": "Về làng",
+        "minX": 0,
+        "minY": 408,
+        "maxX": 24,
+        "maxY": 432,
+        "isEnter": false,
+        "isOffline": false,
+        "goMap": 0,
+        "goX": 1188,
+        "goY": 432
+      },
+      {
+        "name": "Map kế tiếp",
+        "minX": 936,
+        "minY": 408,
+        "maxX": 960,
+        "maxY": 432,
+        "isEnter": false,
+        "isOffline": false,
+        "goMap": 187,
+        "goX": 60,
+        "goY": 432
+      }
+    ]
+  },
+  "metadata": {
+    "description": "Fixture deterministic cho compiler Giai đoạn 1.",
+    "author": "Codex",
+    "tags": ["stage1", "compiler", "preview"]
+  }
+}

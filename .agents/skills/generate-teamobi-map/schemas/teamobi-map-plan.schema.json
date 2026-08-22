@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TeamobiMapPlan",
+  "description": "Semantic AI level design plan for Teamobi-style 2D side-scrolling maps",
+  "type": "object",
+  "required": [
+    "map",
+    "terrain",
+    "bgItems",
+    "gameplay"
+  ],
+  "properties": {
+    "map": {
+      "type": "object",
+      "required": [
+        "mapId",
+        "name",
+        "widthTiles",
+        "heightTiles",
+        "tileSetId"
+      ],
+      "properties": {
+        "mapId": {
+          "type": "integer",
+          "description": "Authoring map identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the map"
+        },
+        "widthTiles": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255,
+          "description": "Grid width in 24px tiles (1..255)"
+        },
+        "heightTiles": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255,
+          "description": "Grid height in 24px tiles (1..255)"
+        },
+        "tileSize": {
+          "type": "integer",
+          "default": 24,
+          "enum": [24],
+          "description": "Fixed 24-pixel tile size"
+        },
+        "tileSetId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 42,
+          "description": "TileSet ID resolving to tile_set_info and tile artwork"
+        },
+        "planetId": {
+          "type": "integer",
+          "default": 0,
+          "enum": [0, 1, 2],
+          "description": "0=Earth, 1=Namek, 2=Saiyan"
+        },
+        "bgType": {
+          "type": "integer",
+          "default": 0,
+          "description": "Parallax backdrop scrolling configuration type"
+        },
+        "bgId": {
+          "type": "integer",
+          "default": 0,
+          "description": "Theme sky/backdrop image asset index"
+        }
+      }
+    },
+    "terrain": {
+      "type": "object",
+      "properties": {
+        "platforms": {
+          "type": "array",
+          "description": "Solid horizontal terrain floors and elevated platforms",
+          "items": {
+            "type": "object",
+            "required": [
+              "startTileX",
+              "endTileX",
+              "tileY"
+            ],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "thicknessTiles": { "type": "integer", "default": 1 },
+              "topTile": { "type": "integer" },
+              "leftCap": { "type": "integer" },
+              "rightCap": { "type": "integer" },
+              "fillTile": { "type": "integer" }
+            }
+          }
+        },
+        "slopes": {
+          "type": "array",
+          "description": "45-degree slope terrain segments",
+          "items": {
+            "type": "object",
+            "required": [
+              "startTileX",
+              "endTileX",
+              "startTileY",
+              "endTileY"
+            ],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "startTileY": { "type": "integer" },
+              "endTileY": { "type": "integer" },
+              "slopeTile": { "type": "integer" },
+              "fillTile": { "type": "integer" }
+            }
+          }
+        },
+        "bridges": {
+          "type": "array",
+          "description": "One-way / jump-through platform spans",
+          "items": {
+            "type": "object",
+            "required": [
+              "startTileX",
+              "endTileX",
+              "tileY"
+            ],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "bridgeTile": { "type": "integer" }
+            }
+          }
+        },
+        "water": {
+          "type": "array",
+          "description": "Water / liquid / hazard bodies",
+          "items": {
+            "type": "object",
+            "required": [
+              "startTileX",
+              "endTileX",
+              "tileY"
+            ],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "tileY": { "type": "integer" },
+              "depthTiles": { "type": "integer", "default": 2 },
+              "surfaceTile": { "type": "integer" },
+              "bodyTile": { "type": "integer" }
+            }
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "description": "Solid ceiling / obstacle blocks",
+          "items": {
+            "type": "object",
+            "required": [
+              "startTileX",
+              "endTileX",
+              "startTileY",
+              "endTileY"
+            ],
+            "properties": {
+              "startTileX": { "type": "integer" },
+              "endTileX": { "type": "integer" },
+              "startTileY": { "type": "integer" },
+              "endTileY": { "type": "integer" },
+              "blockerTile": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "bgItems": {
+      "type": "array",
+      "description": "Background objects (houses, trees, rocks, stairs, lamps, foreground canopies)",
+      "items": {
+        "type": "object",
+        "required": [
+          "templateId",
+          "tileX",
+          "tileY"
+        ],
+        "properties": {
+          "templateId": {
+            "type": "integer",
+            "description": "ID from bg_item_registry.json"
+          },
+          "tileX": {
+            "type": "integer",
+            "description": "X position in 24px tile units (signed int16)"
+          },
+          "tileY": {
+            "type": "integer",
+            "description": "Y position in 24px tile units (signed int16)"
+          }
+        }
+      }
+    },
+    "gameplay": {
+      "type": "object",
+      "required": [
+        "playerSpawn"
+      ],
+      "properties": {
+        "playerSpawn": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer", "description": "Spawn X in PIXELS" },
+            "y": { "type": "integer", "description": "Spawn Y in PIXELS" }
+          }
+        },
+        "mobs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["mobTemp", "mobLevel", "mobHp", "mobX", "mobY"],
+            "properties": {
+              "mobTemp": { "type": "integer" },
+              "mobLevel": { "type": "integer" },
+              "mobHp": { "type": "integer" },
+              "mobX": { "type": "integer", "description": "X spawn in PIXELS" },
+              "mobY": { "type": "integer", "description": "Y spawn in PIXELS" }
+            }
+          }
+        },
+        "npcs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["npcId", "npcX", "npcY"],
+            "properties": {
+              "npcId": { "type": "integer" },
+              "npcX": { "type": "integer", "description": "X standing pos in PIXELS" },
+              "npcY": { "type": "integer", "description": "Y standing pos in PIXELS" }
+            }
+          }
+        },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "minX", "minY", "maxX", "maxY", "goMap", "goX", "goY"],
+            "properties": {
+              "name": { "type": "string" },
+              "minX": { "type": "integer", "description": "Trigger rect minX in PIXELS" },
+              "minY": { "type": "integer", "description": "Trigger rect minY in PIXELS" },
+              "maxX": { "type": "integer", "description": "Trigger rect maxX in PIXELS" },
+              "maxY": { "type": "integer", "description": "Trigger rect maxY in PIXELS" },
+              "isEnter": { "type": "boolean", "default": false },
+              "isOffline": { "type": "boolean", "default": false },
+              "goMap": { "type": "integer" },
+              "goX": { "type": "integer", "description": "Target X spawn in PIXELS" },
+              "goY": { "type": "integer", "description": "Target Y spawn in PIXELS" }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

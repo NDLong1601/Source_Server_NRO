@@ -43,6 +43,7 @@ public class MySession extends Session {
     public byte zoomLevel;
     private volatile boolean clientInfoReady;
     private boolean assetVersionsSent;
+    private boolean infinityCastleBackgroundSent;
 
     public long lastTimeLogout;
     public boolean joinedGame;
@@ -118,6 +119,14 @@ public class MySession extends Session {
             return false;
         }
         this.assetVersionsSent = true;
+        return true;
+    }
+
+    public synchronized boolean markInfinityCastleBackgroundSent() {
+        if (!this.isAssetReady() || this.infinityCastleBackgroundSent) {
+            return false;
+        }
+        this.infinityCastleBackgroundSent = true;
         return true;
     }
 

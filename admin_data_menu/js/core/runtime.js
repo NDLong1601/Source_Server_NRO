@@ -69,6 +69,24 @@ function ReadFile(path) {
 }
 
 
+function WriteUtf8File(path, text) {
+  var stream = new ActiveXObject("ADODB.Stream");
+  stream.Type = 2;
+  stream.Charset = "utf-8";
+  stream.Open();
+  stream.WriteText(text == null ? "" : "" + text);
+  stream.SaveToFile(path, 2);
+  stream.Close();
+}
+
+
+function NewAdminJsonRequestPath(prefix) {
+  adminRequestId++;
+  var safePrefix = (prefix || "admin_request").replace(/[^A-Za-z0-9_-]/g, "_");
+  return rootDir + "\\logs\\" + safePrefix + "_" + (new Date().getTime()) + "_" + adminRequestId + ".json";
+}
+
+
 function ParseTsv(text) {
   text = RepairMojibake(text);
   text = text.replace(/^\uFEFF/, "");

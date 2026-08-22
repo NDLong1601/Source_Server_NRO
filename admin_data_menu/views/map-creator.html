@@ -1,0 +1,212 @@
+<div id="panelMapCreator" class="panel">
+  <div class="map-creator-shell">
+    <div class="map-project-pane">
+      <div class="map-pane-header">
+        <div class="section-title">Project Map</div>
+        <button type="button" class="compact" onclick="LoadMapCreatorProjects()">Làm mới</button>
+      </div>
+      <div class="map-new-card">
+        <div class="map-card-title">Tạo draft mới</div>
+        <label>Map ID</label><input type="text" id="mapCreatorNewId" value="186">
+        <label>Tên map</label><input type="text" id="mapCreatorNewName" value="Map mới">
+        <div class="row map-compact-row">
+          <div class="cell"><label>Rộng</label><input type="text" id="mapCreatorNewWidth" value="40"></div>
+          <div class="cell"><label>Cao</label><input type="text" id="mapCreatorNewHeight" value="20"></div>
+          <div class="cell"><label>Tileset</label><input type="text" id="mapCreatorNewTileSet" value="2"></div>
+        </div>
+        <button type="button" class="compact primary map-full-button" onclick="CreateMapCreatorProject()">Tạo Project</button>
+      </div>
+      <div class="map-import-card">
+        <div class="map-card-title">Import runtime hiện có</div>
+        <div class="map-inline-action"><input type="text" id="mapCreatorImportId" placeholder="Map ID"><button type="button" class="compact" onclick="ImportMapCreatorProject()">Import</button></div>
+        <div class="map-help">Chỉ tạo draft; không sửa runtime hay database.</div>
+      </div>
+      <div id="mapCreatorProjectList" class="map-project-list"></div>
+    </div>
+
+    <div class="map-workspace-pane">
+      <div class="map-workspace-toolbar">
+        <div class="map-project-heading"><span id="mapCreatorCurrentName">Chưa chọn project</span><span id="mapCreatorStatusBadge" class="map-status-badge">-</span></div>
+        <div class="map-workspace-actions">
+          <button type="button" class="compact" onclick="SaveMapCreatorProject(false)">Lưu draft</button>
+          <button type="button" class="compact primary" onclick="CompileMapCreatorProject()">Compile &amp; Preview</button>
+          <button type="button" class="compact" onclick="PlanMapCreatorRelease()">Kiểm tra Publish</button>
+          <button type="button" class="compact danger" onclick="PublishMapCreatorProject()">Publish</button>
+        </div>
+      </div>
+
+      <div class="map-editor-mode-strip">
+        <button type="button" id="mapModeCanvasButton" class="compact primary" onclick="ShowMapCreatorMode('canvas')">Canvas</button>
+        <button type="button" id="mapModeJsonButton" class="compact" onclick="ShowMapCreatorMode('json')">JSON</button>
+        <button type="button" id="mapModePreviewButton" class="compact" onclick="ShowMapCreatorMode('preview')">Compiled Preview</button>
+        <button type="button" id="mapModeReleasesButton" class="compact" onclick="ShowMapCreatorMode('releases')">Releases</button>
+        <button type="button" id="mapModeAcceptanceButton" class="compact" onclick="ShowMapCreatorMode('acceptance')">Nghiệm thu</button>
+        <button type="button" id="mapModeGuideButton" class="compact" onclick="ShowMapCreatorMode('guide')">Hướng dẫn</button>
+        <button type="button" id="mapCreatorUndoButton" class="compact" onclick="UndoMapCreatorChange()" disabled>Undo</button>
+        <button type="button" id="mapCreatorRedoButton" class="compact" onclick="RedoMapCreatorChange()" disabled>Redo</button>
+        <label class="map-autosave-toggle"><input type="checkbox" id="mapCreatorAutosave" checked onchange="ToggleMapCreatorAutosave()">Autosave</label>
+        <span id="mapCreatorAutosaveStatus" class="map-autosave-status saved">Đã đồng bộ draft</span>
+        <span id="mapCreatorRevision">Revision -</span>
+      </div>
+
+      <div class="map-layer-strip">
+        <label><input type="checkbox" id="mapLayer1Visible" checked onchange="RenderMapCanvas()">L1</label>
+        <label><input type="checkbox" id="mapLayer2Visible" checked onchange="RenderMapCanvas()">L2</label>
+        <label><input type="checkbox" id="mapLayer3Visible" checked onchange="RenderMapCanvas()">L3</label>
+        <label class="active"><input type="checkbox" id="mapTileLayerVisible" checked onchange="RenderMapCanvas()">Tilemap 24px</label>
+        <label class="entity"><input type="checkbox" id="mapEntityLayerVisible" checked onchange="RenderMapCanvas()">Player / NPC / Mob / Điểm chạm</label>
+        <label><input type="checkbox" id="mapLayer4Visible" checked onchange="RenderMapCanvas()">L4</label>
+      </div>
+
+      <div id="mapCanvasMode" class="map-editor-mode active">
+        <div class="map-canvas-tool-pane">
+          <div class="map-subheader">Công cụ</div>
+          <div class="map-tool-buttons">
+            <button type="button" id="mapToolSelect" class="compact primary" onclick="SetMapCanvasTool('select')">Chọn / kéo</button>
+            <button type="button" id="mapToolTile" class="compact" onclick="SetMapCanvasTool('tile')">Vẽ Tile</button>
+            <button type="button" id="mapToolErase" class="compact" onclick="SetMapCanvasTool('erase')">Xóa Tile</button>
+            <button type="button" id="mapToolAsset" class="compact" onclick="SetMapCanvasTool('asset')">Đặt Asset</button>
+            <button type="button" id="mapToolPlayer" class="compact" onclick="SetMapCanvasTool('player')">Player</button>
+            <button type="button" id="mapToolNpc" class="compact" onclick="SetMapCanvasTool('npc')">NPC</button>
+            <button type="button" id="mapToolMob" class="compact" onclick="SetMapCanvasTool('mob')">Mob</button>
+            <button type="button" id="mapToolWaypoint" class="compact" onclick="SetMapCanvasTool('waypoint')">Điểm chạm</button>
+          </div>
+          <label>Tile ID (0..127)</label><input type="text" id="mapCanvasTileId" value="35" onchange="RenderMapTilePalette()">
+          <select id="mapTilePaletteMode" class="map-tile-mode" onchange="RenderMapTilePalette()"><option value="frequent">Tile thường dùng</option><option value="all">Tất cả tile có ảnh</option></select>
+          <div id="mapTilePalette" class="map-tile-palette"></div>
+          <div class="map-tool-config">
+            <label>NPC ID</label><input type="text" id="mapCanvasNpcId" value="6">
+            <label>Mob template / Level / HP</label>
+            <div class="map-triple-input"><input type="text" id="mapCanvasMobId" value="1"><input type="text" id="mapCanvasMobLevel" value="1"><input type="text" id="mapCanvasMobHp" value="100"></div>
+            <label>Tên điểm chạm</label><input type="text" id="mapCanvasWaypointName" value="Cổng mới">
+            <label>Đi tới Map / X / Y</label>
+            <div class="map-triple-input"><input type="text" id="mapCanvasGoMap" value="0"><input type="text" id="mapCanvasGoX" value="60"><input type="text" id="mapCanvasGoY" value="432"></div>
+          </div>
+          <div class="map-selection-actions"><button type="button" class="compact" onclick="CopyMapCanvasSelection()">Copy</button><button type="button" class="compact" onclick="PasteMapCanvasSelection()">Paste</button><button type="button" class="compact danger" onclick="DeleteMapCanvasSelection()">Xóa</button></div>
+          <div id="mapCanvasSelectionInfo" class="map-selection-info">Chưa chọn đối tượng.</div>
+          <div class="map-resize-card">
+            <div class="map-card-title">Resize map an toàn</div>
+            <div class="map-inline-action"><input type="text" id="mapResizeWidth" value="40" title="Rộng tile"><span>×</span><input type="text" id="mapResizeHeight" value="20" title="Cao tile"></div>
+            <select id="mapResizeAnchor">
+              <option value="top-left">Giữ góc trên-trái</option><option value="top">Giữ cạnh trên</option><option value="top-right">Giữ góc trên-phải</option>
+              <option value="left">Giữ cạnh trái</option><option value="center">Giữ tâm</option><option value="right">Giữ cạnh phải</option>
+              <option value="bottom-left">Giữ góc dưới-trái</option><option value="bottom">Giữ cạnh dưới</option><option value="bottom-right">Giữ góc dưới-phải</option>
+            </select>
+            <button type="button" class="compact map-full-button" onclick="ResizeMapCreatorPlan()">Xem ảnh hưởng &amp; Resize</button>
+          </div>
+        </div>
+
+        <div class="map-canvas-center-pane">
+          <div class="map-subheader">
+            <span>Canvas 24px/tile, asset kéo chính xác 1px — <b id="mapTileVisualStatus">đang nạp tileset</b></span>
+            <span>Zoom <select id="mapCanvasZoom" onchange="ResizeMapCanvasCss()"><option value="0.25">25%</option><option value="0.5" selected>50%</option><option value="0.75">75%</option><option value="1">100%</option></select> <label><input type="checkbox" id="mapCanvasGridVisible" checked onchange="RenderMapCanvas()">Lưới</label> <b id="mapCanvasPointer">x=0, y=0</b></span>
+          </div>
+          <div id="mapCanvasStage" class="map-canvas-stage" ondragover="return AllowMapCanvasDrop(event)" ondragleave="return LeaveMapCanvasDropPreview(event)" ondrop="return DropMapCanvasAsset(event)"><canvas id="mapCreatorCanvas" width="960" height="480"></canvas><div id="mapCanvasEmpty" class="map-preview-empty">Chọn project để mở canvas.</div></div>
+        </div>
+
+        <div class="map-asset-pane">
+          <div class="map-subheader">Asset Layer 1–4</div>
+          <div class="map-upload-card">
+            <label>PNG chuẩn x4</label><input type="file" id="mapAssetFile" accept="image/png,image/*" onchange="InspectMapAssetFile(this)">
+            <label>Tên asset</label><input type="text" id="mapAssetName" value="Asset mới">
+            <div class="map-triple-input">
+              <span><label>Layer</label><select id="mapAssetLayer"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></span>
+              <span><label>Dx</label><input type="text" id="mapAssetDx" value="0"></span>
+              <span><label>Dy</label><input type="text" id="mapAssetDy" value="0"></span>
+            </div>
+            <div class="map-inline-action"><input type="text" id="mapAssetWidth" value="0" placeholder="W x4"><input type="text" id="mapAssetHeight" value="0" placeholder="H x4"><button type="button" class="compact primary" onclick="UploadMapCreatorAsset()">Upload</button></div>
+            <div id="mapAssetInspect" class="map-help">0/0 giữ nguyên kích thước PNG làm chuẩn x4.</div>
+          </div>
+          <div class="map-asset-filter"><select id="mapAssetLayerFilter" onchange="RenderMapAssetPalette()"><option value="all">Tất cả Layer</option><option value="1">Layer 1</option><option value="2">Layer 2</option><option value="3">Layer 3</option><option value="4">Layer 4</option></select><input type="text" id="mapAssetSearch" placeholder="Tìm ID..." onkeyup="RenderMapAssetPalette()"></div>
+          <div id="mapAssetPalette" class="map-asset-palette"></div>
+        </div>
+      </div>
+
+      <div id="mapJsonMode" class="map-editor-mode">
+        <div class="map-subheader"><span>teamobi-map-plan.json</span><span>Canvas materialize terrain thành matrix khi chỉnh sửa.</span></div>
+        <textarea id="mapCreatorPlanJson" class="map-plan-editor map-plan-editor-full" spellcheck="false" onkeyup="MarkMapCreatorJsonDirty()" onchange="MarkMapCreatorJsonDirty()"></textarea>
+      </div>
+
+      <div id="mapPreviewMode" class="map-editor-mode">
+        <div class="map-subheader"><span>Preview từ bundle đã compile</span><span><button type="button" id="mapCreatorCleanButton" class="compact" onclick="SetMapCreatorPreviewMode('clean')">Clean</button><button type="button" id="mapCreatorDebugButton" class="compact primary" onclick="SetMapCreatorPreviewMode('debug')">Debug + lưới</button></span></div>
+        <div id="mapCreatorPreviewStage" class="map-preview-stage map-preview-stage-full"><img id="mapCreatorPreviewImage" alt="Map preview" src=""><div id="mapCreatorPreviewEmpty" class="map-preview-empty">Compile project để tạo preview.</div></div>
+        <pre id="mapCreatorReleasePlan" class="map-release-plan map-release-plan-wide">Chưa kiểm tra publish.</pre>
+      </div>
+
+      <div id="mapReleaseMode" class="map-editor-mode">
+        <div class="map-subheader"><span>Lịch sử publish và kiểm tra sau restart</span><span><button type="button" class="compact" onclick="LoadMapCreatorReleases()">Làm mới</button><button type="button" class="compact primary" onclick="VerifySelectedMapCreatorRelease()">Verify Runtime + DB</button><button type="button" class="compact danger" onclick="RollbackSelectedMapCreatorRelease()">Rollback</button></span></div>
+        <div class="map-release-history-shell">
+          <div id="mapCreatorReleaseList" class="map-release-history-list"><div class="map-empty-projects">Chưa tải release.</div></div>
+          <div class="map-release-history-detail">
+            <div id="mapCreatorReleaseHeading" class="map-release-heading">Chưa chọn release</div>
+            <pre id="mapCreatorReleaseVerification" class="map-release-verification">Publish map để tạo release đầu tiên.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="mapAcceptanceMode" class="map-editor-mode">
+        <div class="map-subheader">
+          <span>Nghiệm thu production sau restart</span>
+          <span class="map-qa-actions"><select id="mapQaReleaseSelect" onchange="SelectMapCreatorQaRelease(this.value)"><option value="">Chọn release published</option></select><button type="button" class="compact" onclick="LoadMapCreatorAcceptance()">Kiểm tra lại</button><button type="button" class="compact primary" onclick="SaveMapCreatorAcceptance()">Lưu checklist</button></span>
+        </div>
+        <div class="map-qa-shell">
+          <div class="map-qa-summary-pane">
+            <div class="map-qa-title-row"><strong id="mapQaHeading">Chưa chọn release</strong><span id="mapQaReadyBadge" class="map-qa-ready pending">CHƯA SẴN SÀNG</span></div>
+            <div class="map-qa-status-grid">
+              <div class="map-qa-status-card"><span>Tự động</span><strong id="mapQaAutomaticStatus">Chưa chạy</strong></div>
+              <div class="map-qa-status-card"><span>Trong client</span><strong id="mapQaManualStatus">Chưa kiểm tra</strong></div>
+            </div>
+            <div class="map-qa-section-title">Kiểm tra tự động</div>
+            <div id="mapQaAutomaticChecks" class="map-qa-automatic-list"><div class="map-help">Chọn release để đối chiếu server, cổng, runtime và database.</div></div>
+            <div class="map-qa-callout"><strong>Trình tự đúng:</strong> Publish khi server dừng → khởi động server → Kiểm tra lại → đăng nhập client và hoàn thành checklist bên phải.</div>
+          </div>
+          <div class="map-qa-checklist-pane">
+            <div class="map-qa-section-title">Checklist kiểm tra trực tiếp trong game</div>
+            <div id="mapQaRequiredHint" class="map-help">Mục có dấu * là bắt buộc với nội dung của release.</div>
+            <div class="map-qa-check-grid">
+              <label class="map-qa-check" data-qa-key="clientLogin"><input type="checkbox" id="mapQaCheckClientLogin"><span>Đăng nhập client thành công</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="mapEntered"><input type="checkbox" id="mapQaCheckMapEntered"><span>Đi vào đúng Map ID, không disconnect</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="visualMatchesPreview"><input type="checkbox" id="mapQaCheckVisualMatchesPreview"><span>Hình ảnh khớp Compiled Preview</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="layersCorrect"><input type="checkbox" id="mapQaCheckLayersCorrect"><span>Layer 1–4 che trước/sau đúng</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="collisionAndGround"><input type="checkbox" id="mapQaCheckCollisionAndGround"><span>Đi, nhảy, va chạm và mặt đất đúng</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="waypoints"><input type="checkbox" id="mapQaCheckWaypoints"><span>Điểm chạm đưa đúng map/toạ độ</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="npcs"><input type="checkbox" id="mapQaCheckNpcs"><span>NPC xuất hiện đúng vị trí/chức năng</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="mobs"><input type="checkbox" id="mapQaCheckMobs"><span>Mob xuất hiện và đứng đúng mặt đất</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="zoomAssets"><input type="checkbox" id="mapQaCheckZoomAssets"><span>Asset rõ và đúng kích thước ở x1–x4</span><b>*</b></label>
+              <label class="map-qa-check" data-qa-key="noClientErrors"><input type="checkbox" id="mapQaCheckNoClientErrors"><span>Không thấy lỗi ảnh/map trong client log</span><b>*</b></label>
+            </div>
+            <div class="map-qa-form-row"><label>Người kiểm tra *</label><input type="text" id="mapQaTester" maxlength="80" placeholder="Ví dụ: Admin QA"></div>
+            <div class="map-qa-form-row map-qa-notes"><label>Ghi chú nghiệm thu</label><textarea id="mapQaNotes" maxlength="4000" placeholder="Thiết bị/client đã dùng, khu vực cần theo dõi hoặc lỗi còn lại..."></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mapGuideMode" class="map-editor-mode">
+        <div class="map-subheader"><span>Hướng dẫn sử dụng tab Tạo Map</span><span><button type="button" class="compact primary" onclick="ShowMapCreatorMode('canvas')">Bắt đầu ở Canvas</button></span></div>
+        <div class="map-guide-scroll">
+          <div class="map-guide-hero">
+            <strong>Quy trình chuẩn: Draft → Preview → Publish → Restart → Verify → Nghiệm thu</strong>
+            <span>Mọi thay đổi trước Publish chỉ nằm trong `map-tools/projects`; editor không tự dừng hoặc khởi động server.</span>
+          </div>
+          <div class="map-guide-grid">
+            <section class="map-guide-card"><h3>1. Tạo hoặc Import project</h3><p><b>Tạo draft mới:</b> nhập Map ID chưa dùng, tên, kích thước 1–127 ô và Tileset 1–42 rồi bấm Tạo Project.</p><p><b>Import runtime:</b> nhập Map ID đang có. Editor đọc tile/background và `map_template` để tạo bản nháp; chưa sửa dữ liệu đang chạy.</p></section>
+            <section class="map-guide-card"><h3>2. Vẽ tile và đặt đối tượng</h3><p>Chọn công cụ Vẽ/Xóa Tile rồi kéo trên lưới 24px. Khi kéo asset từ palette, bóng kéo và viền xanh trên canvas dùng đúng kích thước x1 mà client hiển thị. Thả ảnh tại góc trên-trái mong muốn, rồi chọn <b>Chọn / kéo</b> để căn trực tiếp.</p><p>Dùng L1–L3 cho cảnh phía sau, L4 cho vật che phía trước nhân vật. Có thể bật/tắt từng layer để kiểm tra.</p></section>
+            <section class="map-guide-card"><h3>3. Upload PNG chuẩn x4</h3><p>Chọn PNG, Layer, dx/dy rồi Upload. Kích thước W/H bằng 0 giữ nguyên ảnh nguồn. Hệ thống tự tạo x3 = 75%, x2 = 50%, x1 = 25%; canvas và client thật dùng kích thước x1.</p><p>Asset được kéo chính xác từng pixel. Compiler tự chuyển fine offset thành bg_item_template tương thích runtime, nên preview compile và kết quả sau restart giữ cùng vị trí.</p></section>
+            <section class="map-guide-card"><h3>4. Chỉnh sửa an toàn</h3><p>Dùng Undo/Redo hoặc Ctrl+Z, Ctrl+Y. Ctrl+C/Ctrl+V sao chép Asset/NPC/Mob/Điểm chạm; Delete xóa đối tượng chọn; Ctrl+S lưu draft. Khi đã chọn asset, phím mũi tên dịch 1px; Shift + mũi tên dịch 24px.</p><p>Resize cho phép chọn anchor. Luôn đọc báo cáo số tile bị cắt và entity bị clamp trước khi chấp nhận.</p></section>
+            <section class="map-guide-card"><h3>5. Compile &amp; Preview</h3><p>Bấm <b>Compile &amp; Preview</b>. Xem Clean để đánh giá hình, Debug để kiểm tra lưới, điểm chạm và entity. Nếu compile báo entity không đứng trên ground hoặc toạ độ vượt biên, quay lại Canvas sửa trước.</p><p>JSON dành cho chỉnh nâng cao; không trộn tile-space với pixel-space.</p></section>
+            <section class="map-guide-card"><h3>6. Kiểm tra và Publish</h3><p>Bấm <b>Kiểm tra Publish</b>. Hệ thống chặn khi build cũ, manifest sai, server còn chạy, hoặc thiếu Map/NPC/Mob template tham chiếu.</p><p>Khi mọi mục hợp lệ: dừng server, bấm Publish và xác nhận. Publish ghi runtime, DB và tăng `data/map/version.txt` trong một release có backup.</p></section>
+            <section class="map-guide-card"><h3>7. Restart và Releases</h3><p>Khởi động lại server để nạp map. Trong mode <b>Releases</b>, chọn release mới nhất và bấm Verify Runtime + DB. Kết quả phải là KHỚP RELEASE.</p><p>Nếu phát hiện drift, không rollback mù. Chỉ rollback release published mới nhất, khi server đã dừng và checksum vẫn khớp.</p></section>
+            <section class="map-guide-card"><h3>8. Nghiệm thu trong client</h3><p>Mở mode <b>Nghiệm thu</b>, chọn release và bấm Kiểm tra lại. Sau khi bốn kiểm tra tự động đều OK, đăng nhập game, đi vào map và thử hình ảnh, collision, cổng, NPC, Mob, asset x1–x4.</p><p>Điền người kiểm tra, đánh dấu các mục bắt buộc và Lưu checklist. Chỉ trạng thái SẴN SÀNG NGHIỆM THU mới hoàn tất Giai đoạn 6.</p></section>
+          </div>
+          <div class="map-guide-contract">
+            <h3>Quy tắc toạ độ cần nhớ</h3>
+            <div><b>Tile:</b> tileX, tileY × 24px | <b>Asset:</b> ô 24px + fine offset 1px | <b>Player/NPC/Mob/Điểm chạm:</b> pixel tuyệt đối | <b>Kích thước:</b> tối đa 127×127 tile | <b>Layer:</b> L1 → L2 → L3 → Tile → Entity → L4</div>
+          </div>
+          <div class="map-guide-warning"><b>Khi có lỗi:</b> không sửa trực tiếp file trong `data/map` hoặc SQL release. Quay lại project, tạo revision mới, Compile &amp; Preview rồi Publish thành release mới. Giữ release cũ để đối chiếu/rollback.</div>
+        </div>
+      </div>
+
+      <div id="mapCreatorMessage" class="message map-creator-message">Sẵn sàng.</div>
+    </div>
+  </div>
+</div>

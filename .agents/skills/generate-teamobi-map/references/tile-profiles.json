@@ -1,0 +1,3250 @@
+{
+  "1": {
+    "tileSetId": 1,
+    "exampleMaps": [
+      {
+        "mapId": 0,
+        "name": "Làng Aru"
+      },
+      {
+        "mapId": 1,
+        "name": "Đồi hoa cúc"
+      },
+      {
+        "mapId": 2,
+        "name": "Thung lũng tre"
+      },
+      {
+        "mapId": 21,
+        "name": "Nhà Gôhan"
+      },
+      {
+        "mapId": 24,
+        "name": "Trạm tàu vũ trụ"
+      },
+      {
+        "mapId": 39,
+        "name": "Vách núi Aru"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        18,
+        31,
+        32,
+        33,
+        34,
+        39
+      ],
+      "leftWall": [
+        1,
+        23,
+        28,
+        39,
+        28,
+        29,
+        30
+      ],
+      "rightWall": [
+        18,
+        24,
+        29,
+        39,
+        28,
+        29,
+        30
+      ],
+      "water": [],
+      "slope": [
+        26
+      ],
+      "bridge": [],
+      "blocker": [
+        28,
+        29,
+        30,
+        39
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 39,
+      "undergroundFill": 22,
+      "leftEdge": 1,
+      "rightEdge": 39,
+      "slope": 26,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        39,
+        7,
+        8,
+        13,
+        9
+      ],
+      "fill": [
+        22,
+        39,
+        23,
+        24,
+        27
+      ],
+      "leftEdge": [
+        1,
+        39,
+        16
+      ],
+      "rightEdge": [
+        39,
+        18,
+        11
+      ]
+    },
+    "confidence": "high"
+  },
+  "2": {
+    "tileSetId": 2,
+    "exampleMaps": [
+      {
+        "mapId": 3,
+        "name": "Rừng nấm"
+      },
+      {
+        "mapId": 4,
+        "name": "Rừng xương"
+      },
+      {
+        "mapId": 27,
+        "name": "Rừng Bamboo"
+      },
+      {
+        "mapId": 28,
+        "name": "Rừng dương xỉ"
+      },
+      {
+        "mapId": 164,
+        "name": "Map riêng tư"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        26,
+        30,
+        31,
+        32,
+        33,
+        35
+      ],
+      "leftWall": [
+        21,
+        23,
+        15,
+        9,
+        35
+      ],
+      "rightWall": [
+        22,
+        24,
+        20,
+        14,
+        35
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [
+        26
+      ],
+      "blocker": [
+        35
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 35,
+      "undergroundFill": 17,
+      "leftEdge": 4,
+      "rightEdge": 25,
+      "slope": null,
+      "bridge": 26,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        35,
+        28,
+        4,
+        31,
+        7
+      ],
+      "fill": [
+        17,
+        35,
+        11,
+        26,
+        20
+      ],
+      "leftEdge": [
+        4,
+        9,
+        7
+      ],
+      "rightEdge": [
+        25,
+        4,
+        1
+      ]
+    },
+    "confidence": "high"
+  },
+  "3": {
+    "tileSetId": 3,
+    "exampleMaps": [
+      {
+        "mapId": 5,
+        "name": "Đảo Kamê"
+      },
+      {
+        "mapId": 29,
+        "name": "Nam Kamê"
+      },
+      {
+        "mapId": 30,
+        "name": "Đảo Bulông"
+      },
+      {
+        "mapId": 89,
+        "name": "Hành tinh Rudeeze"
+      },
+      {
+        "mapId": 147,
+        "name": "Sa mạc"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        29,
+        23,
+        41,
+        42,
+        43,
+        45,
+        46,
+        47,
+        54
+      ],
+      "leftWall": [
+        23,
+        25,
+        39,
+        24,
+        47,
+        51,
+        53,
+        40,
+        54,
+        52,
+        48
+      ],
+      "rightWall": [
+        29,
+        26,
+        27,
+        47,
+        40,
+        53,
+        54,
+        52,
+        48
+      ],
+      "water": [
+        31
+      ],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        48,
+        52,
+        53,
+        47,
+        28,
+        51,
+        54
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 54,
+      "undergroundFill": 32,
+      "leftEdge": 23,
+      "rightEdge": 29,
+      "slope": null,
+      "bridge": null,
+      "water": 31
+    },
+    "frequentTiles": {
+      "top": [
+        54,
+        34,
+        36,
+        14,
+        35
+      ],
+      "fill": [
+        32,
+        54,
+        5,
+        31,
+        6
+      ],
+      "leftEdge": [
+        23,
+        36,
+        54
+      ],
+      "rightEdge": [
+        29,
+        54,
+        36
+      ]
+    },
+    "confidence": "high"
+  },
+  "4": {
+    "tileSetId": 4,
+    "exampleMaps": [
+      {
+        "mapId": 6,
+        "name": "Đông Karin"
+      },
+      {
+        "mapId": 47,
+        "name": "Rừng Karin"
+      },
+      {
+        "mapId": 111,
+        "name": "Đông Nam Karin"
+      },
+      {
+        "mapId": 146,
+        "name": "Tây Karin"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        17,
+        19
+      ],
+      "leftWall": [
+        17,
+        19
+      ],
+      "rightWall": [
+        17,
+        19
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        19
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 3,
+      "undergroundFill": 17,
+      "leftEdge": 19,
+      "rightEdge": 19,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        3,
+        2,
+        1,
+        4,
+        5
+      ],
+      "fill": [
+        17,
+        19,
+        11,
+        13,
+        9
+      ],
+      "leftEdge": [
+        19
+      ],
+      "rightEdge": [
+        19
+      ]
+    },
+    "confidence": "high"
+  },
+  "5": {
+    "tileSetId": 5,
+    "exampleMaps": [
+      {
+        "mapId": 7,
+        "name": "Làng Mori"
+      },
+      {
+        "mapId": 8,
+        "name": "Đồi nấm tím"
+      },
+      {
+        "mapId": 9,
+        "name": "Thị trấn Moori"
+      },
+      {
+        "mapId": 22,
+        "name": "Nhà Moori"
+      },
+      {
+        "mapId": 25,
+        "name": "Trạm tàu vũ trụ"
+      },
+      {
+        "mapId": 40,
+        "name": "Vách núi Moori"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        16,
+        21,
+        30,
+        31,
+        33,
+        34,
+        38
+      ],
+      "leftWall": [
+        16,
+        17,
+        18,
+        28,
+        30,
+        38
+      ],
+      "rightWall": [
+        19,
+        20,
+        21,
+        29,
+        31,
+        38
+      ],
+      "water": [
+        23
+      ],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        38
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 26,
+      "undergroundFill": 38,
+      "leftEdge": 26,
+      "rightEdge": 21,
+      "slope": null,
+      "bridge": null,
+      "water": 23
+    },
+    "frequentTiles": {
+      "top": [
+        26,
+        27,
+        25,
+        7,
+        38
+      ],
+      "fill": [
+        38,
+        3,
+        24,
+        23,
+        7
+      ],
+      "leftEdge": [
+        26,
+        16,
+        37
+      ],
+      "rightEdge": [
+        21,
+        26,
+        25
+      ]
+    },
+    "confidence": "high"
+  },
+  "6": {
+    "tileSetId": 6,
+    "exampleMaps": [
+      {
+        "mapId": 10,
+        "name": "Thung lũng Namếc"
+      },
+      {
+        "mapId": 86,
+        "name": "Hành tinh Polaris"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        33
+      ],
+      "leftWall": [
+        33
+      ],
+      "rightWall": [
+        33
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        33
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 33,
+      "undergroundFill": 32,
+      "leftEdge": 19,
+      "rightEdge": 19,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        33,
+        19,
+        25,
+        20,
+        7
+      ],
+      "fill": [
+        32,
+        5,
+        33,
+        7,
+        26
+      ],
+      "leftEdge": [
+        19,
+        25,
+        20
+      ],
+      "rightEdge": [
+        19,
+        23,
+        25
+      ]
+    },
+    "confidence": "high"
+  },
+  "7": {
+    "tileSetId": 7,
+    "exampleMaps": [
+      {
+        "mapId": 11,
+        "name": "Thung lũng Maima"
+      },
+      {
+        "mapId": 12,
+        "name": "Vực maima"
+      },
+      {
+        "mapId": 31,
+        "name": "Núi hoa vàng"
+      },
+      {
+        "mapId": 32,
+        "name": "Núi hoa tím"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        15,
+        14,
+        33
+      ],
+      "leftWall": [
+        9,
+        12,
+        7,
+        14,
+        16,
+        33
+      ],
+      "rightWall": [
+        10,
+        13,
+        8,
+        15,
+        17,
+        33
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        33
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 5,
+      "undergroundFill": 21,
+      "leftEdge": 27,
+      "rightEdge": 8,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        5,
+        15,
+        4,
+        27,
+        3
+      ],
+      "fill": [
+        21,
+        33,
+        13,
+        12,
+        11
+      ],
+      "leftEdge": [
+        27,
+        7,
+        14
+      ],
+      "rightEdge": [
+        8,
+        28,
+        15
+      ]
+    },
+    "confidence": "high"
+  },
+  "8": {
+    "tileSetId": 8,
+    "exampleMaps": [
+      {
+        "mapId": 13,
+        "name": "Đảo Guru"
+      },
+      {
+        "mapId": 33,
+        "name": "Nam Guru"
+      },
+      {
+        "mapId": 34,
+        "name": "Đông Nam Guru"
+      },
+      {
+        "mapId": 88,
+        "name": "Hành tinh Monmaasu"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        15,
+        12,
+        16,
+        17,
+        40,
+        32,
+        34,
+        42
+      ],
+      "leftWall": [
+        4,
+        10,
+        27,
+        42,
+        25,
+        10
+      ],
+      "rightWall": [
+        11,
+        15,
+        28,
+        42,
+        24,
+        11
+      ],
+      "water": [
+        18
+      ],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        42
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 23,
+      "undergroundFill": 20,
+      "leftEdge": 23,
+      "rightEdge": 23,
+      "slope": null,
+      "bridge": null,
+      "water": 18
+    },
+    "frequentTiles": {
+      "top": [
+        23,
+        42,
+        22,
+        21,
+        34
+      ],
+      "fill": [
+        20,
+        42,
+        18,
+        8,
+        7
+      ],
+      "leftEdge": [
+        23,
+        4,
+        22
+      ],
+      "rightEdge": [
+        23,
+        15,
+        42
+      ]
+    },
+    "confidence": "high"
+  },
+  "9": {
+    "tileSetId": 9,
+    "exampleMaps": [
+      {
+        "mapId": 14,
+        "name": "Làng Kakarot"
+      },
+      {
+        "mapId": 15,
+        "name": "Đồi hoang"
+      },
+      {
+        "mapId": 16,
+        "name": "Làng Plant"
+      },
+      {
+        "mapId": 23,
+        "name": "Nhà Broly"
+      },
+      {
+        "mapId": 26,
+        "name": "Trạm tàu vũ trụ"
+      },
+      {
+        "mapId": 41,
+        "name": "Vực Plant"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        9,
+        10,
+        11,
+        12,
+        18,
+        26
+      ],
+      "leftWall": [
+        12,
+        19,
+        26,
+        21,
+        25
+      ],
+      "rightWall": [
+        18,
+        20,
+        26,
+        21,
+        25
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        21,
+        25
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 6,
+      "undergroundFill": 13,
+      "leftEdge": 6,
+      "rightEdge": 26,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        6,
+        26,
+        3,
+        24,
+        5
+      ],
+      "fill": [
+        13,
+        26,
+        11,
+        17,
+        16
+      ],
+      "leftEdge": [
+        6,
+        12,
+        26
+      ],
+      "rightEdge": [
+        26,
+        6,
+        23
+      ]
+    },
+    "confidence": "high"
+  },
+  "10": {
+    "tileSetId": 10,
+    "exampleMaps": [
+      {
+        "mapId": 17,
+        "name": "Rừng nguyên sinh"
+      },
+      {
+        "mapId": 18,
+        "name": "Rừng thông Xayda"
+      },
+      {
+        "mapId": 35,
+        "name": "Rừng cọ"
+      },
+      {
+        "mapId": 36,
+        "name": "Rừng đá"
+      },
+      {
+        "mapId": 50,
+        "name": "Thánh địa Kaio"
+      },
+      {
+        "mapId": 90,
+        "name": "Hành tinh Gelbo"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        4,
+        5,
+        10,
+        11,
+        12,
+        13,
+        18,
+        28
+      ],
+      "leftWall": [
+        1,
+        4,
+        15,
+        28
+      ],
+      "rightWall": [
+        2,
+        5,
+        16,
+        28
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        28
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 28,
+      "undergroundFill": 7,
+      "leftEdge": 4,
+      "rightEdge": 5,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        28,
+        23,
+        27,
+        17,
+        26
+      ],
+      "fill": [
+        7,
+        28,
+        3,
+        29,
+        15
+      ],
+      "leftEdge": [
+        4,
+        26,
+        23
+      ],
+      "rightEdge": [
+        5,
+        27,
+        22
+      ]
+    },
+    "confidence": "high"
+  },
+  "11": {
+    "tileSetId": 11,
+    "exampleMaps": [
+      {
+        "mapId": 19,
+        "name": "Thành phố Vegeta"
+      },
+      {
+        "mapId": 84,
+        "name": "Siêu Thị"
+      },
+      {
+        "mapId": 87,
+        "name": "Hành tinh Cretaceous"
+      },
+      {
+        "mapId": 104,
+        "name": "Sân sau siêu thị"
+      },
+      {
+        "mapId": 126,
+        "name": "Thành phố Santa"
+      },
+      {
+        "mapId": 149,
+        "name": "Thành phố Santa"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        17,
+        18,
+        23
+      ],
+      "leftWall": [
+        23
+      ],
+      "rightWall": [
+        23
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        23
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 23,
+      "undergroundFill": 19,
+      "leftEdge": 11,
+      "rightEdge": 22,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        23,
+        12,
+        11,
+        22,
+        21
+      ],
+      "fill": [
+        19,
+        23,
+        17,
+        18,
+        1
+      ],
+      "leftEdge": [
+        11,
+        21,
+        23
+      ],
+      "rightEdge": [
+        22,
+        10,
+        16
+      ]
+    },
+    "confidence": "high"
+  },
+  "12": {
+    "tileSetId": 12,
+    "exampleMaps": [
+      {
+        "mapId": 20,
+        "name": "Vách núi đen"
+      },
+      {
+        "mapId": 37,
+        "name": "Thung lũng đen"
+      },
+      {
+        "mapId": 38,
+        "name": "Bờ vực đen"
+      },
+      {
+        "mapId": 114,
+        "name": "Cổng phi thuyền"
+      },
+      {
+        "mapId": 115,
+        "name": "Phòng chờ"
+      },
+      {
+        "mapId": 117,
+        "name": "Cửa Ải 1"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        34
+      ],
+      "leftWall": [
+        1,
+        10,
+        34
+      ],
+      "rightWall": [
+        6,
+        11,
+        34
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        34
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 6,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        1,
+        34,
+        19,
+        2,
+        23
+      ],
+      "fill": [
+        1,
+        9,
+        2,
+        34,
+        11
+      ],
+      "leftEdge": [
+        1,
+        34,
+        18
+      ],
+      "rightEdge": [
+        6,
+        23,
+        34
+      ]
+    },
+    "confidence": "high"
+  },
+  "13": {
+    "tileSetId": 13,
+    "exampleMaps": [
+      {
+        "mapId": 45,
+        "name": "Thần điện"
+      },
+      {
+        "mapId": 46,
+        "name": "Tháp Karin"
+      },
+      {
+        "mapId": 48,
+        "name": "Hành tinh Kaio"
+      },
+      {
+        "mapId": 118,
+        "name": "Cửa Ải 2"
+      },
+      {
+        "mapId": 145,
+        "name": "Võ Đài Siêu Cấp"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "leftWall": [
+        2,
+        3
+      ],
+      "rightWall": [
+        2,
+        4
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 2,
+      "leftEdge": 3,
+      "rightEdge": 4,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        1,
+        3,
+        2
+      ],
+      "fill": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "leftEdge": [
+        3,
+        2
+      ],
+      "rightEdge": [
+        4,
+        3,
+        2
+      ]
+    },
+    "confidence": "high"
+  },
+  "14": {
+    "tileSetId": 14,
+    "exampleMaps": [
+      {
+        "mapId": 49,
+        "name": "Phòng tập thời gian"
+      },
+      {
+        "mapId": 141,
+        "name": "Con đường rắn độc"
+      },
+      {
+        "mapId": 142,
+        "name": "Con đường rắn độc"
+      },
+      {
+        "mapId": 143,
+        "name": "Con đường rắn độc"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "leftWall": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "rightWall": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        8,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 2,
+      "rightEdge": 2,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        1,
+        5,
+        2,
+        6
+      ],
+      "fill": [
+        1,
+        2,
+        6,
+        4,
+        3
+      ],
+      "leftEdge": [
+        2,
+        6
+      ],
+      "rightEdge": [
+        2,
+        6
+      ]
+    },
+    "confidence": "high"
+  },
+  "15": {
+    "tileSetId": 15,
+    "exampleMaps": [
+      {
+        "mapId": 51,
+        "name": "Đấu trường"
+      },
+      {
+        "mapId": 148,
+        "name": "Lâu đài Lychee"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "leftWall": [
+        6,
+        10
+      ],
+      "rightWall": [
+        6,
+        11
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        7,
+        8,
+        9
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 2,
+      "undergroundFill": 9,
+      "leftEdge": 2,
+      "rightEdge": 6,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        2,
+        5,
+        6
+      ],
+      "fill": [
+        9,
+        6,
+        3,
+        4,
+        2
+      ],
+      "leftEdge": [
+        2,
+        6
+      ],
+      "rightEdge": []
+    },
+    "confidence": "high"
+  },
+  "16": {
+    "tileSetId": 16,
+    "exampleMaps": [
+      {
+        "mapId": 53,
+        "name": "Tường thành 1"
+      },
+      {
+        "mapId": 58,
+        "name": "Tường thành 2"
+      },
+      {
+        "mapId": 59,
+        "name": "Tường thành 3"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "leftWall": [
+        1,
+        2,
+        3,
+        6,
+        8
+      ],
+      "rightWall": [
+        1,
+        2,
+        3,
+        7,
+        8
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 5,
+      "undergroundFill": 1,
+      "leftEdge": 6,
+      "rightEdge": 7,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        5,
+        4,
+        7,
+        8,
+        6
+      ],
+      "fill": [
+        1,
+        8,
+        2,
+        3
+      ],
+      "leftEdge": [
+        6,
+        8
+      ],
+      "rightEdge": [
+        7,
+        8
+      ]
+    },
+    "confidence": "high"
+  },
+  "17": {
+    "tileSetId": 17,
+    "exampleMaps": [
+      {
+        "mapId": 54,
+        "name": "Tầng 3"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        28,
+        1,
+        12,
+        21,
+        22,
+        23,
+        24,
+        27,
+        35,
+        36
+      ],
+      "leftWall": [
+        23,
+        21,
+        24,
+        25,
+        35
+      ],
+      "rightWall": [
+        23,
+        21,
+        26,
+        27,
+        36
+      ],
+      "water": [
+        34
+      ],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        5,
+        6,
+        8
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 9,
+      "undergroundFill": 10,
+      "leftEdge": 23,
+      "rightEdge": 23,
+      "slope": null,
+      "bridge": null,
+      "water": 34
+    },
+    "frequentTiles": {
+      "top": [
+        9
+      ],
+      "fill": [
+        10,
+        5,
+        28,
+        4,
+        23
+      ],
+      "leftEdge": [
+        23
+      ],
+      "rightEdge": [
+        23
+      ]
+    },
+    "confidence": "high"
+  },
+  "18": {
+    "tileSetId": 18,
+    "exampleMaps": [
+      {
+        "mapId": 60,
+        "name": "Trại độc nhãn 1"
+      },
+      {
+        "mapId": 61,
+        "name": "Trại độc nhãn 2"
+      },
+      {
+        "mapId": 62,
+        "name": "Trại độc nhãn 3"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        4,
+        13,
+        14,
+        15,
+        16,
+        23
+      ],
+      "leftWall": [
+        14,
+        18,
+        20,
+        23
+      ],
+      "rightWall": [
+        16,
+        19,
+        22,
+        23
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 10,
+      "undergroundFill": 12,
+      "leftEdge": 14,
+      "rightEdge": 16,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        10,
+        15,
+        23,
+        3
+      ],
+      "fill": [
+        12,
+        23,
+        8,
+        17,
+        3
+      ],
+      "leftEdge": [
+        14,
+        10
+      ],
+      "rightEdge": [
+        16,
+        10
+      ]
+    },
+    "confidence": "high"
+  },
+  "19": {
+    "tileSetId": 19,
+    "exampleMaps": [
+      {
+        "mapId": 63,
+        "name": "Trại lính Fide"
+      },
+      {
+        "mapId": 64,
+        "name": "Núi dây leo"
+      },
+      {
+        "mapId": 65,
+        "name": "Núi cây quỷ"
+      },
+      {
+        "mapId": 66,
+        "name": "Trại qủy già"
+      },
+      {
+        "mapId": 67,
+        "name": "Vực chết"
+      },
+      {
+        "mapId": 79,
+        "name": "Núi khỉ đỏ"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        17,
+        18,
+        21,
+        22,
+        25,
+        26,
+        27
+      ],
+      "leftWall": [
+        1,
+        6,
+        27,
+        19,
+        28,
+        25,
+        24
+      ],
+      "rightWall": [
+        5,
+        12,
+        27,
+        19,
+        28,
+        26,
+        24
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        19,
+        27,
+        28
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 27,
+      "undergroundFill": 11,
+      "leftEdge": 16,
+      "rightEdge": 13,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        27,
+        15,
+        14,
+        16,
+        13
+      ],
+      "fill": [
+        11,
+        27,
+        12,
+        6,
+        28
+      ],
+      "leftEdge": [
+        16,
+        15,
+        1
+      ],
+      "rightEdge": [
+        13,
+        5,
+        16
+      ]
+    },
+    "confidence": "high"
+  },
+  "20": {
+    "tileSetId": 20,
+    "exampleMaps": [
+      {
+        "mapId": 68,
+        "name": "Thung lũng Nappa"
+      },
+      {
+        "mapId": 69,
+        "name": "Vực cấm"
+      },
+      {
+        "mapId": 70,
+        "name": "Núi Appule"
+      },
+      {
+        "mapId": 71,
+        "name": "Căn cứ Raspberry"
+      },
+      {
+        "mapId": 72,
+        "name": "Thung lũng Raspberry"
+      },
+      {
+        "mapId": 81,
+        "name": "Hang quỷ chim"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        10,
+        15,
+        16,
+        19,
+        20,
+        36,
+        37
+      ],
+      "leftWall": [
+        8,
+        10,
+        14,
+        20,
+        34,
+        37,
+        18,
+        14,
+        34
+      ],
+      "rightWall": [
+        7,
+        9,
+        19,
+        36,
+        38,
+        34,
+        37,
+        18,
+        34,
+        38
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        6,
+        8,
+        9,
+        13,
+        14,
+        18,
+        27,
+        34,
+        37,
+        38
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 29,
+      "undergroundFill": 7,
+      "leftEdge": 37,
+      "rightEdge": 24,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        29,
+        37,
+        31,
+        11,
+        26
+      ],
+      "fill": [
+        7,
+        11,
+        37,
+        3,
+        34
+      ],
+      "leftEdge": [
+        37,
+        35,
+        29
+      ],
+      "rightEdge": [
+        24,
+        37,
+        36
+      ]
+    },
+    "confidence": "high"
+  },
+  "21": {
+    "tileSetId": 21,
+    "exampleMaps": [
+      {
+        "mapId": 73,
+        "name": "Thung lũng chết"
+      },
+      {
+        "mapId": 74,
+        "name": "Đồi cây Fide"
+      },
+      {
+        "mapId": 75,
+        "name": "Khe núi tử thần"
+      },
+      {
+        "mapId": 76,
+        "name": "Núi đá"
+      },
+      {
+        "mapId": 77,
+        "name": "Rừng đá"
+      },
+      {
+        "mapId": 83,
+        "name": "Hang khỉ đen"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17
+      ],
+      "leftWall": [
+        10,
+        14,
+        16,
+        17
+      ],
+      "rightWall": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        16,
+        17
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 17,
+      "undergroundFill": 2,
+      "leftEdge": 12,
+      "rightEdge": 12,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        17,
+        1,
+        12,
+        6,
+        8
+      ],
+      "fill": [
+        2,
+        17,
+        16,
+        9,
+        13
+      ],
+      "leftEdge": [
+        12,
+        14,
+        17
+      ],
+      "rightEdge": [
+        12,
+        15,
+        17
+      ]
+    },
+    "confidence": "high"
+  },
+  "22": {
+    "tileSetId": 22,
+    "exampleMaps": [
+      {
+        "mapId": 92,
+        "name": "Thành phố phía đông"
+      },
+      {
+        "mapId": 93,
+        "name": "Thành phố phía nam"
+      },
+      {
+        "mapId": 94,
+        "name": "Đảo Balê"
+      },
+      {
+        "mapId": 96,
+        "name": "Cao nguyên"
+      },
+      {
+        "mapId": 102,
+        "name": "Nhà Bunma"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "leftWall": [
+        11,
+        12,
+        13,
+        17
+      ],
+      "rightWall": [
+        14,
+        15,
+        16,
+        17
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 5,
+      "undergroundFill": 9,
+      "leftEdge": 13,
+      "rightEdge": 15,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        5,
+        4,
+        17,
+        7,
+        6
+      ],
+      "fill": [
+        9,
+        17,
+        8,
+        1,
+        16
+      ],
+      "leftEdge": [
+        13,
+        17
+      ],
+      "rightEdge": [
+        15,
+        17
+      ]
+    },
+    "confidence": "high"
+  },
+  "23": {
+    "tileSetId": 23,
+    "exampleMaps": [
+      {
+        "mapId": 97,
+        "name": "Thành phố phía bắc"
+      },
+      {
+        "mapId": 98,
+        "name": "Ngọn núi phía bắc"
+      },
+      {
+        "mapId": 99,
+        "name": "Thung lũng phía bắc"
+      },
+      {
+        "mapId": 100,
+        "name": "Thị trấn Ginder"
+      },
+      {
+        "mapId": 103,
+        "name": "Võ đài Xên bọ hung"
+      },
+      {
+        "mapId": 113,
+        "name": "Đại hội võ thuật"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20
+      ],
+      "leftWall": [
+        14,
+        16,
+        18,
+        20
+      ],
+      "rightWall": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        23
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 10,
+      "undergroundFill": 13,
+      "leftEdge": 14,
+      "rightEdge": 15,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        10,
+        21,
+        7,
+        29,
+        8
+      ],
+      "fill": [
+        13,
+        20,
+        2,
+        21,
+        7
+      ],
+      "leftEdge": [
+        14,
+        20,
+        1
+      ],
+      "rightEdge": [
+        15,
+        8,
+        20
+      ]
+    },
+    "confidence": "high"
+  },
+  "24": {
+    "tileSetId": 24,
+    "exampleMaps": [
+      {
+        "mapId": 105,
+        "name": "Cánh đồng tuyết"
+      },
+      {
+        "mapId": 106,
+        "name": "Rừng tuyết"
+      },
+      {
+        "mapId": 107,
+        "name": "Núi tuyết"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        15,
+        16,
+        17,
+        18,
+        2,
+        14,
+        1,
+        13,
+        23
+      ],
+      "leftWall": [
+        6,
+        1,
+        10,
+        13,
+        23
+      ],
+      "rightWall": [
+        7,
+        2,
+        11,
+        14,
+        23
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        12,
+        13,
+        14,
+        23
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 20,
+      "undergroundFill": 8,
+      "leftEdge": 19,
+      "rightEdge": 22,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        20,
+        21,
+        19,
+        22,
+        23
+      ],
+      "fill": [
+        8,
+        15,
+        23,
+        9,
+        5
+      ],
+      "leftEdge": [
+        19,
+        20,
+        23
+      ],
+      "rightEdge": [
+        22,
+        23,
+        20
+      ]
+    },
+    "confidence": "high"
+  },
+  "25": {
+    "tileSetId": 25,
+    "exampleMaps": [
+      {
+        "mapId": 108,
+        "name": "Dòng sông băng"
+      },
+      {
+        "mapId": 109,
+        "name": "Rừng băng"
+      },
+      {
+        "mapId": 110,
+        "name": "Hang băng"
+      },
+      {
+        "mapId": 152,
+        "name": "Vùng đất băng giá"
+      },
+      {
+        "mapId": 158,
+        "name": "Bắc thánh địa"
+      },
+      {
+        "mapId": 159,
+        "name": "Nam thánh Địa"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        4,
+        5,
+        6,
+        7,
+        23
+      ],
+      "leftWall": [
+        4,
+        21,
+        16,
+        23
+      ],
+      "rightWall": [
+        7,
+        22,
+        17,
+        23
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        18,
+        19,
+        20,
+        21,
+        22
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 9,
+      "undergroundFill": 1,
+      "leftEdge": 8,
+      "rightEdge": 15,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        9,
+        23,
+        8,
+        10,
+        12
+      ],
+      "fill": [
+        1,
+        23,
+        2,
+        6,
+        5
+      ],
+      "leftEdge": [
+        8,
+        14,
+        4
+      ],
+      "rightEdge": [
+        15,
+        9,
+        7
+      ]
+    },
+    "confidence": "high"
+  },
+  "26": {
+    "tileSetId": 26,
+    "exampleMaps": [
+      {
+        "mapId": 112,
+        "name": "Võ đài Hạt Mít"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        6,
+        7,
+        4,
+        5
+      ],
+      "leftWall": [
+        6,
+        8
+      ],
+      "rightWall": [
+        6,
+        8
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        6,
+        7,
+        8
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 7,
+      "undergroundFill": 1,
+      "leftEdge": 6,
+      "rightEdge": 6,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        7,
+        4,
+        5,
+        6,
+        8
+      ],
+      "fill": [
+        1,
+        6,
+        8,
+        2,
+        7
+      ],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "high"
+  },
+  "27": {
+    "tileSetId": 27,
+    "exampleMaps": [
+      {
+        "mapId": 131,
+        "name": "Hành Tinh Yardart"
+      },
+      {
+        "mapId": 132,
+        "name": "Hành Tinh Yardart 2"
+      },
+      {
+        "mapId": 133,
+        "name": "Hành Tinh Yardart 3"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        11,
+        16,
+        17
+      ],
+      "leftWall": [
+        11,
+        12,
+        14,
+        17
+      ],
+      "rightWall": [
+        13,
+        14,
+        16,
+        17
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 6,
+      "undergroundFill": 1,
+      "leftEdge": 15,
+      "rightEdge": 15,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        6,
+        15,
+        7,
+        8,
+        17
+      ],
+      "fill": [
+        1,
+        17,
+        14,
+        5,
+        10
+      ],
+      "leftEdge": [
+        15,
+        17
+      ],
+      "rightEdge": [
+        15,
+        17
+      ]
+    },
+    "confidence": "high"
+  },
+  "28": {
+    "tileSetId": 28,
+    "exampleMaps": [
+      {
+        "mapId": 135,
+        "name": "Động hải tặc"
+      },
+      {
+        "mapId": 136,
+        "name": "Hang Bạch Tuộc"
+      },
+      {
+        "mapId": 137,
+        "name": "Động kho báu"
+      },
+      {
+        "mapId": 138,
+        "name": "Cảng hải tặc"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        17,
+        18,
+        19,
+        22,
+        23,
+        25,
+        26,
+        34
+      ],
+      "leftWall": [
+        17,
+        4,
+        9,
+        34
+      ],
+      "rightWall": [
+        19,
+        7,
+        9,
+        34
+      ],
+      "water": [
+        35
+      ],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 13,
+      "undergroundFill": 5,
+      "leftEdge": 34,
+      "rightEdge": 34,
+      "slope": null,
+      "bridge": null,
+      "water": 35
+    },
+    "frequentTiles": {
+      "top": [
+        13,
+        14,
+        35,
+        5,
+        12
+      ],
+      "fill": [
+        5,
+        6,
+        13,
+        12,
+        14
+      ],
+      "leftEdge": [
+        34
+      ],
+      "rightEdge": [
+        34
+      ]
+    },
+    "confidence": "high"
+  },
+  "29": {
+    "tileSetId": 29,
+    "exampleMaps": [
+      {
+        "mapId": 154,
+        "name": "Hành tinh Bill"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        18,
+        19
+      ],
+      "leftWall": [
+        6,
+        13,
+        18,
+        19,
+        37
+      ],
+      "rightWall": [
+        7,
+        14,
+        18,
+        19,
+        37
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 34,
+      "undergroundFill": 17,
+      "leftEdge": 34,
+      "rightEdge": 33,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        34,
+        21,
+        33,
+        20,
+        25
+      ],
+      "fill": [
+        17,
+        37,
+        3,
+        10,
+        8
+      ],
+      "leftEdge": [
+        34,
+        6
+      ],
+      "rightEdge": [
+        33,
+        7
+      ]
+    },
+    "confidence": "high"
+  },
+  "30": {
+    "tileSetId": 30,
+    "exampleMaps": [
+      {
+        "mapId": 155,
+        "name": "Hành tinh ngục tù"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "leftWall": [
+        1,
+        9,
+        25,
+        28
+      ],
+      "rightWall": [
+        1,
+        8,
+        16,
+        27,
+        28
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        25,
+        26,
+        27
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 17,
+      "undergroundFill": 13,
+      "leftEdge": 29,
+      "rightEdge": 30,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        17,
+        7,
+        2,
+        20,
+        21
+      ],
+      "fill": [
+        13,
+        28,
+        26,
+        16,
+        9
+      ],
+      "leftEdge": [
+        29,
+        1,
+        22
+      ],
+      "rightEdge": [
+        30,
+        8,
+        28
+      ]
+    },
+    "confidence": "high"
+  },
+  "31": {
+    "tileSetId": 31,
+    "exampleMaps": [
+      {
+        "mapId": 160,
+        "name": "Khu hang động"
+      },
+      {
+        "mapId": 161,
+        "name": "Bìa rừng nguyên thủy"
+      },
+      {
+        "mapId": 162,
+        "name": "Rừng nguyên thủy"
+      },
+      {
+        "mapId": 163,
+        "name": "Làng Plant nguyên thủy"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "leftWall": [
+        1,
+        2,
+        3,
+        4,
+        1,
+        7,
+        30,
+        31
+      ],
+      "rightWall": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        9,
+        30,
+        33
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        1,
+        2,
+        3,
+        4,
+        31,
+        32,
+        33
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 16,
+      "undergroundFill": 2,
+      "leftEdge": 19,
+      "rightEdge": 29,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        16,
+        20,
+        22,
+        21,
+        27
+      ],
+      "fill": [
+        2,
+        30,
+        32,
+        8,
+        1
+      ],
+      "leftEdge": [
+        19,
+        30,
+        20
+      ],
+      "rightEdge": [
+        29,
+        30,
+        21
+      ]
+    },
+    "confidence": "high"
+  },
+  "32": {
+    "tileSetId": 32,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        33,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ],
+      "leftWall": [
+        1,
+        6,
+        11,
+        16,
+        21,
+        33
+      ],
+      "rightWall": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        33
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        33
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 5,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "33": {
+    "tileSetId": 33,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "34": {
+    "tileSetId": 34,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "35": {
+    "tileSetId": 35,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "36": {
+    "tileSetId": 36,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "37": {
+    "tileSetId": 37,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "38": {
+    "tileSetId": 38,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "39": {
+    "tileSetId": 39,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "40": {
+    "tileSetId": 40,
+    "exampleMaps": [],
+    "physics": {
+      "topSurface": [],
+      "leftWall": [],
+      "rightWall": [],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": []
+    },
+    "semanticDefaults": {
+      "topSurface": 1,
+      "undergroundFill": 1,
+      "leftEdge": 1,
+      "rightEdge": 1,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [],
+      "fill": [],
+      "leftEdge": [],
+      "rightEdge": []
+    },
+    "confidence": "low"
+  },
+  "41": {
+    "tileSetId": 41,
+    "exampleMaps": [
+      {
+        "mapId": 183,
+        "name": "Thành cổ 1"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        46,
+        47,
+        48,
+        12,
+        43
+      ],
+      "leftWall": [
+        43
+      ],
+      "rightWall": [
+        43
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        43
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 10,
+      "undergroundFill": 8,
+      "leftEdge": 14,
+      "rightEdge": 19,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        10,
+        43,
+        15,
+        17,
+        18
+      ],
+      "fill": [
+        8,
+        43,
+        31,
+        2,
+        6
+      ],
+      "leftEdge": [
+        14
+      ],
+      "rightEdge": [
+        19
+      ]
+    },
+    "confidence": "high"
+  },
+  "42": {
+    "tileSetId": 42,
+    "exampleMaps": [
+      {
+        "mapId": 184,
+        "name": "Thành cổ 2"
+      },
+      {
+        "mapId": 185,
+        "name": "Đấu trường thành cổ"
+      }
+    ],
+    "physics": {
+      "topSurface": [
+        4,
+        5,
+        6,
+        7,
+        13,
+        17,
+        18,
+        19,
+        16,
+        46
+      ],
+      "leftWall": [
+        46
+      ],
+      "rightWall": [
+        46
+      ],
+      "water": [],
+      "slope": [],
+      "bridge": [],
+      "blocker": [
+        46
+      ]
+    },
+    "semanticDefaults": {
+      "topSurface": 38,
+      "undergroundFill": 2,
+      "leftEdge": 38,
+      "rightEdge": 38,
+      "slope": null,
+      "bridge": null,
+      "water": null
+    },
+    "frequentTiles": {
+      "top": [
+        38,
+        46
+      ],
+      "fill": [
+        2,
+        45,
+        39,
+        37,
+        40
+      ],
+      "leftEdge": [
+        38
+      ],
+      "rightEdge": [
+        38
+      ]
+    },
+    "confidence": "high"
+  }
+}
