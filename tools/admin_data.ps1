@@ -64,6 +64,8 @@
     [string]$MapId = "",
     [string]$MapIdsJson = "[]",
     [string]$KeepOtherMaps = "0",
+    [string]$NameLift = "0",
+    [string]$LayerOrder = "",
     [string]$ZoneId = "-1",
     [string]$SpawnX = "-1",
     [string]$SpawnY = "-1",
@@ -161,7 +163,7 @@ foreach ($paramName in @(
         "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
-        "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
+        "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "NameLift", "LayerOrder", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
         "HeadIconId", "BodyIconId", "LegIconId", "AvatarIconId", "HeadPartId", "BodyPartId", "LegPartId", "HasShop", "NpcSay",
@@ -174,6 +176,9 @@ foreach ($paramName in @(
 }
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$NpcNameLiftMarker = -32000
+$NpcLayerOrderNative = "NATIVE"
+$NpcLayerOrderHeadTop = "LEG_BODY_HEAD"
 $LogDir = Join-Path $Root "logs"
 $ResultPath = if ([string]::IsNullOrWhiteSpace($Output)) { Join-Path $LogDir "admin_data_result.txt" } else { $Output }
 $AdminLog = Join-Path $LogDir "admin_data.log"
@@ -2266,6 +2271,38 @@ function Process-NpcIconUpload {
     }
 }
 
+function Ensure-NpcRenderConfigTable {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS admin_npc_render_config (
+    npc_id INT NOT NULL PRIMARY KEY,
+    layer_order VARCHAR(32) NOT NULL DEFAULT 'NATIVE',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+"@ | Out-Null
+}
+
+function Get-NpcRenderLayerOrder {
+    param([int]$NpcId)
+    Ensure-NpcRenderConfigTable
+    $value = Get-MySqlScalar "SELECT COALESCE((SELECT layer_order FROM admin_npc_render_config WHERE npc_id=$NpcId LIMIT 1), 'NATIVE');" $NpcLayerOrderNative
+    if ($value -eq $NpcLayerOrderHeadTop) { return $NpcLayerOrderHeadTop }
+    return $NpcLayerOrderNative
+}
+
+function Resolve-NpcRenderLayerOrder {
+    param([string]$RequestedOrder, [int]$NpcId, [bool]$IsCreateNew, [bool]$IsFullBody)
+    if ($IsFullBody) { return $NpcLayerOrderNative }
+    $value = if ($null -eq $RequestedOrder) { "" } else { $RequestedOrder.Trim().ToUpperInvariant() }
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        if ($IsCreateNew) { return $NpcLayerOrderHeadTop }
+        return Get-NpcRenderLayerOrder $NpcId
+    }
+    if ($value -ne $NpcLayerOrderNative -and $value -ne $NpcLayerOrderHeadTop) {
+        throw "Thứ tự lớp NPC không hợp lệ: $RequestedOrder"
+    }
+    return $value
+}
+
 function Get-IconImageSize {
     param(
         [int]$TargetIconId,
@@ -2444,12 +2481,16 @@ function Export-BinaryPartData {
             $partRecordId = [int]$cols[0]
             $pType = [byte]$cols[1]
             $pDataJson = $cols[2]
+            # Một số Part cũ lưu từng tuple dưới dạng chuỗi JSON (ví dụ
+            # ["[16036,-1,-1]",...]). Java server xóa dấu nháy trước khi parse;
+            # Admin phải làm giống hệt để không xuất mã ASCII của '[', '1',...
+            $normalizedPartJson = $pDataJson -replace '"', ''
             
             $dataArr = @()
             try {
-                $dataArr = ConvertFrom-Json $pDataJson
+                $dataArr = ConvertFrom-Json $normalizedPartJson
             } catch {
-                $matchesAll = [regex]::Matches($pDataJson, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
+                $matchesAll = [regex]::Matches($normalizedPartJson, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
                 foreach ($m in $matchesAll) {
                     $dataArr += ,@([int]$m.Groups[1].Value, [int]$m.Groups[2].Value, [int]$m.Groups[3].Value)
                 }
@@ -2597,6 +2638,7 @@ function Get-NpcCreatorDetail {
     $headPartIdNum = SqlInt $headPartId -1
     $bodyPartIdNum = SqlInt $bodyPartId -1
     $legPartIdNum = SqlInt $legPartId -1
+    $layerOrderValue = Get-NpcRenderLayerOrder $npcIdNum
     
     $partIds = @($headPartIdNum, $bodyPartIdNum, $legPartIdNum) | Where-Object { $_ -ge 0 }
     $rawParts = if ($partIds.Count -gt 0) {
@@ -2644,7 +2686,7 @@ function Get-NpcCreatorDetail {
     
     $rawMaps = Invoke-MySql "SELECT id, `NAME`, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%' ORDER BY id ASC;"
     $mapLines = @($rawMaps -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-    $mapId = ""; $posX = "0"; $posY = "0"
+    $mapId = ""; $posX = "0"; $posY = "0"; $nameLiftValue = 0
     $mapPlacements = New-Object System.Collections.Generic.List[PSObject]
     for ($m = 1; $m -lt $mapLines.Count; $m++) {
         $mCols = $mapLines[$m] -split "`t"
@@ -2655,20 +2697,50 @@ function Get-NpcCreatorDetail {
             $npcEntries = @(Parse-MapNpcJson $npcsJson)
             foreach ($entry in $npcEntries) {
                 if ($entry.NpcId -eq $npcIdNum) {
+                    $entryNameLift = 0
+                    if (@($entry.ExtraValues).Count -gt 1 -and [int]$entry.ExtraValues[0] -eq $NpcNameLiftMarker) {
+                        $entryNameLift = [Math]::Max(0, [Math]::Min(64, [int]$entry.ExtraValues[1]))
+                    }
                     $mapPlacements.Add([pscustomobject]@{
                         MapId = [int]$mId
                         MapName = $mName
                         X = [int]$entry.X
                         Y = [int]$entry.Y
+                        NameLift = $entryNameLift
                     })
                     if ($mapId -eq "") {
                         $mapId = $mId
                         $posX = [string]$entry.X
                         $posY = [string]$entry.Y
+                        $nameLiftValue = $entryNameLift
                     }
                 }
             }
         }
+    }
+
+    # Với LEG_BODY_HEAD, dữ liệu vật lý được ánh xạ vào slot client theo vòng:
+    # Head slot <- Leg, Body slot <- Head, Leg slot <- Body. Giải mã ngược để
+    # giao diện vẫn luôn trình bày đúng nghĩa Head/Body/Leg cho người dùng.
+    if ($layerOrderValue -eq $NpcLayerOrderHeadTop) {
+        $slotHeadIcon = $headIcon; $slotHeadDx = SqlInt $headDx 0; $slotHeadDy = SqlInt $headDy 0
+        $slotBodyIcon = $bodyIcon; $slotBodyDx = SqlInt $bodyDx 0; $slotBodyDy = SqlInt $bodyDy 0
+        $slotLegIcon = $legIcon; $slotLegDx = SqlInt $legDx 0; $slotLegDy = SqlInt $legDy 0
+
+        $headIcon = $slotBodyIcon
+        $headDx = [string]($slotBodyDx + 4)
+        $headDy = [string]($slotBodyDy + 18 - $nameLiftValue)
+        $bodyIcon = $slotLegIcon
+        $bodyDx = [string]($slotLegDx + 1)
+        $bodyDy = [string]($slotLegDy + 6 - $nameLiftValue)
+        $legIcon = $slotHeadIcon
+        $legDx = [string]($slotHeadDx - 5)
+        $legDy = [string]($slotHeadDy - 24 - $nameLiftValue)
+    } else {
+        # Part DATA chứa offset đã bù NameLift để sprite vẫn đứng tại visual Y.
+        $headDy = [string]((SqlInt $headDy 0) - $nameLiftValue)
+        $bodyDy = [string]((SqlInt $bodyDy 0) - $nameLiftValue)
+        $legDy = [string]((SqlInt $legDy 0) - $nameLiftValue)
     }
     
     $rawShop = Invoke-MySql "SELECT id, tag_name, type_shop FROM shop WHERE npc_id=$npcIdNum LIMIT 1;"
@@ -2706,6 +2778,7 @@ function Get-NpcCreatorDetail {
         Id = $nId
         Name = $nName
         Mode = $mode
+        LayerOrder = $layerOrderValue
         HeadPartId = $headPartId
         BodyPartId = $bodyPartId
         LegPartId = $legPartId
@@ -2759,6 +2832,7 @@ function Get-NpcCreatorDetail {
         MapId = $mapId
         SpawnX = $posX
         SpawnY = $posY
+        NameLift = [string]$nameLiftValue
         KeepOtherMaps = $(if ($mapPlacements.Count -gt 1) { "1" } else { "0" })
         MapPlacements = @($mapPlacements)
         HasShop = $hasShop
@@ -2836,6 +2910,7 @@ function Save-NpcCreator {
     }
     
     $npcId = SqlInt $Id -1
+    $nameLiftNum = Get-NpcValidatedInteger $NameLift "Nâng bảng tên" 0 64
     $isCreateNewNpc = ($npcId -lt 0)
     if ($isCreateNewNpc) {
         $maxNpcId = Get-MySqlScalar "SELECT COALESCE(MAX(id), -1) FROM npc_template;" "-1"
@@ -2853,6 +2928,7 @@ function Save-NpcCreator {
         throw "Chế độ NPC không hợp lệ: $Mode"
     }
     $isFullBodyMode = ($Mode -eq "fullbody")
+    $layerOrderValue = Resolve-NpcRenderLayerOrder $LayerOrder $npcId $isCreateNewNpc $isFullBodyMode
     
     if ($isFullBodyMode) {
         $fbW = Get-NpcValidatedInteger $FullBodyW "FullBody W" 1 4096
@@ -2885,7 +2961,7 @@ function Save-NpcCreator {
         $visualDx = Get-NpcValidatedInteger $FullBodyDx "FullBody dx" -128 127
         $visualDy = Get-NpcValidatedInteger $FullBodyDy "FullBody dy" -128 127
         $bDx = 9 - [int][Math]::Floor($fbInfo.Width1 / 2.0) + $visualDx
-        $bDy = 16 - $fbInfo.Height1 + $visualDy
+        $bDy = 16 - $fbInfo.Height1 + $visualDy + $nameLiftNum
         $bDx = Assert-NpcPartOffset $bDx "FullBody DATA dx"
         $bDy = Assert-NpcPartOffset $bDy "FullBody DATA dy"
         
@@ -2942,16 +3018,40 @@ function Save-NpcCreator {
             $avatarIcon = $headIcon
         }
         
-        $hDx = Get-NpcValidatedInteger $HeadDx "Head dx" -128 127
-        $hDy = Get-NpcValidatedInteger $HeadDy "Head dy" -128 127
-        $bDx = Get-NpcValidatedInteger $BodyDx "Body dx" -128 127
-        $bDy = Get-NpcValidatedInteger $BodyDy "Body dy" -128 127
-        $lDx = Get-NpcValidatedInteger $LegDx "Leg dx" -128 127
-        $lDy = Get-NpcValidatedInteger $LegDy "Leg dy" -128 127
-        
-        $headDataJson = "[[{0},{1},{2}],[0,0,0],[0,0,0]]" -f $headIcon, $hDx, $hDy
-        $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $bodyIcon, $bDx, $bDy
-        $legDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $legIcon, $lDx, $lDy
+        $semanticHeadDx = Get-NpcValidatedInteger $HeadDx "Head dx" -128 127
+        $semanticHeadDy = Get-NpcValidatedInteger $HeadDy "Head dy" -128 127
+        $semanticBodyDx = Get-NpcValidatedInteger $BodyDx "Body dx" -128 127
+        $semanticBodyDy = Get-NpcValidatedInteger $BodyDy "Body dy" -128 127
+        $semanticLegDx = Get-NpcValidatedInteger $LegDx "Leg dx" -128 127
+        $semanticLegDy = Get-NpcValidatedInteger $LegDy "Leg dy" -128 127
+
+        if ($layerOrderValue -eq $NpcLayerOrderHeadTop) {
+            # Client vẽ slot Head -> Leg -> Body. Ánh xạ semantic Leg -> Body -> Head
+            # vào ba slot đó, đồng thời đổi hệ anchor để tọa độ nhìn thấy không đổi.
+            $headSlotIcon = $legIcon
+            $headSlotDx = Assert-NpcPartOffset ($semanticLegDx + 5) "Head slot dx (hình Leg)"
+            $headSlotDy = Assert-NpcPartOffset ($semanticLegDy + 24 + $nameLiftNum) "Head slot dy (hình Leg)"
+            $bodySlotIcon = $headIcon
+            $bodySlotDx = Assert-NpcPartOffset ($semanticHeadDx - 4) "Body slot dx (hình Head)"
+            $bodySlotDy = Assert-NpcPartOffset ($semanticHeadDy - 18 + $nameLiftNum) "Body slot dy (hình Head)"
+            $legSlotIcon = $bodyIcon
+            $legSlotDx = Assert-NpcPartOffset ($semanticBodyDx - 1) "Leg slot dx (hình Body)"
+            $legSlotDy = Assert-NpcPartOffset ($semanticBodyDy - 6 + $nameLiftNum) "Leg slot dy (hình Body)"
+        } else {
+            $headSlotIcon = $headIcon
+            $headSlotDx = Assert-NpcPartOffset $semanticHeadDx "Head DATA dx"
+            $headSlotDy = Assert-NpcPartOffset ($semanticHeadDy + $nameLiftNum) "Head DATA dy sau khi bù bảng tên"
+            $bodySlotIcon = $bodyIcon
+            $bodySlotDx = Assert-NpcPartOffset $semanticBodyDx "Body DATA dx"
+            $bodySlotDy = Assert-NpcPartOffset ($semanticBodyDy + $nameLiftNum) "Body DATA dy sau khi bù bảng tên"
+            $legSlotIcon = $legIcon
+            $legSlotDx = Assert-NpcPartOffset $semanticLegDx "Leg DATA dx"
+            $legSlotDy = Assert-NpcPartOffset ($semanticLegDy + $nameLiftNum) "Leg DATA dy sau khi bù bảng tên"
+        }
+
+        $headDataJson = "[[{0},{1},{2}],[0,0,0],[0,0,0]]" -f $headSlotIcon, $headSlotDx, $headSlotDy
+        $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $bodySlotIcon, $bodySlotDx, $bodySlotDy
+        $legDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $legSlotIcon, $legSlotDx, $legSlotDy
     }
     
     $maxPartId = [int](Get-MySqlScalar "SELECT COALESCE(MAX(id), -1) FROM part;" "-1")
@@ -2961,6 +3061,7 @@ function Save-NpcCreator {
     $bodyPart = SqlInt $BodyPartId -1
     $legPart = SqlInt $LegPartId -1
     
+    Ensure-NpcRenderConfigTable
     $sqlQueries = New-Object System.Collections.Generic.List[string]
     $sqlQueries.Add("START TRANSACTION;")
     
@@ -2989,6 +3090,12 @@ function Save-NpcCreator {
         $sqlQueries.Add("INSERT INTO npc_template (id, `NAME`, head, body, leg, avatar) VALUES ($npcId, $(SqlString $Name), $headPart, $bodyPart, $legPart, $avatarIcon);")
     } else {
         $sqlQueries.Add("UPDATE npc_template SET `NAME`=$(SqlString $Name), head=$headPart, body=$bodyPart, leg=$legPart, avatar=$avatarIcon WHERE id=$npcId;")
+    }
+
+    if ($isFullBodyMode) {
+        $sqlQueries.Add("DELETE FROM admin_npc_render_config WHERE npc_id=$npcId;")
+    } else {
+        $sqlQueries.Add("INSERT INTO admin_npc_render_config (npc_id, layer_order) VALUES ($npcId, $(SqlString $layerOrderValue)) ON DUPLICATE KEY UPDATE layer_order=VALUES(layer_order);")
     }
     
     if ($HasShop -eq "1") {
@@ -3025,8 +3132,26 @@ function Save-NpcCreator {
             $targetMId = [int]$mwCols[0]
             $npcsJson = $mwCols[1]
             if ($keepNpcOnOtherMaps -and $targetMId -ne $mapIdNum) {
-                # NPC cổng/nhiệm vụ có thể dùng chung tempId trên nhiều map. Không ghi lại
-                # các map được bảo toàn để tọa độ và các trường mở rộng không bị thay đổi.
+                # Giữ nguyên tọa độ và mọi trường mở rộng khác, nhưng đồng bộ cặp
+                # marker/NameLift vì ba Part dùng chung một bộ offset bù trên mọi map.
+                $preservedEntries = @(Parse-MapNpcJson $npcsJson)
+                foreach ($preservedEntry in $preservedEntries) {
+                    if ($preservedEntry.NpcId -eq $npcId) {
+                        $oldExtras = @($preservedEntry.ExtraValues)
+                        $oldExtraStart = if ($oldExtras.Count -gt 1 -and [int]$oldExtras[0] -eq $NpcNameLiftMarker) { 2 } else { 0 }
+                        $newExtras = New-Object System.Collections.Generic.List[int]
+                        if ($nameLiftNum -gt 0) {
+                            $newExtras.Add($NpcNameLiftMarker)
+                            $newExtras.Add($nameLiftNum)
+                        }
+                        for ($extraIndex = $oldExtraStart; $extraIndex -lt $oldExtras.Count; $extraIndex++) {
+                            $newExtras.Add([int]$oldExtras[$extraIndex])
+                        }
+                        $preservedEntry.ExtraValues = @($newExtras)
+                    }
+                }
+                $preservedJson = Serialize-MapNpcJson $preservedEntries
+                Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $preservedJson) WHERE id=$targetMId;" | Out-Null
                 $affectedMapIds.Add($targetMId) | Out-Null
                 $preservedMapIds.Add($targetMId) | Out-Null
                 continue
@@ -3049,7 +3174,8 @@ function Save-NpcCreator {
         foreach ($entry in $rawEntries) {
             $mapNpcEntries.Add($entry)
         }
-        $mapNpcEntries.Add([pscustomobject]@{ NpcId = $npcId; X = $posX; Y = $posY; ExtraValues = @() })
+        $mapExtras = if ($nameLiftNum -gt 0) { @($NpcNameLiftMarker, $nameLiftNum) } else { @() }
+        $mapNpcEntries.Add([pscustomobject]@{ NpcId = $npcId; X = $posX; Y = $posY; ExtraValues = $mapExtras })
         $updatedJson = Serialize-MapNpcJson $mapNpcEntries
         Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $updatedJson) WHERE id=$mapIdNum;" | Out-Null
         $affectedMapIds.Add($mapIdNum) | Out-Null
@@ -3063,6 +3189,10 @@ function Save-NpcCreator {
     $savedPartCount = Get-MySqlScalar "SELECT COUNT(*) FROM part WHERE (id=$headPart AND `TYPE`=0) OR (id=$bodyPart AND `TYPE`=1) OR (id=$legPart AND `TYPE`=2);" "0"
     if ($savedPartCount -ne "3") {
         throw "Đã ghi dữ liệu nhưng bước kiểm tra lại ba Part của NPC ID $npcId không khớp."
+    }
+    $savedLayerOrder = Get-NpcRenderLayerOrder $npcId
+    if ($savedLayerOrder -ne $layerOrderValue) {
+        throw "NPC ID $npcId chưa lưu đúng thứ tự lớp $layerOrderValue."
     }
     $partOutputPath = Join-Path $Root "data\update_data\part"
     if (-not (Test-Path -LiteralPath $partOutputPath) -or (Get-Item -LiteralPath $partOutputPath).Length -le 2) {
@@ -3083,6 +3213,13 @@ function Save-NpcCreator {
             }
         } elseif ($matchingEntries.Count -ne 0) {
             throw "NPC ID $npcId vẫn còn trên map cũ $verifyMapId sau khi lưu."
+        }
+        foreach ($matchingEntry in $matchingEntries) {
+            $savedExtras = @($matchingEntry.ExtraValues)
+            $savedLift = if ($savedExtras.Count -gt 1 -and [int]$savedExtras[0] -eq $NpcNameLiftMarker) { [int]$savedExtras[1] } else { 0 }
+            if ($savedLift -ne $nameLiftNum) {
+                throw "NPC ID $npcId trên map $verifyMapId chưa lưu đúng mức nâng bảng tên $nameLiftNum."
+            }
         }
     }
     
@@ -3123,6 +3260,8 @@ function Delete-NpcCreator {
     }
     
     Invoke-MySql "DELETE FROM shop WHERE npc_id=$npcIdNum;" | Out-Null
+    Ensure-NpcRenderConfigTable
+    Invoke-MySql "DELETE FROM admin_npc_render_config WHERE npc_id=$npcIdNum;" | Out-Null
     Invoke-MySql "DELETE FROM npc_template WHERE id=$npcIdNum;" | Out-Null
     
     return "OK`tĐã xóa NPC ID $npcIdNum và gỡ khỏi Map."

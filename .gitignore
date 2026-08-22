@@ -10,6 +10,9 @@
 /20.jar.bak_*
 /20.jar.pending
 
+# Re-creatable NPC preview and diagnostic output
+/output/
+
 # Python caches
 __pycache__/
 *.py[cod]

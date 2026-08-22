@@ -30,13 +30,26 @@
 
       <div class="row">
         <div class="cell">
+          <label>Nâng bảng tên (px logic)</label>
+          <input type="number" id="npcCreatorNameLift" value="0" min="0" max="64" step="1" oninput="UpdateNpcCreatorPreview()">
+          <small>Chỉnh riêng cho từng NPC. Client gốc dùng chung mốc cy cho tên và bóng, nên nâng tên cũng nâng bóng; hình NPC vẫn được giữ nguyên vị trí.</small>
+        </div>
+        <div class="cell">
+          <label>Thứ tự xếp lớp</label>
+          <select id="npcCreatorLayerOrder" onchange="UpdateNpcCreatorPreview()">
+            <option value="LEG_BODY_HEAD" selected>Leg → Body → Head (mặc định mới)</option>
+            <option value="NATIVE">Head → Leg → Body (NPC cũ)</option>
+          </select>
+          <small>NPC tạo mới mặc định đưa Head lên cao nhất. Các ô Head/Body/Leg vẫn giữ đúng nghĩa.</small>
+        </div>
+        <div class="cell">
           <div class="inline-check">
             <input type="checkbox" id="npcCreatorKeepOtherMaps">
             <label for="npcCreatorKeepOtherMaps">Giữ NPC tại các map khác</label>
           </div>
           <small>Dùng cho NPC cổng/nhiệm vụ xuất hiện đồng thời ở nhiều map, như Kanao map 0 và 187.</small>
         </div>
-        <div class="cell" style="flex: 3;">
+        <div class="cell" style="flex: 2;">
           <label>Các vị trí hiện tại</label>
           <div id="npcCreatorMapPlacements" class="npc-placement-summary">Chưa đặt vào map.</div>
         </div>
@@ -416,7 +429,7 @@
             <div id="npcPreviewStatus" class="npc-preview-status">x4 • hướng phải • frame đứng 0</div>
             <div class="npc-preview-note">
               * Preview dùng đúng anchor top-left/top-right, frame đứng và thứ tự vẽ của client: Đầu &#8594; Chân &#8594; Thân.<br>
-              * Bảng tên dùng mốc cố định của client (không đi theo chiều cao ảnh); trạng thái sẽ cảnh báo khi tên chạm sprite.<br>
+              * Client gốc đặt đáy tên tại cy-40 khi NPC không được focus. NameLift dịch cả tên và bóng lên; preview sẽ cảnh báo nếu tên chạm ảnh.<br>
               * Offset là đơn vị x1. Ảnh upload được chuẩn hóa theo bội số 4 rồi sinh x1-x4 để chân và tâm không đổi giữa các tỷ lệ.
             </div>
             <div class="npc-avatar-box-wrap">

@@ -1,16 +1,21 @@
 -- Runtime metadata for the Infinity Castle map chain (187-191).
 -- Binary tile/background data and x1-x4 PNG assets are stored under data/.
 
+CREATE TABLE IF NOT EXISTS `admin_npc_render_config` (
+    `npc_id` INT NOT NULL PRIMARY KEY,
+    `layer_order` VARCHAR(32) NOT NULL DEFAULT 'NATIVE',
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 START TRANSACTION;
 
--- Kanao uses one fullbody Body image. Head icon 25010 is fully transparent but
--- has a standard 18x20 (x1) bounding box, which keeps the client name above the
--- face without moving the NPC, shadow, or interaction point.
+-- Client vẽ slot Head -> Leg -> Body, nên lưu hình Leg -> Body -> Head vào
+-- các slot tương ứng để Head của Kanao được vẽ trên cùng.
 INSERT INTO `part` (`id`, `TYPE`, `DATA`)
 VALUES
-    (2132, 0, '[[25010,0,0],[25010,0,0],[25010,0,0]]'),
-    (2133, 1, '[[0,0,0],[25008,-6,-37],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]'),
-    (2134, 2, '[[0,0,0],[25001,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]')
+    (2132, 0, '[[25017,7,13],[0,0,0],[0,0,0]]'),
+    (2133, 1, '[[0,0,0],[25015,0,-25],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]'),
+    (2134, 2, '[[0,0,0],[25016,-1,-19],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]')
 ON DUPLICATE KEY UPDATE
     `TYPE` = VALUES(`TYPE`),
     `DATA` = VALUES(`DATA`);
@@ -18,13 +23,17 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `npc_template`
     (`id`, `NAME`, `head`, `body`, `leg`, `avatar`)
 VALUES
-    (112, 'Kanao', 2132, 2133, 2134, 25009)
+    (112, 'Kanao', 2132, 2133, 2134, 25014)
 ON DUPLICATE KEY UPDATE
     `NAME` = VALUES(`NAME`),
     `head` = VALUES(`head`),
     `body` = VALUES(`body`),
     `leg` = VALUES(`leg`),
     `avatar` = VALUES(`avatar`);
+
+INSERT INTO `admin_npc_render_config` (`npc_id`, `layer_order`)
+VALUES (112, 'LEG_BODY_HEAD')
+ON DUPLICATE KEY UPDATE `layer_order` = VALUES(`layer_order`);
 
 -- Kanao's shop starts with two intentionally empty tabs.
 INSERT INTO `shop` (`id`, `npc_id`, `tag_name`, `type_shop`)
@@ -45,6 +54,8 @@ ON DUPLICATE KEY UPDATE
 -- Add Kanao to Làng Aru without replacing any NPCs already configured there.
 UPDATE `map_template`
 SET `npcs` = CASE
+    WHEN REPLACE(`npcs`, ' ', '') REGEXP '\\[112,514,432,-32000,[0-9]+\\]'
+        THEN REGEXP_REPLACE(`npcs`, '\\[112,514,432,-32000,[0-9]+\\]', '[112,514,432]')
     WHEN LOCATE('[112,', REPLACE(`npcs`, ' ', '')) > 0 THEN `npcs`
     WHEN `npcs` = '[]' THEN '[[112,514,432]]'
     ELSE CONCAT(LEFT(`npcs`, CHAR_LENGTH(`npcs`) - 1), ',[112,514,432]]')

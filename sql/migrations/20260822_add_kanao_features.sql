@@ -1,5 +1,10 @@
 -- Adds Kanao's two empty shop tabs. Quest progress is stored in the existing
 -- player.nhiem_vu_kol JSON column, so no player schema change is required.
+CREATE TABLE IF NOT EXISTS `admin_npc_render_config` (
+    `npc_id` INT NOT NULL PRIMARY KEY,
+    `layer_order` VARCHAR(32) NOT NULL DEFAULT 'NATIVE',
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 START TRANSACTION;
 
@@ -22,6 +27,8 @@ ON DUPLICATE KEY UPDATE
 -- add only the missing Kanao placement so the migration is safe to rerun.
 UPDATE `map_template`
 SET `npcs` = CASE
+    WHEN REPLACE(`npcs`, ' ', '') REGEXP '\\[112,514,432,-32000,[0-9]+\\]'
+        THEN REGEXP_REPLACE(`npcs`, '\\[112,514,432,-32000,[0-9]+\\]', '[112,514,432]')
     WHEN LOCATE('[112,', REPLACE(`npcs`, ' ', '')) > 0 THEN `npcs`
     WHEN TRIM(`npcs`) = '[]' THEN '[[112,514,432]]'
     ELSE CONCAT(LEFT(`npcs`, CHAR_LENGTH(`npcs`) - 1), ',[112,514,432]]')
@@ -30,17 +37,26 @@ WHERE `id` = 0;
 
 UPDATE `map_template`
 SET `npcs` = CASE
+    WHEN REPLACE(`npcs`, ' ', '') REGEXP '\\[112,59,360,-32000,[0-9]+\\]'
+        THEN REGEXP_REPLACE(`npcs`, '\\[112,59,360,-32000,[0-9]+\\]', '[112,59,360]')
     WHEN LOCATE('[112,', REPLACE(`npcs`, ' ', '')) > 0 THEN `npcs`
     WHEN TRIM(`npcs`) = '[]' THEN '[[112,59,360]]'
     ELSE CONCAT(LEFT(`npcs`, CHAR_LENGTH(`npcs`) - 1), ',[112,59,360]]')
 END
 WHERE `id` = 187;
 
--- Icon 25010 is a fully transparent 18x20 (x1) Head proxy shipped in
--- data/icon/x1-x4. It gives the client a normal NPC head bounding box so the
--- name is drawn above Kanao instead of across her face.
-UPDATE `part`
-SET `DATA` = '[[25010,0,0],[25010,0,0],[25010,0,0]]'
+-- Client vẽ slot Head -> Leg -> Body. Lưu hình Leg -> Body -> Head vào ba slot
+-- tương ứng để Head của Kanao được vẽ trên cùng mà không sửa client.
+UPDATE `part` SET `DATA` = '[[25017,7,13],[0,0,0],[0,0,0]]'
 WHERE `id` = 2132 AND `TYPE` = 0;
+UPDATE `part` SET `DATA` = '[[0,0,0],[25015,0,-25],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]'
+WHERE `id` = 2133 AND `TYPE` = 1;
+UPDATE `part` SET `DATA` = '[[0,0,0],[25016,-1,-19],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]'
+WHERE `id` = 2134 AND `TYPE` = 2;
+UPDATE `npc_template` SET `avatar` = 25014 WHERE `id` = 112;
+
+INSERT INTO `admin_npc_render_config` (`npc_id`, `layer_order`)
+VALUES (112, 'LEG_BODY_HEAD')
+ON DUPLICATE KEY UPDATE `layer_order` = VALUES(`layer_order`);
 
 COMMIT;

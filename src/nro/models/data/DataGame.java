@@ -41,8 +41,8 @@ public class DataGame {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
 
-    // 22 invalidates cached part data for the transparent fullbody Head proxy.
-    public static byte vsData = 22;
+    // 29 publishes Kanao's server-side Leg -> Body -> Head render-slot mapping.
+    public static byte vsData = 29;
     public static byte vsMap = loadMapVersion();
     public static byte vsSkill = 1;
     // 21 invalidates item-template cache written by the multi-append build.

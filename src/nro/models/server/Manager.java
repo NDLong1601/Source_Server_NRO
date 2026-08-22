@@ -70,6 +70,8 @@ import nro.models.admin.GiftBoxConfigService;
  */
 public final class Manager {
 
+    private static final int NPC_NAME_LIFT_MARKER = -32000;
+
     private static Manager instance;
     public static long timeRealTop = 0;
     public static byte SERVER = 1;
@@ -314,17 +316,18 @@ public final class Manager {
                 parts.add(part);
                 dataArray.clear();
             }
-            DataOutputStream dos = new DataOutputStream(new FileOutputStream("data/update_data/part"));
-            dos.writeShort(parts.size());
-            for (Part part : parts) {
-                dos.writeByte(part.type);
-                for (PartDetail partDetail : part.partDetails) {
-                    dos.writeShort(partDetail.iconId);
-                    dos.writeByte(partDetail.dx);
-                    dos.writeByte(partDetail.dy);
+            try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("data/update_data/part"))) {
+                dos.writeShort(parts.size());
+                for (Part part : parts) {
+                    dos.writeByte(part.type);
+                    for (PartDetail partDetail : part.partDetails) {
+                        dos.writeShort(partDetail.iconId);
+                        dos.writeByte(partDetail.dx);
+                        dos.writeByte(partDetail.dy);
+                    }
                 }
+                dos.flush();
             }
-            dos.flush();
             Logger.success(Logger.PURPLE + "Successfully loaded part (" + parts.size() + ")\n");
 
             //load bg item template
@@ -867,7 +870,17 @@ public final class Manager {
                         JSONArray dtn = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
                         mapTemplate.npcId[j] = Integer.parseInt(String.valueOf(dtn.get(0)));
                         mapTemplate.npcX[j] = Short.parseShort(String.valueOf(dtn.get(1)));
-                        mapTemplate.npcY[j] = Short.parseShort(String.valueOf(dtn.get(2)));
+                        int visualY = Integer.parseInt(String.valueOf(dtn.get(2)));
+                        // Dùng marker riêng để không xung đột các tuple map cũ vốn đã có
+                        // trường thứ tư. Dạng mới: [npcId,x,visualY,-32000,nameLift,...].
+                        // Part DATA được Admin bù cùng lượng nên sprite vẫn đứng ở visualY.
+                        int nameLift = dtn.size() > 4
+                                && Integer.parseInt(String.valueOf(dtn.get(3))) == NPC_NAME_LIFT_MARKER
+                                ? Integer.parseInt(String.valueOf(dtn.get(4)))
+                                : 0;
+                        nameLift = Math.max(0, Math.min(64, nameLift));
+                        mapTemplate.npcY[j] = (short) Math.max(Short.MIN_VALUE,
+                                Math.min(Short.MAX_VALUE, visualY - nameLift));
                         dtn.clear();
                     }
                     dataArray.clear();
