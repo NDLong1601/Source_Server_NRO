@@ -9717,7 +9717,8 @@ INSERT INTO `shop` (`id`, `npc_id`, `tag_name`, `type_shop`) VALUES
 (33, 81, 'SHOP_CHI_CHI', 0),
 (34, 13, 'SHOP_DOI_DIEM', 3),
 (35, 47, 'SHOP_CLAN', 3),
-(36, 55, 'SHOP_SU_KIEN_VL', 3);
+(36, 55, 'SHOP_SU_KIEN_VL', 3),
+(112, 112, 'KANAO', 0);
 
 -- --------------------------------------------------------
 
@@ -11330,7 +11331,9 @@ INSERT INTO `tab_shop` (`id`, `shop_id`, `NAME`) VALUES
 (60, 35, 'Cừa Hàng<>Item'),
 (61, 35, 'Của Hàng<>Pet'),
 (62, 35, 'Cửa Hàng<>Ván Bay'),
-(63, 36, 'Đổi<>Thưởng');
+(63, 36, 'Đổi<>Thưởng'),
+(1120, 112, 'Cải trang'),
+(1121, 112, 'Hỗ Trợ');
 
 -- --------------------------------------------------------
 

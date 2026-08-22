@@ -16,6 +16,7 @@ function TaskModes() {
     ["sub", "Bước nhiệm vụ"],
     ["side", "Nhiệm vụ ngày"],
     ["clan", "Nhiệm vụ bang"],
+    ["kanao", "Nhiệm vụ Vô Hạn Thành"],
     ["badges", "Danh hiệu"]
   ];
 }
@@ -39,9 +40,9 @@ function SelectTaskMode(mode) {
 }
 
 function ShowTaskEditor(id) {
-  var editors = ["taskConfigEditor", "taskMainEditor", "taskSubEditor", "taskRangeEditor", "taskBadgesEditor"];
+  var editors = ["taskConfigEditor", "taskMainEditor", "taskSubEditor", "taskRangeEditor", "taskBadgesEditor", "taskKanaoEditor"];
   for (var i = 0; i < editors.length; i++) document.getElementById(editors[i]).style.display = editors[i] == id ? "block" : "none";
-  document.getElementById("taskRewardEditor").style.display = (id == "taskMainEditor" || id == "taskRangeEditor" || id == "taskBadgesEditor") ? "block" : "none";
+  document.getElementById("taskRewardEditor").style.display = (id == "taskMainEditor" || id == "taskRangeEditor" || id == "taskBadgesEditor" || id == "taskKanaoEditor") ? "block" : "none";
   document.getElementById("taskSubMainSelect").style.display = selectedTaskMode == "sub" ? "inline-block" : "none";
 }
 
@@ -56,6 +57,7 @@ function LoadTaskMode() {
   else if (selectedTaskMode == "main") LoadTaskMains();
   else if (selectedTaskMode == "sub") LoadTaskSubMains();
   else if (selectedTaskMode == "side" || selectedTaskMode == "clan") LoadTaskRangeTemplates(selectedTaskMode);
+  else if (selectedTaskMode == "kanao") LoadTaskKanaoConfig();
   else if (selectedTaskMode == "badges") LoadTaskBadgesTemplates();
   AdjustTableOffsets();
 }
@@ -83,7 +85,47 @@ function FilterTaskRows() {
   if (selectedTaskMode == "main") return FilterTaskMainRows();
   if (selectedTaskMode == "sub") return FilterTaskSubRows();
   if (selectedTaskMode == "side" || selectedTaskMode == "clan") return FilterTaskRangeRows();
+  if (selectedTaskMode == "kanao") return FilterTaskKanaoRows();
   if (selectedTaskMode == "badges") return FilterTaskBadgesRows();
+}
+
+function LoadTaskKanaoConfig() {
+  ShowTaskEditor("taskKanaoEditor");
+  taskConfigRows = ParseTsv(RunAdmin("listtaskconfig", {}));
+  var mapRow = FindConfigRow(taskConfigRows, "task.kanao.mapIds");
+  var minRow = FindConfigRow(taskConfigRows, "task.kanao.killCountMin");
+  var maxRow = FindConfigRow(taskConfigRows, "task.kanao.killCountMax");
+  Set("taskKanaoMapIds", mapRow ? mapRow[3] : "187,188,189,190");
+  Set("taskKanaoKillMin", minRow ? minRow[3] : "10");
+  Set("taskKanaoKillMax", maxRow ? maxRow[3] : "20");
+  FilterTaskKanaoRows();
+  LoadTaskReward("kanao", "0", "Phần thưởng nhiệm vụ Kanao");
+  Msg("taskConfigMessage", "Đã tải cấu hình nhiệm vụ Kanao.");
+}
+
+function FilterTaskKanaoRows() {
+  var q = Trim(V("taskConfigSearch")).toLowerCase();
+  filteredTaskRows = [taskConfigRows[0] || []];
+  var html = "<thead><tr><th>Cấu hình Kanao</th><th>Giá trị</th></tr></thead><tbody>";
+  for (var i = 1; i < taskConfigRows.length; i++) {
+    var row = taskConfigRows[i];
+    if (row[1] != "Nhiệm vụ Kanao") continue;
+    if (q && row.join(" ").toLowerCase().indexOf(q) < 0) continue;
+    filteredTaskRows.push(row);
+    html += "<tr><td>" + Html(row[2]) + "<br><small>" + Html(row[0]) + "</small></td><td>" + Html(FormatAdminValue(row[3], row[5], row[0])) + "</td></tr>";
+  }
+  document.getElementById("taskConfigTable").innerHTML = html + "</tbody>";
+}
+
+function SaveTaskKanaoConfig() {
+  var payload = {
+    MapIds: NormalizeNumberList(V("taskKanaoMapIds")),
+    KillCountMin: NormalizeInteger(V("taskKanaoKillMin")),
+    KillCountMax: NormalizeInteger(V("taskKanaoKillMax"))
+  };
+  var text = RunAdmin("savekanaotaskconfig", { PayloadJson: JSON.stringify(payload) });
+  Msg("taskConfigMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadTaskKanaoConfig();
 }
 
 function FilterTaskRuntimeRows() {
@@ -315,7 +357,8 @@ function LoadTaskReward(type, id, title) {
   document.getElementById("taskRewardTitle").innerText = title;
   var rows = ParseTsv(RunAdmin("gettaskreward", { Type: type, Id: id }));
   var row = rows.length > 1 ? rows[1] : [id, "0", "0", "0", "0", ""];
-  document.getElementById("taskRewardEnabled").checked = row[1] == "1";
+  document.getElementById("taskRewardEnabledRow").style.display = type == "kanao" ? "none" : "flex";
+  document.getElementById("taskRewardEnabled").checked = type == "kanao" ? true : row[1] == "1";
   Set("taskRewardPotential", row[2] || "0"); Set("taskRewardGold", row[3] || "0"); Set("taskRewardGem", row[4] || "0");
   selectedTaskRewardItemIds = row[5] ? row[5].split(",") : [];
   selectedTaskRewardItemOptions = {};

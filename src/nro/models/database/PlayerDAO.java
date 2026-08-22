@@ -342,6 +342,10 @@ public class PlayerDAO {
             kolData.dailySuperHardQuestCompletionCount = (int) player.dailySuperHardQuestCompletionCount;
             kolData.bossBabyDefeatParticipationCount = (int) player.bossBabyDefeatParticipationCount;
             kolData.monsterKillCountAutoTrain = player.monsterKillCountAutoTrain;
+            kolData.kanaoQuestMapId = player.kanaoQuestMapId;
+            kolData.kanaoQuestMobId = player.kanaoQuestMobId;
+            kolData.kanaoQuestCount = player.kanaoQuestCount;
+            kolData.kanaoQuestRequiredCount = player.kanaoQuestRequiredCount;
 
             Gson gson = new Gson();
             String dataKol = gson.toJson(kolData);
@@ -937,6 +941,10 @@ public class PlayerDAO {
                 kolData.dailySuperHardQuestCompletionCount = (int) player.dailySuperHardQuestCompletionCount;
                 kolData.bossBabyDefeatParticipationCount = (int) player.bossBabyDefeatParticipationCount;
                 kolData.monsterKillCountAutoTrain = player.monsterKillCountAutoTrain;
+                kolData.kanaoQuestMapId = player.kanaoQuestMapId;
+                kolData.kanaoQuestMobId = player.kanaoQuestMobId;
+                kolData.kanaoQuestCount = player.kanaoQuestCount;
+                kolData.kanaoQuestRequiredCount = player.kanaoQuestRequiredCount;
 
                 Gson gson = new Gson();
                 String dataKol = gson.toJson(kolData);

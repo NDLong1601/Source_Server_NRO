@@ -350,6 +350,10 @@ public class Player implements Runnable {
     public long dailySuperHardQuestCompletionCount;
     public long bossBabyDefeatParticipationCount;
     public long monsterKillCountAutoTrain;
+    public int kanaoQuestMapId = -1;
+    public int kanaoQuestMobId = -1;
+    public int kanaoQuestCount;
+    public int kanaoQuestRequiredCount;
     public int vipPurchaseCount;
     public long lastClanCheckIn = 0;
     public long lastChallengeGauTuongCuopTime;

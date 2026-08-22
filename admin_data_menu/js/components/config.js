@@ -9,13 +9,13 @@ function IsIntegerConfigKind(kind) {
 }
 
 function IsIntegerListConfigKind(kind) {
-  return ArrayContains(["long-list", "long-list-4", "int-list", "int-list-5", "critical-list"], kind);
+  return ArrayContains(["long-list", "long-list-4", "int-list", "int-list-5", "critical-list", "map-id-list"], kind);
 }
 
 function ConfigKindLabel(kind) {
   var labels = {
     "bool": "Bật / tắt", "int": "Số nguyên", "positive-int": "Số nguyên dương", "long": "Số nguyên lớn",
-    "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm",
+    "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm", "map-id-list": "Danh sách Map ID",
     "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sách 5 giá trị", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
     "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option"
   };

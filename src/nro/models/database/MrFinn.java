@@ -1341,6 +1341,10 @@ public class MrFinn {
                         player.dailySuperHardQuestCompletionCount = kolData.dailySuperHardQuestCompletionCount;
                         player.bossBabyDefeatParticipationCount = kolData.bossBabyDefeatParticipationCount;
                         player.monsterKillCountAutoTrain = (int) kolData.monsterKillCountAutoTrain;
+                        player.kanaoQuestMapId = kolData.kanaoQuestMapId;
+                        player.kanaoQuestMobId = kolData.kanaoQuestMobId;
+                        player.kanaoQuestCount = kolData.kanaoQuestCount;
+                        player.kanaoQuestRequiredCount = kolData.kanaoQuestRequiredCount;
                     } else {
                         throw new Exception("kolData null");
                     }
@@ -1355,6 +1359,10 @@ public class MrFinn {
                 player.dailySuperHardQuestCompletionCount = 0;
                 player.bossBabyDefeatParticipationCount = 0;
                 player.monsterKillCountAutoTrain = 0;
+                player.kanaoQuestMapId = -1;
+                player.kanaoQuestMobId = -1;
+                player.kanaoQuestCount = 0;
+                player.kanaoQuestRequiredCount = 0;
             }
 
             PlayerService.gI().dailyLogin(player);// RESET DATA KHI QUA 12H ĐÊM

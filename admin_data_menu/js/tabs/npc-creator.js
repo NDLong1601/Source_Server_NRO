@@ -16,6 +16,61 @@ var npcCreatorOrigSizes = {
   avatar: { w: 0, h: 0 }
 };
 
+var npcCreatorScaleSizes = {
+  fullbody: { iconId: 0 },
+  head: { iconId: 0 },
+  body: { iconId: 0 },
+  leg: { iconId: 0 }
+};
+
+function BuildNpcScaleSizes(detail, prefix, iconId) {
+  return {
+    iconId: parseInt(iconId, 10) || 0,
+    1: { w: parseInt(detail[prefix + "W1"], 10) || 0, h: parseInt(detail[prefix + "H1"], 10) || 0 },
+    2: { w: parseInt(detail[prefix + "W2"], 10) || 0, h: parseInt(detail[prefix + "H2"], 10) || 0 },
+    3: { w: parseInt(detail[prefix + "W3"], 10) || 0, h: parseInt(detail[prefix + "H3"], 10) || 0 },
+    4: { w: parseInt(detail[prefix + "W"], 10) || 0, h: parseInt(detail[prefix + "H"], 10) || 0 }
+  };
+}
+
+// Các tọa độ gốc này trùng với frame đứng mà client NRO dùng khi vẽ nhân vật.
+// Offset trong bảng part luôn là đơn vị x1; preview nhân theo mức zoom đang chọn.
+var NPC_CREATOR_STAND_FRAMES = {
+  0: {
+    head: { x: -13, y: 34 },
+    body: { x: -9, y: 16 },
+    leg: { x: -8, y: 10 }
+  },
+  1: {
+    head: { x: -13, y: 35 },
+    body: { x: -9, y: 17 },
+    leg: { x: -8, y: 10 }
+  }
+};
+
+// Client fullbody cũ không có Head nên rơi về cy - 37. Proxy Head chuẩn cao
+// 20px đưa anchor lên cy - 57, giống nhóm NPC ghép part thông thường.
+var NPC_CREATOR_NAME_ANCHOR_Y = -57;
+
+function NormalizeNpcX4Dimension(value) {
+  var number = parseInt(value, 10) || 0;
+  if (number <= 0) return 0;
+  return Math.max(4, Math.round(number / 4) * 4);
+}
+
+function GetNpcPreviewZoom() {
+  var zoom = parseInt(V("npcCreatorPreviewZoom"), 10) || 4;
+  return Math.max(1, Math.min(4, zoom));
+}
+
+function GetNpcPreviewDirection() {
+  return V("npcCreatorPreviewDirection") === "left" ? -1 : 1;
+}
+
+function ChangeNpcPreviewRuntime() {
+  UpdateNpcCreatorPreview();
+}
+
 function SwitchNpcCreatorMode(mode) {
   var isFullBody = (mode === "fullbody");
   Set("npcCreatorMode", isFullBody ? "fullbody" : "multipart");
@@ -43,12 +98,13 @@ function SwitchNpcCreatorMode(mode) {
 }
 
 function SetFullBodyPreset(targetH) {
+  targetH = NormalizeNpcX4Dimension(targetH);
   var orig = npcCreatorOrigSizes.fullbody;
   var targetW = 120;
   if (orig.w > 0 && orig.h > 0) {
-    targetW = Math.max(1, Math.round(targetH * orig.w / orig.h));
+    targetW = NormalizeNpcX4Dimension(targetH * orig.w / orig.h);
   } else {
-    targetW = Math.round(targetH * 0.7);
+    targetW = NormalizeNpcX4Dimension(targetH * 0.7);
   }
   Set("npcCreatorFullBodyW", targetW);
   Set("npcCreatorFullBodyH", targetH);
@@ -132,6 +188,27 @@ function SyncNpcCreatorMap() {
   ChangeNpcPreviewBg(V("npcCreatorBgSelect") || "auto");
 }
 
+function RenderNpcCreatorMapPlacements(placements) {
+  var target = document.getElementById("npcCreatorMapPlacements");
+  if (!target) return;
+  if (!placements) placements = [];
+  if (!Array.isArray(placements)) placements = [placements];
+  if (placements.length === 0) {
+    target.innerHTML = '<span class="npc-placement-empty">Chưa đặt vào map.</span>';
+    return;
+  }
+  var labels = [];
+  for (var i = 0; i < placements.length; i++) {
+    var placement = placements[i] || {};
+    labels.push(
+      '<span class="npc-placement-chip">Map ' + Html(placement.MapId) +
+      ' - ' + Html(placement.MapName || "") +
+      ' (' + Html(placement.X) + ', ' + Html(placement.Y) + ')</span>'
+    );
+  }
+  target.innerHTML = labels.join("");
+}
+
 function PickNpcCreator(index) {
   var r = npcCreatorRows[index];
   if (!r) return;
@@ -144,6 +221,13 @@ function PickNpcCreator(index) {
     Msg("npcCreatorMessage", "Không đọc được chi tiết NPC: " + detailRaw);
     return;
   }
+
+  npcCreatorScaleSizes = {
+    fullbody: { iconId: 0 },
+    head: { iconId: 0 },
+    body: { iconId: 0 },
+    leg: { iconId: 0 }
+  };
 
   Set("npcCreatorId", detail.Id);
   Set("npcCreatorName", detail.Name);
@@ -162,6 +246,7 @@ function PickNpcCreator(index) {
     Set("npcCreatorFullBodyDy", detail.FullBodyDy || "0");
     npcCreatorOrigSizes.fullbody.w = parseInt(detail.FullBodyW || detail.BodyW, 10) || 0;
     npcCreatorOrigSizes.fullbody.h = parseInt(detail.FullBodyH || detail.BodyH, 10) || 0;
+    npcCreatorScaleSizes.fullbody = BuildNpcScaleSizes(detail, "FullBody", detail.FullBodyIconId || detail.BodyIconId);
 
     Set("npcCreatorFbAvatarIcon", detail.AvatarIconId || "0");
   } else {
@@ -172,6 +257,7 @@ function PickNpcCreator(index) {
     Set("npcCreatorHeadH", detail.HeadH || "0");
     npcCreatorOrigSizes.head.w = parseInt(detail.HeadW, 10) || 0;
     npcCreatorOrigSizes.head.h = parseInt(detail.HeadH, 10) || 0;
+    npcCreatorScaleSizes.head = BuildNpcScaleSizes(detail, "Head", detail.HeadIconId);
 
     Set("npcCreatorBodyIcon", detail.BodyIconId);
     Set("npcCreatorBodyDx", detail.BodyDx);
@@ -180,6 +266,7 @@ function PickNpcCreator(index) {
     Set("npcCreatorBodyH", detail.BodyH || "0");
     npcCreatorOrigSizes.body.w = parseInt(detail.BodyW, 10) || 0;
     npcCreatorOrigSizes.body.h = parseInt(detail.BodyH, 10) || 0;
+    npcCreatorScaleSizes.body = BuildNpcScaleSizes(detail, "Body", detail.BodyIconId);
 
     Set("npcCreatorLegIcon", detail.LegIconId);
     Set("npcCreatorLegDx", detail.LegDx);
@@ -188,6 +275,7 @@ function PickNpcCreator(index) {
     Set("npcCreatorLegH", detail.LegH || "0");
     npcCreatorOrigSizes.leg.w = parseInt(detail.LegW, 10) || 0;
     npcCreatorOrigSizes.leg.h = parseInt(detail.LegH, 10) || 0;
+    npcCreatorScaleSizes.leg = BuildNpcScaleSizes(detail, "Leg", detail.LegIconId);
 
     Set("npcCreatorAvatarIcon", detail.AvatarIconId);
     Set("npcCreatorAvatarW", detail.AvatarW || "0");
@@ -202,6 +290,15 @@ function PickNpcCreator(index) {
   }
   Set("npcCreatorSpawnX", detail.SpawnX || "300");
   Set("npcCreatorSpawnY", detail.SpawnY || "336");
+  var keepOtherMaps = document.getElementById("npcCreatorKeepOtherMaps");
+  if (keepOtherMaps) {
+    // Kanao là NPC cổng hai chiều nên mặc định luôn bảo toàn bản ở map còn lại,
+    // kể cả khi dữ liệu cũ hiện chỉ còn một vị trí.
+    keepOtherMaps.checked = (detail.KeepOtherMaps == "1" || String(detail.Id) === "112");
+    keepOtherMaps.disabled = (String(detail.Id) === "112");
+    keepOtherMaps.title = keepOtherMaps.disabled ? "Kanao cần tồn tại đồng thời ở map 0 và 187." : "";
+  }
+  RenderNpcCreatorMapPlacements(detail.MapPlacements || []);
 
   var chkShop = document.getElementById("npcCreatorHasShop");
   if (chkShop) chkShop.checked = (detail.HasShop == "1");
@@ -268,11 +365,24 @@ function NewNpcCreator() {
     leg: { w: 0, h: 0 },
     avatar: { w: 0, h: 0 }
   };
+  npcCreatorScaleSizes = {
+    fullbody: { iconId: 0 },
+    head: { iconId: 0 },
+    body: { iconId: 0 },
+    leg: { iconId: 0 }
+  };
 
   var mapSel = document.getElementById("npcCreatorMapSelect");
   if (mapSel) mapSel.value = "-1";
   Set("npcCreatorSpawnX", "300");
   Set("npcCreatorSpawnY", "336");
+  var keepOtherMaps = document.getElementById("npcCreatorKeepOtherMaps");
+  if (keepOtherMaps) {
+    keepOtherMaps.checked = false;
+    keepOtherMaps.disabled = false;
+    keepOtherMaps.title = "";
+  }
+  RenderNpcCreatorMapPlacements([]);
 
   var chkShop = document.getElementById("npcCreatorHasShop");
   if (chkShop) chkShop.checked = false;
@@ -324,7 +434,7 @@ function HandleNpcFileChange(partType, fileInput) {
 
     if (partType === "fullbody") {
       var targetH = 180;
-      var targetW = Math.max(1, Math.round(targetH * origW / origH));
+      var targetW = NormalizeNpcX4Dimension(targetH * origW / origH);
       Set("npcCreatorFullBodyW", targetW);
       Set("npcCreatorFullBodyH", targetH);
       Msg("npcCreatorMessage", "Ảnh toàn thân gốc (" + origW + "x" + origH + "px) đã được tự động gợi ý co về chuẩn x4: " + targetW + "x" + targetH + "px.");
@@ -339,14 +449,14 @@ function HandleNpcFileChange(partType, fileInput) {
     if (partType === "avatar") targetMaxW = 180;
 
     if (origW > 120 && origW > 0) {
-      var scaledW = targetMaxW;
-      var scaledH = Math.max(1, Math.round(targetMaxW * origH / origW));
+      var scaledW = NormalizeNpcX4Dimension(targetMaxW);
+      var scaledH = NormalizeNpcX4Dimension(targetMaxW * origH / origW);
       Set("npcCreator" + capPart + "W", scaledW);
       Set("npcCreator" + capPart + "H", scaledH);
       Msg("npcCreatorMessage", "Ảnh " + partType + " gốc (" + origW + "x" + origH + "px) đã được tự động gợi ý co về chuẩn x4: " + scaledW + "x" + scaledH + "px.");
     } else {
-      Set("npcCreator" + capPart + "W", origW);
-      Set("npcCreator" + capPart + "H", origH);
+      Set("npcCreator" + capPart + "W", NormalizeNpcX4Dimension(origW));
+      Set("npcCreator" + capPart + "H", NormalizeNpcX4Dimension(origH));
     }
     UpdateNpcCreatorPreview();
   };
@@ -433,9 +543,11 @@ function ApplyNpcPreset(partType) {
   if (partType === "avatar") { targetW = 180; targetH = 180; }
 
   if (orig.w > 0 && orig.h > 0) {
-    targetH = Math.max(1, Math.round(targetW * ratio));
+    targetH = NormalizeNpcX4Dimension(targetW * ratio);
   }
 
+  targetW = NormalizeNpcX4Dimension(targetW);
+  targetH = NormalizeNpcX4Dimension(targetH);
   Set("npcCreator" + capPart + "W", targetW);
   Set("npcCreator" + capPart + "H", targetH);
   UpdateNpcCreatorPreview();
@@ -443,17 +555,16 @@ function ApplyNpcPreset(partType) {
 }
 
 function AutoSnapJoints() {
-  var legH = parseInt(V("npcCreatorLegH"), 10) || 44;
   var bodyH = parseInt(V("npcCreatorBodyH"), 10) || 52;
   var headH = parseInt(V("npcCreatorHeadH"), 10) || 80;
   var legDy = parseInt(V("npcCreatorLegDy"), 10) || 0;
 
-  var legTop = 12 + Math.round(legH / 2) - (legDy * 4);
-  var targetBodyDy = Math.round((52 - Math.round(bodyH / 2) - legTop) / 4);
+  // Client vẽ top-left lần lượt tại cy-10 (chân), cy-16 (thân), cy-34 (đầu).
+  // Công thức dưới ghép đáy ảnh trên vào đỉnh ảnh dưới trong đúng hệ tọa độ đó.
+  var targetBodyDy = Math.round(6 + legDy - (bodyH / 4));
   Set("npcCreatorBodyDy", targetBodyDy);
 
-  var bodyTop = 52 + Math.round(bodyH / 2) - (targetBodyDy * 4);
-  var targetHeadDy = Math.round((100 - Math.round(headH / 2) - bodyTop) / 4);
+  var targetHeadDy = Math.round(18 + targetBodyDy - (headH / 4));
   Set("npcCreatorHeadDy", targetHeadDy);
 
   UpdateNpcCreatorPreview();
@@ -546,6 +657,8 @@ function AdjustNpcOffset(partType, axis, delta) {
 }
 
 function ResetNpcOffsets() {
+  Set("npcCreatorFullBodyDx", "0");
+  Set("npcCreatorFullBodyDy", "0");
   Set("npcCreatorHeadDx", "0");
   Set("npcCreatorHeadDy", "0");
   Set("npcCreatorBodyDx", "0");
@@ -566,37 +679,115 @@ function ToggleNpcPreviewGrid() {
   }
 }
 
-function GetImageSourceForPart(partType) {
+function NpcCreatorFileUrl(filePath) {
+  var rawPath = (filePath || "").replace(/\\/g, "/");
+  if (rawPath.charAt(0) != "/" && rawPath.charAt(1) == ":") {
+    rawPath = "/" + rawPath;
+  }
+  return rawPath ? "file://" + rawPath : "";
+}
+
+function GetImageSourceForPart(partType, overrideIconId, forcedZoom) {
   if (npcCreatorFilePaths[partType] && npcCreatorFilePaths[partType].length > 0) {
-    var rawPath = npcCreatorFilePaths[partType].replace(/\\/g, "/");
-    if (rawPath.charAt(0) != "/" && rawPath.charAt(1) == ":") {
-      rawPath = "/" + rawPath;
-    }
-    return "file://" + rawPath;
+    return NpcCreatorFileUrl(npcCreatorFilePaths[partType]);
   }
   var iconInputId = "npcCreator" + (partType === "fullbody" ? "FullBody" : (partType.charAt(0).toUpperCase() + partType.slice(1))) + "Icon";
-  var iconId = parseInt(V(iconInputId), 10) || 0;
+  var iconId = parseInt(overrideIconId, 10) || parseInt(V(iconInputId), 10) || 0;
   if (iconId > 0) {
-    var fullIconPath = (rootDir + "\\data\\icon\\x4\\" + iconId + ".png").replace(/\\/g, "/");
-    if (fullIconPath.charAt(0) != "/" && fullIconPath.charAt(1) == ":") {
-      fullIconPath = "/" + fullIconPath;
+    var zoom = forcedZoom || GetNpcPreviewZoom();
+    var windowsPath = rootDir + "\\data\\icon\\x" + zoom + "\\" + iconId + ".png";
+    try {
+      if (!fso.FileExists(windowsPath)) {
+        windowsPath = rootDir + "\\data\\icon\\x4\\" + iconId + ".png";
+      }
+    } catch (e) {
     }
-    return "file://" + fullIconPath;
+    return NpcCreatorFileUrl(windowsPath);
   }
   return "";
+}
+
+function GetNpcPreviewSize(partType, zoom) {
+  var capPart = partType === "fullbody" ? "FullBody" : (partType.charAt(0).toUpperCase() + partType.slice(1));
+  var fallbackW = partType === "fullbody" ? 120 : (partType === "head" ? 80 : (partType === "body" ? 76 : 52));
+  var fallbackH = partType === "fullbody" ? 180 : (partType === "head" ? 92 : (partType === "body" ? 52 : 44));
+  var width4 = parseInt(V("npcCreator" + capPart + "W"), 10) || fallbackW;
+  var height4 = parseInt(V("npcCreator" + capPart + "H"), 10) || fallbackH;
+  var currentIconId = parseInt(V("npcCreator" + capPart + "Icon"), 10) || 0;
+  var savedSizes = npcCreatorScaleSizes[partType];
+  var savedX4 = savedSizes ? savedSizes[4] : null;
+  var canUseSavedSize = !npcCreatorFilePaths[partType] && savedSizes && savedSizes.iconId === currentIconId &&
+    savedX4 && savedX4.w === width4 && savedX4.h === height4;
+  var actualAtZoom = canUseSavedSize ? savedSizes[zoom] : null;
+  var actualAtX1 = canUseSavedSize ? savedSizes[1] : null;
+  var actualAtX4 = canUseSavedSize ? savedSizes[4] : null;
+  if (actualAtX4 && actualAtX4.w > 0 && actualAtX4.h > 0) {
+    width4 = actualAtX4.w;
+    height4 = actualAtX4.h;
+  }
+  return {
+    width4: width4,
+    height4: height4,
+    width: actualAtZoom && actualAtZoom.w > 0 ? actualAtZoom.w : Math.max(1, Math.round(width4 * zoom / 4)),
+    height: actualAtZoom && actualAtZoom.h > 0 ? actualAtZoom.h : Math.max(1, Math.round(height4 * zoom / 4)),
+    width1: actualAtX1 && actualAtX1.w > 0 ? actualAtX1.w : Math.max(1, Math.round(width4 / 4)),
+    height1: actualAtX1 && actualAtX1.h > 0 ? actualAtX1.h : Math.max(1, Math.round(height4 / 4))
+  };
+}
+
+function PositionNpcPreviewLayer(img, src, size, logicalX, logicalY, zoom, direction) {
+  if (!img) return;
+  if (!src) {
+    img.style.display = "none";
+    return;
+  }
+
+  var anchorX = logicalX * zoom;
+  var left = direction > 0 ? anchorX : (-anchorX - size.width);
+  img.src = src;
+  img.style.display = "block";
+  img.style.left = "calc(50% + " + left + "px)";
+  img.style.top = "calc(100% - 42px + " + (logicalY * zoom) + "px)";
+  img.style.right = "auto";
+  img.style.bottom = "auto";
+  img.style.marginLeft = "0";
+  img.style.width = size.width + "px";
+  img.style.height = size.height + "px";
+  img.style.transform = direction > 0 ? "none" : "scaleX(-1)";
+}
+
+function SetNpcPreviewStatus(text, isWarning) {
+  var status = document.getElementById("npcPreviewStatus");
+  if (!status) return;
+  status.className = isWarning ? "npc-preview-status warning" : "npc-preview-status";
+  status.innerText = text;
 }
 
 function UpdateNpcCreatorPreview() {
   var mode = V("npcCreatorMode") || "fullbody";
   var isFullBody = (mode === "fullbody");
+  var zoom = GetNpcPreviewZoom();
+  var direction = GetNpcPreviewDirection();
+  var frameIndex = parseInt(V("npcCreatorPreviewFrame"), 10) || 0;
+  var frame = NPC_CREATOR_STAND_FRAMES[frameIndex] || NPC_CREATOR_STAND_FRAMES[0];
 
   var imgFb = document.getElementById("npcPrevFullBody");
   var imgHead = document.getElementById("npcPrevHead");
   var imgBody = document.getElementById("npcPrevBody");
   var imgLeg = document.getElementById("npcPrevLeg");
+  var nameEl = document.getElementById("npcPreviewName");
 
-  var baseGroundY = 42;
+  if (nameEl) {
+    var npcId = Trim(V("npcCreatorId") || "");
+    var npcName = Trim(V("npcCreatorName") || "") || "NPC";
+    nameEl.innerText = (npcId ? "[" + npcId + "] " : "") + npcName;
+    nameEl.style.top = "calc(100% - 42px + " + (NPC_CREATOR_NAME_ANCHOR_Y * zoom) + "px)";
+  }
+
   var shadowEl = document.querySelector(".npc-preview-shadow");
+  var directionLabel = direction > 0 ? "phải" : "trái";
+  var statusText = "x" + zoom + " • hướng " + directionLabel + " • frame đứng " + frameIndex;
+  var statusWarning = false;
 
   if (isFullBody) {
     if (imgHead) imgHead.style.display = "none";
@@ -604,31 +795,40 @@ function UpdateNpcCreatorPreview() {
     if (imgLeg) imgLeg.style.display = "none";
 
     var fbSrc = GetImageSourceForPart("fullbody");
-    var fbW = parseInt(V("npcCreatorFullBodyW"), 10) || 0;
-    var fbH = parseInt(V("npcCreatorFullBodyH"), 10) || 0;
     var fbDx = parseInt(V("npcCreatorFullBodyDx"), 10) || 0;
     var fbDy = parseInt(V("npcCreatorFullBodyDy"), 10) || 0;
+    var fbSize = GetNpcPreviewSize("fullbody", zoom);
+
+    // Đây chính là phép chuyển đổi sẽ được backend ghi vào body part.
+    var encodedBodyDx = 9 - Math.floor(fbSize.width1 / 2) + fbDx;
+    var encodedBodyDy = 16 - fbSize.height1 + fbDy;
+    var logicalFbX = frame.body.x + encodedBodyDx;
+    var logicalFbY = -frame.body.y + encodedBodyDy;
+    var footError = (logicalFbY * zoom) + fbSize.height;
 
     if (imgFb) {
-      if (fbSrc) {
-        imgFb.src = fbSrc;
-        imgFb.style.display = "block";
-        imgFb.style.left = "calc(50% + " + (fbDx * 4) + "px)";
-        var curFbW = fbW > 0 ? fbW : 120;
-        var curFbH = fbH > 0 ? fbH : 180;
-        imgFb.style.marginLeft = "0px";
-        imgFb.style.bottom = (baseGroundY - (fbDy * 4)) + "px";
-        imgFb.style.width = curFbW + "px";
-        imgFb.style.height = curFbH + "px";
-
-        if (shadowEl) {
-          var sW = Math.max(60, Math.min(130, Math.round(curFbW * 0.9)));
-          shadowEl.style.width = sW + "px";
-          shadowEl.style.marginLeft = (-sW / 2) + "px";
-        }
-      } else {
-        imgFb.style.display = "none";
+      PositionNpcPreviewLayer(imgFb, fbSrc, fbSize, logicalFbX, logicalFbY, zoom, direction);
+      if (fbSrc && shadowEl) {
+        var sW = Math.max(18, Math.min(130, Math.round(fbSize.width * 0.9)));
+        shadowEl.style.width = sW + "px";
+        shadowEl.style.marginLeft = (-sW / 2) + "px";
+        shadowEl.style.height = Math.max(5, Math.round(4.5 * zoom)) + "px";
       }
+    }
+
+    statusText += " • body DATA=[" + (parseInt(V("npcCreatorFullBodyIcon"), 10) || "icon mới") + "," + encodedBodyDx + "," + encodedBodyDy + "]";
+    if ((fbSize.width4 % 4) !== 0 || (fbSize.height4 % 4) !== 0) {
+      statusWarning = true;
+      statusText += " • W/H x4 chưa chia hết cho 4";
+    }
+    if (footError !== 0) {
+      statusWarning = true;
+      statusText += " • chân lệch " + footError + "px tại x" + zoom;
+    }
+    if (logicalFbY < NPC_CREATOR_NAME_ANCHOR_Y &&
+        logicalFbY + fbSize.height1 > NPC_CREATOR_NAME_ANCHOR_Y) {
+      statusWarning = true;
+      statusText += " • bảng tên client đang chạm sprite";
     }
 
     var imgAvatar = document.getElementById("npcPrevAvatar");
@@ -637,11 +837,9 @@ function UpdateNpcCreatorPreview() {
     var fbAvatarIcon = parseInt(V("npcCreatorFbAvatarIcon"), 10) || 0;
     var fbAvatarSrc = "";
     if (fbAvatarFile) {
-      var rPath = fbAvatarFile.replace(/\\/g, "/");
-      if (rPath.charAt(0) != "/" && rPath.charAt(1) == ":") rPath = "/" + rPath;
-      fbAvatarSrc = "file://" + rPath;
+      fbAvatarSrc = NpcCreatorFileUrl(fbAvatarFile);
     } else if (fbAvatarIcon > 0) {
-      fbAvatarSrc = GetImageSourceForPart("avatar");
+      fbAvatarSrc = GetImageSourceForPart("avatar", fbAvatarIcon, 4);
     } else {
       fbAvatarSrc = fbSrc;
     }
@@ -662,7 +860,7 @@ function UpdateNpcCreatorPreview() {
     var headSrc = GetImageSourceForPart("head");
     var bodySrc = GetImageSourceForPart("body");
     var legSrc = GetImageSourceForPart("leg");
-    var avatarSrc = GetImageSourceForPart("avatar");
+    var avatarSrc = GetImageSourceForPart("avatar", 0, 4);
 
     var headDx = parseInt(V("npcCreatorHeadDx"), 10) || 0;
     var headDy = parseInt(V("npcCreatorHeadDy"), 10) || 0;
@@ -671,60 +869,38 @@ function UpdateNpcCreatorPreview() {
     var legDx = parseInt(V("npcCreatorLegDx"), 10) || 0;
     var legDy = parseInt(V("npcCreatorLegDy"), 10) || 0;
 
-    var headW = parseInt(V("npcCreatorHeadW"), 10) || 0;
-    var headH = parseInt(V("npcCreatorHeadH"), 10) || 0;
-    var bodyW = parseInt(V("npcCreatorBodyW"), 10) || 0;
-    var bodyH = parseInt(V("npcCreatorBodyH"), 10) || 0;
-    var legW = parseInt(V("npcCreatorLegW"), 10) || 0;
-    var legH = parseInt(V("npcCreatorLegH"), 10) || 0;
+    var headSize = GetNpcPreviewSize("head", zoom);
+    var bodySize = GetNpcPreviewSize("body", zoom);
+    var legSize = GetNpcPreviewSize("leg", zoom);
 
     if (shadowEl) {
-      var sW = Math.max(50, Math.min(110, Math.round((legW || 52) * 1.3)));
+      var sW = Math.max(18, Math.min(110, Math.round(legSize.width * 1.3)));
       shadowEl.style.width = sW + "px";
       shadowEl.style.marginLeft = (-sW / 2) + "px";
+      shadowEl.style.height = Math.max(5, Math.round(4.5 * zoom)) + "px";
     }
 
-    if (imgLeg) {
-      if (legSrc) {
-        imgLeg.src = legSrc;
-        imgLeg.style.display = "block";
-        imgLeg.style.left = "calc(50% + " + (legDx * 4) + "px)";
-        var curLegH = legH > 0 ? legH : 44;
-        imgLeg.style.bottom = (baseGroundY + 12 - Math.round(curLegH / 2) - (legDy * 4)) + "px";
-        if (legW > 0) imgLeg.style.width = legW + "px"; else imgLeg.style.width = "auto";
-        if (legH > 0) imgLeg.style.height = legH + "px"; else imgLeg.style.height = "auto";
-      } else {
-        imgLeg.style.display = "none";
-      }
+    PositionNpcPreviewLayer(imgHead, headSrc, headSize, frame.head.x + headDx, -frame.head.y + headDy, zoom, direction);
+    PositionNpcPreviewLayer(imgLeg, legSrc, legSize, frame.leg.x + legDx, -frame.leg.y + legDy, zoom, direction);
+    PositionNpcPreviewLayer(imgBody, bodySrc, bodySize, frame.body.x + bodyDx, -frame.body.y + bodyDy, zoom, direction);
+
+    var logicalHeadTop = -frame.head.y + headDy;
+    if (headSrc && logicalHeadTop < NPC_CREATOR_NAME_ANCHOR_Y &&
+        logicalHeadTop + headSize.height1 > NPC_CREATOR_NAME_ANCHOR_Y) {
+      statusWarning = true;
+      statusText += " • bảng tên client đang chạm phần đầu";
     }
 
-    if (imgBody) {
-      if (bodySrc) {
-        imgBody.src = bodySrc;
-        imgBody.style.display = "block";
-        imgBody.style.left = "calc(50% + " + (bodyDx * 4) + "px)";
-        var curBodyH = bodyH > 0 ? bodyH : 52;
-        imgBody.style.bottom = (baseGroundY + 52 - Math.round(curBodyH / 2) - (bodyDy * 4)) + "px";
-        if (bodyW > 0) imgBody.style.width = bodyW + "px"; else imgBody.style.width = "auto";
-        if (bodyH > 0) imgBody.style.height = bodyH + "px"; else imgBody.style.height = "auto";
-      } else {
-        imgBody.style.display = "none";
+    var multipartSizes = [headSize, bodySize, legSize];
+    var multipartDimensionWarning = false;
+    for (var sizeIndex = 0; sizeIndex < multipartSizes.length; sizeIndex++) {
+      if ((multipartSizes[sizeIndex].width4 % 4) !== 0 || (multipartSizes[sizeIndex].height4 % 4) !== 0) {
+        statusWarning = true;
+        multipartDimensionWarning = true;
       }
     }
-
-    if (imgHead) {
-      if (headSrc) {
-        imgHead.src = headSrc;
-        imgHead.style.display = "block";
-        imgHead.style.left = "calc(50% + " + (headDx * 4) + "px)";
-        var curHeadH = headH > 0 ? headH : 80;
-        imgHead.style.bottom = (baseGroundY + 100 - Math.round(curHeadH / 2) - (headDy * 4)) + "px";
-        if (headW > 0) imgHead.style.width = headW + "px"; else imgHead.style.width = "auto";
-        if (headH > 0) imgHead.style.height = headH + "px"; else imgHead.style.height = "auto";
-      } else {
-        imgHead.style.display = "none";
-      }
-    }
+    statusText += " • offset part ở đơn vị x1";
+    if (multipartDimensionWarning) statusText += " • có W/H x4 chưa chia hết cho 4";
 
     var imgAvatar2 = document.getElementById("npcPrevAvatar");
     var txtAvatar2 = document.getElementById("npcPrevAvatarText");
@@ -740,6 +916,109 @@ function UpdateNpcCreatorPreview() {
       }
     }
   }
+
+  SetNpcPreviewStatus(statusText, statusWarning);
+}
+
+function ValidateNpcOffset(value, label) {
+  var text = Trim(value == null ? "" : String(value));
+  if (!/^-?\d+$/.test(text)) return label + " phải là số nguyên.";
+  var number = parseInt(text, 10);
+  if (number < -128 || number > 127) return label + " phải nằm trong khoảng -128..127 (giới hạn byte của client).";
+  return "";
+}
+
+function NormalizeNpcUploadDimensions(partType, forceExistingIcon) {
+  var capPart = partType === "fullbody" ? "FullBody" : (partType.charAt(0).toUpperCase() + partType.slice(1));
+  var widthId = "npcCreator" + capPart + "W";
+  var heightId = "npcCreator" + capPart + "H";
+  var oldW = parseInt(V(widthId), 10) || 0;
+  var oldH = parseInt(V(heightId), 10) || 0;
+  var currentIconId = parseInt(V("npcCreator" + capPart + "Icon"), 10) || 0;
+  var savedSizes = npcCreatorScaleSizes[partType];
+  var savedX4 = savedSizes ? savedSizes[4] : null;
+  var usesUnchangedExistingIcon = !npcCreatorFilePaths[partType] && savedSizes && savedSizes.iconId === currentIconId &&
+    savedX4 && savedX4.w === oldW && savedX4.h === oldH;
+  if (usesUnchangedExistingIcon && !forceExistingIcon) return false;
+  var newW = NormalizeNpcX4Dimension(oldW);
+  var newH = NormalizeNpcX4Dimension(oldH);
+  if (newW > 0) Set(widthId, newW);
+  if (newH > 0) Set(heightId, newH);
+  return oldW !== newW || oldH !== newH;
+}
+
+function NormalizeNpcActiveDimensions() {
+  var isFullBody = (V("npcCreatorMode") || "fullbody") === "fullbody";
+  var parts = isFullBody ? ["fullbody"] : ["head", "body", "leg", "avatar"];
+  var changed = false;
+  for (var i = 0; i < parts.length; i++) {
+    changed = NormalizeNpcUploadDimensions(parts[i], true) || changed;
+  }
+  UpdateNpcCreatorPreview();
+  Msg("npcCreatorMessage", changed ?
+    "Đã chuẩn hóa W/H x4 theo bội số 4. Khi lưu, icon có sẵn sẽ được clone sang ID mới để bảo vệ dữ liệu dùng chung." :
+    "Kích thước hiện tại đã đồng nhất theo chuẩn x1-x4.");
+}
+
+function ValidateNpcCreatorForm(isFullBody) {
+  var requiredParts = isFullBody ? ["fullbody"] : ["head", "body", "leg"];
+  for (var i = 0; i < requiredParts.length; i++) {
+    var partType = requiredParts[i];
+    var capPart = partType === "fullbody" ? "FullBody" : (partType.charAt(0).toUpperCase() + partType.slice(1));
+    var iconText = Trim(V("npcCreator" + capPart + "Icon"));
+    var iconId = parseInt(iconText, 10) || 0;
+    if (!npcCreatorFilePaths[partType] && iconId <= 0) {
+      return "Thiếu ảnh hoặc Icon ID cho phần " + partType + ".";
+    }
+    if (!npcCreatorFilePaths[partType] && !/^\d+$/.test(iconText)) {
+      return "Icon ID của " + partType + " phải là số nguyên dương.";
+    }
+    var widthText = Trim(V("npcCreator" + capPart + "W"));
+    var heightText = Trim(V("npcCreator" + capPart + "H"));
+    if (!/^\d+$/.test(widthText) || !/^\d+$/.test(heightText)) {
+      return "Kích thước " + partType + " phải là số nguyên dương.";
+    }
+    var width = parseInt(widthText, 10) || 0;
+    var height = parseInt(heightText, 10) || 0;
+    if (width <= 0 || height <= 0 || width > 4096 || height > 4096) {
+      return "Kích thước " + partType + " phải nằm trong khoảng 1..4096px.";
+    }
+  }
+
+  if (isFullBody) {
+    var visualDxError = ValidateNpcOffset(V("npcCreatorFullBodyDx"), "FullBody dx");
+    if (visualDxError) return visualDxError;
+    var visualDyError = ValidateNpcOffset(V("npcCreatorFullBodyDy"), "FullBody dy");
+    if (visualDyError) return visualDyError;
+    var size = GetNpcPreviewSize("fullbody", 1);
+    var encodedDx = 9 - Math.floor(size.width1 / 2) + (parseInt(V("npcCreatorFullBodyDx"), 10) || 0);
+    var encodedDy = 16 - size.height1 + (parseInt(V("npcCreatorFullBodyDy"), 10) || 0);
+    var encodedDxError = ValidateNpcOffset(String(encodedDx), "FullBody DATA dx");
+    if (encodedDxError) return encodedDxError;
+    var encodedDyError = ValidateNpcOffset(String(encodedDy), "FullBody DATA dy");
+    if (encodedDyError) return encodedDyError;
+  } else {
+    var offsetFields = [
+      ["npcCreatorHeadDx", "Head dx"], ["npcCreatorHeadDy", "Head dy"],
+      ["npcCreatorBodyDx", "Body dx"], ["npcCreatorBodyDy", "Body dy"],
+      ["npcCreatorLegDx", "Leg dx"], ["npcCreatorLegDy", "Leg dy"]
+    ];
+    for (var offsetIndex = 0; offsetIndex < offsetFields.length; offsetIndex++) {
+      var offsetError = ValidateNpcOffset(V(offsetFields[offsetIndex][0]), offsetFields[offsetIndex][1]);
+      if (offsetError) return offsetError;
+    }
+  }
+  return "";
+}
+
+function PickNpcCreatorById(npcId) {
+  for (var i = 1; i < npcCreatorRows.length; i++) {
+    if (String(npcCreatorRows[i][0]) === String(npcId)) {
+      PickNpcCreator(i);
+      return true;
+    }
+  }
+  return false;
 }
 
 function SaveNpcCreator() {
@@ -751,6 +1030,23 @@ function SaveNpcCreator() {
 
   var mode = V("npcCreatorMode") || "fullbody";
   var isFullBody = (mode === "fullbody");
+
+  var normalized = false;
+  if (isFullBody) {
+    normalized = NormalizeNpcUploadDimensions("fullbody") || normalized;
+  } else {
+    normalized = NormalizeNpcUploadDimensions("head") || normalized;
+    normalized = NormalizeNpcUploadDimensions("body") || normalized;
+    normalized = NormalizeNpcUploadDimensions("leg") || normalized;
+    if (npcCreatorFilePaths.avatar) normalized = NormalizeNpcUploadDimensions("avatar") || normalized;
+  }
+  UpdateNpcCreatorPreview();
+
+  var validationError = ValidateNpcCreatorForm(isFullBody);
+  if (validationError) {
+    Msg("npcCreatorMessage", validationError);
+    return;
+  }
 
   var mapId = V("npcCreatorMapSelect");
   var spawnX = V("npcCreatorSpawnX") || "300";
@@ -767,6 +1063,7 @@ function SaveNpcCreator() {
     MapId: mapId,
     SpawnX: spawnX,
     SpawnY: spawnY,
+    KeepOtherMaps: CheckedValue("npcCreatorKeepOtherMaps"),
     HasShop: hasShop,
     TagName: shopTag
   };
@@ -815,9 +1112,14 @@ function SaveNpcCreator() {
 
   var text = RunAdmin("savenpccreator", payload);
 
-  Msg("npcCreatorMessage", StatusText(text) + "\r\nRestart server để áp dụng dữ liệu NPC và Map mới.");
+  var messageText = StatusText(text).replace(/\s+NPC_ID=\d+/g, "");
   if (text.indexOf("OK\t") === 0 || text.indexOf("OK ") === 0) {
+    var savedIdMatch = /NPC_ID=(\d+)/.exec(text);
     LoadNpcCreatorList();
+    if (savedIdMatch) PickNpcCreatorById(savedIdMatch[1]);
+    Msg("npcCreatorMessage", messageText + (normalized ? "\r\nKích thước ảnh đã được chuẩn hóa theo bội số 4 để x1-x4 khớp nhau." : "") + "\r\nPreview đã nạp lại từ Part/Icon vừa lưu. Restart server để áp dụng dữ liệu NPC và Map mới.");
+  } else {
+    Msg("npcCreatorMessage", messageText);
   }
 }
 

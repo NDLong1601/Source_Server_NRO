@@ -63,6 +63,7 @@
     [string]$IntervalMinutes = "1",
     [string]$MapId = "",
     [string]$MapIdsJson = "[]",
+    [string]$KeepOtherMaps = "0",
     [string]$ZoneId = "-1",
     [string]$SpawnX = "-1",
     [string]$SpawnY = "-1",
@@ -160,7 +161,7 @@ foreach ($paramName in @(
         "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
-        "IntervalMinutes", "MapId", "MapIdsJson", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
+        "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
         "HeadIconId", "BodyIconId", "LegIconId", "AvatarIconId", "HeadPartId", "BodyPartId", "LegPartId", "HasShop", "NpcSay",
@@ -2209,7 +2210,10 @@ function Process-NpcIconUpload {
         [int]$CustomH = 0
     )
     if ([string]::IsNullOrWhiteSpace($SourcePath) -or -not (Test-Path -LiteralPath $SourcePath)) {
-        return $false
+        throw "Không tìm thấy ảnh nguồn: $SourcePath"
+    }
+    if ($IconId -le 0 -or $IconId -gt 65535) {
+        throw "Icon ID $IconId nằm ngoài giới hạn 1..65535 của protocol client."
     }
     
     $origDir = Join-Path $Root "data\icon\orig"
@@ -2217,41 +2221,58 @@ function Process-NpcIconUpload {
         New-Item -ItemType Directory -Path $origDir -Force | Out-Null
     }
     $origDest = Join-Path $origDir ("{0}.png" -f $IconId)
-    if ($SourcePath -ne $origDest) {
+    if ([IO.Path]::GetFullPath($SourcePath) -ne [IO.Path]::GetFullPath($origDest)) {
         Copy-Item -LiteralPath $SourcePath -Destination $origDest -Force
     }
 
-    $srcImg = [System.Drawing.Image]::FromFile($SourcePath)
+    # Luôn resize từ bản orig riêng để không vừa đọc vừa ghi đè data/icon/x4/{id}.png.
+    $srcImg = [System.Drawing.Image]::FromFile($origDest)
     $origW = $srcImg.Width
     $origH = $srcImg.Height
     $srcImg.Dispose()
     
-    $w4 = if ($CustomW -gt 0) { $CustomW } else { $origW }
-    $h4 = if ($CustomH -gt 0) { $CustomH } else { $origH }
-    $w3 = [Math]::Max(1, [int][Math]::Round($w4 * 3.0 / 4.0))
-    $h3 = [Math]::Max(1, [int][Math]::Round($h4 * 3.0 / 4.0))
-    $w2 = [Math]::Max(1, [int][Math]::Round($w4 * 2.0 / 4.0))
-    $h2 = [Math]::Max(1, [int][Math]::Round($h4 * 2.0 / 4.0))
-    $w1 = [Math]::Max(1, [int][Math]::Round($w4 * 1.0 / 4.0))
-    $h1 = [Math]::Max(1, [int][Math]::Round($h4 * 1.0 / 4.0))
+    $requestedW4 = if ($CustomW -gt 0) { $CustomW } else { $origW }
+    $requestedH4 = if ($CustomH -gt 0) { $CustomH } else { $origH }
+    if ($requestedW4 -gt 4096 -or $requestedH4 -gt 4096) {
+        throw "Kích thước icon x4 tối đa là 4096x4096px."
+    }
+
+    # Lấy x1 làm kích thước chuẩn rồi nhân ngược lên để mọi scale có cùng anchor.
+    $w1 = [Math]::Max(1, [int][Math]::Round($requestedW4 / 4.0))
+    $h1 = [Math]::Max(1, [int][Math]::Round($requestedH4 / 4.0))
+    $w2 = $w1 * 2
+    $h2 = $h1 * 2
+    $w3 = $w1 * 3
+    $h3 = $h1 * 3
+    $w4 = $w1 * 4
+    $h4 = $h1 * 4
     
     $path4 = Join-Path $Root ("data\icon\x4\{0}.png" -f $IconId)
     $path3 = Join-Path $Root ("data\icon\x3\{0}.png" -f $IconId)
     $path2 = Join-Path $Root ("data\icon\x2\{0}.png" -f $IconId)
     $path1 = Join-Path $Root ("data\icon\x1\{0}.png" -f $IconId)
     
-    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path4 -TargetWidth $w4 -TargetHeight $h4
-    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path3 -TargetWidth $w3 -TargetHeight $h3
-    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path2 -TargetWidth $w2 -TargetHeight $h2
-    Resize-PixelArtImage -SourcePath $SourcePath -DestPath $path1 -TargetWidth $w1 -TargetHeight $h1
+    Resize-PixelArtImage -SourcePath $origDest -DestPath $path4 -TargetWidth $w4 -TargetHeight $h4
+    Resize-PixelArtImage -SourcePath $origDest -DestPath $path3 -TargetWidth $w3 -TargetHeight $h3
+    Resize-PixelArtImage -SourcePath $origDest -DestPath $path2 -TargetWidth $w2 -TargetHeight $h2
+    Resize-PixelArtImage -SourcePath $origDest -DestPath $path1 -TargetWidth $w1 -TargetHeight $h1
     
-    return $true
+    return [pscustomobject]@{
+        IconId = $IconId
+        Width1 = $w1
+        Height1 = $h1
+        Width4 = $w4
+        Height4 = $h4
+    }
 }
 
 function Get-IconImageSize {
-    param([int]$TargetIconId)
+    param(
+        [int]$TargetIconId,
+        [ValidateRange(1, 4)][int]$Scale = 4
+    )
     if ($TargetIconId -le 0) { return @{ Width = 0; Height = 0 } }
-    $imgPath = Join-Path $Root ("data\icon\x4\{0}.png" -f $TargetIconId)
+    $imgPath = Join-Path $Root ("data\icon\x{0}\{1}.png" -f $Scale, $TargetIconId)
     if (Test-Path -LiteralPath $imgPath) {
         try {
             $img = [System.Drawing.Image]::FromFile($imgPath)
@@ -2262,6 +2283,129 @@ function Get-IconImageSize {
         } catch {}
     }
     return @{ Width = 0; Height = 0 }
+}
+
+function Ensure-NpcFullBodyNameProxy {
+    # Fullbody không có Head PNG khiến client dùng chiều cao đầu bằng 0 và kéo
+    # bảng tên xuống mặt nhân vật. Icon trong suốt này có đúng khung Head chuẩn
+    # của Mr Popo (18x20 ở x1), nên chỉ sửa bounding box, không vẽ thêm pixel.
+    $proxyIconId = 25010
+    for ($scale = 1; $scale -le 4; $scale++) {
+        $width = 18 * $scale
+        $height = 20 * $scale
+        $dir = Join-Path $Root ("data\icon\x{0}" -f $scale)
+        if (-not (Test-Path -LiteralPath $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        }
+        $path = Join-Path $dir ("{0}.png" -f $proxyIconId)
+        if (Test-Path -LiteralPath $path) {
+            $existing = [System.Drawing.Image]::FromFile($path)
+            try {
+                if ($existing.Width -ne $width -or $existing.Height -ne $height) {
+                    throw "Icon $proxyIconId đã tồn tại nhưng không phải proxy bảng tên NPC (${width}x${height} ở x$scale)."
+                }
+            } finally {
+                $existing.Dispose()
+            }
+            continue
+        }
+
+        $bitmap = [System.Drawing.Bitmap]::new($width, $height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        try {
+            $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+            try {
+                $graphics.Clear([System.Drawing.Color]::Transparent)
+            } finally {
+                $graphics.Dispose()
+            }
+            $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+        } finally {
+            $bitmap.Dispose()
+        }
+    }
+    return $proxyIconId
+}
+
+function Get-NpcIconScaleInfo {
+    param(
+        [int]$IconId,
+        [string]$Label
+    )
+    if ($IconId -le 0 -or $IconId -gt 65535) {
+        throw "$Label phải có Icon ID trong khoảng 1..65535."
+    }
+    $size1 = Get-IconImageSize $IconId 1
+    $size4 = Get-IconImageSize $IconId 4
+    if ($size1.Width -le 0 -or $size1.Height -le 0 -or $size4.Width -le 0 -or $size4.Height -le 0) {
+        throw "$Label (Icon ID $IconId) thiếu PNG x1 hoặc x4; hãy upload lại ảnh để hệ thống sinh đủ x1-x4."
+    }
+    return [pscustomobject]@{
+        IconId = $IconId
+        Width1 = [int]$size1.Width
+        Height1 = [int]$size1.Height
+        Width4 = [int]$size4.Width
+        Height4 = [int]$size4.Height
+    }
+}
+
+function Assert-NpcPartOffset {
+    param(
+        [int]$Value,
+        [string]$Label
+    )
+    if ($Value -lt -128 -or $Value -gt 127) {
+        throw "$Label = $Value nằm ngoài giới hạn -128..127 của protocol client."
+    }
+    return $Value
+}
+
+function Get-NpcValidatedInteger {
+    param(
+        [string]$Value,
+        [string]$Label,
+        [int]$Minimum,
+        [int]$Maximum
+    )
+    $text = if ($null -eq $Value) { "" } else { $Value.Trim() }
+    if ($text -notmatch '^-?\d+$') {
+        throw "$Label phải là số nguyên."
+    }
+    $number64 = [int64]$text
+    if ($number64 -lt $Minimum -or $number64 -gt $Maximum) {
+        throw "$Label phải nằm trong khoảng $Minimum..$Maximum."
+    }
+    return [int]$number64
+}
+
+function Resolve-NpcCreatorIconInfo {
+    param(
+        [string]$SourcePath,
+        [int]$IconId,
+        [int]$CustomW,
+        [int]$CustomH,
+        [string]$Label,
+        [int]$CloneIconId = 0
+    )
+    if (-not [string]::IsNullOrWhiteSpace($SourcePath)) {
+        if (-not (Test-Path -LiteralPath $SourcePath)) {
+            throw "$Label không tìm thấy file upload: $SourcePath"
+        }
+        return Process-NpcIconUpload -SourcePath $SourcePath -IconId $IconId -CustomW $CustomW -CustomH $CustomH
+    }
+    $existingInfo = Get-NpcIconScaleInfo -IconId $IconId -Label $Label
+    $mustResize = ($CustomW -gt 0 -and $CustomW -ne $existingInfo.Width4) -or
+        ($CustomH -gt 0 -and $CustomH -ne $existingInfo.Height4)
+    if ($mustResize) {
+        if ($CloneIconId -le 0 -or $CloneIconId -gt 65535) {
+            throw "$Label cần tạo bản sao để resize nhưng không còn Icon ID hợp lệ."
+        }
+        $existingSource = Join-Path $Root ("data\icon\orig\{0}.png" -f $IconId)
+        if (-not (Test-Path -LiteralPath $existingSource)) {
+            $existingSource = Join-Path $Root ("data\icon\x4\{0}.png" -f $IconId)
+        }
+        return Process-NpcIconUpload -SourcePath $existingSource -IconId $CloneIconId -CustomW $CustomW -CustomH $CustomH
+    }
+    return $existingInfo
 }
 
 function Get-MaxIconId {
@@ -2373,27 +2517,17 @@ function List-NpcCreator {
             $mapName = $cols[1]
             $npcsJson = $cols[2]
             
-            $npcEntries = @()
-            try {
-                $npcEntries = ConvertFrom-Json $npcsJson
-            } catch {
-                $matchesAll = [regex]::Matches($npcsJson, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
-                foreach ($ma in $matchesAll) {
-                    $npcEntries += ,@([int]$ma.Groups[1].Value, [int]$ma.Groups[2].Value, [int]$ma.Groups[3].Value)
-                }
-            }
+            $npcEntries = @(Parse-MapNpcJson $npcsJson)
             
             if ($null -ne $npcEntries) {
                 foreach ($entry in $npcEntries) {
-                    if ($entry.Count -ge 3) {
-                        $nId = [string]$entry[0]
-                        if (-not $npcMapDict.ContainsKey($nId)) {
-                            $npcMapDict[$nId] = @{
-                                MapId = $mapId
-                                MapName = $mapName
-                                X = $entry[1]
-                                Y = $entry[2]
-                            }
+                    $nId = [string]$entry.NpcId
+                    if (-not $npcMapDict.ContainsKey($nId)) {
+                        $npcMapDict[$nId] = @{
+                            MapId = $mapId
+                            MapName = $mapName
+                            X = $entry.X
+                            Y = $entry.Y
                         }
                     }
                 }
@@ -2508,25 +2642,32 @@ function Get-NpcCreatorDetail {
         }
     }
     
-    $rawMaps = Invoke-MySql "SELECT id, `NAME`, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%';"
+    $rawMaps = Invoke-MySql "SELECT id, `NAME`, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%' ORDER BY id ASC;"
     $mapLines = @($rawMaps -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     $mapId = ""; $posX = "0"; $posY = "0"
+    $mapPlacements = New-Object System.Collections.Generic.List[PSObject]
     for ($m = 1; $m -lt $mapLines.Count; $m++) {
         $mCols = $mapLines[$m] -split "`t"
         if ($mCols.Count -ge 3) {
             $mId = $mCols[0]
+            $mName = $mCols[1]
             $npcsJson = $mCols[2]
-            $npcEntries = @()
-            try { $npcEntries = ConvertFrom-Json $npcsJson } catch {}
+            $npcEntries = @(Parse-MapNpcJson $npcsJson)
             foreach ($entry in $npcEntries) {
-                if ($entry.Count -ge 3 -and [int]$entry[0] -eq $npcIdNum) {
-                    $mapId = $mId
-                    $posX = [string]$entry[1]
-                    $posY = [string]$entry[2]
-                    break
+                if ($entry.NpcId -eq $npcIdNum) {
+                    $mapPlacements.Add([pscustomobject]@{
+                        MapId = [int]$mId
+                        MapName = $mName
+                        X = [int]$entry.X
+                        Y = [int]$entry.Y
+                    })
+                    if ($mapId -eq "") {
+                        $mapId = $mId
+                        $posX = [string]$entry.X
+                        $posY = [string]$entry.Y
+                    }
                 }
             }
-            if ($mapId -ne "") { break }
         }
     }
     
@@ -2540,17 +2681,26 @@ function Get-NpcCreatorDetail {
         $shopType = $sCols[2]
     }
     
-    $hSize = Get-IconImageSize ([int]$headIcon)
-    $bSize = Get-IconImageSize ([int]$bodyIcon)
-    $lSize = Get-IconImageSize ([int]$legIcon)
+    $hSize1 = Get-IconImageSize ([int]$headIcon) 1
+    $hSize2 = Get-IconImageSize ([int]$headIcon) 2
+    $hSize3 = Get-IconImageSize ([int]$headIcon) 3
+    $hSize = Get-IconImageSize ([int]$headIcon) 4
+    $bSize1 = Get-IconImageSize ([int]$bodyIcon) 1
+    $bSize2 = Get-IconImageSize ([int]$bodyIcon) 2
+    $bSize3 = Get-IconImageSize ([int]$bodyIcon) 3
+    $bSize = Get-IconImageSize ([int]$bodyIcon) 4
+    $lSize1 = Get-IconImageSize ([int]$legIcon) 1
+    $lSize2 = Get-IconImageSize ([int]$legIcon) 2
+    $lSize3 = Get-IconImageSize ([int]$legIcon) 3
+    $lSize = Get-IconImageSize ([int]$legIcon) 4
     $aSize = Get-IconImageSize ([int]$avatarIconId)
 
-    $isFullBody = ($headIcon -eq "25001" -and $legIcon -eq "25001")
+    $isFullBody = (($headIcon -eq "25001" -or $headIcon -eq "25010") -and $legIcon -eq "25001")
     $mode = if ($isFullBody) { "fullbody" } else { "multipart" }
     $fbIcon = if ($isFullBody) { $bodyIcon } else { "0" }
     $fbSize = if ($isFullBody) { $bSize } else { @{ Width = 0; Height = 0 } }
-    $fbDx = if ($isFullBody) { [string]((SqlInt $bodyDx 0) - [int][Math]::Round(9.0 - ($bSize.Width / 8.0))) } else { "0" }
-    $fbDy = if ($isFullBody) { [string]((SqlInt $bodyDy 0) - [int][Math]::Round(20.0 - ($bSize.Height / 8.0))) } else { "0" }
+    $fbDx = if ($isFullBody) { [string]((SqlInt $bodyDx 0) - (9 - [int][Math]::Floor($bSize1.Width / 2.0))) } else { "0" }
+    $fbDy = if ($isFullBody) { [string]((SqlInt $bodyDy 0) - (16 - $bSize1.Height)) } else { "0" }
 
     $obj = [pscustomobject]@{
         Id = $nId
@@ -2565,19 +2715,43 @@ function Get-NpcCreatorDetail {
         HeadDy = $headDy
         HeadW = $hSize.Width
         HeadH = $hSize.Height
+        HeadW1 = $hSize1.Width
+        HeadH1 = $hSize1.Height
+        HeadW2 = $hSize2.Width
+        HeadH2 = $hSize2.Height
+        HeadW3 = $hSize3.Width
+        HeadH3 = $hSize3.Height
         BodyIconId = $bodyIcon
         BodyDx = $bodyDx
         BodyDy = $bodyDy
         BodyW = $bSize.Width
         BodyH = $bSize.Height
+        BodyW1 = $bSize1.Width
+        BodyH1 = $bSize1.Height
+        BodyW2 = $bSize2.Width
+        BodyH2 = $bSize2.Height
+        BodyW3 = $bSize3.Width
+        BodyH3 = $bSize3.Height
         LegIconId = $legIcon
         LegDx = $legDx
         LegDy = $legDy
         LegW = $lSize.Width
         LegH = $lSize.Height
+        LegW1 = $lSize1.Width
+        LegH1 = $lSize1.Height
+        LegW2 = $lSize2.Width
+        LegH2 = $lSize2.Height
+        LegW3 = $lSize3.Width
+        LegH3 = $lSize3.Height
         FullBodyIconId = $fbIcon
         FullBodyW = $fbSize.Width
         FullBodyH = $fbSize.Height
+        FullBodyW1 = $(if ($isFullBody) { $bSize1.Width } else { 0 })
+        FullBodyH1 = $(if ($isFullBody) { $bSize1.Height } else { 0 })
+        FullBodyW2 = $(if ($isFullBody) { $bSize2.Width } else { 0 })
+        FullBodyH2 = $(if ($isFullBody) { $bSize2.Height } else { 0 })
+        FullBodyW3 = $(if ($isFullBody) { $bSize3.Width } else { 0 })
+        FullBodyH3 = $(if ($isFullBody) { $bSize3.Height } else { 0 })
         FullBodyDx = $fbDx
         FullBodyDy = $fbDy
         AvatarW = $aSize.Width
@@ -2585,6 +2759,8 @@ function Get-NpcCreatorDetail {
         MapId = $mapId
         SpawnX = $posX
         SpawnY = $posY
+        KeepOtherMaps = $(if ($mapPlacements.Count -gt 1) { "1" } else { "0" })
+        MapPlacements = @($mapPlacements)
         HasShop = $hasShop
         ShopTagName = $shopTag
         ShopType = $shopType
@@ -2595,23 +2771,62 @@ function Get-NpcCreatorDetail {
 
 function Parse-MapNpcJson {
     param([string]$JsonText)
-    $list = New-Object System.Collections.Generic.List[PSObject]
-    if ([string]::IsNullOrWhiteSpace($JsonText)) { return $list }
-    $matchesAll = [regex]::Matches($JsonText, '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\]')
-    foreach ($m in $matchesAll) {
-        $list.Add(@([int]$m.Groups[1].Value, [int]$m.Groups[2].Value, [int]$m.Groups[3].Value))
+    if ([string]::IsNullOrWhiteSpace($JsonText) -or $JsonText.Trim() -eq "[]") { return }
+    $tuplePattern = '\[\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)(?<extra>(?:\s*,\s*-?\d+)*)\s*\]'
+    $matchesAll = [regex]::Matches($JsonText, $tuplePattern)
+    if ($matchesAll.Count -eq 0) {
+        throw "Dữ liệu NPC trên map không đúng định dạng [npcId,x,y]: $JsonText"
     }
-    return $list
+    $residue = [regex]::Replace($JsonText, $tuplePattern, "") -replace '[\[\]",\s]', ''
+    if (-not [string]::IsNullOrEmpty($residue)) {
+        throw "Dữ liệu NPC trên map chứa tuple không hợp lệ: $JsonText"
+    }
+    foreach ($m in $matchesAll) {
+        $extraValues = @()
+        if (-not [string]::IsNullOrWhiteSpace($m.Groups['extra'].Value)) {
+            $extraValues = @([regex]::Matches($m.Groups['extra'].Value, '-?\d+') | ForEach-Object { [int]$_.Value })
+        }
+        # Dùng object thay cho int[] để PowerShell không unwrap tuple khi map chỉ có đúng một NPC.
+        [pscustomobject]@{
+            NpcId = [int]$m.Groups[1].Value
+            X = [int]$m.Groups[2].Value
+            Y = [int]$m.Groups[3].Value
+            ExtraValues = $extraValues
+        }
+    }
 }
 
 function Serialize-MapNpcJson {
     param($NpcList)
-    if ($null -eq $NpcList -or $NpcList.Count -eq 0) { return "[]" }
+    $entries = @($NpcList)
+    if ($entries.Count -eq 0) { return "[]" }
     $items = New-Object System.Collections.Generic.List[string]
-    foreach ($entry in $NpcList) {
-        $items.Add("[" + [string]$entry[0] + "," + [string]$entry[1] + "," + [string]$entry[2] + "]")
+    foreach ($entry in $entries) {
+        if ($null -eq $entry -or $null -eq $entry.NpcId -or $null -eq $entry.X -or $null -eq $entry.Y) {
+            throw "Không thể serialize NPC map vì tuple thiếu npcId/x/y."
+        }
+        $values = New-Object System.Collections.Generic.List[string]
+        $values.Add([string]$entry.NpcId)
+        $values.Add([string]$entry.X)
+        $values.Add([string]$entry.Y)
+        foreach ($extraValue in @($entry.ExtraValues)) {
+            if ($null -ne $extraValue) { $values.Add([string][int]$extraValue) }
+        }
+        $items.Add("[" + ($values -join ",") + "]")
     }
     return "[" + ($items -join ",") + "]"
+}
+
+function Assert-MapNpcJsonStructure {
+    param(
+        [string]$JsonText,
+        [int]$TargetMapId
+    )
+    $tuple = '\[\s*-?\d+\s*,\s*-?\d+\s*,\s*-?\d+(?:\s*,\s*-?\d+)*\s*\]'
+    $pattern = '^\s*\[(?:\s*' + $tuple + '\s*(?:,\s*' + $tuple + '\s*)*)?\]\s*$'
+    if ([string]::IsNullOrWhiteSpace($JsonText) -or $JsonText -notmatch $pattern) {
+        throw "Map $TargetMapId có dữ liệu npcs không hợp lệ sau khi lưu: $JsonText"
+    }
 }
 
 function Save-NpcCreator {
@@ -2630,132 +2845,109 @@ function Save-NpcCreator {
     $maxIconId = Get-MaxIconId
     $nextIconId = $maxIconId + 1
     
-    $aW = SqlInt $AvatarW 0
-    $aH = SqlInt $AvatarH 0
+    $aW = Get-NpcValidatedInteger $AvatarW "Avatar W" 0 4096
+    $aH = Get-NpcValidatedInteger $AvatarH "Avatar H" 0 4096
     $avatarIcon = SqlInt $AvatarIconId 0
     
+    if ($Mode -ne "fullbody" -and $Mode -ne "multipart") {
+        throw "Chế độ NPC không hợp lệ: $Mode"
+    }
     $isFullBodyMode = ($Mode -eq "fullbody")
     
     if ($isFullBodyMode) {
-        $fbW = SqlInt $FullBodyW 0
-        $fbH = SqlInt $FullBodyH 0
-        if ($fbH -le 0) { $fbH = 180 }
-        
+        $fbW = Get-NpcValidatedInteger $FullBodyW "FullBody W" 1 4096
+        $fbH = Get-NpcValidatedInteger $FullBodyH "FullBody H" 1 4096
         $fbIcon = SqlInt $FullBodyIconId 0
-        if (-not [string]::IsNullOrWhiteSpace($FullBodyPath) -and (Test-Path -LiteralPath $FullBodyPath)) {
-            if ($fbIcon -le 0) { $fbIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $FullBodyPath -IconId $fbIcon -CustomW $fbW -CustomH $fbH | Out-Null
-        } elseif ($fbIcon -gt 0) {
-            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $fbIcon)
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $fbIcon)
-            }
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root "data\icon\orig\25003.png"
-            }
-            if (Test-Path -LiteralPath $srcFile) {
-                Process-NpcIconUpload -SourcePath $srcFile -IconId $fbIcon -CustomW $fbW -CustomH $fbH | Out-Null
-            }
+        if (-not [string]::IsNullOrWhiteSpace($FullBodyPath) -and $fbIcon -le 0) { $fbIcon = $nextIconId++ }
+        $fbInfo = Resolve-NpcCreatorIconInfo -SourcePath $FullBodyPath -IconId $fbIcon -CustomW $fbW -CustomH $fbH -Label "Ảnh toàn thân" -CloneIconId $nextIconId
+        if ($fbInfo.IconId -ne $fbIcon) {
+            $fbIcon = $fbInfo.IconId
+            $nextIconId++
         }
-        
-        if (-not [string]::IsNullOrWhiteSpace($AvatarPath) -and (Test-Path -LiteralPath $AvatarPath)) {
+        $fbW = $fbInfo.Width4
+        $fbH = $fbInfo.Height4
+
+        if (-not [string]::IsNullOrWhiteSpace($AvatarPath)) {
             if ($avatarIcon -le 0) { $avatarIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
-        } elseif ($avatarIcon -le 0) {
+            $avatarInfo = Resolve-NpcCreatorIconInfo -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH -Label "Avatar" -CloneIconId $nextIconId
+            if ($avatarInfo.IconId -ne $avatarIcon) {
+                $avatarIcon = $avatarInfo.IconId
+                $nextIconId++
+            }
+        } elseif ($avatarIcon -gt 0) {
+            Get-NpcIconScaleInfo -IconId $avatarIcon -Label "Avatar" | Out-Null
+        } else {
             $avatarIcon = $fbIcon
         }
+
+        # Client vẽ body ở (cx - 9 + dx, cy - 16 + dy). Ta mã hóa tâm ảnh và chân ảnh
+        # theo kích thước thật x1; do đó kết quả giống nhau ở cả x1, x2, x3 và x4.
+        $visualDx = Get-NpcValidatedInteger $FullBodyDx "FullBody dx" -128 127
+        $visualDy = Get-NpcValidatedInteger $FullBodyDy "FullBody dy" -128 127
+        $bDx = 9 - [int][Math]::Floor($fbInfo.Width1 / 2.0) + $visualDx
+        $bDy = 16 - $fbInfo.Height1 + $visualDy
+        $bDx = Assert-NpcPartOffset $bDx "FullBody DATA dx"
+        $bDy = Assert-NpcPartOffset $bDy "FullBody DATA dy"
         
-        # Căn chỉnh tâm ngang ở cx = 0: bDx = 9 - (fbW / 8) + FullBodyDx (9 là nửa chiều rộng body NRO gốc 18px ở x1)
-        # Điểm chân chạm đất ở cy = 0: bDy = 20 - (fbH / 8) + FullBodyDy
-        $bDx = [int][Math]::Round(9.0 - ($fbW / 8.0)) + (SqlInt $FullBodyDx 0)
-        $bDy = [int][Math]::Round(20.0 - ($fbH / 8.0)) + (SqlInt $FullBodyDy 0)
-        
-        $headDataJson = "[[25001,0,0],[0,0,0],[0,0,0]]"
+        $nameProxyIcon = Ensure-NpcFullBodyNameProxy
+        $headDataJson = "[[{0},0,0],[{0},0,0],[{0},0,0]]" -f $nameProxyIcon
         $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $fbIcon, $bDx, $bDy
         $legDataJson = "[[0,0,0],[25001,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]"
     } else {
-        $hW = SqlInt $HeadW 0
-        $hH = SqlInt $HeadH 0
-        $bW = SqlInt $BodyW 0
-        $bH = SqlInt $BodyH 0
-        $lW = SqlInt $LegW 0
-        $lH = SqlInt $LegH 0
+        $hW = Get-NpcValidatedInteger $HeadW "Head W" 1 4096
+        $hH = Get-NpcValidatedInteger $HeadH "Head H" 1 4096
+        $bW = Get-NpcValidatedInteger $BodyW "Body W" 1 4096
+        $bH = Get-NpcValidatedInteger $BodyH "Body H" 1 4096
+        $lW = Get-NpcValidatedInteger $LegW "Leg W" 1 4096
+        $lH = Get-NpcValidatedInteger $LegH "Leg H" 1 4096
 
         $headIcon = SqlInt $HeadIconId 0
-        if (-not [string]::IsNullOrWhiteSpace($HeadPath) -and (Test-Path -LiteralPath $HeadPath)) {
-            if ($headIcon -le 0) { $headIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $HeadPath -IconId $headIcon -CustomW $hW -CustomH $hH | Out-Null
-        } elseif ($headIcon -gt 0) {
-            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $headIcon)
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $headIcon)
-            }
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root "data\icon\orig\25002.png"
-            }
-            if (Test-Path -LiteralPath $srcFile) {
-                Process-NpcIconUpload -SourcePath $srcFile -IconId $headIcon -CustomW $hW -CustomH $hH | Out-Null
-            }
+        if (-not [string]::IsNullOrWhiteSpace($HeadPath) -and $headIcon -le 0) { $headIcon = $nextIconId++ }
+        $headInfo = Resolve-NpcCreatorIconInfo -SourcePath $HeadPath -IconId $headIcon -CustomW $hW -CustomH $hH -Label "Đầu" -CloneIconId $nextIconId
+        if ($headInfo.IconId -ne $headIcon) {
+            $headIcon = $headInfo.IconId
+            $nextIconId++
         }
-        
+
         $bodyIcon = SqlInt $BodyIconId 0
-        if (-not [string]::IsNullOrWhiteSpace($BodyPath) -and (Test-Path -LiteralPath $BodyPath)) {
-            if ($bodyIcon -le 0) { $bodyIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $BodyPath -IconId $bodyIcon -CustomW $bW -CustomH $bH | Out-Null
-        } elseif ($bodyIcon -gt 0) {
-            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $bodyIcon)
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $bodyIcon)
-            }
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root "data\icon\orig\25003.png"
-            }
-            if (Test-Path -LiteralPath $srcFile) {
-                Process-NpcIconUpload -SourcePath $srcFile -IconId $bodyIcon -CustomW $bW -CustomH $bH | Out-Null
-            }
+        if (-not [string]::IsNullOrWhiteSpace($BodyPath) -and $bodyIcon -le 0) { $bodyIcon = $nextIconId++ }
+        $bodyInfo = Resolve-NpcCreatorIconInfo -SourcePath $BodyPath -IconId $bodyIcon -CustomW $bW -CustomH $bH -Label "Thân" -CloneIconId $nextIconId
+        if ($bodyInfo.IconId -ne $bodyIcon) {
+            $bodyIcon = $bodyInfo.IconId
+            $nextIconId++
         }
-        
+
         $legIcon = SqlInt $LegIconId 0
-        if (-not [string]::IsNullOrWhiteSpace($LegPath) -and (Test-Path -LiteralPath $LegPath)) {
-            if ($legIcon -le 0) { $legIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $LegPath -IconId $legIcon -CustomW $lW -CustomH $lH | Out-Null
-        } elseif ($legIcon -gt 0) {
-            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $legIcon)
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $legIcon)
-            }
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root "data\icon\orig\25004.png"
-            }
-            if (Test-Path -LiteralPath $srcFile) {
-                Process-NpcIconUpload -SourcePath $srcFile -IconId $legIcon -CustomW $lW -CustomH $lH | Out-Null
-            }
+        if (-not [string]::IsNullOrWhiteSpace($LegPath) -and $legIcon -le 0) { $legIcon = $nextIconId++ }
+        $legInfo = Resolve-NpcCreatorIconInfo -SourcePath $LegPath -IconId $legIcon -CustomW $lW -CustomH $lH -Label "Chân" -CloneIconId $nextIconId
+        if ($legInfo.IconId -ne $legIcon) {
+            $legIcon = $legInfo.IconId
+            $nextIconId++
         }
-        
-        if (-not [string]::IsNullOrWhiteSpace($AvatarPath) -and (Test-Path -LiteralPath $AvatarPath)) {
+
+        if (-not [string]::IsNullOrWhiteSpace($AvatarPath)) {
             if ($avatarIcon -le 0) { $avatarIcon = $nextIconId++ }
-            Process-NpcIconUpload -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
+            $avatarInfo = Resolve-NpcCreatorIconInfo -SourcePath $AvatarPath -IconId $avatarIcon -CustomW $aW -CustomH $aH -Label "Avatar" -CloneIconId $nextIconId
+            if ($avatarInfo.IconId -ne $avatarIcon) {
+                $avatarIcon = $avatarInfo.IconId
+                $nextIconId++
+            }
         } elseif ($avatarIcon -gt 0) {
-            $srcFile = Join-Path $Root ("data\icon\orig\{0}.png" -f $avatarIcon)
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root ("data\icon\x4\{0}.png" -f $avatarIcon)
+            $avatarInfo = Resolve-NpcCreatorIconInfo -SourcePath "" -IconId $avatarIcon -CustomW $aW -CustomH $aH -Label "Avatar" -CloneIconId $nextIconId
+            if ($avatarInfo.IconId -ne $avatarIcon) {
+                $avatarIcon = $avatarInfo.IconId
+                $nextIconId++
             }
-            if (-not (Test-Path -LiteralPath $srcFile)) {
-                $srcFile = Join-Path $Root "data\icon\orig\25005.png"
-            }
-            if (Test-Path -LiteralPath $srcFile) {
-                Process-NpcIconUpload -SourcePath $srcFile -IconId $avatarIcon -CustomW $aW -CustomH $aH | Out-Null
-            }
-        } elseif ($avatarIcon -le 0) {
+        } else {
             $avatarIcon = $headIcon
         }
         
-        $hDx = SqlInt $HeadDx 0
-        $hDy = SqlInt $HeadDy 0
-        $bDx = SqlInt $BodyDx 0
-        $bDy = SqlInt $BodyDy 0
-        $lDx = SqlInt $LegDx 0
-        $lDy = SqlInt $LegDy 0
+        $hDx = Get-NpcValidatedInteger $HeadDx "Head dx" -128 127
+        $hDy = Get-NpcValidatedInteger $HeadDy "Head dy" -128 127
+        $bDx = Get-NpcValidatedInteger $BodyDx "Body dx" -128 127
+        $bDy = Get-NpcValidatedInteger $BodyDy "Body dy" -128 127
+        $lDx = Get-NpcValidatedInteger $LegDx "Leg dx" -128 127
+        $lDy = Get-NpcValidatedInteger $LegDy "Leg dy" -128 127
         
         $headDataJson = "[[{0},{1},{2}],[0,0,0],[0,0,0]]" -f $headIcon, $hDx, $hDy
         $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $bodyIcon, $bDx, $bDy
@@ -2804,7 +2996,11 @@ function Save-NpcCreator {
         $sCount = Get-MySqlScalar "SELECT COUNT(*) FROM shop WHERE npc_id=$npcId;" "0"
         if ($sCount -eq "0") {
             $sqlQueries.Add("INSERT INTO shop (npc_id, tag_name, type_shop) VALUES ($npcId, $(SqlString $shopTag), $(SqlInt $TypeShop 0));")
+        } else {
+            $sqlQueries.Add("UPDATE shop SET tag_name=$(SqlString $shopTag), type_shop=$(SqlInt $TypeShop 0) WHERE npc_id=$npcId;")
         }
+    } else {
+        $sqlQueries.Add("DELETE FROM shop WHERE npc_id=$npcId;")
     }
     
     $sqlQueries.Add("COMMIT;")
@@ -2815,57 +3011,114 @@ function Save-NpcCreator {
     $mapIdNum = SqlInt $MapId -1
     $posX = SqlInt $SpawnX 0
     $posY = SqlInt $SpawnY 0
+    # Kanao (112) là cổng hai chiều cố định giữa map 0 và 187. Khi chỉnh hình ảnh
+    # hay tọa độ của một bản, Admin không được âm thầm xóa bản còn lại.
+    $keepNpcOnOtherMaps = ($KeepOtherMaps -eq "1" -or $npcId -eq 112)
+    $affectedMapIds = New-Object 'System.Collections.Generic.HashSet[int]'
+    $preservedMapIds = New-Object 'System.Collections.Generic.HashSet[int]'
     
     $allMapsWithNpc = Invoke-MySql "SELECT id, npcs FROM map_template WHERE npcs LIKE '%[$npcId,%' OR npcs LIKE '%[ $npcId,%';"
     $mWithLines = @($allMapsWithNpc -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     for ($mw = 1; $mw -lt $mWithLines.Count; $mw++) {
         $mwCols = $mWithLines[$mw] -split "`t"
         if ($mwCols.Count -ge 2) {
-            $targetMId = $mwCols[0]
+            $targetMId = [int]$mwCols[0]
             $npcsJson = $mwCols[1]
-            $npcEntries = Parse-MapNpcJson $npcsJson
+            if ($keepNpcOnOtherMaps -and $targetMId -ne $mapIdNum) {
+                # NPC cổng/nhiệm vụ có thể dùng chung tempId trên nhiều map. Không ghi lại
+                # các map được bảo toàn để tọa độ và các trường mở rộng không bị thay đổi.
+                $affectedMapIds.Add($targetMId) | Out-Null
+                $preservedMapIds.Add($targetMId) | Out-Null
+                continue
+            }
+            $npcEntries = @(Parse-MapNpcJson $npcsJson)
             $filtered = New-Object System.Collections.Generic.List[PSObject]
             foreach ($ne in $npcEntries) {
-                if ($ne[0] -ne $npcId) { $filtered.Add($ne) }
+                if ($ne.NpcId -ne $npcId) { $filtered.Add($ne) }
             }
             $newNpcsJson = Serialize-MapNpcJson $filtered
             Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $newNpcsJson) WHERE id=$targetMId;" | Out-Null
+            $affectedMapIds.Add($targetMId) | Out-Null
         }
     }
     
     if ($mapIdNum -ge 0) {
         $currentMapNpcs = Get-MySqlScalar "SELECT npcs FROM map_template WHERE id=$mapIdNum;" "[]"
-        $rawEntries = Parse-MapNpcJson $currentMapNpcs
+        $rawEntries = @(Parse-MapNpcJson $currentMapNpcs)
         $mapNpcEntries = New-Object System.Collections.Generic.List[PSObject]
         foreach ($entry in $rawEntries) {
             $mapNpcEntries.Add($entry)
         }
-        $mapNpcEntries.Add(@($npcId, $posX, $posY))
+        $mapNpcEntries.Add([pscustomobject]@{ NpcId = $npcId; X = $posX; Y = $posY; ExtraValues = @() })
         $updatedJson = Serialize-MapNpcJson $mapNpcEntries
         Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $updatedJson) WHERE id=$mapIdNum;" | Out-Null
+        $affectedMapIds.Add($mapIdNum) | Out-Null
+    }
+
+    # Đọc lại đúng dữ liệu client sẽ dùng trước khi báo thành công cho giao diện.
+    $savedNpcCount = Get-MySqlScalar "SELECT COUNT(*) FROM npc_template WHERE id=$npcId AND head=$headPart AND body=$bodyPart AND leg=$legPart AND avatar=$avatarIcon;" "0"
+    if ($savedNpcCount -ne "1") {
+        throw "Đã ghi dữ liệu nhưng bước kiểm tra lại npc_template ID $npcId không khớp."
+    }
+    $savedPartCount = Get-MySqlScalar "SELECT COUNT(*) FROM part WHERE (id=$headPart AND `TYPE`=0) OR (id=$bodyPart AND `TYPE`=1) OR (id=$legPart AND `TYPE`=2);" "0"
+    if ($savedPartCount -ne "3") {
+        throw "Đã ghi dữ liệu nhưng bước kiểm tra lại ba Part của NPC ID $npcId không khớp."
+    }
+    $partOutputPath = Join-Path $Root "data\update_data\part"
+    if (-not (Test-Path -LiteralPath $partOutputPath) -or (Get-Item -LiteralPath $partOutputPath).Length -le 2) {
+        throw "File data/update_data/part chưa được build hợp lệ."
+    }
+    foreach ($verifyMapId in $affectedMapIds) {
+        $verifyMapJson = Get-MySqlScalar "SELECT npcs FROM map_template WHERE id=$verifyMapId;" "[]"
+        Assert-MapNpcJsonStructure -JsonText $verifyMapJson -TargetMapId $verifyMapId
+        $verifyMapEntries = @(Parse-MapNpcJson $verifyMapJson)
+        $matchingEntries = @($verifyMapEntries | Where-Object { $_.NpcId -eq $npcId })
+        if ($verifyMapId -eq $mapIdNum) {
+            if ($matchingEntries.Count -ne 1 -or $matchingEntries[0].X -ne $posX -or $matchingEntries[0].Y -ne $posY) {
+                throw "NPC ID $npcId chưa xuất hiện đúng một lần tại ($posX,$posY) trên map $mapIdNum sau khi lưu."
+            }
+        } elseif ($preservedMapIds.Contains($verifyMapId)) {
+            if ($matchingEntries.Count -lt 1) {
+                throw "NPC ID $npcId đã bị mất khỏi map cần giữ lại $verifyMapId sau khi lưu."
+            }
+        } elseif ($matchingEntries.Count -ne 0) {
+            throw "NPC ID $npcId vẫn còn trên map cũ $verifyMapId sau khi lưu."
+        }
     }
     
-    return "OK`tĐã lưu NPC '$Name' (ID: $npcId) thành công! Các Part và Icon x1-x4 đã được tạo và build tự động."
+    $placementMessage = if ($keepNpcOnOtherMaps) { "; đã giữ nguyên các vị trí ở map khác" } else { "" }
+    return "OK`tĐã lưu và kiểm tra lại NPC '$Name' (ID: $npcId), ba Part, Icon x1-x4 và Map thành công$placementMessage.`tNPC_ID=$npcId"
 }
 
 function Delete-NpcCreator {
     $npcIdNum = SqlInt $Id -1
     if ($npcIdNum -lt 0) { throw "NPC ID không hợp lệ." }
     
+    $affectedMapIds = New-Object 'System.Collections.Generic.HashSet[int]'
     $allMapsWithNpc = Invoke-MySql "SELECT id, npcs FROM map_template WHERE npcs LIKE '%[$npcIdNum,%' OR npcs LIKE '%[ $npcIdNum,%';"
     $mWithLines = @($allMapsWithNpc -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     for ($mw = 1; $mw -lt $mWithLines.Count; $mw++) {
         $mwCols = $mWithLines[$mw] -split "`t"
         if ($mwCols.Count -ge 2) {
-            $targetMId = $mwCols[0]
+            $targetMId = [int]$mwCols[0]
             $npcsJson = $mwCols[1]
-            $npcEntries = Parse-MapNpcJson $npcsJson
+            $npcEntries = @(Parse-MapNpcJson $npcsJson)
             $filtered = New-Object System.Collections.Generic.List[PSObject]
             foreach ($ne in $npcEntries) {
-                if ($ne[0] -ne $npcIdNum) { $filtered.Add($ne) }
+                if ($ne.NpcId -ne $npcIdNum) { $filtered.Add($ne) }
             }
             $newNpcsJson = Serialize-MapNpcJson $filtered
             Invoke-MySql "UPDATE map_template SET npcs=$(SqlString $newNpcsJson) WHERE id=$targetMId;" | Out-Null
+            $affectedMapIds.Add($targetMId) | Out-Null
+        }
+    }
+
+    foreach ($verifyMapId in $affectedMapIds) {
+        $verifyMapJson = Get-MySqlScalar "SELECT npcs FROM map_template WHERE id=$verifyMapId;" "[]"
+        Assert-MapNpcJsonStructure -JsonText $verifyMapJson -TargetMapId $verifyMapId
+        $remainingEntries = @(Parse-MapNpcJson $verifyMapJson | Where-Object { $_.NpcId -eq $npcIdNum })
+        if ($remainingEntries.Count -ne 0) {
+            throw "NPC ID $npcIdNum vẫn còn trên map $verifyMapId sau khi xóa."
         }
     }
     
@@ -4781,6 +5034,7 @@ function Get-AuditSummary {
         "savetasktemplate" { "Luu template $(Get-TaskTemplateLabel) ID $Id - $Name" }
         "savebadgestask" { "Luu nhiem vu danh hieu ID $Id - $Name" }
         "savetaskreward" { "Luu phan thuong nhiem vu $Type ID $Id" }
+        "savekanaotaskconfig" { "Lưu cấu hình nhiệm vụ Kanao" }
         "savetaskconfig" { "Doi cau hinh nhiem vu $ConfigKey = $ConfigValue" }
         "resettaskconfig" { "Khoi phuc cau hinh nhiem vu $ConfigKey ve mac dinh" }
         "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
@@ -4931,7 +5185,7 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot $table "id=$(SqlInt $Id)"))
         }
         "savebadgestask" { $snapshots.Add((New-DbAuditSnapshot "task_badges_template" "id=$(SqlInt $Id)")) }
-        { $_ -in @("savetaskconfig", "resettaskconfig", "savetaskreward") } {
+        { $_ -in @("savetaskconfig", "resettaskconfig", "savetaskreward", "savekanaotaskconfig") } {
             $configPath = Join-Path $Root "task.properties"
             if (Test-Path $configPath) {
                 $fileSnapshots.Add([pscustomobject]@{ path="task.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
@@ -5040,7 +5294,7 @@ $mutationActions = @(
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
     "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem",
-    "savetaskreward"
+    "savetaskreward", "savekanaotaskconfig"
 )
 $isAuditedMutation = $mutationActions -contains $actionLower
 $auditContext = $null
@@ -5142,6 +5396,7 @@ try {
         "listtaskconfig" { List-TaskConfig }
         "savetaskconfig" { Save-TaskConfig }
         "resettaskconfig" { Reset-TaskConfig }
+        "savekanaotaskconfig" { Save-KanaoTaskConfig }
         "gettaskreward" { Get-TaskReward }
         "savetaskreward" { Save-TaskReward }
         "listtaskmains" { List-TaskMains }

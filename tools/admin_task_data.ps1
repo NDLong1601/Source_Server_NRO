@@ -6,7 +6,10 @@
         [pscustomobject]@{ Key="task.side.hellTreeItemId"; Category="Nhiệm vụ ngày"; Name="ID vật phẩm đặc biệt Địa ngục"; Default="822"; Kind="item-id"; Scope="runtime"; Description="Vật phẩm đặc biệt có thể nhận ở nhiệm vụ Địa ngục khi đạt ngưỡng lượt còn lại." },
         [pscustomobject]@{ Key="task.side.hellTreeLeftThreshold"; Category="Nhiệm vụ ngày"; Name="Ngưỡng lượt còn lại để nhận vật phẩm đặc biệt"; Default="15"; Kind="int"; Scope="runtime"; Description="Nếu số lượt còn lại nhỏ hơn giá trị này thì xét thưởng vật phẩm đặc biệt." },
         [pscustomobject]@{ Key="task.clan.maxPerDay"; Category="Nhiệm vụ bang"; Name="Số lượt nhiệm vụ bang mỗi ngày"; Default="5"; Kind="int"; Scope="runtime"; Description="Số lượt nhiệm vụ bang được đặt lại sau nửa đêm." },
-        [pscustomobject]@{ Key="task.clan.capsulePerLevel"; Category="Nhiệm vụ bang"; Name="Số capsule bang theo cấp độ"; Default="10"; Kind="int"; Scope="runtime"; Description="Thưởng capsule bang = (độ khó + 1) nhân với giá trị này." }
+        [pscustomobject]@{ Key="task.clan.capsulePerLevel"; Category="Nhiệm vụ bang"; Name="Số capsule bang theo cấp độ"; Default="10"; Kind="int"; Scope="runtime"; Description="Thưởng capsule bang = (độ khó + 1) nhân với giá trị này." },
+        [pscustomobject]@{ Key="task.kanao.mapIds"; Category="Nhiệm vụ Kanao"; Name="Danh sách map săn quái"; Default="187,188,189,190"; Kind="map-id-list"; Scope="runtime"; Description="Kanao chọn ngẫu nhiên một loại quái đang spawn trong các map này." },
+        [pscustomobject]@{ Key="task.kanao.killCountMin"; Category="Nhiệm vụ Kanao"; Name="Số quái tối thiểu"; Default="10"; Kind="positive-int"; Scope="runtime"; Description="Số quái nhỏ nhất có thể được giao cho một nhiệm vụ Kanao." },
+        [pscustomobject]@{ Key="task.kanao.killCountMax"; Category="Nhiệm vụ Kanao"; Name="Số quái tối đa"; Default="20"; Kind="positive-int"; Scope="runtime"; Description="Số quái lớn nhất có thể được giao cho một nhiệm vụ Kanao." }
     )
 }
 
@@ -19,9 +22,10 @@ function Assert-TaskConfigValue {
     param($Entry, [string]$Value)
     $Value = $Value.Trim()
     if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
-    if ($Entry.Kind -eq "int") {
+    if ($Entry.Kind -eq "int" -or $Entry.Kind -eq "positive-int") {
         if ($Value -notmatch '^\d+$') { throw "Giá trị phải là số nguyên không âm." }
         if ([decimal]$Value -gt 2147483647) { throw "Giá trị vượt giới hạn int." }
+        if ($Entry.Kind -eq "positive-int" -and [decimal]$Value -lt 1) { throw "Giá trị phải lớn hơn 0." }
     } elseif ($Entry.Kind -eq "item-id") {
         if ($Value -notmatch '^-?\d+$') { throw "ID vật phẩm phải là số nguyên." }
         if ([int]$Value -lt -1 -or [int]$Value -gt 32767) { throw "ID vật phẩm phải từ -1 đến 32767." }
@@ -34,6 +38,21 @@ function Assert-TaskConfigValue {
             if ([decimal]$number -gt 2147483647) { throw "Mỗi giá trị không được vượt giới hạn int." }
         }
         $Value = ($parts | ForEach-Object { ([int]$_.Trim()).ToString() }) -join ','
+    } elseif ($Entry.Kind -eq "map-id-list") {
+        $parts = @($Value -split ',')
+        if ($parts.Count -lt 1 -or $parts.Count -gt 50) { throw "Danh sách map phải có từ 1 đến 50 ID." }
+        $mapIds = New-Object System.Collections.Generic.List[int]
+        foreach ($part in $parts) {
+            $number = $part.Trim()
+            if ($number -notmatch '^\d+$') { throw "Danh sách map chỉ gồm ID nguyên không âm, phân cách bằng dấu phẩy." }
+            $mapId = [int]$number
+            if ($mapId -gt 32767) { throw "Map ID phải từ 0 đến 32767." }
+            if (-not $mapIds.Contains($mapId)) { $mapIds.Add($mapId) }
+        }
+        $idSql = $mapIds -join ','
+        $found = [int](Get-MySqlScalar "SELECT COUNT(*) FROM map_template WHERE id IN ($idSql);")
+        if ($found -ne $mapIds.Count) { throw "Có map không tồn tại trong map_template." }
+        $Value = $idSql
     } else {
         throw "Kiểu cấu hình nhiệm vụ không hợp lệ: $($Entry.Kind)"
     }
@@ -56,6 +75,12 @@ function Save-TaskConfig {
     $entry = Get-TaskConfigEntry $ConfigKey
     if ($null -eq $entry) { throw "Khóa cấu hình nhiệm vụ không hợp lệ: $ConfigKey" }
     $validated = Assert-TaskConfigValue $entry $ConfigValue
+    if ($entry.Key -in @("task.kanao.killCountMin", "task.kanao.killCountMax")) {
+        $map = Get-PropertyMap (Join-Path $Root "task.properties")
+        $minKills = if ($entry.Key -eq "task.kanao.killCountMin") { [int]$validated } elseif ($map.ContainsKey("task.kanao.killCountMin")) { [int]$map["task.kanao.killCountMin"] } else { 10 }
+        $maxKills = if ($entry.Key -eq "task.kanao.killCountMax") { [int]$validated } elseif ($map.ContainsKey("task.kanao.killCountMax")) { [int]$map["task.kanao.killCountMax"] } else { 20 }
+        if ($minKills -gt $maxKills) { throw "Số quái tối thiểu không được lớn hơn số quái tối đa." }
+    }
     Set-PropertyValue -Path (Join-Path $Root "task.properties") -Key $entry.Key -Value $validated
     "OK`tĐã lưu $($entry.Name). Runtime áp dụng trong tối đa 1 giây."
 }
@@ -63,8 +88,34 @@ function Save-TaskConfig {
 function Reset-TaskConfig {
     $entry = Get-TaskConfigEntry $ConfigKey
     if ($null -eq $entry) { throw "Khóa cấu hình nhiệm vụ không hợp lệ: $ConfigKey" }
+    if ($entry.Key -in @("task.kanao.killCountMin", "task.kanao.killCountMax")) {
+        $map = Get-PropertyMap (Join-Path $Root "task.properties")
+        $minKills = if ($entry.Key -eq "task.kanao.killCountMin") { [int]$entry.Default } elseif ($map.ContainsKey("task.kanao.killCountMin")) { [int]$map["task.kanao.killCountMin"] } else { 10 }
+        $maxKills = if ($entry.Key -eq "task.kanao.killCountMax") { [int]$entry.Default } elseif ($map.ContainsKey("task.kanao.killCountMax")) { [int]$map["task.kanao.killCountMax"] } else { 20 }
+        if ($minKills -gt $maxKills) { throw "Không thể đặt riêng giá trị này về mặc định vì số tối thiểu sẽ lớn hơn số tối đa. Hãy lưu đồng thời trong tab Kanao." }
+    }
     Set-PropertyValue -Path (Join-Path $Root "task.properties") -Key $entry.Key -Value "" -Remove
     "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default)."
+}
+
+function Save-KanaoTaskConfig {
+    try { $payload = $PayloadJson | ConvertFrom-Json } catch { throw "Dữ liệu nhiệm vụ Kanao không hợp lệ." }
+    if ($null -eq $payload) { throw "Dữ liệu nhiệm vụ Kanao không hợp lệ." }
+
+    $mapEntry = Get-TaskConfigEntry "task.kanao.mapIds"
+    $minEntry = Get-TaskConfigEntry "task.kanao.killCountMin"
+    $maxEntry = Get-TaskConfigEntry "task.kanao.killCountMax"
+    $mapIds = Assert-TaskConfigValue $mapEntry ([string]$payload.MapIds)
+    $minKills = [int](Assert-TaskConfigValue $minEntry ([string]$payload.KillCountMin))
+    $maxKills = [int](Assert-TaskConfigValue $maxEntry ([string]$payload.KillCountMax))
+    if ($minKills -gt $maxKills) { throw "Số quái tối thiểu không được lớn hơn số quái tối đa." }
+
+    Set-PropertyValues -Path (Join-Path $Root "task.properties") -Entries @(
+        [pscustomobject]@{ Key="task.kanao.mapIds"; Value=$mapIds },
+        [pscustomobject]@{ Key="task.kanao.killCountMin"; Value=$minKills },
+        [pscustomobject]@{ Key="task.kanao.killCountMax"; Value=$maxKills }
+    )
+    "OK`tĐã lưu cấu hình nhiệm vụ Kanao. Runtime áp dụng trong tối đa 1 giây."
 }
 
 function Assert-TaskText {
@@ -97,7 +148,7 @@ function Assert-TaskCountRange {
 function Get-TaskRewardType {
     param([string]$Type)
     $value = $Type.Trim().ToLowerInvariant()
-    if ($value -in @("main", "side", "clan", "badges")) { return $value }
+    if ($value -in @("main", "side", "clan", "badges", "kanao")) { return $value }
     throw "Loai phan thuong nhiem vu khong hop le."
 }
 

@@ -28,6 +28,7 @@ import nro.models.services.AchievementService;
 import nro.models.services_dungeon.TrainingService;
 import nro.models.services.ChatGlobalService;
 import nro.models.services.ItemService;
+import nro.models.services.KanaoQuestService;
 import nro.models.map.service.MapService;
 import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
@@ -171,6 +172,7 @@ public class Mob {
                     TaskService.gI().checkDoneTaskKillMob(plAtt, this);
                     TaskService.gI().checkDoneSideTaskKillMob(plAtt, this);
                     TaskService.gI().checkDoneClanTaskKillMob(plAtt, this);
+                    KanaoQuestService.gI().checkDoneTaskKillMob(plAtt, this);
                     AchievementService.gI().checkDoneTaskKillMob(plAtt, this);
                 }
                 if (this.id == 13) {

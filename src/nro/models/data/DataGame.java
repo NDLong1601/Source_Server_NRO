@@ -41,7 +41,8 @@ public class DataGame {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
 
-    public static byte vsData = 21;
+    // 22 invalidates cached part data for the transparent fullbody Head proxy.
+    public static byte vsData = 22;
     public static byte vsMap = loadMapVersion();
     public static byte vsSkill = 1;
     // 21 invalidates item-template cache written by the multi-append build.

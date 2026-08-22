@@ -9,6 +9,10 @@ public class KOLProgressData {
     public int dailySuperHardQuestCompletionCount;
     public int bossBabyDefeatParticipationCount;
     public long monsterKillCountAutoTrain;
+    public int kanaoQuestMapId;
+    public int kanaoQuestMobId;
+    public int kanaoQuestCount;
+    public int kanaoQuestRequiredCount;
 
     public KOLProgressData() {
         this.kolQuestStage = 1;
@@ -18,5 +22,9 @@ public class KOLProgressData {
         this.dailySuperHardQuestCompletionCount = 0;
         this.bossBabyDefeatParticipationCount = 0;
         this.monsterKillCountAutoTrain = 0;
+        this.kanaoQuestMapId = -1;
+        this.kanaoQuestMobId = -1;
+        this.kanaoQuestCount = 0;
+        this.kanaoQuestRequiredCount = 0;
     }
 }

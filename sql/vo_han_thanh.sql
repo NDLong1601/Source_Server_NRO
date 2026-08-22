@@ -3,6 +3,18 @@
 
 START TRANSACTION;
 
+-- Kanao uses one fullbody Body image. Head icon 25010 is fully transparent but
+-- has a standard 18x20 (x1) bounding box, which keeps the client name above the
+-- face without moving the NPC, shadow, or interaction point.
+INSERT INTO `part` (`id`, `TYPE`, `DATA`)
+VALUES
+    (2132, 0, '[[25010,0,0],[25010,0,0],[25010,0,0]]'),
+    (2133, 1, '[[0,0,0],[25008,-6,-37],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]'),
+    (2134, 2, '[[0,0,0],[25001,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]')
+ON DUPLICATE KEY UPDATE
+    `TYPE` = VALUES(`TYPE`),
+    `DATA` = VALUES(`DATA`);
+
 INSERT INTO `npc_template`
     (`id`, `NAME`, `head`, `body`, `leg`, `avatar`)
 VALUES
@@ -13,6 +25,22 @@ ON DUPLICATE KEY UPDATE
     `body` = VALUES(`body`),
     `leg` = VALUES(`leg`),
     `avatar` = VALUES(`avatar`);
+
+-- Kanao's shop starts with two intentionally empty tabs.
+INSERT INTO `shop` (`id`, `npc_id`, `tag_name`, `type_shop`)
+VALUES (112, 112, 'KANAO', 0)
+ON DUPLICATE KEY UPDATE
+    `npc_id` = VALUES(`npc_id`),
+    `tag_name` = VALUES(`tag_name`),
+    `type_shop` = VALUES(`type_shop`);
+
+INSERT INTO `tab_shop` (`id`, `shop_id`, `NAME`)
+VALUES
+    (1120, 112, 'Cải trang'),
+    (1121, 112, 'Hỗ Trợ')
+ON DUPLICATE KEY UPDATE
+    `shop_id` = VALUES(`shop_id`),
+    `NAME` = VALUES(`NAME`);
 
 -- Add Kanao to Làng Aru without replacing any NPCs already configured there.
 UPDATE `map_template`

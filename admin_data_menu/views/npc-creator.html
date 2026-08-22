@@ -22,10 +22,24 @@
       <input type="hidden" id="npcCreatorLegPartId" value="-1">
 
       <div class="row">
-        <div class="cell"><label>Tên NPC (*)</label><input type="text" id="npcCreatorName" placeholder="Ví dụ: Thần Rùa Mới, Thương Nhân..."></div>
+        <div class="cell"><label>Tên NPC (*)</label><input type="text" id="npcCreatorName" placeholder="Ví dụ: Thần Rùa Mới, Thương Nhân..." oninput="UpdateNpcCreatorPreview()"></div>
         <div class="cell"><label>Map xuất hiện</label><select id="npcCreatorMapSelect" onchange="SyncNpcCreatorMap()"><option value="-1">-- Không đặt vào Map --</option></select></div>
         <div class="cell"><label>Tọa độ X</label><input type="text" id="npcCreatorSpawnX" value="300"></div>
         <div class="cell"><label>Tọa độ Y</label><input type="text" id="npcCreatorSpawnY" value="336"></div>
+      </div>
+
+      <div class="row">
+        <div class="cell">
+          <div class="inline-check">
+            <input type="checkbox" id="npcCreatorKeepOtherMaps">
+            <label for="npcCreatorKeepOtherMaps">Giữ NPC tại các map khác</label>
+          </div>
+          <small>Dùng cho NPC cổng/nhiệm vụ xuất hiện đồng thời ở nhiều map, như Kanao map 0 và 187.</small>
+        </div>
+        <div class="cell" style="flex: 3;">
+          <label>Các vị trí hiện tại</label>
+          <div id="npcCreatorMapPlacements" class="npc-placement-summary">Chưa đặt vào map.</div>
+        </div>
       </div>
 
       <div class="row">
@@ -58,10 +72,10 @@
                 <div class="npc-part-header">
                   <div class="section-title">&#128248; 1. Ảnh Toàn Thân Nhân Vật (Full Body PNG)</div>
                   <div class="actions npc-preset-pills">
-                    <button type="button" onclick="SetFullBodyPreset(150)">Vừa 150px</button>
+                    <button type="button" onclick="SetFullBodyPreset(152)">Vừa 152px</button>
                     <button type="button" onclick="SetFullBodyPreset(180)">Cao 180px</button>
-                    <button type="button" onclick="SetFullBodyPreset(210)">To 210px</button>
-                    <button type="button" onclick="SetFullBodyPreset(250)">Boss 250px</button>
+                    <button type="button" onclick="SetFullBodyPreset(212)">To 212px</button>
+                    <button type="button" onclick="SetFullBodyPreset(252)">Boss 252px</button>
                   </div>
                 </div>
                 <div class="row">
@@ -362,27 +376,53 @@
             <div class="npc-tool-btn-group">
               <button type="button" class="compact" id="btnNpcGrid" onclick="ToggleNpcPreviewGrid()">Bật/Tắt lưới</button>
               <button type="button" class="compact" onclick="ResetNpcOffsets()">Reset Offset</button>
+              <button type="button" class="compact" onclick="NormalizeNpcActiveDimensions()">Chuẩn hóa x1-x4</button>
               <button type="button" class="compact primary" id="btnAutoSnap" onclick="AutoSnapJoints()">Khép khít khớp</button>
               <button type="button" class="compact" id="btnPresetAll" onclick="ApplyNpcPreset('all')">Chuẩn NRO gốc</button>
+            </div>
+            <div class="npc-runtime-preview-controls">
+              <label>Tỷ lệ client
+                <select id="npcCreatorPreviewZoom" onchange="ChangeNpcPreviewRuntime()">
+                  <option value="4" selected>x4</option>
+                  <option value="3">x3</option>
+                  <option value="2">x2</option>
+                  <option value="1">x1</option>
+                </select>
+              </label>
+              <label>Hướng nhìn
+                <select id="npcCreatorPreviewDirection" onchange="ChangeNpcPreviewRuntime()">
+                  <option value="right" selected>Phải</option>
+                  <option value="left">Trái</option>
+                </select>
+              </label>
+              <label>Frame đứng
+                <select id="npcCreatorPreviewFrame" onchange="ChangeNpcPreviewRuntime()">
+                  <option value="0" selected>cf 0</option>
+                  <option value="1">cf 1</option>
+                </select>
+              </label>
             </div>
             <div id="npcPreviewBox" class="npc-preview-stage npc-bg-aru">
               <div class="npc-preview-ground"></div>
               <div class="npc-preview-shadow"></div>
               <div class="npc-ground-line"></div>
               <div class="npc-origin-marker"></div>
-              <img id="npcPrevFullBody" class="npc-layer fullbody" alt="FullBody" src="">
-              <img id="npcPrevLeg" class="npc-layer leg" alt="Leg" src="">
-              <img id="npcPrevBody" class="npc-layer body" alt="Body" src="">
-              <img id="npcPrevHead" class="npc-layer head" alt="Head" src="">
+              <div id="npcPreviewName" class="npc-preview-name">NPC</div>
+              <img id="npcPrevFullBody" class="npc-layer fullbody" alt="FullBody">
+              <img id="npcPrevHead" class="npc-layer head" alt="Head">
+              <img id="npcPrevLeg" class="npc-layer leg" alt="Leg">
+              <img id="npcPrevBody" class="npc-layer body" alt="Body">
             </div>
+            <div id="npcPreviewStatus" class="npc-preview-status">x4 • hướng phải • frame đứng 0</div>
             <div class="npc-preview-note">
-              * Tọa độ hiển thị: Ghép theo Layer: Chân (dưới) &#8594; Thân (giữa) &#8594; Đầu (trên).<br>
-              * Kích thước W &#215; H đã chỉnh sẽ được lấy làm gốc x4 để tự động sinh x3 (75%), x2 (50%), x1 (25%).
+              * Preview dùng đúng anchor top-left/top-right, frame đứng và thứ tự vẽ của client: Đầu &#8594; Chân &#8594; Thân.<br>
+              * Bảng tên dùng mốc cố định của client (không đi theo chiều cao ảnh); trạng thái sẽ cảnh báo khi tên chạm sprite.<br>
+              * Offset là đơn vị x1. Ảnh upload được chuẩn hóa theo bội số 4 rồi sinh x1-x4 để chân và tâm không đổi giữa các tỷ lệ.
             </div>
             <div class="npc-avatar-box-wrap">
               <label>Avatar Preview:</label>
               <div class="avatar-preview-box">
-                <img id="npcPrevAvatar" class="npc-avatar-img" alt="Avatar" src="">
+                <img id="npcPrevAvatar" class="npc-avatar-img" alt="Avatar">
                 <span id="npcPrevAvatarText" class="npc-avatar-empty">Chưa có avatar</span>
               </div>
             </div>
@@ -396,7 +436,8 @@
         <button type="button" onclick="NewNpcCreator()">Làm mới Form</button>
       </div>
       <div class="split-small npc-footer-note">
-        * Sau khi Lưu, hệ thống tự động resize ảnh ra x4, x3, x2, x1 theo kích thước bạn đã điều chỉnh, tạo bản ghi trong bảng part, build file data/update_data/part, ghi npc_template và cập nhật Map.
+        * Sau khi Lưu, hệ thống sinh ảnh x1-x4, tạo Part, build data/update_data/part, ghi npc_template/Map rồi đọc lại kết quả vào Preview.<br>
+        * Nếu đổi W/H của một Icon ID có sẵn, hệ thống tạo Icon ID mới để không resize/ghi đè icon đang được NPC hoặc vật phẩm khác dùng chung.
       </div>
       <div id="npcCreatorMessage" class="message"></div>
     </div>

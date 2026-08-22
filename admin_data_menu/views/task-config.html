@@ -97,9 +97,24 @@
         </div>
       </div>
 
+      <div id="taskKanaoEditor" class="admin-hidden">
+        <div class="section-title">Nhiệm vụ Kanao - Vô Hạn Thành</div>
+        <label>Map săn quái (Map ID, phân cách dấu phẩy)</label>
+        <input type="text" id="taskKanaoMapIds" placeholder="187,188,189,190">
+        <div class="row">
+          <div class="cell"><label>Số quái tối thiểu</label><input type="text" id="taskKanaoKillMin" value="10"></div>
+          <div class="cell"><label>Số quái tối đa</label><input type="text" id="taskKanaoKillMax" value="20"></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="primary" onclick="SaveTaskKanaoConfig()">Lưu nhiệm vụ Kanao</button>
+          <button type="button" onclick="LoadTaskKanaoConfig()">Tải lại</button>
+        </div>
+        <div class="player-warning">Mỗi nhiệm vụ chọn ngẫu nhiên một map và một loại quái đang spawn tại map đó. Thay đổi chỉ áp dụng cho nhiệm vụ được nhận sau khi lưu.</div>
+      </div>
+
       <div id="taskRewardEditor" class="admin-hidden split-small">
         <div class="section-title" id="taskRewardTitle">Phần thưởng khi hoàn thành</div>
-        <label class="option-default-toggle"><input type="checkbox" id="taskRewardEnabled"><span>Dùng phần thưởng tùy chỉnh này (thay phần thưởng mặc định của nhiệm vụ)</span></label>
+        <label id="taskRewardEnabledRow" class="option-default-toggle"><input type="checkbox" id="taskRewardEnabled"><span>Dùng phần thưởng tùy chỉnh này (thay phần thưởng mặc định của nhiệm vụ)</span></label>
         <div class="row">
           <div class="cell"><label>Tiềm năng</label><input type="text" id="taskRewardPotential" value="0"></div>
           <div class="cell"><label>Vàng</label><input type="text" id="taskRewardGold" value="0"></div>
