@@ -632,7 +632,8 @@ public final class Manager {
 
             try {
                 while (true) {
-                    ps = ConnectionDatabase.prepareStatement("SELECT * FROM item_template LIMIT ? OFFSET ?");
+                    ps = ConnectionDatabase.prepareStatement(
+                            "SELECT * FROM item_template ORDER BY id ASC LIMIT ? OFFSET ?");
                     ps.setInt(1, batchSize);
                     ps.setInt(2, offset);
                     rs = ps.executeQuery();
@@ -656,6 +657,12 @@ public final class Manager {
                         itemTemp.head = rs.getInt("head");
                         itemTemp.body = rs.getInt("body");
                         itemTemp.leg = rs.getInt("leg");
+
+                        int expectedItemId = ITEM_TEMPLATES.size();
+                        if (itemTemp.id != expectedItemId) {
+                            throw new SQLException("item_template phải liên tục từ ID 0: vị trí "
+                                    + expectedItemId + " đang chứa ID " + itemTemp.id);
+                        }
 
                         ITEM_TEMPLATES.add(itemTemp);
                     } while (rs.next());

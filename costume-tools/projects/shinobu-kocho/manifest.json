@@ -1,0 +1,1306 @@
+{
+  "itemId": 2070,
+  "name": "Cải trang Shinobu Kocho",
+  "iconId": 25207,
+  "profileIconId": 26018,
+  "headAvatar": {
+    "headId": 2159,
+    "avatarId": 26018
+  },
+  "partIds": {
+    "head": 2159,
+    "body": 2160,
+    "leg": 2161
+  },
+  "transparentImageId": 25206,
+  "bodyImageIds": [
+    25189,
+    25208,
+    25209,
+    25210,
+    25211,
+    25212,
+    25213,
+    25225,
+    25197,
+    25198,
+    25199,
+    25200,
+    25201,
+    25214,
+    25203,
+    25204,
+    25215
+  ],
+  "scaleMode": "direct-source-lanczos-alpha-safe-grid-snap",
+  "paletteColors": 256,
+  "bodyReferenceCanvasX1": [
+    96,
+    80
+  ],
+  "itemIconCanvasX1": [
+    25,
+    22
+  ],
+  "profileIconCanvasX1": [
+    64,
+    64
+  ],
+  "profileVerticalAlign": "bottom",
+  "bodyOffsetMode": "per-frame-crop-compensated",
+  "head": [
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    {
+      "dx": -21,
+      "dy": -33,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        18,
+        20,
+        64,
+        67
+      ],
+      "sourceBbox": [
+        3,
+        111,
+        372,
+        493
+      ],
+      "cellSize": [
+        505,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 9,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            46,
+            47
+          ],
+          "bytes": 2509,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            92,
+            94
+          ],
+          "bytes": 5444,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            138,
+            141
+          ],
+          "bytes": 9608,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            184,
+            188
+          ],
+          "bytes": 14588,
+          "transparentBorder": true
+        }
+      },
+      "slot": 0,
+      "imageId": 25189,
+      "sheet": "guard",
+      "sourceIndex": 2,
+      "observed": "Chặn đòn bằng khiên cánh bướm tím",
+      "suggestedGroup": "Đỡ / chịu đòn",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -7,
+      "dy": -38,
+      "offsetAdjustment": [
+        -5,
+        4
+      ],
+      "cropX1": [
+        37,
+        11,
+        73,
+        70
+      ],
+      "sourceBbox": [
+        164,
+        31,
+        447,
+        526
+      ],
+      "cellSize": [
+        483,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            36,
+            59
+          ],
+          "bytes": 2327,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            72,
+            118
+          ],
+          "bytes": 4789,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            108,
+            177
+          ],
+          "bytes": 8080,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            144,
+            236
+          ],
+          "bytes": 12146,
+          "transparentBorder": true
+        }
+      },
+      "slot": 1,
+      "imageId": 25208,
+      "sheet": "idle",
+      "sourceIndex": 2,
+      "observed": "Đứng nghỉ nhìn sang phải, tâm bàn chân căn theo chuẩn Sanemi",
+      "suggestedGroup": "Đứng yên đã căn lại bóng v4",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -20,
+      "dy": -43,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        19,
+        10,
+        67,
+        54
+      ],
+      "sourceBbox": [
+        1,
+        18,
+        402,
+        379
+      ],
+      "cellSize": [
+        491,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            48,
+            44
+          ],
+          "bytes": 2245,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            96,
+            88
+          ],
+          "bytes": 4527,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            144,
+            132
+          ],
+          "bytes": 7713,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            192,
+            176
+          ],
+          "bytes": 11717,
+          "transparentBorder": true
+        }
+      },
+      "slot": 2,
+      "imageId": 25209,
+      "sheet": "fly",
+      "sourceIndex": 4,
+      "observed": "Bay ngang nhìn sang phải, thân và áo cùng hướng chuyển động",
+      "suggestedGroup": "Bay / nhảy đã thay hình",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -12,
+      "dy": -29,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        27,
+        24,
+        60,
+        68
+      ],
+      "sourceBbox": [
+        9,
+        150,
+        266,
+        508
+      ],
+      "cellSize": [
+        362,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            33,
+            44
+          ],
+          "bytes": 1913,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            66,
+            88
+          ],
+          "bytes": 3546,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            99,
+            132
+          ],
+          "bytes": 5768,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            132,
+            176
+          ],
+          "bytes": 8485,
+          "transparentBorder": true
+        }
+      },
+      "slot": 3,
+      "imageId": 25210,
+      "sheet": "walk",
+      "sourceIndex": 0,
+      "observed": "Chạy sang phải bước 1",
+      "suggestedGroup": "Chạy đã sửa hướng 1",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -12,
+      "dy": -29,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        27,
+        24,
+        62,
+        68
+      ],
+      "sourceBbox": [
+        12,
+        150,
+        288,
+        510
+      ],
+      "cellSize": [
+        362,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            35,
+            44
+          ],
+          "bytes": 1939,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            70,
+            88
+          ],
+          "bytes": 3613,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            105,
+            132
+          ],
+          "bytes": 5845,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            140,
+            176
+          ],
+          "bytes": 8582,
+          "transparentBorder": true
+        }
+      },
+      "slot": 4,
+      "imageId": 25211,
+      "sheet": "walk",
+      "sourceIndex": 1,
+      "observed": "Chạy sang phải bước 2",
+      "suggestedGroup": "Chạy đã sửa hướng 2",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -13,
+      "dy": -41,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        26,
+        12,
+        63,
+        54
+      ],
+      "sourceBbox": [
+        7,
+        42,
+        297,
+        374
+      ],
+      "cellSize": [
+        362,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            37,
+            42
+          ],
+          "bytes": 1941,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            74,
+            84
+          ],
+          "bytes": 3563,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            111,
+            126
+          ],
+          "bytes": 5757,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            148,
+            168
+          ],
+          "bytes": 8393,
+          "transparentBorder": true
+        }
+      },
+      "slot": 5,
+      "imageId": 25212,
+      "sheet": "walk",
+      "sourceIndex": 4,
+      "observed": "Chạy sang phải bước 3",
+      "suggestedGroup": "Chạy đã sửa hướng 3",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -10,
+      "dy": -40,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        29,
+        13,
+        66,
+        54
+      ],
+      "sourceBbox": [
+        27,
+        46,
+        320,
+        383
+      ],
+      "cellSize": [
+        362,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            37,
+            41
+          ],
+          "bytes": 1895,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            74,
+            82
+          ],
+          "bytes": 3505,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            111,
+            123
+          ],
+          "bytes": 5731,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            148,
+            164
+          ],
+          "bytes": 8367,
+          "transparentBorder": true
+        }
+      },
+      "slot": 6,
+      "imageId": 25213,
+      "sheet": "walk",
+      "sourceIndex": 5,
+      "observed": "Chạy sang phải bước 4",
+      "suggestedGroup": "Chạy đã sửa hướng 4",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -20,
+      "dy": -43,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        19,
+        10,
+        67,
+        54
+      ],
+      "sourceBbox": [
+        1,
+        18,
+        402,
+        379
+      ],
+      "cellSize": [
+        491,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            48,
+            44
+          ],
+          "bytes": 2245,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            96,
+            88
+          ],
+          "bytes": 4527,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            144,
+            132
+          ],
+          "bytes": 7713,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            192,
+            176
+          ],
+          "bytes": 11717,
+          "transparentBorder": true
+        }
+      },
+      "slot": 7,
+      "imageId": 25225,
+      "sheet": "fly",
+      "sourceIndex": 4,
+      "observed": "Bay ngang nhìn sang phải tại slot bay thực tế của client",
+      "suggestedGroup": "Bay thực tế đã sửa",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -8,
+      "dy": -30,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        31,
+        23,
+        69,
+        67
+      ],
+      "sourceBbox": [
+        33,
+        141,
+        333,
+        495
+      ],
+      "cellSize": [
+        334,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 10,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            38,
+            44
+          ],
+          "bytes": 2236,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            76,
+            88
+          ],
+          "bytes": 4781,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            114,
+            132
+          ],
+          "bytes": 8336,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            152,
+            176
+          ],
+          "bytes": 12718,
+          "transparentBorder": true
+        }
+      },
+      "slot": 8,
+      "imageId": 25197,
+      "sheet": "attack2",
+      "sourceIndex": 0,
+      "observed": "Tụ bướm tím quanh chân",
+      "suggestedGroup": "Tụ lực / kỹ năng",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -10,
+      "dy": -30,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        29,
+        23,
+        70,
+        67
+      ],
+      "sourceBbox": [
+        28,
+        141,
+        354,
+        497
+      ],
+      "cellSize": [
+        355,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 14,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            41,
+            44
+          ],
+          "bytes": 2383,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            82,
+            88
+          ],
+          "bytes": 5399,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            123,
+            132
+          ],
+          "bytes": 9648,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            164,
+            176
+          ],
+          "bytes": 14960,
+          "transparentBorder": true
+        }
+      },
+      "slot": 9,
+      "imageId": 25198,
+      "sheet": "attack2",
+      "sourceIndex": 1,
+      "observed": "Tụ lực trong đàn bướm tím",
+      "suggestedGroup": "Kỹ năng",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -11,
+      "dy": -41,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        28,
+        12,
+        70,
+        53
+      ],
+      "sourceBbox": [
+        15,
+        32,
+        352,
+        355
+      ],
+      "cellSize": [
+        353,
+        531
+      ],
+      "edgeTouches": [],
+      "keptComponents": 10,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            42,
+            41
+          ],
+          "bytes": 2275,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            84,
+            82
+          ],
+          "bytes": 4750,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            126,
+            123
+          ],
+          "bytes": 8195,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            168,
+            164
+          ],
+          "bytes": 12197,
+          "transparentBorder": true
+        }
+      },
+      "slot": 10,
+      "imageId": 25199,
+      "sheet": "attack",
+      "sourceIndex": 5,
+      "observed": "Quét kiếm tạo cung tím",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -11,
+      "dy": -42,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        28,
+        11,
+        69,
+        53
+      ],
+      "sourceBbox": [
+        10,
+        18,
+        344,
+        357
+      ],
+      "cellSize": [
+        345,
+        531
+      ],
+      "edgeTouches": [],
+      "keptComponents": 14,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            41,
+            42
+          ],
+          "bytes": 2220,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            82,
+            84
+          ],
+          "bytes": 4514,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            123,
+            126
+          ],
+          "bytes": 7651,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            164,
+            168
+          ],
+          "bytes": 11390,
+          "transparentBorder": true
+        }
+      },
+      "slot": 11,
+      "imageId": 25200,
+      "sheet": "attack",
+      "sourceIndex": 6,
+      "observed": "Xoay người giữa vòng bướm tím",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -12,
+      "dy": -42,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        27,
+        11,
+        70,
+        53
+      ],
+      "sourceBbox": [
+        13,
+        27,
+        360,
+        366
+      ],
+      "cellSize": [
+        361,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 13,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            43,
+            42
+          ],
+          "bytes": 2413,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            86,
+            84
+          ],
+          "bytes": 5470,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            129,
+            126
+          ],
+          "bytes": 9883,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            172,
+            168
+          ],
+          "bytes": 15022,
+          "transparentBorder": true
+        }
+      },
+      "slot": 12,
+      "imageId": 25201,
+      "sheet": "attack2",
+      "sourceIndex": 5,
+      "observed": "Chém xoay tạo vòng tím xanh",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -20,
+      "dy": -43,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        19,
+        10,
+        67,
+        54
+      ],
+      "sourceBbox": [
+        1,
+        18,
+        402,
+        379
+      ],
+      "cellSize": [
+        491,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 1,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            48,
+            44
+          ],
+          "bytes": 2245,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            96,
+            88
+          ],
+          "bytes": 4527,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            144,
+            132
+          ],
+          "bytes": 7713,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            192,
+            176
+          ],
+          "bytes": 11717,
+          "transparentBorder": true
+        }
+      },
+      "slot": 13,
+      "imageId": 25214,
+      "sheet": "fly",
+      "sourceIndex": 4,
+      "observed": "Bay ngang dự phòng cho slot bay/ngã thứ hai",
+      "suggestedGroup": "Bay / ngã đã thay hình",
+      "mirroredHorizontally": true
+    },
+    {
+      "dx": -12,
+      "dy": -41,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        27,
+        12,
+        70,
+        53
+      ],
+      "sourceBbox": [
+        9,
+        40,
+        350,
+        369
+      ],
+      "cellSize": [
+        351,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 5,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            43,
+            41
+          ],
+          "bytes": 2408,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            86,
+            82
+          ],
+          "bytes": 5456,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            129,
+            123
+          ],
+          "bytes": 9880,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            172,
+            164
+          ],
+          "bytes": 15066,
+          "transparentBorder": true
+        }
+      },
+      "slot": 14,
+      "imageId": 25203,
+      "sheet": "attack2",
+      "sourceIndex": 6,
+      "observed": "Bùng cánh bướm tím xanh quanh thân",
+      "suggestedGroup": "Kỹ năng hiệu ứng lớn",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -7,
+      "dy": -42,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        32,
+        11,
+        77,
+        58
+      ],
+      "sourceBbox": [
+        124,
+        34,
+        493,
+        416
+      ],
+      "cellSize": [
+        496,
+        543
+      ],
+      "edgeTouches": [],
+      "keptComponents": 10,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            45,
+            47
+          ],
+          "bytes": 2496,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            90,
+            94
+          ],
+          "bytes": 5470,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            135,
+            141
+          ],
+          "bytes": 9599,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            180,
+            188
+          ],
+          "bytes": 14520,
+          "transparentBorder": true
+        }
+      },
+      "slot": 15,
+      "imageId": 25204,
+      "sheet": "guard",
+      "sourceIndex": 3,
+      "observed": "Giữ khiên cánh bướm tím sát thân",
+      "suggestedGroup": "Phòng thủ",
+      "mirroredHorizontally": false
+    },
+    {
+      "dx": -13,
+      "dy": -41,
+      "offsetAdjustment": [
+        0,
+        0
+      ],
+      "cropX1": [
+        26,
+        12,
+        68,
+        53
+      ],
+      "sourceBbox": [
+        1,
+        32,
+        338,
+        355
+      ],
+      "cellSize": [
+        353,
+        531
+      ],
+      "edgeTouches": [],
+      "keptComponents": 10,
+      "droppedComponents": 0,
+      "scales": {
+        "x1": {
+          "size": [
+            42,
+            41
+          ],
+          "bytes": 2269,
+          "transparentBorder": true
+        },
+        "x2": {
+          "size": [
+            84,
+            82
+          ],
+          "bytes": 4749,
+          "transparentBorder": true
+        },
+        "x3": {
+          "size": [
+            126,
+            123
+          ],
+          "bytes": 8182,
+          "transparentBorder": true
+        },
+        "x4": {
+          "size": [
+            168,
+            164
+          ],
+          "bytes": 12204,
+          "transparentBorder": true
+        }
+      },
+      "slot": 16,
+      "imageId": 25215,
+      "sheet": "attack",
+      "sourceIndex": 5,
+      "observed": "Lướt chém sang phải kéo theo cung tím",
+      "suggestedGroup": "Motion blur / dash đã sửa hướng",
+      "mirroredHorizontally": true
+    }
+  ],
+  "leg": [
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ],
+    [
+      25206,
+      0,
+      0
+    ]
+  ],
+  "defaultOptions": [],
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "npc": "Kanao",
+    "tab": "Cải trang",
+    "cost": 2000
+  }
+}

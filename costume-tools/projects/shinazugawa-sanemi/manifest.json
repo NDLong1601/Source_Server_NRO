@@ -2,10 +2,10 @@
   "itemId": 2062,
   "name": "Cải trang Shinazugawa Sanemi",
   "iconId": 25041,
-  "profileIconId": 25022,
+  "profileIconId": 26010,
   "headAvatar": {
     "headId": 2099,
-    "avatarId": 25022
+    "avatarId": 26010
   },
   "partIds": {
     "head": 2099,
@@ -23,6 +23,7 @@
     64,
     64
   ],
+  "profileVerticalAlign": "bottom",
   "bodyReferenceCanvasX1": [
     64,
     56
@@ -374,49 +375,49 @@
     },
     {
       "slot": 7,
-      "imageId": 25030,
-      "dx": -8,
-      "dy": -27,
+      "imageId": 26001,
+      "dx": -15,
+      "dy": -28,
       "cropX1": [
-        15,
-        9,
-        46,
-        52
+        8,
+        8,
+        56,
+        47
       ],
       "scales": {
         "x1": {
           "size": [
-            31,
-            43
+            48,
+            39
           ],
-          "bytes": 1860
+          "bytes": 2222
         },
         "x2": {
           "size": [
-            62,
-            86
+            96,
+            78
           ],
-          "bytes": 3475
+          "bytes": 4527
         },
         "x3": {
           "size": [
-            93,
-            129
+            144,
+            117
           ],
-          "bytes": 5797
+          "bytes": 7768
         },
         "x4": {
           "size": [
-            124,
-            172
+            192,
+            156
           ],
-          "bytes": 8661
+          "bytes": 11823
         }
       },
-      "sheet": "attack2",
-      "sourceIndex": 0,
-      "observed": "Rút kiếm vào thế tấn",
-      "suggestedGroup": "Đánh"
+      "sheet": "fly",
+      "sourceIndex": 1,
+      "observed": "Lao bay ngang sang phải trong vệt gió xanh",
+      "suggestedGroup": "Bay thực tế BODY[7]"
     },
     {
       "slot": 8,

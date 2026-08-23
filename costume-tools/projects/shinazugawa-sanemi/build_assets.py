@@ -53,7 +53,7 @@ BODY_MAPPING = (
     ("walk", 1, "Chạy bước 2", "Chạy"),
     ("walk", 4, "Chạy bước 3", "Chạy"),
     ("walk", 5, "Chạy bước 4", "Chạy"),
-    ("attack2", 0, "Rút kiếm vào thế tấn", "Đánh"),
+    ("fly", 1, "Lao bay ngang sang phải trong vệt gió xanh", "Bay thực tế BODY[7]"),
     ("guard", 2, "Đỡ đòn kèm hiệu ứng va chạm", "Tụ lực / kỹ năng"),
     ("attack", 2, "Đứng tụ gió quanh người", "Kỹ năng"),
     ("attack2", 2, "Chém vòng cung thấp", "Đánh / kỹ năng"),
@@ -65,9 +65,12 @@ BODY_MAPPING = (
     ("run", 2, "Lướt nhanh kèm gió", "Motion blur / dash"),
 )
 
-PROFILE_ICON_ID = 25022
+PROFILE_ICON_ID = 26010
 ITEM_ICON_ID = 25041
-BODY_IMAGE_IDS = tuple(range(25023, 25040))
+BODY_IMAGE_IDS = (
+    25023, 25024, 25025, 25026, 25027, 25028, 25029, 26001, 25031,
+    25032, 25033, 25034, 25035, 25036, 25037, 25038, 25039,
+)
 TRANSPARENT_ID = 25040
 ITEM_ICON_SOURCE = PROJECT_DIR / "source" / "item-icon-25041.png"
 PROFILE_ICON_SOURCE = PROJECT_DIR / "source" / "profile-25022.png"
@@ -259,6 +262,7 @@ def write_frame_scales(
     image_id: int,
     frame: Frame,
     offset_adjustment: tuple[int, int] = (0, 0),
+    write_output: bool = True,
 ) -> tuple[dict, Image.Image]:
     rendered = [render_frame(frame, scale) for scale in range(1, 5)]
     crop_rect = logical_crop_rect(rendered)
@@ -273,14 +277,18 @@ def write_frame_scales(
         scaled_rect = tuple(value * scale for value in crop_rect)
         cropped = fixed_canvas.crop(scaled_rect)
         encoded = quantize_for_client(cropped)
-        encoded.save(output_path, optimize=True)
+        if write_output:
+            encoded.save(output_path, optimize=True)
+        elif not output_path.is_file():
+            raise FileNotFoundError(f"Missing existing output for unselected slot: {output_path}")
+        decoded = Image.open(output_path).convert("RGBA")
         scale_metadata[f"x{scale}"] = {
-            "size": [encoded.width, encoded.height],
+            "size": [decoded.width, decoded.height],
             "bytes": output_path.stat().st_size,
         }
         if scale == 4:
             preview_x4.alpha_composite(
-                encoded.convert("RGBA"), (crop_rect[0] * 4, crop_rect[1] * 4)
+                decoded, (crop_rect[0] * 4, crop_rect[1] * 4)
             )
     metadata = {
         "dx": BASE_BODY_OFFSET[0] + crop_rect[0] + offset_adjustment[0],
@@ -293,7 +301,10 @@ def write_frame_scales(
 
 
 def render_icon_source(
-    source_path: Path, scale: int, canvas_x1: tuple[int, int]
+    source_path: Path,
+    scale: int,
+    canvas_x1: tuple[int, int],
+    align_bottom: bool = False,
 ) -> Image.Image:
     source = Image.open(source_path).convert("RGBA")
     bbox = alpha_bbox(source)
@@ -302,7 +313,7 @@ def render_icon_source(
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     source.thumbnail(canvas_size, Image.Resampling.LANCZOS)
     x = (canvas.width - source.width) // 2
-    y = (canvas.height - source.height) // 2
+    y = canvas.height - source.height if align_bottom else (canvas.height - source.height) // 2
     canvas.alpha_composite(source, (x, y))
     return canvas
 
@@ -314,7 +325,12 @@ def write_profile_icon_scales() -> None:
         output_dir = PROJECT_ROOT / "data" / "icon" / f"x{scale}"
         output_dir.mkdir(parents=True, exist_ok=True)
         quantize_for_client(
-            render_icon_source(PROFILE_ICON_SOURCE, scale, X1_PROFILE_ICON_CANVAS)
+            render_icon_source(
+                PROFILE_ICON_SOURCE,
+                scale,
+                X1_PROFILE_ICON_CANVAS,
+                align_bottom=True,
+            )
         ).save(
             output_dir / f"{PROFILE_ICON_ID}.png", optimize=True
         )
@@ -414,6 +430,7 @@ def build_manifest(frame_exports: list[dict]) -> None:
         "paletteColors": PALETTE_COLORS,
         "itemIconCanvasX1": list(X1_ITEM_ICON_CANVAS),
         "profileIconCanvasX1": list(X1_PROFILE_ICON_CANVAS),
+        "profileVerticalAlign": "bottom",
         "bodyReferenceCanvasX1": list(X1_CANVAS),
         "bodyOffsetMode": "per-frame crop-compensated",
         "head": [[TRANSPARENT_ID, 0, 0] for _ in range(3)],
@@ -423,6 +440,11 @@ def build_manifest(frame_exports: list[dict]) -> None:
                 "imageId": BODY_IMAGE_IDS[index],
                 "dx": frame_exports[index]["dx"],
                 "dy": frame_exports[index]["dy"],
+                **(
+                    {"offsetAdjustment": frame_exports[index]["offsetAdjustment"]}
+                    if frame_exports[index]["offsetAdjustment"] != [0, 0]
+                    else {}
+                ),
                 "cropX1": frame_exports[index]["cropX1"],
                 "scales": frame_exports[index]["scales"],
                 "sheet": row[0],
@@ -445,7 +467,22 @@ def build_manifest(frame_exports: list[dict]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--contacts-only", action="store_true")
+    parser.add_argument(
+        "--slots",
+        nargs="*",
+        type=int,
+        help="Only rewrite the listed BODY image files; still refresh preview/manifest.",
+    )
+    parser.add_argument(
+        "--profile",
+        action="store_true",
+        help="Rewrite the bottom-aligned profile image during a partial BODY build.",
+    )
     args = parser.parse_args()
+
+    selected_slots = None if args.slots is None else set(args.slots)
+    if selected_slots is not None and not selected_slots.issubset(range(17)):
+        raise ValueError(f"BODY slots must be within 0..16: {sorted(selected_slots)}")
 
     all_cells = {sheet.key: split_sheet(sheet) for sheet in SHEETS}
     all_cells["idle_side"] = [load_standalone_frame(SIDE_IDLE_SOURCE, 50)]
@@ -463,13 +500,17 @@ def main() -> None:
             image_id,
             all_cells[sheet_key][source_index],
             BODY_SLOT_OFFSET_ADJUSTMENTS.get(slot, (0, 0)),
+            write_output=selected_slots is None or slot in selected_slots,
         )
         frame_exports.append(export)
         selected_frames_x4.append(preview_x4)
 
-    write_transparent_scales()
-    write_profile_icon_scales()
-    write_item_icon_scales()
+    if selected_slots is None:
+        write_transparent_scales()
+    if selected_slots is None or args.profile:
+        write_profile_icon_scales()
+    if selected_slots is None:
+        write_item_icon_scales()
     build_selected_preview(selected_frames_x4)
     build_manifest(frame_exports)
 

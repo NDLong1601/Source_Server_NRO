@@ -2,10 +2,10 @@
   "itemId": 2063,
   "name": "Cải trang Tokitou Muichirou",
   "iconId": 25061,
-  "profileIconId": 25042,
+  "profileIconId": 26011,
   "headAvatar": {
     "headId": 2138,
-    "avatarId": 25042
+    "avatarId": 26011
   },
   "partIds": {
     "head": 2138,
@@ -23,6 +23,7 @@
     64,
     64
   ],
+  "profileVerticalAlign": "bottom",
   "bodyReferenceCanvasX1": [
     64,
     56
@@ -34,6 +35,7 @@
     4,
     5,
     6,
+    7,
     13,
     16
   ],
@@ -151,7 +153,7 @@
     },
     {
       "slot": 2,
-      "imageId": 25059,
+      "imageId": 25062,
       "dx": -15,
       "dy": -22,
       "cropX1": [
@@ -386,96 +388,96 @@
     },
     {
       "slot": 7,
-      "imageId": 25050,
-      "dx": -11,
-      "dy": -18,
+      "imageId": 26003,
+      "dx": -15,
+      "dy": -24,
       "cropX1": [
+        8,
         12,
-        18,
-        47,
-        51
+        50,
+        46
       ],
       "scales": {
         "x1": {
           "size": [
-            35,
-            33
+            42,
+            34
           ],
-          "bytes": 1933
+          "bytes": 2013
         },
         "x2": {
           "size": [
-            70,
-            66
+            84,
+            68
           ],
-          "bytes": 3833
+          "bytes": 3911
         },
         "x3": {
           "size": [
-            105,
-            99
+            126,
+            102
           ],
-          "bytes": 6360
+          "bytes": 6461
         },
         "x4": {
           "size": [
-            140,
-            132
+            168,
+            136
           ],
-          "bytes": 9573
+          "bytes": 9554
         }
       },
-      "sheet": "attack2",
+      "sheet": "fly",
       "sourceIndex": 1,
-      "observed": "Rút kiếm trong màn sương xanh",
-      "suggestedGroup": "Đánh",
-      "mirroredHorizontally": false
+      "observed": "Lao bay ngang sang phải, tóc và sương kéo về sau",
+      "suggestedGroup": "Bay thực tế BODY[7]",
+      "mirroredHorizontally": true
     },
     {
       "slot": 8,
-      "imageId": 25051,
-      "dx": -11,
+      "imageId": 26007,
+      "dx": -14,
       "dy": -33,
       "cropX1": [
-        12,
+        9,
         3,
-        52,
+        54,
         53
       ],
       "scales": {
         "x1": {
           "size": [
-            40,
+            45,
             50
           ],
-          "bytes": 2524
+          "bytes": 2725
         },
         "x2": {
           "size": [
-            80,
+            90,
             100
           ],
-          "bytes": 5846
+          "bytes": 6647
         },
         "x3": {
           "size": [
-            120,
+            135,
             150
           ],
-          "bytes": 10563
+          "bytes": 12415
         },
         "x4": {
           "size": [
-            160,
+            180,
             200
           ],
-          "bytes": 16431
+          "bytes": 19444
         }
       },
-      "sheet": "attack2",
-      "sourceIndex": 3,
-      "observed": "Nhắm mắt tụ lực giữa vòng sương",
-      "suggestedGroup": "Tụ lực / kỹ năng",
+      "sheet": "landing_complete",
+      "sourceIndex": 0,
+      "observed": "Đáp đất giữa vòng nước đầy đủ, mép hiệu ứng được tách mềm",
+      "suggestedGroup": "Đáp đất BODY[8]",
       "mirroredHorizontally": false
     },
     {
@@ -668,7 +670,7 @@
     },
     {
       "slot": 13,
-      "imageId": 25059,
+      "imageId": 25062,
       "dx": -15,
       "dy": -22,
       "cropX1": [
@@ -809,7 +811,7 @@
     },
     {
       "slot": 16,
-      "imageId": 25059,
+      "imageId": 25062,
       "dx": -15,
       "dy": -22,
       "cropX1": [

@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.CRC32;
 
 import nro.models.utils.FileIO;
@@ -29,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import nro.models.server.Manager;
 import nro.models.network.MySession;
+import nro.models.item.Item;
+import nro.models.player.Player;
 import nro.models.utils.Logger;
 
 import nro.models.player_system.Template.BgItem;
@@ -37,17 +41,18 @@ public class DataGame {
 
     private static final byte DEFAULT_MAP_VERSION = 10;
     private static final int MAX_SIGNED_TEMPLATE_COUNT = 127;
+    private static final int MAX_PRELOADED_PLAYER_ICONS = 128;
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
 
-    // 41 maps Tokitou Muichirou's fly slots BODY[2]/BODY[13] to animation 25059.
-    public static byte vsData = 41;
+    // 54 publishes Muichirou's complete landing effect and corrected Giyuu/Tengen flight poses.
+    public static byte vsData = 54;
     public static byte vsMap = loadMapVersion();
     // 2 publishes real skill descriptions instead of the old literal "null".
     public static byte vsSkill = 2;
-    // 24 publishes the Tokitou Muichirou item template and inventory icon 25061.
-    public static byte vsItem = 24;
+    // 26 publishes costume item templates 2067..2070 and inventory icons.
+    public static byte vsItem = 26;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -489,6 +494,43 @@ public class DataGame {
             msg.cleanup();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * The Unity client stops its on-demand small-image queue after a limited
+     * number of requests when the cache has just been rebuilt. Send the icons
+     * referenced by the initial player packet proactively, in the same order,
+     * so later bag rows cannot remain blank until another reconnect.
+     */
+    public static void preloadPlayerItemIcons(Player player) {
+        if (player == null || player.inventory == null || player.getSession() == null
+                || !player.getSession().isAssetReady()) {
+            return;
+        }
+
+        Set<Integer> iconIds = new LinkedHashSet<>();
+        collectItemIcons(player.inventory.itemsBody, iconIds);
+        collectItemIcons(player.inventory.itemsBag, iconIds);
+
+        int sent = 0;
+        for (int iconId : iconIds) {
+            if (sent >= MAX_PRELOADED_PLAYER_ICONS) {
+                break;
+            }
+            sendIcon(player.getSession(), iconId);
+            sent++;
+        }
+    }
+
+    private static void collectItemIcons(Iterable<Item> items, Set<Integer> iconIds) {
+        if (items == null) {
+            return;
+        }
+        for (Item item : items) {
+            if (item != null && item.template != null && item.template.iconID >= 0) {
+                iconIds.add((int) item.template.iconID);
+            }
         }
     }
 

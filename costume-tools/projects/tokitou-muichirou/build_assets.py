@@ -53,8 +53,8 @@ BODY_MAPPING = (
     ("run", 1, "Bật lao tới kèm bụi và vệt tốc độ", "Chạy có hiệu ứng 2"),
     ("run", 5, "Tiếp đất thấp, tóc quét theo vòng gió", "Chạy có hiệu ứng 3"),
     ("run", 6, "Đứng dậy sau pha lướt, bụi đá còn bay", "Chạy có hiệu ứng 4"),
-    ("attack2", 1, "Rút kiếm trong màn sương xanh", "Đánh"),
-    ("attack2", 3, "Nhắm mắt tụ lực giữa vòng sương", "Tụ lực / kỹ năng"),
+    ("fly", 1, "Lao bay ngang sang phải, tóc và sương kéo về sau", "Bay thực tế BODY[7]"),
+    ("landing_complete", 0, "Đáp đất giữa vòng nước đầy đủ, mép hiệu ứng được tách mềm", "Đáp đất BODY[8]"),
     ("attack2", 7, "Đâm kiếm thẳng giữa luồng sương", "Kỹ năng"),
     ("attack2", 4, "Lướt chém ngang có cung kiếm xanh", "Đánh / kỹ năng"),
     ("attack2", 5, "Xoay người chém vòng cung lớn", "Đánh / kỹ năng"),
@@ -65,25 +65,25 @@ BODY_MAPPING = (
     ("run", 2, "Lướt cực nhanh kèm bóng mờ và vệt xanh", "Motion blur / dash"),
 )
 
-PROFILE_ICON_ID = 25042
+PROFILE_ICON_ID = 26011
 BODY_IMAGE_IDS = (
     25043,
     25044,
-    25059,
+    25062,
     25046,
     25047,
     25048,
     25049,
-    25050,
-    25051,
+    26003,
+    26007,
     25052,
     25053,
     25054,
     25055,
-    25059,
+    25062,
     25057,
     25058,
-    25059,
+    25062,
 )
 TRANSPARENT_ID = 25060
 ITEM_ICON_ID = 25061
@@ -108,7 +108,7 @@ BODY_SLOT_OFFSET_ADJUSTMENTS: dict[int, tuple[int, int]] = {
 # The NRO client mirrors BODY sprites when the character turns left. These source
 # cells were authored facing left, so mirror them once at build time to establish
 # the same canonical right-facing direction as the confirmed-good idle slot.
-BODY_SLOT_HORIZONTAL_FLIPS = {2, 3, 4, 5, 6, 13, 16}
+BODY_SLOT_HORIZONTAL_FLIPS = {2, 3, 4, 5, 6, 7, 13, 16}
 
 
 def proportional_bounds(length: int, count: int) -> list[int]:
@@ -190,6 +190,42 @@ def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int]:
     if bbox is None:
         raise ValueError("Sprite cell is transparent")
     return bbox
+
+
+def load_complete_landing_frame() -> Frame:
+    """Recover the full BODY[8] water ring from the packed attack sheet.
+
+    The old proportional 5-column crop started at x~=1003 even though this
+    frame's water effect starts at the transparent gutter around x=953. Its
+    right edge overlaps the following source pose, so use the low-occupancy
+    seam and taper only the shared fringe instead of leaving a hard rectangle.
+    """
+    source_path = SOURCE_DIR / "attack_1.png"
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Missing landing source: {source_path}")
+    source = Image.open(source_path).convert("RGBA")
+    row_bottom = round(source.height / 2)
+    left = round(source.width * 0.570)
+    seam_start = round(source.width * 0.7835)
+    right = round(source.width * 0.800)
+    curated = np.asarray(source.crop((left, 0, right, row_bottom))).copy()
+
+    local_seam = seam_start - left
+    if not (0 < local_seam < curated.shape[1]):
+        raise ValueError("Landing alpha seam falls outside the curated source crop")
+    fade_width = curated.shape[1] - local_seam
+    fade = np.linspace(1.0, 0.0, fade_width, endpoint=True, dtype=np.float32)
+    curated[:, local_seam:, 3] = np.rint(
+        curated[:, local_seam:, 3].astype(np.float32) * fade[None, :]
+    ).astype(np.uint8)
+
+    curated_image = Image.fromarray(curated, mode="RGBA")
+    bbox = alpha_bbox(curated_image)
+    return Frame(
+        image=curated_image.crop(bbox),
+        bbox_in_cell=bbox,
+        cell_size=curated_image.size,
+    )
 
 
 def load_standalone_frame(source_path: Path, target_height_x1: int) -> Frame:
@@ -330,7 +366,10 @@ def write_frame_scales(
 
 
 def render_icon_source(
-    source_path: Path, scale: int, canvas_x1: tuple[int, int]
+    source_path: Path,
+    scale: int,
+    canvas_x1: tuple[int, int],
+    align_bottom: bool = False,
 ) -> Image.Image:
     source = Image.open(source_path).convert("RGBA")
     bbox = alpha_bbox(source)
@@ -339,7 +378,7 @@ def render_icon_source(
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     source.thumbnail(canvas_size, Image.Resampling.LANCZOS)
     x = (canvas.width - source.width) // 2
-    y = (canvas.height - source.height) // 2
+    y = canvas.height - source.height if align_bottom else (canvas.height - source.height) // 2
     canvas.alpha_composite(source, (x, y))
     return canvas
 
@@ -351,7 +390,12 @@ def write_profile_icon_scales() -> None:
         output_dir = PROJECT_ROOT / "data" / "icon" / f"x{scale}"
         output_dir.mkdir(parents=True, exist_ok=True)
         quantize_for_client(
-            render_icon_source(PROFILE_ICON_SOURCE, scale, X1_PROFILE_ICON_CANVAS)
+            render_icon_source(
+                PROFILE_ICON_SOURCE,
+                scale,
+                X1_PROFILE_ICON_CANVAS,
+                align_bottom=True,
+            )
         ).save(
             output_dir / f"{PROFILE_ICON_ID}.png", optimize=True
         )
@@ -451,6 +495,7 @@ def build_manifest(frame_exports: list[dict]) -> None:
         "paletteColors": PALETTE_COLORS,
         "itemIconCanvasX1": list(X1_ITEM_ICON_CANVAS),
         "profileIconCanvasX1": list(X1_PROFILE_ICON_CANVAS),
+        "profileVerticalAlign": "bottom",
         "bodyReferenceCanvasX1": list(X1_CANVAS),
         "bodyOffsetMode": "per-frame crop-compensated",
         "mirroredHorizontally": sorted(BODY_SLOT_HORIZONTAL_FLIPS),
@@ -490,6 +535,11 @@ def main() -> None:
         type=int,
         help="Only rewrite the listed BODY slot image files; still refresh preview/manifest.",
     )
+    parser.add_argument(
+        "--profile",
+        action="store_true",
+        help="Rewrite the bottom-aligned profile image during a partial BODY build.",
+    )
     args = parser.parse_args()
 
     selected_slots = None if args.slots is None else set(args.slots)
@@ -497,6 +547,7 @@ def main() -> None:
         raise ValueError(f"BODY slots must be within 0..16: {sorted(selected_slots)}")
 
     all_cells = {sheet.key: split_sheet(sheet) for sheet in SHEETS}
+    all_cells["landing_complete"] = [load_complete_landing_frame()]
     build_contact_sheets(all_cells)
     if args.contacts_only:
         return
@@ -521,7 +572,9 @@ def main() -> None:
 
     if selected_slots is None:
         write_transparent_scales()
+    if selected_slots is None or args.profile:
         write_profile_icon_scales()
+    if selected_slots is None:
         write_item_icon_scales()
     build_selected_preview(selected_frames_x4)
     build_manifest(frame_exports)

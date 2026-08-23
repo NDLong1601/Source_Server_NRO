@@ -5,10 +5,10 @@ Bộ này thay thế trực tiếp cải trang lỗi hiện có để giữ chu�
 - item: `2062` (`TYPE=5`, gender dùng chung `3`);
 - HEAD/BODY/LEG part: `2099/2100/2101`;
 - icon hành trang: `25041`, lấy từ `source/item-icon-25041.png`;
-- ảnh profile khi mặc cải trang: `25022`, ánh xạ qua `head_avatar(2099,25022)`;
+- ảnh profile khi mặc cải trang: `26010`, ánh xạ qua `head_avatar(2099,26010)`;
 - icon hành trang dùng canvas x1 `25x22`;
-- profile dùng canvas x1 `64x64`, cùng chuẩn Goku Cận Vô Cực để phủ vừa khung;
-- BODY frame: `25023..25039`;
+- profile dùng canvas x1 `64x64`, crop alpha rồi neo sát đáy để không tạo khoảng trống trên tab UI;
+- BODY frame: `25023..25029`, `25031..25039` và ảnh bay thực tế `26001`;
 - ảnh trong suốt dùng cho HEAD/LEG: `25040`;
 - shop Kanao: shop `112`, tab **Cải trang** `1120`;
 - option mặc định: chưa cấu hình theo yêu cầu.
@@ -21,7 +21,9 @@ Riêng frame đứng `BODY[1] / 25024` có thân xoay sang phải nhưng đầu 
 ở góc 3/4 để vẫn đọc rõ hai mắt như cải trang Goku Cận Vô Cực. Frame được căn giữa,
 neo chân theo cùng chuẩn canvas và hạ riêng `3 px` logic (`dy=-33`) để bàn chân chạm
 đường mặt đất trong game; client tự lật ảnh khi nhân vật quay sang trái.
-Mapping chạy, bay và 16 frame BODY còn lại được giữ nguyên.
+BODY `[7]` dùng riêng `fly[1] / 26001` vì client hiển thị slot này khi bay; các
+frame đứng, chạy và phần còn lại được giữ nguyên.
+Profile phát hành bằng ID mới `26010`; ảnh nguồn vẫn là `source/profile-25022.png`.
 
 Mỗi mức `x1/x2/x3/x4` được render trực tiếp từ ảnh gốc bằng Lanczos. Không phóng
 x1 lên các scale lớn bằng nearest-neighbor; đây là cách giữ nét HD tương tự bộ
@@ -39,7 +41,7 @@ Goku Cận Vô Cực đang có trong source. PNG đầu ra dùng bảng màu 256
 | 4 | 25027 | walk[1] | Chạy bước 2 | Chạy |
 | 5 | 25028 | walk[4] | Chạy bước 3 | Chạy |
 | 6 | 25029 | walk[5] | Chạy bước 4 | Chạy |
-| 7 | 25030 | attack2[0] | Rút kiếm vào thế tấn | Đánh |
+| 7 | 26001 | fly[1] | Lao bay ngang sang phải trong vệt gió xanh | Bay thực tế BODY[7] |
 | 8 | 25031 | guard[2] | Đỡ đòn có va chạm | Tụ lực / kỹ năng |
 | 9 | 25032 | attack[2] | Đứng tụ gió quanh người | Kỹ năng |
 | 10 | 25033 | attack2[2] | Chém vòng cung thấp | Đánh / kỹ năng |
@@ -57,15 +59,9 @@ state animation chính thức của client.
 
 - `build_assets.py`: tách sheet, lọc mảnh sprite lân cận, căn neo và tạo x1-x4.
 - `manifest.json`: mapping máy đọc được.
-- `install.sql`: migration idempotent cho live DB.
+- `install.sql`: migration idempotent chứa mapping cuối đã nghiệm thu cho live DB.
 - `rollback.sql`: khôi phục đúng item/part cũ và gỡ item khỏi tab Kanao.
 - `preview/selected-body-frames.png`: contact sheet 17 frame đã chọn.
-- `backup-pixel-v1/`: bản asset pixel cũ trước khi sửa pipeline HD.
-- `backup-hd-fixed-v2/`: bản HD canvas cố định trước khi tối ưu tải asset.
-- `backup-pre-center-icon-v3/`: icon/profile trước lần sửa tâm và tách ảnh 25041.
-- `backup-profile-small-v4/`: profile 25022 kích thước nhỏ trước khi nâng lên 64x64.
-- `backup-idle-front-v5/`: frame đứng chính diện 25024 trước khi thay bằng dáng nghiêng.
-- `backup-idle-profile-v6/`: frame đứng có đầu quay ngang hoàn toàn trước lần sửa góc 3/4.
 - `source/item-icon-25041.png`: ảnh nguồn gốc của icon vật phẩm 25041.
 - `source/profile-25022.png`: ảnh nguồn HD của profile 25022.
 - `source/idle-side-right-25024.png`: ảnh nguồn HD của frame đứng nghiêng mới.
