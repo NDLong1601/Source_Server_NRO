@@ -61,6 +61,17 @@ input.hidden-value {
   width: 300px;
 }
 
+#skillMasterySearch {
+  width: 250px;
+}
+
+#skillMasteryClassFilter {
+  display: inline-block;
+  width: 145px;
+  margin-right: 5px;
+  vertical-align: top;
+}
+
 #combineSearch,
 #petConfigSearch,
 #playerConfigSearch {
@@ -409,6 +420,152 @@ button.compact {
 
 .actions button {
   margin-bottom: 5px;
+}
+
+.skill-mastery-toolbar input {
+  margin-right: 5px;
+}
+
+.skill-mastery-note {
+  margin: 8px 0 12px;
+  padding: 9px 10px;
+  border-left: 3px solid #0f766e;
+  border-radius: 4px;
+  background: #ecfeff;
+  color: #334155;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.skill-config-group {
+  margin: 9px 0;
+  padding: 9px 9px 4px;
+  border: 1px solid #dbe3ed;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.skill-config-group-title,
+.skill-subheading {
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.skill-subheading {
+  margin: 15px 0 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #dbe3ed;
+}
+
+.skill-config-grid {
+  font-size: 0;
+}
+
+.skill-config-field {
+  display: inline-block;
+  width: 50%;
+  box-sizing: border-box;
+  padding-right: 7px;
+  vertical-align: top;
+  font-size: 12px;
+}
+
+.skill-config-field:nth-child(even) {
+  padding-right: 0;
+  padding-left: 7px;
+}
+
+.skill-field-hint {
+  min-height: 30px;
+  padding: 3px 1px 5px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.skill-config-toggle {
+  display: flex;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.skill-base-stats {
+  margin: 4px 0 8px;
+}
+
+.skill-stat-chip {
+  display: inline-block;
+  margin: 0 5px 5px 0;
+  padding: 4px 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 11px;
+}
+
+.skill-stat-chip b {
+  color: #0f172a;
+}
+
+.skill-level-add-row {
+  max-width: 390px;
+}
+
+.skill-level-add-button {
+  padding-top: 26px;
+}
+
+.skill-level-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #dbe3ed;
+  border-radius: 6px;
+}
+
+.skill-level-table-wrap table {
+  min-width: 920px;
+  table-layout: auto;
+}
+
+.skill-level-table-wrap th,
+.skill-level-table-wrap td {
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.skill-level-editor {
+  margin-top: 12px;
+  padding: 9px;
+  border: 1px solid #94a3b8;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.skill-level-preview {
+  margin-top: 5px;
+  padding: 8px;
+  border-radius: 5px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.skill-row-selected td,
+.skill-level-selected td {
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.skill-save-actions {
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid #cbd5e1;
 }
 
 #panelItems .table-wrap {

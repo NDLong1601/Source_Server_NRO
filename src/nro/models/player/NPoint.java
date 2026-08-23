@@ -14,6 +14,7 @@ import nro.models.services.ItemService;
 import nro.models.map.service.MapService;
 import nro.models.services.PlayerService;
 import nro.models.services.Service;
+import nro.models.services.SkillMasteryService;
 import nro.models.services.TaskService;
 import nro.models.utils.Logger;
 import nro.models.utils.SkillUtil;
@@ -834,7 +835,10 @@ public class NPoint {
         // Xử lý khỉ
         if (this.player.effectSkill.isMonkey) {
             if (!this.player.isPet || (this.player.isPet && ((Pet) this.player).status != Pet.FUSION)) {
-                int percent = SkillUtil.getPercentHpMonkey(player.effectSkill.levelMonkey);
+                Skill monkeySkill = SkillUtil.getSkillbyId(player, Skill.BIEN_KHI);
+                int percent = monkeySkill != null
+                        ? SkillUtil.getPercentHpMonkey(monkeySkill)
+                        : SkillUtil.getPercentHpMonkey(player.effectSkill.levelMonkey);
                 hpMax += (hpMax * percent / 100L);
             }
         }
@@ -1138,7 +1142,10 @@ public class NPoint {
         // Xử lý khỉ
         if (this.player.effectSkill.isMonkey) {
             if (!this.player.isPet || (this.player.isPet && ((Pet) this.player).status != Pet.FUSION)) {
-                int percent = SkillUtil.getPercentDameMonkey(player.effectSkill.levelMonkey);
+                Skill monkeySkill = SkillUtil.getSkillbyId(player, Skill.BIEN_KHI);
+                int percent = monkeySkill != null
+                        ? SkillUtil.getPercentDameMonkey(monkeySkill)
+                        : SkillUtil.getPercentDameMonkey(player.effectSkill.levelMonkey);
                 dame += (dame * percent / 100L);
             }
         }
@@ -1339,6 +1346,11 @@ public class NPoint {
                     percentXDame = 100;
                 }
                 break;
+            case Skill.SUPER_KAME:
+            case Skill.LIEN_HOAN_CHUONG:
+            case Skill.MA_PHONG_BA:
+                percentDameSkill = skillSelect.damage;
+                break;
             case Skill.GALICK:
                 if (intrinsic.id == 16) {
                     percentDameIntrinsic = intrinsic.param1;
@@ -1399,6 +1411,7 @@ public class NPoint {
                 isCritTele = true;
                 dameAttack = Util.nextInt((int) (int) Math.min(2_147_483_647L, (dameAttack - (dameAttack / 100 * 5))),
                         (int) (int) Math.min(2_147_483_647L, (dameAttack + (dameAttack / 100 * 5))));
+                dameAttack = SkillMasteryService.gI().applyDamageStat(skillSelect, (int) dameAttack);
                 break;
             case Skill.MAKANKOSAPPO:
                 percentDameSkill = skillSelect.damage;
@@ -1412,14 +1425,14 @@ public class NPoint {
                 long hppl = 0;
                 for (Mob mob : this.player.zone.mobs) {
                     if (!mob.isDie()
-                            && Util.getDistance(this.player, mob) <= SkillUtil.getRangeQCKK(this.player.playerSkill.skillSelect.point)) {
+                            && Util.getDistance(this.player, mob) <= SkillUtil.getRangeQCKK(this.player.playerSkill.skillSelect)) {
                         hpmob += mob.point.hp;
                     }
                 }
 
                 for (Player pl : this.player.zone.getHumanoids()) {
                     if (!pl.isDie() && this.player.id != pl.id
-                            && Util.getDistance(this.player, pl) <= SkillUtil.getRangeQCKK(this.player.playerSkill.skillSelect.point)) {
+                            && Util.getDistance(this.player, pl) <= SkillUtil.getRangeQCKK(this.player.playerSkill.skillSelect)) {
                         hppl += pl.nPoint.hp;
                     }
                 }
@@ -1431,6 +1444,8 @@ public class NPoint {
                 }
 
                 dameqckk = dameqckk + (Util.nextInt(-5, 5) * dameqckk / 100);
+                dameqckk = SkillMasteryService.gI().applyDamageStat(skillSelect,
+                        (int) Math.min(Integer.MAX_VALUE, dameqckk));
                 if (dameqckk > 2_147_483_647) {
                     dameqckk = 2_147_483_647;
                 }
@@ -1844,7 +1859,7 @@ public class NPoint {
     public void update() {
         if (player != null && player.effectSkill != null) {
             if (player.effectSkill.isCharging && player.effectSkill.countCharging < 10) {
-                int tiLeHoiPhuc = SkillUtil.getPercentCharge(player.playerSkill.skillSelect.point);
+                int tiLeHoiPhuc = SkillUtil.getPercentCharge(player.playerSkill.skillSelect);
                 if (player.effectSkill.isCharging && !player.isDie() && !player.effectSkill.isHaveEffectSkill()
                         && (hp < hpMax || mp < mpMax)) {
                     long hpRecovered = hpMax / 100 * tiLeHoiPhuc;

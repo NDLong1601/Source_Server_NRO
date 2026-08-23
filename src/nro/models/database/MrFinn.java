@@ -30,6 +30,7 @@ import nro.models.services.ClanService;
 import nro.models.services.IntrinsicService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
+import nro.models.services.SkillMasteryService;
 import nro.models.map.service.MapService;
 import nro.models.services.Service;
 import nro.models.services.TaskService;
@@ -787,10 +788,11 @@ public class MrFinn {
             for (int i = 0; i < dataArray.size(); i++) {
                 JSONArray dataSkill = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(i)));
                 int tempId = Integer.parseInt(String.valueOf(dataSkill.get(0)));
-                byte point = Byte.parseByte(String.valueOf(dataSkill.get(1)));
+                int originalPoint = Integer.parseInt(String.valueOf(dataSkill.get(1)));
+                int visualPoint = Math.min(7, originalPoint);
                 Skill skill;
-                if (point != 0) {
-                    skill = SkillUtil.createSkill(tempId, point);
+                if (visualPoint != 0) {
+                    skill = SkillUtil.createSkill(tempId, visualPoint);
                 } else {
                     skill = SkillUtil.createSkillLevel0(tempId);
                 }
@@ -798,6 +800,13 @@ public class MrFinn {
                 if (dataSkill.size() > 3) {
                     skill.currLevel = Short.parseShort(String.valueOf(dataSkill.get(3)));
                 }
+                boolean hasMasteryState = dataSkill.size() > 5;
+                int actualLevel = dataSkill.size() > 4
+                        ? Integer.parseInt(String.valueOf(dataSkill.get(4))) : originalPoint;
+                long masteryProgress = hasMasteryState
+                        ? Long.parseLong(String.valueOf(dataSkill.get(5))) : 0L;
+                SkillMasteryService.gI().initializeSkill(skill, originalPoint, actualLevel,
+                        masteryProgress, hasMasteryState);
                 player.playerSkill.skills.add(skill);
             }
             dataArray.clear();
@@ -911,10 +920,11 @@ public class MrFinn {
                 for (int i = 0; i < dataArray.size(); i++) {
                     JSONArray skillTemp = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(i)));
                     int tempId = Integer.parseInt(String.valueOf(skillTemp.get(0)));
-                    byte point = Byte.parseByte(String.valueOf(skillTemp.get(1)));
+                    int originalPoint = Integer.parseInt(String.valueOf(skillTemp.get(1)));
+                    int visualPoint = Math.min(7, originalPoint);
                     Skill skill;
-                    if (point != 0) {
-                        skill = SkillUtil.createSkill(tempId, point);
+                    if (visualPoint != 0) {
+                        skill = SkillUtil.createSkill(tempId, visualPoint);
                     } else {
                         skill = SkillUtil.createSkillLevel0(tempId);
                     }
@@ -924,6 +934,13 @@ public class MrFinn {
                     if (skillTemp.size() > 3) {
                         skill.currLevel = Short.parseShort(String.valueOf(skillTemp.get(3)));
                     }
+                    boolean hasMasteryState = skillTemp.size() > 5;
+                    int actualLevel = skillTemp.size() > 4
+                            ? Integer.parseInt(String.valueOf(skillTemp.get(4))) : originalPoint;
+                    long masteryProgress = hasMasteryState
+                            ? Long.parseLong(String.valueOf(skillTemp.get(5))) : 0L;
+                    SkillMasteryService.gI().initializeSkill(skill, originalPoint, actualLevel,
+                            masteryProgress, hasMasteryState);
                     switch (skill.template.id) {
                         case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC ->
                             skill.coolDown = PetConfig.getAttackSkillCooldownMs();

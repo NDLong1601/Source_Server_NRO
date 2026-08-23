@@ -13,6 +13,7 @@ import nro.models.services.InventoryService;
 import nro.models.server.Manager;
 import nro.models.services.Service;
 import nro.models.services.SkillService;
+import nro.models.services.SkillMasteryService;
 import nro.models.services_dungeon.TrainingService;
 import nro.models.shop.ShopService;
 import nro.models.skill.Skill;
@@ -128,6 +129,16 @@ public class Whis extends Npc {
                 "Ca đíc liên hoàn chưởng";
         };
 
+        if (!canLearn && currentSkill.point >= 7) {
+            long required = SkillMasteryService.gI().getRequiredProgress(currentSkill);
+            createOtherMenu(player, ConstNpc.IGNORE_MENU,
+                    "|1|" + skillName + " - cấp thật " + currentSkill.getActualLevel()
+                    + "\n|2|Thành thạo: " + currentSkill.masteryProgress + "/" + required
+                    + "\n|7|Từ cấp 8, kỹ năng tự lên cấp khi thanh thành thạo đầy."
+                    + "\nHiệu ứng hình ảnh tiếp tục dùng cấp 7.", "Đóng");
+            return;
+        }
+
         int requiredBk = canLearn ? 9999 : 999;
         String message = "|1|Ta sẽ dạy ngươi tuyệt kỹ " + skillName
                 + (canLearn ? " 1" : " " + (currentSkill.point + 1));
@@ -172,11 +183,13 @@ public class Whis extends Npc {
                 Service.gI().sendThongBao(player, "Ngươi còn thiếu " + missing + " bí kíp nữa.\nHãy tìm đủ rồi đến gặp ta.");
             }
         } else {
+            if (currentSkill.point >= 7) {
+                npcChat(player, "Kỹ năng từ cấp 8 sẽ tự tăng khi ngươi luyện đủ thành thạo.");
+                return;
+            }
             if (sach.quantity >= 999) {
                 if (currentSkill.currLevel < 1000) {
                     npcChat(player, "Ngươi chưa luyện skill đến mức thành thạo. Luyện thêm đi.");
-                } else if (currentSkill.point >= 9) {
-                    npcChat(player, "Skill của ngươi đã đạt cấp tối đa.");
                 } else {
                     upgradeSkill(player, sach, currentSkill);
                 }
@@ -220,7 +233,17 @@ public class Whis extends Npc {
             String npcMessage = success ? "Chúc mừng con nhé!" : "Ngu dốt!";
             int usedBk = success ? 999 : 99;
             if (success) {
-                currentSkill.point++;
+                Skill nextSkill = SkillUtil.createSkill(currentSkill.template.id, currentSkill.point + 1);
+                if (nextSkill == null) {
+                    Service.gI().sendThongBao(player, "Không tìm thấy cấu hình cấp kỹ năng kế tiếp.");
+                    return;
+                }
+                nextSkill.lastTimeUseThisSkill = currentSkill.lastTimeUseThisSkill;
+                SkillUtil.setSkill(player, nextSkill);
+                Message update = Service.gI().messageSubCommand((byte) 62);
+                update.writer().writeShort(nextSkill.skillId);
+                player.sendMessage(update);
+                update.cleanup();
             }
 
             sendLearnSkillEffect(player, 15313, usedBk);

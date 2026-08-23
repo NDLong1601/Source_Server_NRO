@@ -4,6 +4,7 @@ import nro.models.item.Item;
 import nro.models.mob.Mob;
 import nro.models.skill.Skill;
 import nro.models.services.SkillService;
+import nro.models.services.SkillMasteryService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -98,16 +99,12 @@ public class NewSkill {
             typeItem = 0;
         }
         this.skillSelect = this.player.playerSkill.skillSelect;
-        if (this.player.isPl() && skillSelect.currLevel < 1000) {
-            skillSelect.currLevel++;
-            SkillService.gI().sendCurrLevelSpecial(player, skillSelect);
-        }
         this.dir = dir;
         this._xPlayer = _xPlayer;
         this._yPlayer = _yPlayer;
 
         int length = _xObjTaget - _xPlayer;
-        int dx = dir * (skillSelect.point + 400);
+        int dx = dir * SkillMasteryService.gI().applyRangeStat(skillSelect, skillSelect.point + 400);
         if (skillSelect.template.id != Skill.MA_PHONG_BA) {
             if (Math.abs(dx) < Math.abs(length) || Math.abs(length) < 100) {
                 this._xObjTaget = (short) dx;

@@ -13,6 +13,7 @@ import nro.models.services.Service;
 import nro.models.services.FlagBagService;
 import nro.models.services.ItemTimeService;
 import nro.models.services.SkillService;
+import nro.models.services.SkillMasteryService;
 import nro.models.map.service.NpcService;
 import nro.models.services.TaskService;
 import nro.models.map.service.ItemMapService;
@@ -813,9 +814,10 @@ public class Controller implements IMessageHandler {
                             player.zone.mapInfo(player);
                             if (player.getSession().version >= 220) {
                                 for (Skill skill : player.playerSkill.skills) {
-                                    if (skill.currLevel <= 0 || skill.template.type != 4) {
+                                    if (!SkillMasteryService.gI().shouldSendProgressToClient(skill)) {
                                         continue;
                                     }
+                                    SkillMasteryService.gI().refreshClientProgress(skill);
                                     SkillService.gI().sendCurrLevelSpecial(player, skill);
                                 }
                             }

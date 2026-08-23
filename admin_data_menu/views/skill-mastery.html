@@ -1,0 +1,62 @@
+<div id="panelSkillMastery" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar skill-mastery-toolbar">
+        <input type="text" id="skillMasterySearch" placeholder="Tìm ID hoặc tên skill" onkeyup="FilterSkillMasteryCatalog()">
+        <select id="skillMasteryClassFilter" onchange="FilterSkillMasteryCatalog()">
+          <option value="">Mọi hành tinh</option>
+          <option value="0">Trái Đất</option>
+          <option value="1">Namếc</option>
+          <option value="2">Xayda</option>
+        </select>
+        <button type="button" onclick="ShowSkillMasteryGeneral()">Toàn server</button>
+      </div>
+      <div class="table-wrap"><table id="skillMasteryCatalogTable"></table></div>
+    </div>
+
+    <div class="right-pane skill-mastery-right">
+      <div id="skillMasteryGeneralPanel">
+        <div class="section-title">Cấu hình thành thạo toàn server</div>
+        <div class="skill-mastery-note">Đang dùng hướng <b>số lượt sử dụng</b>. Skill đủ cấp 7 nhận tiến trình khi dùng hợp lệ, đầy thanh sẽ tự lên cấp. Hiệu ứng hình ảnh luôn giữ ở cấp 7.</div>
+        <div id="skillMasteryGeneralFields"></div>
+        <div class="actions">
+          <button type="button" class="primary" onclick="SaveSkillMasteryGeneral()">Lưu toàn server</button>
+          <button type="button" onclick="ResetSkillMasteryGeneral()">Về mặc định</button>
+        </div>
+      </div>
+
+      <div id="skillMasterySkillPanel" style="display:none">
+        <div class="section-title" id="skillMasterySkillTitle">Cấu hình riêng theo skill</div>
+        <div id="skillMasteryBaseStats" class="skill-base-stats"></div>
+        <div class="skill-mastery-note">Ô công thức để trống sẽ kế thừa toàn server. Dòng cấp cụ thể có độ ưu tiên cao nhất; ô trống trong dòng cấp sẽ dùng công thức.</div>
+
+        <div class="skill-subheading">Công thức riêng của skill</div>
+        <div id="skillMasterySkillFields"></div>
+
+        <div class="skill-subheading">Các cấp 8 trở đi</div>
+        <div class="row skill-level-add-row">
+          <div class="cell"><label>Cấp muốn thêm</label><input type="text" id="skillMasteryNewLevel" value="8"></div>
+          <div class="cell skill-level-add-button"><button type="button" onclick="AddSkillMasteryLevel()">Thêm cấp / mở cấp</button></div>
+        </div>
+        <div class="mini-table skill-level-table-wrap"><table id="skillMasteryLevelTable"></table></div>
+
+        <div id="skillMasteryLevelEditor" class="skill-level-editor" style="display:none">
+          <div class="skill-subheading">Chỉnh cấp <span id="skillMasteryEditingLevel"></span></div>
+          <input type="hidden" id="skillMasteryLevelIndex" value="-1">
+          <div id="skillMasteryLevelFields"></div>
+          <div id="skillMasteryLevelPreview" class="skill-level-preview"></div>
+          <div class="actions">
+            <button type="button" onclick="UpdateSkillMasteryLevel()">Cập nhật dòng cấp</button>
+            <button type="button" class="danger" onclick="RemoveEditingSkillMasteryLevel()">Xóa dòng cấp</button>
+          </div>
+        </div>
+
+        <div class="actions skill-save-actions">
+          <button type="button" class="primary" onclick="SaveSkillMasterySkill()">Lưu skill và các cấp</button>
+          <button type="button" onclick="ResetSkillMasterySkill()">Xóa cấu hình riêng</button>
+        </div>
+      </div>
+      <div id="skillMasteryMessage" class="message"></div>
+    </div>
+  </div>
+</div>

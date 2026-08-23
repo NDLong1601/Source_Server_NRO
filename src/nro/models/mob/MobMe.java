@@ -5,6 +5,8 @@ import nro.models.utils.SkillUtil;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 import nro.models.network.Message;
+import nro.models.skill.Skill;
+import nro.models.services.SkillMasteryService;
 
 public final class MobMe extends Mob {
 
@@ -16,14 +18,18 @@ public final class MobMe extends Mob {
         super();
         this.player = player;
         this.id = (int) player.id;
-        int level = player.playerSkill.getSkillbyId(12).point;
+        Skill summonSkill = player.playerSkill.getSkillbyId(12);
+        int level = summonSkill.point;
         this.tempId = SkillUtil.getTempMobMe(level);
-        this.point.maxHp = (int) Math.min(SkillUtil.getHPMobMe(player.nPoint.hpMax, level), 2_147_483_647);
-        this.point.dame = (int) Math.min(SkillUtil.getHPMobMe(player.nPoint.getDameAttack(false), level), 2_147_483_647);
+        this.point.maxHp = (int) Math.min(SkillMasteryService.gI().applyEffectStat(summonSkill,
+                (int) Math.min(Integer.MAX_VALUE, SkillUtil.getHPMobMe(player.nPoint.hpMax, level))), 2_147_483_647);
+        this.point.dame = (int) Math.min(SkillMasteryService.gI().applyEffectStat(summonSkill,
+                (int) Math.min(Integer.MAX_VALUE, SkillUtil.getHPMobMe(player.nPoint.getDameAttack(false), level))), 2_147_483_647);
         this.point.hp = this.point.maxHp;
         this.zone = player.zone;
         this.lastTimeSpawn = System.currentTimeMillis();
-        this.timeSurvive = SkillUtil.getTimeSurviveMobMe(level);
+        this.timeSurvive = SkillMasteryService.gI().applyEffectStat(summonSkill,
+                SkillUtil.getTimeSurviveMobMe(level));
         spawn();
     }
 

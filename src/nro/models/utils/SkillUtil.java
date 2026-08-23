@@ -7,6 +7,7 @@ import nro.models.skill.NClass;
 import nro.models.skill.Skill;
 import nro.models.player_system.Template.SkillTemplate;
 import nro.models.server.Manager;
+import nro.models.services.SkillMasteryService;
 
 public class SkillUtil {
 
@@ -89,65 +90,125 @@ public class SkillUtil {
         return (level + 5) * 10000;
     }
 
+    public static int getTimeMonkey(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeMonkey(skill.point));
+    }
+
     public static int getPercentHpMonkey(int level) { // tỉ lệ máu khỉ cộng thêm v
         return (level + 3) * 10;
+    }
+
+    public static int getPercentHpMonkey(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getPercentHpMonkey(skill.point));
     }
 
     public static int getPercentDameMonkey(int level) { // tỉ lệ dam khỉ cộng thêm v
         return (level + 3);
     }
 
+    public static int getPercentDameMonkey(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getPercentDameMonkey(skill.point));
+    }
+
     public static int getTimeStun(int level) { // thời gian choáng thái dương hạ san v
         return (level + 2) * 1000;
+    }
+
+    public static int getTimeStun(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeStun(skill.point));
     }
 
     public static int getTimeSocola() {
         return 30000;
     }
 
+    public static int getTimeSocola(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeSocola());
+    }
+
     public static int getTimeShield(int level) { // thời gian tồn tại khiên v
         return (level + 2) * 5000;
+    }
+
+    public static int getTimeShield(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeShield(skill.point));
     }
 
     public static int getTimeTroi(int level) { // thời gian trói v
         return level * 5000;
     }
 
+    public static int getTimeTroi(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeTroi(skill.point));
+    }
+
     public static int getTimeDCTT(int level) { // thời gian choáng dịch chuyển tức thời v
         return (level + 1) * 500;
+    }
+
+    public static int getTimeDCTT(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeDCTT(skill.point));
     }
 
     public static int getTimeThoiMien(int level) { // thời gian thôi miên
         return (level + 4) * 1000;
     }
 
+    public static int getTimeThoiMien(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getTimeThoiMien(skill.point));
+    }
+
     public static int getRangeStun(int level) { // phạm vi thái dương hạ san
         return 120 + level * 30;
+    }
+
+    public static int getRangeStun(Skill skill) {
+        return SkillMasteryService.gI().applyRangeStat(skill, getRangeStun(skill.point));
     }
 
     public static int getRangeBom(int level) { // phạm vi tự sát
         return 400 + level * 30;
     }
 
+    public static int getRangeBom(Skill skill) {
+        return SkillMasteryService.gI().applyRangeStat(skill, getRangeBom(skill.point));
+    }
+
     public static int getRangeQCKK(int level) { // phạm vi quả cầu kênh khi
         return 350 + level * 30;
+    }
+
+    public static int getRangeQCKK(Skill skill) {
+        return SkillMasteryService.gI().applyRangeStat(skill, getRangeQCKK(skill.point));
     }
 
     public static int getPercentHPHuytSao(int level) { // tỉ lệ máu huýt sáo cộng thêm v
         return (level + 3) * 10;
     }
 
+    public static int getPercentHPHuytSao(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getPercentHPHuytSao(skill.point));
+    }
+
     public static int getPercentTriThuong(int level) { // tỉ lệ máu hồi phục trị thương v
         return (level + 9) * 5;
+    }
+
+    public static int getPercentTriThuong(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getPercentTriThuong(skill.point));
     }
 
     public static int getPercentCharge(int level) { // tỉ lệ hp ttnl
         return level + 3;
     }
 
+    public static int getPercentCharge(Skill skill) {
+        return SkillMasteryService.gI().applyEffectStat(skill, getPercentCharge(skill.point));
+    }
+
     public static int getTempMobMe(int level) {
         int[] temp = { 8, 11, 32, 25, 43, 49, 50 };
-        return temp[level - 1];
+        return temp[Math.max(1, Math.min(temp.length, level)) - 1];
     }
 
     public static int getTimeSurviveMobMe(int level) { // thời gian trứng tồn tại
@@ -156,7 +217,7 @@ public class SkillUtil {
 
     public static long getHPMobMe(long hpMaxPlayer, int level) {
         long[] perHPs = { 30, 40, 50, 60, 70, 80, 90 };
-        return hpMaxPlayer * perHPs[level - 1] / 100L;
+        return hpMaxPlayer * perHPs[Math.max(1, Math.min(perHPs.length, level)) - 1] / 100L;
     }
 
     public static Skill getSkillbyId(Player player, int id) {
@@ -291,6 +352,9 @@ public class SkillUtil {
     }
 
     public static void setSkill(Player pl, Skill skill) {
+        if (skill != null && skill.masteryLevel <= 0) {
+            SkillMasteryService.gI().initializeNewSkill(skill);
+        }
         boolean checkskill = false;
         for (int i = 0; i < pl.playerSkill.skills.size(); i++) {
             if (pl.playerSkill.skills.get(i).template.id == skill.template.id) {

@@ -4851,6 +4851,294 @@ function List-BossSkillCatalog {
     Invoke-MySql "SELECT id, MAX(NAME) AS NAME, MAX(max_point) AS max_point FROM skill_template GROUP BY id ORDER BY id;"
 }
 
+function Get-SkillMasteryGeneralFields {
+    @(
+        [pscustomobject]@{ Key="mastery.enabled"; Group="Hệ thống"; Name="Bật thành thạo"; Default="true"; Kind="bool"; Description="Bật/tắt nhận tiến trình và tự lên cấp skill sau cấp 7." },
+        [pscustomobject]@{ Key="mastery.maxLevel"; Group="Hệ thống"; Name="Cấp tối đa"; Default="0"; Kind="unlimited-level"; Description="0 = không giới hạn; nếu đặt trần thì tối thiểu là cấp 7." },
+        [pscustomobject]@{ Key="mastery.requiredUses"; Group="Tiến trình"; Name="Lượt dùng từ cấp 7"; Default="1000"; Kind="positive-long"; Description="Số điểm/lượt thành thạo cần để đi từ cấp 7 lên cấp 8." },
+        [pscustomobject]@{ Key="mastery.requiredGrowthPercent"; Group="Tiến trình"; Name="Tăng yêu cầu mỗi cấp (%)"; Default="20"; Kind="growth-percent"; Description="Phần trăm tăng ngưỡng thành thạo sau mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.requiredUsesMax"; Group="Tiến trình"; Name="Trần yêu cầu mỗi cấp"; Default="1000000"; Kind="positive-long"; Description="Giới hạn số điểm thành thạo cần cho một lần lên cấp." },
+        [pscustomobject]@{ Key="mastery.gainPerUse"; Group="Tiến trình"; Name="Điểm mỗi lượt dùng"; Default="1"; Kind="positive-long"; Description="Tiến trình cộng sau một lần dùng skill hợp lệ." },
+        [pscustomobject]@{ Key="mastery.minGainIntervalMs"; Group="Tiến trình"; Name="Khoảng nhận tối thiểu (ms)"; Default="250"; Kind="nonnegative-int"; Description="Chống spam nhận nhiều lượt trong khoảng thời gian quá ngắn." },
+        [pscustomobject]@{ Key="mastery.clientProgressAllSkills"; Group="Hiển thị"; Name="Hiện thanh cho mọi skill"; Default="true"; Kind="bool"; Description="Gửi thanh tiến trình 0..1000 cho tất cả skill đủ cấp." },
+        [pscustomobject]@{ Key="mastery.clientProgressStep"; Group="Hiển thị"; Name="Bước cập nhật client"; Default="10"; Kind="progress-step"; Description="Chỉ gửi lại thanh khi vượt bước này, giúp giảm gói tin." },
+        [pscustomobject]@{ Key="mastery.excludedMapIds"; Group="Hệ thống"; Name="Map không nhận thành thạo"; Default=""; Kind="map-list"; Description="Danh sách map ID, phân cách bằng dấu phẩy; để trống nếu áp dụng mọi map." },
+        [pscustomobject]@{ Key="mastery.damagePercentPerLevel"; Group="Sát thương"; Name="Sát thương tăng/cấp (%)"; Default="5"; Kind="growth-percent"; Description="Tăng theo phần trăm chỉ số damage cấp 7." },
+        [pscustomobject]@{ Key="mastery.damageFlatPerLevel"; Group="Sát thương"; Name="Sát thương cộng/cấp"; Default="0"; Kind="nonnegative-int"; Description="Giá trị damage cộng thẳng sau mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.rangePercentPerLevel"; Group="Phạm vi"; Name="Phạm vi tăng/cấp (%)"; Default="0"; Kind="growth-percent"; Description="Tăng dx, dy và phạm vi phụ theo phần trăm." },
+        [pscustomobject]@{ Key="mastery.rangeFlatPerLevel"; Group="Phạm vi"; Name="Phạm vi cộng/cấp"; Default="0"; Kind="nonnegative-int"; Description="Giá trị phạm vi cộng thẳng sau mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.maxFightPercentPerLevel"; Group="Mục tiêu"; Name="Số mục tiêu tăng/cấp (%)"; Default="0"; Kind="growth-percent"; Description="Tăng maxFight theo phần trăm chỉ số cấp 7." },
+        [pscustomobject]@{ Key="mastery.maxFightFlatPerLevel"; Group="Mục tiêu"; Name="Số mục tiêu cộng/cấp"; Default="0"; Kind="nonnegative-int"; Description="Số mục tiêu cộng thêm sau mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.effectPercentPerLevel"; Group="Hiệu ứng"; Name="Hiệu ứng tăng/cấp (%)"; Default="0"; Kind="growth-percent"; Description="Tăng thời gian, hồi phục hoặc sức mạnh hiệu ứng theo phần trăm." },
+        [pscustomobject]@{ Key="mastery.effectFlatPerLevel"; Group="Hiệu ứng"; Name="Hiệu ứng cộng/cấp"; Default="0"; Kind="nonnegative-int"; Description="Giá trị cộng thẳng vào chỉ số hiệu ứng sau mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.manaReductionPercentPerLevel"; Group="Mana"; Name="Giảm mana/cấp (%)"; Default="0"; Kind="reduction-percent"; Description="Giảm lượng mana dùng theo phần trăm mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.manaReductionFlatPerLevel"; Group="Mana"; Name="Giảm mana thẳng/cấp"; Default="0"; Kind="nonnegative-int"; Description="Giảm lượng mana dùng theo giá trị cố định mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.minimumManaPercent"; Group="Mana"; Name="Mana tối thiểu (%)"; Default="50"; Kind="reduction-percent"; Description="Không cho lượng mana thấp hơn phần trăm này so với cấp 7." },
+        [pscustomobject]@{ Key="mastery.cooldownReductionPercentPerLevel"; Group="Hồi chiêu"; Name="Giảm hồi chiêu/cấp (%)"; Default="0"; Kind="reduction-percent"; Description="Giảm thời gian hồi chiêu theo phần trăm mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.cooldownReductionMsPerLevel"; Group="Hồi chiêu"; Name="Giảm hồi chiêu/cấp (ms)"; Default="0"; Kind="nonnegative-int"; Description="Giảm thời gian hồi chiêu theo mili giây mỗi cấp." },
+        [pscustomobject]@{ Key="mastery.minimumCooldownPercent"; Group="Hồi chiêu"; Name="Hồi chiêu tối thiểu (%)"; Default="50"; Kind="reduction-percent"; Description="Không cho cooldown thấp hơn phần trăm này so với cấp 7." }
+    )
+}
+
+function Get-SkillMasterySkillFields {
+    @(
+        [pscustomobject]@{ Key="maxLevel"; Group="Giới hạn"; Name="Cấp tối đa riêng"; Kind="unlimited-level"; Description="Để trống để kế thừa toàn server; 0 = không giới hạn." },
+        [pscustomobject]@{ Key="requiredUses"; Group="Tiến trình"; Name="Lượt dùng từ cấp 7"; Kind="positive-long"; Description="Ngưỡng gốc riêng của skill." },
+        [pscustomobject]@{ Key="requiredGrowthPercent"; Group="Tiến trình"; Name="Tăng yêu cầu/cấp (%)"; Kind="growth-percent"; Description="Tốc độ tăng ngưỡng riêng của skill." },
+        [pscustomobject]@{ Key="requiredUsesMax"; Group="Tiến trình"; Name="Trần yêu cầu/cấp"; Kind="positive-long"; Description="Trần ngưỡng riêng của skill." },
+        [pscustomobject]@{ Key="gainPerUse"; Group="Tiến trình"; Name="Điểm mỗi lượt"; Kind="positive-long"; Description="Tiến trình nhận được mỗi lần dùng skill." },
+        [pscustomobject]@{ Key="minGainIntervalMs"; Group="Tiến trình"; Name="Khoảng nhận tối thiểu (ms)"; Kind="nonnegative-int"; Description="Khoảng chống spam riêng của skill." },
+        [pscustomobject]@{ Key="damagePercentPerLevel"; Group="Chỉ số tăng"; Name="Sát thương/cấp (%)"; Kind="growth-percent"; Description="Ghi đè phần trăm sát thương toàn server." },
+        [pscustomobject]@{ Key="damageFlatPerLevel"; Group="Chỉ số tăng"; Name="Sát thương cộng/cấp"; Kind="nonnegative-int"; Description="Ghi đè sát thương cộng thẳng toàn server." },
+        [pscustomobject]@{ Key="rangePercentPerLevel"; Group="Chỉ số tăng"; Name="Phạm vi/cấp (%)"; Kind="growth-percent"; Description="Ghi đè phần trăm phạm vi toàn server." },
+        [pscustomobject]@{ Key="rangeFlatPerLevel"; Group="Chỉ số tăng"; Name="Phạm vi cộng/cấp"; Kind="nonnegative-int"; Description="Ghi đè phạm vi cộng thẳng toàn server." },
+        [pscustomobject]@{ Key="maxFightPercentPerLevel"; Group="Chỉ số tăng"; Name="Mục tiêu/cấp (%)"; Kind="growth-percent"; Description="Ghi đè phần trăm maxFight toàn server." },
+        [pscustomobject]@{ Key="maxFightFlatPerLevel"; Group="Chỉ số tăng"; Name="Mục tiêu cộng/cấp"; Kind="nonnegative-int"; Description="Ghi đè số mục tiêu cộng mỗi cấp." },
+        [pscustomobject]@{ Key="effectPercentPerLevel"; Group="Chỉ số tăng"; Name="Hiệu ứng/cấp (%)"; Kind="growth-percent"; Description="Ghi đè phần trăm hiệu ứng toàn server." },
+        [pscustomobject]@{ Key="effectFlatPerLevel"; Group="Chỉ số tăng"; Name="Hiệu ứng cộng/cấp"; Kind="nonnegative-int"; Description="Ghi đè hiệu ứng cộng thẳng toàn server." },
+        [pscustomobject]@{ Key="manaReductionPercentPerLevel"; Group="Mana / hồi chiêu"; Name="Giảm mana/cấp (%)"; Kind="reduction-percent"; Description="Ghi đè mức giảm mana toàn server." },
+        [pscustomobject]@{ Key="manaReductionFlatPerLevel"; Group="Mana / hồi chiêu"; Name="Giảm mana thẳng/cấp"; Kind="nonnegative-int"; Description="Ghi đè mức giảm mana cố định." },
+        [pscustomobject]@{ Key="minimumManaPercent"; Group="Mana / hồi chiêu"; Name="Mana tối thiểu (%)"; Kind="reduction-percent"; Description="Sàn mana riêng của skill." },
+        [pscustomobject]@{ Key="cooldownReductionPercentPerLevel"; Group="Mana / hồi chiêu"; Name="Giảm cooldown/cấp (%)"; Kind="reduction-percent"; Description="Ghi đè mức giảm cooldown toàn server." },
+        [pscustomobject]@{ Key="cooldownReductionMsPerLevel"; Group="Mana / hồi chiêu"; Name="Giảm cooldown/cấp (ms)"; Kind="nonnegative-int"; Description="Ghi đè mức giảm cooldown cố định." },
+        [pscustomobject]@{ Key="minimumCooldownPercent"; Group="Mana / hồi chiêu"; Name="Cooldown tối thiểu (%)"; Kind="reduction-percent"; Description="Sàn cooldown riêng của skill." }
+    )
+}
+
+function Get-SkillMasteryLevelFields {
+    @(
+        [pscustomobject]@{ Key="requiredUses"; Name="Điểm cần"; Kind="positive-long"; Description="Điểm thành thạo cần từ cấp này lên cấp kế." },
+        [pscustomobject]@{ Key="gainPerUse"; Name="Điểm/lượt"; Kind="positive-long"; Description="Điểm nhận mỗi lượt riêng tại cấp này." },
+        [pscustomobject]@{ Key="damage"; Name="Damage"; Kind="nonnegative-int"; Description="Damage hiệu lực chính xác tại cấp này." },
+        [pscustomobject]@{ Key="damagePercent"; Name="Damage động so cấp 7 (%)"; Kind="scale-percent"; Description="Cho tự sát/dịch chuyển/quả cầu dùng damage runtime; 100 = giữ nguyên, để trống dùng công thức." },
+        [pscustomobject]@{ Key="manaUse"; Name="Mana dùng"; Kind="nonnegative-int"; Description="Mana hiệu lực chính xác, giữ cùng đơn vị với skill gốc." },
+        [pscustomobject]@{ Key="coolDown"; Name="Cooldown (ms)"; Kind="nonnegative-int"; Description="Hồi chiêu hiệu lực chính xác." },
+        [pscustomobject]@{ Key="dx"; Name="Phạm vi X"; Kind="nonnegative-int"; Description="dx hiệu lực chính xác." },
+        [pscustomobject]@{ Key="dy"; Name="Phạm vi Y"; Kind="nonnegative-int"; Description="dy hiệu lực chính xác." },
+        [pscustomobject]@{ Key="maxFight"; Name="Số mục tiêu"; Kind="positive-int"; Description="maxFight hiệu lực chính xác." },
+        [pscustomobject]@{ Key="effectPercent"; Name="Hiệu ứng so cấp 7 (%)"; Kind="scale-percent"; Description="100 = giữ nguyên hiệu ứng cấp 7; để trống để dùng công thức." },
+        [pscustomobject]@{ Key="rangePercent"; Name="Phạm vi phụ so cấp 7 (%)"; Kind="scale-percent"; Description="Áp dụng cho vùng hiệu ứng phụ; dx/dy vẫn ưu tiên ô chính xác." }
+    )
+}
+
+function Convert-HexUtf8 {
+    param([string]$Hex)
+    if ([string]::IsNullOrWhiteSpace($Hex)) { return "" }
+    $bytes = New-Object byte[] ($Hex.Length / 2)
+    for ($i = 0; $i -lt $bytes.Length; $i++) {
+        $bytes[$i] = [Convert]::ToByte($Hex.Substring($i * 2, 2), 16)
+    }
+    [Text.Encoding]::UTF8.GetString($bytes)
+}
+
+function Get-SkillMasteryCatalog {
+    $sql = "SELECT nclass_id,id,NAME,max_point,mana_use_type,TYPE,icon_id,dam_info,HEX(skills) AS skills_hex FROM skill_template ORDER BY nclass_id,slot,id;"
+    $raw = Invoke-MySql $sql
+    $lines = @($raw -split '\r?\n' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $items = New-Object System.Collections.Generic.List[object]
+    for ($i = 1; $i -lt $lines.Count; $i++) {
+        $parts = $lines[$i] -split "`t", 9
+        if ($parts.Count -lt 9) { continue }
+        try {
+            $skillJson = (Convert-HexUtf8 $parts[8]).Replace('["', '[').Replace('"[', '[').Replace('"]', ']').Replace(']"', ']').Replace('}","{', '},{')
+            $levels = ConvertFrom-Json -InputObject $skillJson
+            $base = if ($levels.Length -ge 7) { $levels[6] } else { $null }
+        } catch {
+            Write-AdminLog "Skill mastery catalog skipped row $i`: $($_.Exception.Message)"
+            $base = $null
+        }
+        if ($null -eq $base) { continue }
+        $classId = [int]$parts[0]
+        $items.Add([pscustomobject]@{
+            id=[int]$parts[1]; name=[string]$parts[2]; classId=$classId;
+            className=$(if ($classId -eq 0) { "Trái Đất" } elseif ($classId -eq 1) { "Namếc" } else { "Xayda" });
+            databaseMaxLevel=[int]$parts[3]; manaUseType=[int]$parts[4]; type=[int]$parts[5];
+            iconId=[int]$parts[6]; damageInfo=[string]$parts[7];
+            base=[pscustomobject]@{
+                damage=[int]$base.damage; manaUse=[int]$base.mana_use; coolDown=[int]$base.cool_down;
+                dx=[int]$base.dx; dy=[int]$base.dy; maxFight=[int]$base.max_fight
+            }
+        })
+    }
+    if ($items.Count -eq 0) { throw "Không đọc được catalog skill (raw=$($raw.Length), lines=$($lines.Count))." }
+    $items.ToArray()
+}
+
+function Get-SkillMasteryPayload {
+    $path = Join-Path $Root "skill_mastery.properties"
+    $map = Get-PropertyMap $path
+    $properties = New-Object System.Collections.Generic.List[object]
+    foreach ($key in @($map.Keys | Sort-Object)) {
+        if ($key -like 'mastery.*' -or $key -like 'skill.*') {
+            $properties.Add([pscustomobject]@{ key=[string]$key; value=[string]$map[$key] })
+        }
+    }
+    [pscustomobject]@{
+        generalFields=@(Get-SkillMasteryGeneralFields)
+        skillFields=@(Get-SkillMasterySkillFields)
+        levelFields=@(Get-SkillMasteryLevelFields)
+        properties=$properties.ToArray()
+        skills=@(Get-SkillMasteryCatalog)
+    } | ConvertTo-Json -Compress -Depth 8
+}
+
+function Resolve-SkillMasteryRequestPath {
+    if ([string]::IsNullOrWhiteSpace($RequestPath)) { throw "Thiếu file request JSON của quản lý Skill." }
+    $fullPath = [IO.Path]::GetFullPath($RequestPath)
+    $allowedRoot = [IO.Path]::GetFullPath($LogDir).TrimEnd('\') + '\'
+    if (-not $fullPath.StartsWith($allowedRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Quản lý Skill chỉ được đọc request JSON tạm trong thư mục logs."
+    }
+    if ([IO.Path]::GetExtension($fullPath) -ne '.json' -or -not (Test-Path -LiteralPath $fullPath)) {
+        throw "File request JSON của quản lý Skill không tồn tại hoặc sai phần mở rộng."
+    }
+    $fullPath
+}
+
+function Read-SkillMasteryRequest {
+    $requestFile = Resolve-SkillMasteryRequestPath
+    try { Get-Content -Raw -Encoding UTF8 -LiteralPath $requestFile | ConvertFrom-Json } catch { throw "Request JSON quản lý Skill không hợp lệ: $($_.Exception.Message)" }
+}
+
+function Normalize-SkillMasteryValue {
+    param($Field, [object]$RawValue, [bool]$AllowBlank = $false)
+    $value = if ($null -eq $RawValue) { "" } else { ([string]$RawValue).Trim() }
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        if ($AllowBlank) { return "" }
+        if ($Field.Kind -eq 'map-list') { return "" }
+        throw "$($Field.Name) không được để trống."
+    }
+    switch ([string]$Field.Kind) {
+        "bool" {
+            if ($value -notmatch '^(?i:true|false|0|1)$') { throw "$($Field.Name) chỉ nhận true/false hoặc 1/0." }
+            return $(if ($value -match '^(?i:true|1)$') { "true" } else { "false" })
+        }
+        "map-list" {
+            $ids = New-Object System.Collections.Generic.List[int]
+            $seen = @{}
+            foreach ($part in @($value -split '[,;\s]+')) {
+                if ([string]::IsNullOrWhiteSpace($part)) { continue }
+                if ($part -notmatch '^\d+$' -or [long]$part -gt 32767) { throw "$($Field.Name) chỉ gồm map ID từ 0 đến 32767." }
+                $number = [int]$part
+                if (-not $seen.ContainsKey($number)) { $seen[$number] = $true; $ids.Add($number) }
+            }
+            return ($ids.ToArray() -join ',')
+        }
+    }
+    if ($value -notmatch '^\d+$') { throw "$($Field.Name) phải là số nguyên không âm." }
+    try { $number = [decimal]$value } catch { throw "$($Field.Name) vượt giới hạn số." }
+    switch ([string]$Field.Kind) {
+        "unlimited-level" { if ($number -ne 0 -and ($number -lt 7 -or $number -gt 1000000)) { throw "$($Field.Name) phải là 0 hoặc từ 7 đến 1000000." } }
+        "positive-long" { if ($number -lt 1 -or $number -gt [long]::MaxValue) { throw "$($Field.Name) phải từ 1 đến $([long]::MaxValue)." } }
+        "positive-int" { if ($number -lt 1 -or $number -gt [int]::MaxValue) { throw "$($Field.Name) phải từ 1 đến $([int]::MaxValue)." } }
+        "nonnegative-int" { if ($number -gt [int]::MaxValue) { throw "$($Field.Name) không được vượt $([int]::MaxValue)." } }
+        "growth-percent" { if ($number -gt 10000) { throw "$($Field.Name) phải từ 0 đến 10000." } }
+        "reduction-percent" { if ($number -gt 100) { throw "$($Field.Name) phải từ 0 đến 100." } }
+        "scale-percent" { if ($number -gt 100000) { throw "$($Field.Name) phải từ 0 đến 100000." } }
+        "progress-step" { if ($number -lt 1 -or $number -gt 1000) { throw "$($Field.Name) phải từ 1 đến 1000." } }
+        default { throw "Kiểu cấu hình Skill không được hỗ trợ: $($Field.Kind)" }
+    }
+    return $value
+}
+
+function Set-SkillMasteryScope {
+    param([string[]]$ExactKeys, [string]$Prefix, [object[]]$Entries)
+    $path = Join-Path $Root "skill_mastery.properties"
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path -LiteralPath $path) {
+        foreach ($line in (Get-Content -LiteralPath $path -Encoding UTF8)) { $lines.Add($line) }
+    }
+    for ($i = $lines.Count - 1; $i -ge 0; $i--) {
+        $remove = $false
+        if (-not [string]::IsNullOrWhiteSpace($Prefix) -and $lines[$i] -match "^\s*$([regex]::Escape($Prefix))") { $remove = $true }
+        if (-not $remove) {
+            foreach ($key in @($ExactKeys)) {
+                if ($lines[$i] -match "^\s*$([regex]::Escape($key))\s*=") { $remove = $true; break }
+            }
+        }
+        if ($remove) { $lines.RemoveAt($i) }
+    }
+    if ($Entries.Count -gt 0 -and $lines.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($lines[$lines.Count - 1])) { $lines.Add("") }
+    foreach ($entry in $Entries) { $lines.Add("$($entry.Key)=$($entry.Value)") }
+    $tempPath = "$path.tmp.$PID"
+    [IO.File]::WriteAllText($tempPath, ($lines -join [Environment]::NewLine) + [Environment]::NewLine, $Utf8NoBom)
+    Move-Item -LiteralPath $tempPath -Destination $path -Force
+}
+
+function Save-SkillMasteryGeneral {
+    $payload = Read-SkillMasteryRequest
+    if ($null -eq $payload.values) { throw "Thiếu nhóm cấu hình toàn server." }
+    $entries = New-Object System.Collections.Generic.List[object]
+    $fields = @(Get-SkillMasteryGeneralFields)
+    foreach ($field in $fields) {
+        $property = $payload.values.PSObject.Properties[[string]$field.Key]
+        if ($null -eq $property) { throw "Thiếu cấu hình $($field.Key)." }
+        $normalized = Normalize-SkillMasteryValue $field $property.Value $false
+        $entries.Add([pscustomobject]@{ Key=[string]$field.Key; Value=$normalized })
+    }
+    Set-SkillMasteryScope -ExactKeys @($fields | ForEach-Object { $_.Key }) -Prefix "" -Entries $entries.ToArray()
+    "OK`tĐã lưu cấu hình thành thạo toàn server. Runtime tự đọc lại trong tối đa 1 giây."
+}
+
+function Reset-SkillMasteryGeneral {
+    $fields = @(Get-SkillMasteryGeneralFields)
+    Set-SkillMasteryScope -ExactKeys @($fields | ForEach-Object { $_.Key }) -Prefix "" -Entries @()
+    "OK`tĐã đưa cấu hình thành thạo toàn server về mặc định trong mã nguồn."
+}
+
+function Save-SkillMasterySkill {
+    $payload = Read-SkillMasteryRequest
+    if ([string]$payload.skillId -notmatch '^\d+$') { throw "Skill ID không hợp lệ." }
+    $skillIdNumber = [int]$payload.skillId
+    if ([int](Get-MySqlScalar "SELECT COUNT(*) FROM skill_template WHERE id=$skillIdNumber;" "0") -le 0) { throw "Không tìm thấy skill ID $skillIdNumber." }
+    $entries = New-Object System.Collections.Generic.List[object]
+    $skillFields = @(Get-SkillMasterySkillFields)
+    foreach ($field in $skillFields) {
+        $property = if ($null -ne $payload.values) { $payload.values.PSObject.Properties[[string]$field.Key] } else { $null }
+        $raw = if ($null -eq $property) { "" } else { [string]$property.Value }
+        $normalized = Normalize-SkillMasteryValue $field $raw $true
+        if (-not [string]::IsNullOrWhiteSpace($normalized)) {
+            $entries.Add([pscustomobject]@{ Key="skill.$skillIdNumber.$($field.Key)"; Value=$normalized })
+        }
+    }
+    $levelFields = @(Get-SkillMasteryLevelFields)
+    $seenLevels = @{}
+    $highestLevel = 7
+    foreach ($row in @($payload.levels)) {
+        if ([string]$row.level -notmatch '^\d+$' -or [int64]$row.level -lt 8 -or [int64]$row.level -gt 1000000) { throw "Cấp tùy chỉnh phải từ 8 đến 1000000." }
+        $levelNumber = [int]$row.level
+        if ($seenLevels.ContainsKey($levelNumber)) { throw "Cấp $levelNumber bị khai báo trùng." }
+        $seenLevels[$levelNumber] = $true
+        $highestLevel = [Math]::Max($highestLevel, $levelNumber)
+        foreach ($field in $levelFields) {
+            $property = $row.PSObject.Properties[[string]$field.Key]
+            $raw = if ($null -eq $property) { "" } else { [string]$property.Value }
+            $normalized = Normalize-SkillMasteryValue $field $raw $true
+            if (-not [string]::IsNullOrWhiteSpace($normalized)) {
+                $entries.Add([pscustomobject]@{ Key="skill.$skillIdNumber.level.$levelNumber.$($field.Key)"; Value=$normalized })
+            }
+        }
+    }
+    if ($seenLevels.Count -gt 500) { throw "Mỗi skill chỉ được quản lý tối đa 500 cấp tùy chỉnh trong Admin." }
+    $maxEntry = @($entries | Where-Object { $_.Key -eq "skill.$skillIdNumber.maxLevel" } | Select-Object -First 1)
+    $map = Get-PropertyMap (Join-Path $Root "skill_mastery.properties")
+    $globalMax = if ($map.ContainsKey('mastery.maxLevel')) { [int]$map['mastery.maxLevel'] } else { 0 }
+    $effectiveMax = if ($maxEntry.Count -gt 0) { [int]$maxEntry[0].Value } else { $globalMax }
+    if ($effectiveMax -gt 0 -and $highestLevel -gt $effectiveMax) {
+        for ($i = $entries.Count - 1; $i -ge 0; $i--) { if ($entries[$i].Key -eq "skill.$skillIdNumber.maxLevel") { $entries.RemoveAt($i) } }
+        $entries.Add([pscustomobject]@{ Key="skill.$skillIdNumber.maxLevel"; Value=[string]$highestLevel })
+    }
+    Set-SkillMasteryScope -ExactKeys @() -Prefix "skill.$skillIdNumber." -Entries $entries.ToArray()
+    "OK`tĐã lưu công thức và $($seenLevels.Count) cấp tùy chỉnh cho skill ID $skillIdNumber. Runtime tự đọc lại trong tối đa 1 giây."
+}
+
+function Reset-SkillMasterySkill {
+    if ($Id -notmatch '^\d+$') { throw "Skill ID không hợp lệ." }
+    $skillIdNumber = [int]$Id
+    Set-SkillMasteryScope -ExactKeys @() -Prefix "skill.$skillIdNumber." -Entries @()
+    "OK`tĐã xóa toàn bộ cấu hình riêng của skill ID $skillIdNumber; skill sẽ kế thừa toàn server."
+}
+
 function List-ExistingBosses {
     Ensure-SpawnSchema
     $overrides = @{}
@@ -5168,6 +5456,15 @@ function Get-AuditSummary {
         "resetplayerconfig" { "Khôi phục cấu hình Player $ConfigKey về mặc định" }
         "savepetconfig" { "Đổi cấu hình Đệ tử $ConfigKey = $ConfigValue" }
         "resetpetconfig" { "Khôi phục cấu hình Đệ tử $ConfigKey về mặc định" }
+        "saveskillmasterygeneral" { "Lưu cấu hình thành thạo skill toàn server" }
+        "resetskillmasterygeneral" { "Khôi phục cấu hình thành thạo skill toàn server" }
+        "saveskillmasteryskill" {
+            try {
+                $skillRequest = Read-SkillMasteryRequest
+                "Lưu cấu hình thành thạo skill ID $($skillRequest.skillId), $($skillRequest.levels.Length) cấp chính xác"
+            } catch { "Lưu cấu hình thành thạo riêng theo skill và cấp" }
+        }
+        "resetskillmasteryskill" { "Xóa cấu hình thành thạo riêng của skill ID $Id" }
         "savetaskmain" { "Luu nhiem vu chinh ID $Id - $Name" }
         "savetasksub" { "Luu buoc nhiem vu ID $Id thuoc nhiem vu $OwnerId" }
         "savetasktemplate" { "Luu template $(Get-TaskTemplateLabel) ID $Id - $Name" }
@@ -5317,6 +5614,12 @@ function Get-AuditContext {
                 $fileSnapshots.Add([pscustomobject]@{ path="pet.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
             }
         }
+        { $_ -in @("saveskillmasterygeneral", "resetskillmasterygeneral", "saveskillmasteryskill", "resetskillmasteryskill") } {
+            $configPath = Join-Path $Root "skill_mastery.properties"
+            if (Test-Path $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path="skill_mastery.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
         "savetaskmain" { $snapshots.Add((New-DbAuditSnapshot "task_main_template" "id=$(SqlInt $Id)")) }
         "savetasksub" { $snapshots.Add((New-DbAuditSnapshot "task_sub_template" "ducvupro=$(SqlInt $Id)")) }
         "savetasktemplate" {
@@ -5406,7 +5709,7 @@ function Undo-AuditEntry {
     }
     foreach ($fileSnapshot in @($payload.fileSnapshots)) {
         $relativePath = [string]$fileSnapshot.path
-        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties", "pet.properties", "task.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
+        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties", "pet.properties", "task.properties", "skill_mastery.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
         [IO.File]::WriteAllBytes((Join-Path $Root $relativePath), [Convert]::FromBase64String([string]$fileSnapshot.contentBase64))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$payload.configBase64)) {
@@ -5432,6 +5735,7 @@ $mutationActions = @(
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
+    "saveskillmasterygeneral", "resetskillmasterygeneral", "saveskillmasteryskill", "resetskillmasteryskill",
     "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem",
     "savetaskreward", "savekanaotaskconfig"
 )
@@ -5532,6 +5836,11 @@ try {
         "listpetconfig" { List-PetConfig }
         "savepetconfig" { Save-PetConfig }
         "resetpetconfig" { Reset-PetConfig }
+        "listskillmastery" { Get-SkillMasteryPayload }
+        "saveskillmasterygeneral" { Save-SkillMasteryGeneral }
+        "resetskillmasterygeneral" { Reset-SkillMasteryGeneral }
+        "saveskillmasteryskill" { Save-SkillMasterySkill }
+        "resetskillmasteryskill" { Reset-SkillMasterySkill }
         "listtaskconfig" { List-TaskConfig }
         "savetaskconfig" { Save-TaskConfig }
         "resettaskconfig" { Reset-TaskConfig }

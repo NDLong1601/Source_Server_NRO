@@ -217,14 +217,18 @@ public class EffectSkillService {
 
     public void setIsMonkey(Player player) {
         EffectSkillService.gI().sendEffectMonkey(player);
-        int timeMonkey = SkillUtil.getTimeMonkey(player.playerSkill.skillSelect.point);
+        Skill monkeySkill = SkillUtil.getSkillbyId(player, Skill.BIEN_KHI);
+        if (monkeySkill == null) {
+            return;
+        }
+        int timeMonkey = SkillUtil.getTimeMonkey(monkeySkill);
         if (player.setClothes.cadic == 5) {
             timeMonkey *= 5;
         }
         player.effectSkill.isMonkey = true;
         player.effectSkill.timeMonkey = timeMonkey;
         player.effectSkill.lastTimeUpMonkey = System.currentTimeMillis();
-        player.effectSkill.levelMonkey = (byte) player.playerSkill.skillSelect.point;
+        player.effectSkill.levelMonkey = (byte) monkeySkill.point;
         player.nPoint.setHp(((int) player.nPoint.hp * 2));
         Service.gI().Send_Caitrang(player);
         if (!player.isPet) {
@@ -484,7 +488,7 @@ public class EffectSkillService {
     public void setStartShield(Player player) {
         player.effectSkill.isShielding = true;
         player.effectSkill.lastTimeShieldUp = System.currentTimeMillis();
-        player.effectSkill.timeShield = SkillUtil.getTimeShield(player.playerSkill.skillSelect.point);
+        player.effectSkill.timeShield = SkillUtil.getTimeShield(player.playerSkill.skillSelect);
     }
 
     public void removeShield(Player player) {

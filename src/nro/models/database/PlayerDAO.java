@@ -710,6 +710,8 @@ public class PlayerDAO {
                     dataSkill.add(skill.point);
                     dataSkill.add(skill.lastTimeUseThisSkill);
                     dataSkill.add(skill.currLevel);
+                    dataSkill.add(skill.getActualLevel());
+                    dataSkill.add(skill.masteryProgress);
                     dataArray.add(dataSkill.toJSONString());
                     dataSkill.clear();
                 }
@@ -796,8 +798,12 @@ public class PlayerDAO {
                             pskill.add(s.point);
                             pskill.add(s.lastTimeUseThisSkill);
                             pskill.add(s.currLevel);
+                            pskill.add(s.getActualLevel());
+                            pskill.add(s.masteryProgress);
                         } else {
                             pskill.add(-1);
+                            pskill.add(0);
+                            pskill.add(0);
                             pskill.add(0);
                             pskill.add(0);
                             pskill.add(0);

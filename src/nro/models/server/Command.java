@@ -28,6 +28,7 @@ import nro.models.Bot.BotManager;
 import nro.models.consts.ConstPlayer;
 import nro.models.data.LocalManager;
 import nro.models.services.TaskService;
+import nro.models.services.SkillMasteryService;
 
 /**
  *
@@ -266,6 +267,12 @@ parameterizedCommands.put("upp", (player, text) -> {
                     return true;
                 }
             }
+        }
+
+        if (text.equalsIgnoreCase("thành thạo") || text.equalsIgnoreCase("thanh thao")
+                || text.equalsIgnoreCase("skill mastery")) {
+            SkillMasteryService.gI().sendMasterySummary(player);
+            return true;
         }
 
         if (text.startsWith("ten con la ")) {

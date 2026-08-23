@@ -460,7 +460,7 @@ public final class Manager {
                     skill.dx = Integer.parseInt(String.valueOf(dts.get("dx")));
                     skill.dy = Integer.parseInt(String.valueOf(dts.get("dy")));
                     skill.maxFight = Integer.parseInt(String.valueOf(dts.get("max_fight")));
-                    skill.damage = Short.parseShort(String.valueOf(dts.get("damage")));
+                    skill.damage = Integer.parseInt(String.valueOf(dts.get("damage")));
                     skill.price = Short.parseShort(String.valueOf(dts.get("price")));
                     skill.moreInfo = String.valueOf(dts.get("info"));
                     skillTemplate.skillss.add(skill);

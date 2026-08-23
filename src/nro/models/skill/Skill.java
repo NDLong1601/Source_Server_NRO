@@ -57,9 +57,21 @@ public class Skill {
 
     public int manaUse;
 
-    public short damage;
+    public int damage;
 
     public short currLevel;
+
+    /**
+     * Cấp thực của kỹ năng. Từ cấp 8 trở đi point/skillId vẫn giữ ở cấp 7
+     * để client tiếp tục dùng animation cao nhất đã có.
+     */
+    public int masteryLevel;
+
+    /** Tiến trình thành thạo đang có để đi từ masteryLevel lên cấp kế tiếp. */
+    public long masteryProgress;
+
+    /** Chỉ dùng trong runtime để chặn việc gửi/gian lận tiến trình quá nhanh. */
+    public transient long lastMasteryGainTime;
 
     public String moreInfo;
 
@@ -82,6 +94,10 @@ public class Skill {
         this.maxFight = skill.maxFight;
         this.manaUse = skill.manaUse;
         this.damage = skill.damage;
+        this.currLevel = skill.currLevel;
+        this.masteryLevel = skill.masteryLevel;
+        this.masteryProgress = skill.masteryProgress;
+        this.lastMasteryGainTime = skill.lastMasteryGainTime;
         this.moreInfo = skill.moreInfo;
         this.price = skill.price;
         this.template = skill.template;
@@ -89,5 +105,9 @@ public class Skill {
 
     public void dispose() {
         this.template = null;
+    }
+
+    public int getActualLevel() {
+        return masteryLevel > 0 ? masteryLevel : point;
     }
 }
