@@ -1,0 +1,915 @@
+{
+  "itemId": 2062,
+  "name": "Cải trang Shinazugawa Sanemi",
+  "iconId": 25041,
+  "profileIconId": 25022,
+  "headAvatar": {
+    "headId": 2099,
+    "avatarId": 25022
+  },
+  "partIds": {
+    "head": 2099,
+    "body": 2100,
+    "leg": 2101
+  },
+  "transparentImageId": 25040,
+  "scaleMode": "direct-source-lanczos-trimmed-indexed-alpha",
+  "paletteColors": 256,
+  "itemIconCanvasX1": [
+    25,
+    22
+  ],
+  "profileIconCanvasX1": [
+    64,
+    64
+  ],
+  "bodyReferenceCanvasX1": [
+    64,
+    56
+  ],
+  "bodyOffsetMode": "per-frame crop-compensated",
+  "head": [
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    {
+      "slot": 0,
+      "imageId": 25023,
+      "dx": -12,
+      "dy": -36,
+      "cropX1": [
+        11,
+        0,
+        52,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            41,
+            52
+          ],
+          "bytes": 2334
+        },
+        "x2": {
+          "size": [
+            82,
+            104
+          ],
+          "bytes": 4898
+        },
+        "x3": {
+          "size": [
+            123,
+            156
+          ],
+          "bytes": 8369
+        },
+        "x4": {
+          "size": [
+            164,
+            208
+          ],
+          "bytes": 12650
+        }
+      },
+      "sheet": "guard",
+      "sourceIndex": 1,
+      "observed": "Khoanh tay che mặt",
+      "suggestedGroup": "Đỡ / chịu đòn"
+    },
+    {
+      "slot": 1,
+      "imageId": 25024,
+      "dx": -4,
+      "dy": -33,
+      "offsetAdjustment": [
+        0,
+        3
+      ],
+      "cropX1": [
+        19,
+        0,
+        44,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            25,
+            52
+          ],
+          "bytes": 1942
+        },
+        "x2": {
+          "size": [
+            50,
+            104
+          ],
+          "bytes": 3561
+        },
+        "x3": {
+          "size": [
+            75,
+            156
+          ],
+          "bytes": 5742
+        },
+        "x4": {
+          "size": [
+            100,
+            208
+          ],
+          "bytes": 8367
+        }
+      },
+      "sheet": "idle_side",
+      "sourceIndex": 0,
+      "observed": "Thân nghiêng phải, đầu góc 3/4 nhẹ",
+      "suggestedGroup": "Đứng yên"
+    },
+    {
+      "slot": 2,
+      "imageId": 25025,
+      "dx": -13,
+      "dy": -30,
+      "cropX1": [
+        10,
+        6,
+        56,
+        51
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            46,
+            45
+          ],
+          "bytes": 2421
+        },
+        "x2": {
+          "size": [
+            92,
+            90
+          ],
+          "bytes": 5223
+        },
+        "x3": {
+          "size": [
+            138,
+            135
+          ],
+          "bytes": 9146
+        },
+        "x4": {
+          "size": [
+            184,
+            180
+          ],
+          "bytes": 13867
+        }
+      },
+      "sheet": "fly",
+      "sourceIndex": 0,
+      "observed": "Bật lên trên không",
+      "suggestedGroup": "Bay / nhảy"
+    },
+    {
+      "slot": 3,
+      "imageId": 25026,
+      "dx": -12,
+      "dy": -35,
+      "cropX1": [
+        11,
+        1,
+        56,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            45,
+            51
+          ],
+          "bytes": 2230
+        },
+        "x2": {
+          "size": [
+            90,
+            102
+          ],
+          "bytes": 4475
+        },
+        "x3": {
+          "size": [
+            135,
+            153
+          ],
+          "bytes": 7711
+        },
+        "x4": {
+          "size": [
+            180,
+            204
+          ],
+          "bytes": 11632
+        }
+      },
+      "sheet": "walk",
+      "sourceIndex": 0,
+      "observed": "Chạy bước 1",
+      "suggestedGroup": "Chạy"
+    },
+    {
+      "slot": 4,
+      "imageId": 25027,
+      "dx": -8,
+      "dy": -34,
+      "cropX1": [
+        15,
+        2,
+        55,
+        53
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            40,
+            51
+          ],
+          "bytes": 2196
+        },
+        "x2": {
+          "size": [
+            80,
+            102
+          ],
+          "bytes": 4584
+        },
+        "x3": {
+          "size": [
+            120,
+            153
+          ],
+          "bytes": 7764
+        },
+        "x4": {
+          "size": [
+            160,
+            204
+          ],
+          "bytes": 11773
+        }
+      },
+      "sheet": "walk",
+      "sourceIndex": 1,
+      "observed": "Chạy bước 2",
+      "suggestedGroup": "Chạy"
+    },
+    {
+      "slot": 5,
+      "imageId": 25028,
+      "dx": -12,
+      "dy": -35,
+      "cropX1": [
+        11,
+        1,
+        56,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            45,
+            51
+          ],
+          "bytes": 2250
+        },
+        "x2": {
+          "size": [
+            90,
+            102
+          ],
+          "bytes": 4643
+        },
+        "x3": {
+          "size": [
+            135,
+            153
+          ],
+          "bytes": 7940
+        },
+        "x4": {
+          "size": [
+            180,
+            204
+          ],
+          "bytes": 12122
+        }
+      },
+      "sheet": "walk",
+      "sourceIndex": 4,
+      "observed": "Chạy bước 3",
+      "suggestedGroup": "Chạy"
+    },
+    {
+      "slot": 6,
+      "imageId": 25029,
+      "dx": -9,
+      "dy": -35,
+      "cropX1": [
+        14,
+        1,
+        56,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            42,
+            51
+          ],
+          "bytes": 2231
+        },
+        "x2": {
+          "size": [
+            84,
+            102
+          ],
+          "bytes": 4597
+        },
+        "x3": {
+          "size": [
+            126,
+            153
+          ],
+          "bytes": 7791
+        },
+        "x4": {
+          "size": [
+            168,
+            204
+          ],
+          "bytes": 11778
+        }
+      },
+      "sheet": "walk",
+      "sourceIndex": 5,
+      "observed": "Chạy bước 4",
+      "suggestedGroup": "Chạy"
+    },
+    {
+      "slot": 7,
+      "imageId": 25030,
+      "dx": -8,
+      "dy": -27,
+      "cropX1": [
+        15,
+        9,
+        46,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            31,
+            43
+          ],
+          "bytes": 1860
+        },
+        "x2": {
+          "size": [
+            62,
+            86
+          ],
+          "bytes": 3475
+        },
+        "x3": {
+          "size": [
+            93,
+            129
+          ],
+          "bytes": 5797
+        },
+        "x4": {
+          "size": [
+            124,
+            172
+          ],
+          "bytes": 8661
+        }
+      },
+      "sheet": "attack2",
+      "sourceIndex": 0,
+      "observed": "Rút kiếm vào thế tấn",
+      "suggestedGroup": "Đánh"
+    },
+    {
+      "slot": 8,
+      "imageId": 25031,
+      "dx": -22,
+      "dy": -36,
+      "cropX1": [
+        1,
+        0,
+        56,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            55,
+            52
+          ],
+          "bytes": 3136
+        },
+        "x2": {
+          "size": [
+            110,
+            104
+          ],
+          "bytes": 7332
+        },
+        "x3": {
+          "size": [
+            165,
+            156
+          ],
+          "bytes": 12968
+        },
+        "x4": {
+          "size": [
+            220,
+            208
+          ],
+          "bytes": 19908
+        }
+      },
+      "sheet": "guard",
+      "sourceIndex": 2,
+      "observed": "Đỡ đòn kèm hiệu ứng va chạm",
+      "suggestedGroup": "Tụ lực / kỹ năng"
+    },
+    {
+      "slot": 9,
+      "imageId": 25032,
+      "dx": -11,
+      "dy": -34,
+      "cropX1": [
+        12,
+        2,
+        51,
+        53
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            39,
+            51
+          ],
+          "bytes": 2655
+        },
+        "x2": {
+          "size": [
+            78,
+            102
+          ],
+          "bytes": 6165
+        },
+        "x3": {
+          "size": [
+            117,
+            153
+          ],
+          "bytes": 11082
+        },
+        "x4": {
+          "size": [
+            156,
+            204
+          ],
+          "bytes": 17554
+        }
+      },
+      "sheet": "attack",
+      "sourceIndex": 2,
+      "observed": "Đứng tụ gió quanh người",
+      "suggestedGroup": "Kỹ năng"
+    },
+    {
+      "slot": 10,
+      "imageId": 25033,
+      "dx": -11,
+      "dy": -30,
+      "cropX1": [
+        12,
+        6,
+        52,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            40,
+            46
+          ],
+          "bytes": 2310
+        },
+        "x2": {
+          "size": [
+            80,
+            92
+          ],
+          "bytes": 4718
+        },
+        "x3": {
+          "size": [
+            120,
+            138
+          ],
+          "bytes": 8074
+        },
+        "x4": {
+          "size": [
+            160,
+            184
+          ],
+          "bytes": 12190
+        }
+      },
+      "sheet": "attack2",
+      "sourceIndex": 2,
+      "observed": "Chém vòng cung thấp",
+      "suggestedGroup": "Đánh / kỹ năng"
+    },
+    {
+      "slot": 11,
+      "imageId": 25034,
+      "dx": -11,
+      "dy": -24,
+      "cropX1": [
+        12,
+        12,
+        52,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            40,
+            40
+          ],
+          "bytes": 2217
+        },
+        "x2": {
+          "size": [
+            80,
+            80
+          ],
+          "bytes": 4697
+        },
+        "x3": {
+          "size": [
+            120,
+            120
+          ],
+          "bytes": 8047
+        },
+        "x4": {
+          "size": [
+            160,
+            160
+          ],
+          "bytes": 12114
+        }
+      },
+      "sheet": "attack2",
+      "sourceIndex": 3,
+      "observed": "Lướt chém ngang",
+      "suggestedGroup": "Đánh / kỹ năng"
+    },
+    {
+      "slot": 12,
+      "imageId": 25035,
+      "dx": -11,
+      "dy": -35,
+      "cropX1": [
+        12,
+        1,
+        51,
+        53
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            39,
+            52
+          ],
+          "bytes": 2400
+        },
+        "x2": {
+          "size": [
+            78,
+            104
+          ],
+          "bytes": 4956
+        },
+        "x3": {
+          "size": [
+            117,
+            156
+          ],
+          "bytes": 8502
+        },
+        "x4": {
+          "size": [
+            156,
+            208
+          ],
+          "bytes": 12903
+        }
+      },
+      "sheet": "attack2",
+      "sourceIndex": 4,
+      "observed": "Chém vòng cung trên đầu",
+      "suggestedGroup": "Đánh / kỹ năng"
+    },
+    {
+      "slot": 13,
+      "imageId": 25036,
+      "dx": -14,
+      "dy": -23,
+      "cropX1": [
+        9,
+        13,
+        56,
+        54
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            47,
+            41
+          ],
+          "bytes": 2176
+        },
+        "x2": {
+          "size": [
+            94,
+            82
+          ],
+          "bytes": 4421
+        },
+        "x3": {
+          "size": [
+            141,
+            123
+          ],
+          "bytes": 7546
+        },
+        "x4": {
+          "size": [
+            188,
+            164
+          ],
+          "bytes": 11541
+        }
+      },
+      "sheet": "fall",
+      "sourceIndex": 2,
+      "observed": "Bị đánh ngã về sau",
+      "suggestedGroup": "Ngã / đánh văng"
+    },
+    {
+      "slot": 14,
+      "imageId": 25037,
+      "dx": -9,
+      "dy": -36,
+      "cropX1": [
+        14,
+        0,
+        52,
+        50
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            38,
+            50
+          ],
+          "bytes": 2553
+        },
+        "x2": {
+          "size": [
+            76,
+            100
+          ],
+          "bytes": 6000
+        },
+        "x3": {
+          "size": [
+            114,
+            150
+          ],
+          "bytes": 10965
+        },
+        "x4": {
+          "size": [
+            152,
+            200
+          ],
+          "bytes": 17184
+        }
+      },
+      "sheet": "attack",
+      "sourceIndex": 5,
+      "observed": "Xoáy kiếm trong lốc gió",
+      "suggestedGroup": "Đánh / kỹ năng"
+    },
+    {
+      "slot": 15,
+      "imageId": 25038,
+      "dx": -12,
+      "dy": -36,
+      "cropX1": [
+        11,
+        0,
+        58,
+        52
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            47,
+            52
+          ],
+          "bytes": 2574
+        },
+        "x2": {
+          "size": [
+            94,
+            104
+          ],
+          "bytes": 5554
+        },
+        "x3": {
+          "size": [
+            141,
+            156
+          ],
+          "bytes": 9499
+        },
+        "x4": {
+          "size": [
+            188,
+            208
+          ],
+          "bytes": 14222
+        }
+      },
+      "sheet": "guard",
+      "sourceIndex": 3,
+      "observed": "Khoanh tay chịu đòn có tia lửa",
+      "suggestedGroup": "Phòng thủ"
+    },
+    {
+      "slot": 16,
+      "imageId": 25039,
+      "dx": -15,
+      "dy": -23,
+      "cropX1": [
+        8,
+        13,
+        47,
+        50
+      ],
+      "scales": {
+        "x1": {
+          "size": [
+            39,
+            37
+          ],
+          "bytes": 2114
+        },
+        "x2": {
+          "size": [
+            78,
+            74
+          ],
+          "bytes": 4264
+        },
+        "x3": {
+          "size": [
+            117,
+            111
+          ],
+          "bytes": 7343
+        },
+        "x4": {
+          "size": [
+            156,
+            148
+          ],
+          "bytes": 11030
+        }
+      },
+      "sheet": "run",
+      "sourceIndex": 2,
+      "observed": "Lướt nhanh kèm gió",
+      "suggestedGroup": "Motion blur / dash"
+    }
+  ],
+  "leg": [
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ],
+    [
+      25040,
+      0,
+      0
+    ]
+  ],
+  "defaultOptions": [],
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "npc": "Kanao",
+    "tab": "Cải trang"
+  }
+}

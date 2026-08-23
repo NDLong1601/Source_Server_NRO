@@ -61,8 +61,8 @@ function SetComboItems(id, items) {
 function ToggleCombo(id) {
   var combo = document.getElementById("combo_" + id);
   if (!combo) return;
-  var isOpen = combo.className.indexOf("open") >= 0;
-  var baseClass = combo.className.indexOf("toolbar-combo") >= 0 ? "combo toolbar-combo" : "combo";
+  var isOpen = /(^|\s)open(\s|$)/.test(combo.className);
+  var baseClass = ComboBaseClass(combo);
   CloseCombos(id);
   combo.className = isOpen ? baseClass : baseClass + " open";
 }
@@ -76,12 +76,23 @@ function ChooseCombo(id, value) {
 
 
 function CloseCombos(exceptId) {
-  var ids = ["itemTypeFilter", "itemType", "itemGender", "itemUp", "equipTypeFilter", "radarRankFilter", "radarRank", "radarType", "radarRequireLevel", "radarOptionActive", "expRate", "eventItemSource", "playerLimitPower", "playerBan", "playerActive", "bossSkillId", "shopTypeSell", "shopIsNew", "shopIsSell", "shopOptionMode"];
-  for (var i = 0; i < ids.length; i++) {
-    if (ids[i] == exceptId) continue;
-    var combo = document.getElementById("combo_" + ids[i]);
-    if (combo) combo.className = combo.className.indexOf("toolbar-combo") >= 0 ? "combo toolbar-combo" : "combo";
+  var nodes = document.getElementsByTagName("div");
+  for (var i = 0; i < nodes.length; i++) {
+    var combo = nodes[i];
+    if (combo.id.indexOf("combo_") !== 0 || (" " + combo.className + " ").indexOf(" combo ") < 0) continue;
+    if (combo.id.substring(6) == exceptId) continue;
+    combo.className = ComboBaseClass(combo);
   }
+}
+
+
+function ComboBaseClass(combo) {
+  var names = (combo && combo.className ? combo.className : "combo").split(/\s+/);
+  var kept = [];
+  for (var i = 0; i < names.length; i++) {
+    if (names[i] && names[i] != "open") kept.push(names[i]);
+  }
+  return kept.length ? kept.join(" ") : "combo";
 }
 
 

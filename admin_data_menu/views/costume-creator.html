@@ -1,0 +1,150 @@
+<div id="panelCostumeCreator" class="panel">
+  <div class="costume-creator-shell">
+    <div class="costume-catalog-pane">
+      <div class="costume-pane-header">
+        <div>
+          <div class="section-title">Kho cải trang</div>
+          <small>Đọc từ database, không chỉnh trực tiếp.</small>
+        </div>
+        <button type="button" class="compact primary" onclick="NewCostumeCreatorDraft()">+ Mới</button>
+      </div>
+
+      <div class="costume-search-row">
+        <input type="text" id="costumeCreatorSearch" placeholder="Tìm ID hoặc tên" onkeyup="FilterCostumeCreatorCatalog()">
+        <button type="button" class="compact" onclick="LoadCostumeCreatorCatalog()">Tải lại</button>
+      </div>
+
+      <div id="costumeCreatorCatalog" class="costume-catalog-list">
+        <div class="costume-empty">Đang tải danh sách...</div>
+      </div>
+
+      <div class="costume-draft-card">
+        <div class="costume-card-title">Draft cục bộ</div>
+        <input type="hidden" id="costumeCreatorDraftSelect" class="hidden-value" value="">
+        <div id="combo_costumeCreatorDraftSelect" class="combo costume-combo costume-draft-combo" onclick="ToggleCombo('costumeCreatorDraftSelect'); event.cancelBubble = true;">
+          <span id="combo_costumeCreatorDraftSelect_text" class="combo-text">-- Chưa có draft --</span>
+          <span class="combo-button"><span class="combo-caret"></span></span>
+          <div id="combo_costumeCreatorDraftSelect_menu" class="combo-menu"></div>
+        </div>
+        <div class="costume-draft-actions">
+          <button type="button" class="compact" onclick="LoadSelectedCostumeCreatorDraft()">Mở</button>
+          <button type="button" class="compact primary" onclick="SaveCostumeCreatorDraft()">Lưu Draft</button>
+        </div>
+        <small>Draft nằm trong costume-tools/projects và chưa tác động server.</small>
+      </div>
+    </div>
+
+    <div class="costume-workspace-pane">
+      <div class="costume-workspace-toolbar">
+        <div class="costume-project-heading">
+          <span id="costumeCreatorHeading">Draft cải trang mới</span>
+          <span id="costumeCreatorStatusBadge" class="costume-status-badge draft">draft</span>
+        </div>
+        <div class="costume-toolbar-actions">
+          <button type="button" class="compact" onclick="LoadCostumeCreatorLuffySample()">Nạp mẫu Luffy</button>
+          <button type="button" class="compact" onclick="ValidateCostumeCreator()">Kiểm tra</button>
+          <button type="button" class="compact primary" onclick="GenerateCostumeCreatorData()">Xuất DATA / SQL</button>
+        </div>
+      </div>
+
+      <div class="costume-metadata-card">
+        <div class="row costume-metadata-row">
+          <div class="cell costume-id-cell"><label>Item ID</label><input type="text" id="costumeCreatorItemId" placeholder="Tự cấp khi publish" onkeyup="SyncCostumeCreatorMetadata()"></div>
+          <div class="cell"><label>Tên cải trang (*)</label><input type="text" id="costumeCreatorName" placeholder="Ví dụ: Cải trang nhân vật mới" onkeyup="SyncCostumeCreatorMetadata()"></div>
+          <div class="cell"><label>Gender</label><input type="hidden" id="costumeCreatorGender" class="hidden-value" value="3"><div id="combo_costumeCreatorGender" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorGender'); event.cancelBubble = true;"><span id="combo_costumeCreatorGender_text" class="combo-text">3 - Dùng chung</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorGender_menu" class="combo-menu"></div></div></div>
+          <div class="cell costume-id-cell"><label>Icon ID</label><input type="text" id="costumeCreatorIconId" value="0" onkeyup="SyncCostumeCreatorMetadata()"></div>
+        </div>
+        <div class="row costume-metadata-row">
+          <div class="cell costume-description-cell"><label>Mô tả</label><input type="text" id="costumeCreatorDescription" placeholder="Mô tả hiển thị trong game" onkeyup="SyncCostumeCreatorMetadata()"></div>
+          <div class="cell costume-part-id-cell"><label>Part HEAD</label><input type="text" id="costumeCreatorHeadPartId" placeholder="Tự cấp"></div>
+          <div class="cell costume-part-id-cell"><label>Part BODY</label><input type="text" id="costumeCreatorBodyPartId" placeholder="Tự cấp"></div>
+          <div class="cell costume-part-id-cell"><label>Part LEG</label><input type="text" id="costumeCreatorLegPartId" placeholder="Tự cấp"></div>
+        </div>
+      </div>
+
+      <div class="costume-editor-columns">
+        <div class="costume-slot-pane">
+          <div class="costume-subheader">
+            <span>Mapping cố định 3 / 17 / 14</span>
+            <span id="costumeCreatorSlotProgress">0/34 ảnh</span>
+          </div>
+          <div class="costume-slot-scroll">
+            <div class="costume-slot-group">
+              <div class="costume-slot-title"><strong>HEAD</strong><span>TYPE 0 · 3 slot</span></div>
+              <div id="costumeCreatorHeadSlots" class="costume-slot-grid head"></div>
+            </div>
+            <div class="costume-slot-group">
+              <div class="costume-slot-title"><strong>BODY</strong><span>TYPE 1 · 17 slot</span></div>
+              <div id="costumeCreatorBodySlots" class="costume-slot-grid"></div>
+            </div>
+            <div class="costume-slot-group">
+              <div class="costume-slot-title"><strong>LEG</strong><span>TYPE 2 · 14 slot</span></div>
+              <div id="costumeCreatorLegSlots" class="costume-slot-grid"></div>
+            </div>
+            <div class="costume-contract-note">
+              Không được xóa slot. Ảnh rỗng hợp lệ phải được đánh dấu Placeholder; slot chưa có asset vẫn là lỗi trước Publish.
+            </div>
+          </div>
+        </div>
+
+        <div class="costume-live-pane">
+          <div class="costume-preview-toolbar">
+            <div class="costume-preview-control costume-action-control"><span class="costume-control-label">Hành động</span><input type="hidden" id="costumeCreatorAction" class="hidden-value" value="stand"><div id="combo_costumeCreatorAction" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorAction'); event.cancelBubble = true;"><span id="combo_costumeCreatorAction_text" class="combo-text">Đứng yên</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorAction_menu" class="combo-menu"></div></div></div>
+            <button type="button" id="costumeCreatorPlayButton" class="compact" onclick="ToggleCostumeCreatorPlayback()">Phát</button>
+            <div class="costume-preview-control costume-zoom-control"><span class="costume-control-label">Zoom</span><input type="hidden" id="costumeCreatorZoom" class="hidden-value" value="4"><div id="combo_costumeCreatorZoom" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorZoom'); event.cancelBubble = true;"><span id="combo_costumeCreatorZoom_text" class="combo-text">x4</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorZoom_menu" class="combo-menu"></div></div></div>
+            <div class="costume-preview-control costume-direction-control"><span class="costume-control-label">Hướng</span><input type="hidden" id="costumeCreatorDirection" class="hidden-value" value="right"><div id="combo_costumeCreatorDirection" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorDirection'); event.cancelBubble = true;"><span id="combo_costumeCreatorDirection_text" class="combo-text">Phải</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorDirection_menu" class="combo-menu"></div></div></div>
+          </div>
+
+          <div class="costume-custom-frame-row">
+            <div class="costume-frame-control"><span>H</span><input type="hidden" id="costumeCreatorPreviewHead" class="hidden-value" value="0"><div id="combo_costumeCreatorPreviewHead" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorPreviewHead'); event.cancelBubble = true;"><span id="combo_costumeCreatorPreviewHead_text" class="combo-text">0</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorPreviewHead_menu" class="combo-menu"></div></div></div>
+            <div class="costume-frame-control"><span>B</span><input type="hidden" id="costumeCreatorPreviewBody" class="hidden-value" value="1"><div id="combo_costumeCreatorPreviewBody" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorPreviewBody'); event.cancelBubble = true;"><span id="combo_costumeCreatorPreviewBody_text" class="combo-text">1</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorPreviewBody_menu" class="combo-menu"></div></div></div>
+            <div class="costume-frame-control"><span>L</span><input type="hidden" id="costumeCreatorPreviewLeg" class="hidden-value" value="1"><div id="combo_costumeCreatorPreviewLeg" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorPreviewLeg'); event.cancelBubble = true;"><span id="combo_costumeCreatorPreviewLeg_text" class="combo-text">1</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorPreviewLeg_menu" class="combo-menu"></div></div></div>
+            <span id="costumeCreatorFrameLabel">Frame 1/1 · mapping suy luận</span>
+          </div>
+
+          <div id="costumeCreatorPreviewStage" class="costume-preview-stage">
+            <div class="costume-preview-grid"></div>
+            <div class="costume-preview-name" id="costumeCreatorPreviewName">Cải trang mới</div>
+            <div class="costume-preview-shadow"></div>
+            <div class="costume-preview-ground"></div>
+            <div class="costume-preview-origin"></div>
+            <img id="costumeCreatorPreviewHeadImage" class="costume-preview-layer head" alt="HEAD">
+            <img id="costumeCreatorPreviewLegImage" class="costume-preview-layer leg" alt="LEG">
+            <img id="costumeCreatorPreviewBodyImage" class="costume-preview-layer body" alt="BODY">
+            <div id="costumeCreatorPreviewEmpty" class="costume-preview-empty">Chọn asset hoặc nạp mẫu Luffy để xem preview.</div>
+          </div>
+
+          <div class="costume-preview-status" id="costumeCreatorPreviewStatus">Preview ghép slot; tên hành động hiện là mapping suy luận từ bộ mẫu.</div>
+
+          <div class="costume-slot-inspector">
+            <div class="costume-inspector-heading">
+              <strong id="costumeCreatorSelectedLabel">HEAD[0]</strong>
+              <span id="costumeCreatorSelectedState">CHƯA CÓ ẢNH</span>
+            </div>
+            <div class="row costume-inspector-row">
+              <div class="cell"><label>PNG nguồn</label><input type="file" id="costumeCreatorSlotFile" accept="image/png,image/*" onchange="HandleCostumeCreatorSlotFile(this)"><small id="costumeCreatorSlotPath">Chưa chọn file.</small></div>
+              <div class="cell costume-source-scale"><label>Ảnh nguồn</label><input type="hidden" id="costumeCreatorSourceScale" class="hidden-value" value="4"><div id="combo_costumeCreatorSourceScale" class="combo costume-combo" onclick="ToggleCombo('costumeCreatorSourceScale'); event.cancelBubble = true;"><span id="combo_costumeCreatorSourceScale_text" class="combo-text">Chuẩn x4</span><span class="combo-button"><span class="combo-caret"></span></span><div id="combo_costumeCreatorSourceScale_menu" class="combo-menu"></div></div></div>
+              <div class="cell costume-image-id"><label>Image ID</label><input type="text" id="costumeCreatorSlotImageId" value="0" onkeyup="UpdateCostumeCreatorSelectedSlot()"></div>
+            </div>
+            <div class="row costume-inspector-row">
+              <div class="cell costume-offset-cell"><label>dx</label><div class="costume-nudge"><button type="button" onclick="NudgeCostumeCreatorOffset('x',-1)">−</button><input type="text" id="costumeCreatorSlotDx" value="0" onkeyup="UpdateCostumeCreatorSelectedSlot()"><button type="button" onclick="NudgeCostumeCreatorOffset('x',1)">+</button></div></div>
+              <div class="cell costume-offset-cell"><label>dy</label><div class="costume-nudge"><button type="button" onclick="NudgeCostumeCreatorOffset('y',-1)">−</button><input type="text" id="costumeCreatorSlotDy" value="0" onkeyup="UpdateCostumeCreatorSelectedSlot()"><button type="button" onclick="NudgeCostumeCreatorOffset('y',1)">+</button></div></div>
+              <div class="cell costume-placeholder-cell"><label>Trạng thái</label><label class="costume-check"><input type="checkbox" id="costumeCreatorSlotPlaceholder" onchange="UpdateCostumeCreatorSelectedSlot()"> Placeholder / ảnh rỗng</label><button type="button" class="compact" onclick="ClearCostumeCreatorSelectedAsset()">Xóa asset</button></div>
+            </div>
+            <div class="row costume-inspector-row">
+              <div class="cell"><label>Quan sát thực tế</label><input type="text" id="costumeCreatorSlotObserved" placeholder="Tư thế nhìn thấy trong ảnh" onkeyup="UpdateCostumeCreatorSelectedSlot()"></div>
+              <div class="cell"><label>Nhóm đề xuất</label><input type="text" id="costumeCreatorSlotGroup" placeholder="Đứng / chạy / bay / đánh..." onkeyup="UpdateCostumeCreatorSelectedSlot()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="costumeCreatorOutputWrap" class="costume-output-wrap">
+        <div class="costume-subheader"><span>DATA và SQL preview — không tự thực thi</span><button type="button" class="compact" onclick="CloseCostumeCreatorOutput()">Đóng</button></div>
+        <textarea id="costumeCreatorDataOutput" readonly></textarea>
+      </div>
+
+      <pre id="costumeCreatorMessage" class="costume-creator-message">Sẵn sàng. Nạp một costume từ DB hoặc tạo draft mới.</pre>
+    </div>
+  </div>
+</div>

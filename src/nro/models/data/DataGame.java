@@ -41,12 +41,13 @@ public class DataGame {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
 
-    // 29 publishes Kanao's server-side Leg -> Body -> Head render-slot mapping.
-    public static byte vsData = 29;
+    // 41 maps Tokitou Muichirou's fly slots BODY[2]/BODY[13] to animation 25059.
+    public static byte vsData = 41;
     public static byte vsMap = loadMapVersion();
-    public static byte vsSkill = 1;
-    // 21 invalidates item-template cache written by the multi-append build.
-    public static byte vsItem = 21;
+    // 2 publishes real skill descriptions instead of the old literal "null".
+    public static byte vsSkill = 2;
+    // 24 publishes the Tokitou Muichirou item template and inventory icon 25061.
+    public static byte vsItem = 24;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -257,7 +258,7 @@ public class DataGame {
                     msg.writer().writeByte(skillTemp.type);
                     msg.writer().writeShort(skillTemp.iconId);
                     msg.writer().writeUTF(skillTemp.damInfo);
-                    msg.writer().writeUTF("null");
+                    msg.writer().writeUTF(getSkillDescription(skillTemp));
                     if (skillTemp.id != 0) {
                         msg.writer().writeByte(skillTemp.skillss.size());
                         for (Skill skill : skillTemp.skillss) {
@@ -387,6 +388,45 @@ public class DataGame {
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
         }
+    }
+
+    /**
+     * Nội dung giới thiệu nằm ngay dưới tên skill trong bảng chi tiết. Các
+     * con số theo cấp vẫn lấy từ damInfo và Skill để không bị lặp hoặc sai khi
+     * quản trị viên cân bằng lại chỉ số.
+     */
+    private static String getSkillDescription(SkillTemplate skillTemplate) {
+        if (skillTemplate == null) {
+            return "";
+        }
+        return switch (skillTemplate.id) {
+            case Skill.DRAGON -> "Đòn đánh cận chiến cơ bản của người Trái Đất.";
+            case Skill.KAMEJOKO -> "Bắn một luồng năng lượng Kamejoko tấn công mục tiêu từ xa.";
+            case Skill.DEMON -> "Đòn đánh cận chiến cơ bản của chiến binh Namếc.";
+            case Skill.MASENKO -> "Bắn chưởng Masenko tầm xa, gây sát thương lên mục tiêu.";
+            case Skill.GALICK -> "Đòn đánh cận chiến cơ bản của chiến binh Xayda.";
+            case Skill.ANTOMIC -> "Bắn chưởng Antomic tầm xa với sức công phá mạnh.";
+            case Skill.THAI_DUONG_HA_SAN -> "Phát ra ánh sáng cực mạnh, làm choáng kẻ địch trong phạm vi tác dụng.";
+            case Skill.TRI_THUONG -> "Hồi phục HP và KI cho bản thân cùng đồng đội ở gần.";
+            case Skill.TAI_TAO_NANG_LUONG -> "Vận công để tái tạo HP và KI liên tục theo thời gian.";
+            case Skill.KAIOKEN -> "Lao đến mục tiêu và tung chuỗi đòn Kaioken cận chiến.";
+            case Skill.QUA_CAU_KENH_KHI -> "Tích tụ quả cầu năng lượng rồi phát nổ, gây sát thương diện rộng.";
+            case Skill.MAKANKOSAPPO -> "Tụ lực và bắn tia Makankosappo xuyên phá mục tiêu.";
+            case Skill.DE_TRUNG -> "Tạo một quái đệ tử đi theo và hỗ trợ chiến đấu.";
+            case Skill.BIEN_KHI -> "Biến thành khỉ, tăng sức đánh, HP và tốc độ di chuyển.";
+            case Skill.TU_SAT -> "Hy sinh bản thân để tạo vụ nổ gây sát thương lớn cho kẻ địch xung quanh.";
+            case Skill.LIEN_HOAN -> "Tấn công mục tiêu liên tiếp bằng một chuỗi đòn cận chiến.";
+            case Skill.SOCOLA -> "Biến mục tiêu thành Sôcôla và tạm thời vô hiệu hóa khả năng chiến đấu.";
+            case Skill.KHIEN_NANG_LUONG -> "Tạo khiên năng lượng giúp vô hiệu hóa các đòn tấn công nhận vào.";
+            case Skill.DICH_CHUYEN_TUC_THOI -> "Dịch chuyển tức thời đến mục tiêu, gây sát thương và làm choáng.";
+            case Skill.HUYT_SAO -> "Tăng HP tối đa tạm thời cho bản thân và mọi đồng đội xung quanh.";
+            case Skill.THOI_MIEN -> "Đưa mục tiêu vào trạng thái ngủ và tạm thời không thể hành động.";
+            case Skill.TROI -> "Trói chặt mục tiêu, khiến đối phương tạm thời không thể di chuyển.";
+            case Skill.SUPER_KAME -> "Tụ lực thi triển Super Kamejoko với sức sát thương rất lớn.";
+            case Skill.LIEN_HOAN_CHUONG -> "Tung liên tiếp nhiều đòn chưởng năng lượng vào mục tiêu.";
+            case Skill.MA_PHONG_BA -> "Thi triển Ma Phong Ba để nhốt đối thủ vào bình chứa.";
+            default -> "";
+        };
     }
 
     public static void preloadInfinityCastleAssets(MySession session) {

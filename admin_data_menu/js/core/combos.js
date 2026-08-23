@@ -84,6 +84,11 @@ function InitCombos() {
   SetComboItems("shopIsNew", [["1", "Bật"], ["0", "Tắt"]]);
   SetComboItems("shopIsSell", [["1", "Bật"], ["0", "Tắt"]]);
   SetComboItems("shopOptionMode", [["0", "Chỉ dùng mặc định"], ["1", "Chỉ dùng tùy chỉnh"], ["2", "Mặc định + bổ sung"]]);
+  SetComboItems("costumeCreatorGender", [["3", "3 - Dùng chung"], ["0", "0 - Trái Đất"], ["1", "1 - Namec"], ["2", "2 - Xayda"]]);
+  SetComboItems("costumeCreatorAction", [["stand", "Đứng yên"], ["run", "Chạy / tiếp cận"], ["fly", "Bay / ngã"], ["guard", "Đỡ / phòng thủ"], ["attack", "Đánh thường"], ["skill", "Kỹ năng"], ["dash", "Dash / motion blur"], ["custom", "Tự chọn slot"]]);
+  SetComboItems("costumeCreatorZoom", [["4", "x4"], ["3", "x3"], ["2", "x2"], ["1", "x1"]]);
+  SetComboItems("costumeCreatorDirection", [["right", "Phải"], ["left", "Trái"]]);
+  SetComboItems("costumeCreatorSourceScale", [["4", "Chuẩn x4"], ["1", "Chuẩn x1"]]);
   RenderEquipPresets();
 }
 
@@ -94,4 +99,9 @@ function OnComboChanged(id) {
   if (id == "radarType" || id == "radarRequireLevel") UpdateRadarMetaHints();
   if (id == "playerLimitPower") UpdatePlayerTierNote();
   if (id == "bossSkillId") ShowBossSkillInfo();
+  if (id == "costumeCreatorGender") SyncCostumeCreatorMetadata();
+  if (id == "costumeCreatorAction") ChangeCostumeCreatorAction();
+  if (id == "costumeCreatorZoom" || id == "costumeCreatorDirection") UpdateCostumeCreatorPreview();
+  if (id == "costumeCreatorPreviewHead" || id == "costumeCreatorPreviewBody" || id == "costumeCreatorPreviewLeg") ChangeCostumeCreatorCustomFrame();
+  if (id == "costumeCreatorSourceScale") UpdateCostumeCreatorSelectedSlot();
 }

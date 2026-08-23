@@ -48,7 +48,6 @@ Trước thay đổi này, `PhaLeHoaTrangBi` hiển thị một bộ tỉ lệ c
 - `CombineService`: mở tab, điều hướng `showInfo/startCombine`, gửi hiệu ứng và nội dung NPC.
 - `CombineSystem`: công thức giá, nguyên liệu, tỉ lệ theo cấp và ánh xạ option đá pha lê.
 - `CombineConfig`: đọc `combine.properties`, fallback an toàn và tự reload.
-- `RandomCollection`: chọn phần tử theo trọng số; hiện không được các luồng chính gọi trực tiếp.
 
 ### Trang bị và sao pha lê
 
@@ -68,7 +67,6 @@ Trước thay đổi này, `PhaLeHoaTrangBi` hiển thị một bộ tỉ lệ c
 
 ### Ghép, tái tạo và phân rã
 
-- `LamPhepNhapDa`: ghép mảnh đá vụn thành đá nâng cấp ngẫu nhiên.
 - `NhapNgocRong`: ghép 7 viên ngọc rồng cùng sao thành viên cấp cao hơn; không có phép quay thất bại.
 - `PhanRaTrangBiKichHoat`: phân rã trang bị kích hoạt.
 - `TaiTaoCapsuleKichHoat`: tái tạo Capsule kích hoạt.
@@ -81,6 +79,5 @@ Trước thay đổi này, `PhaLeHoaTrangBi` hiển thị một bộ tỉ lệ c
 - `DoiSachTuyetKy`: đổi sách; con dấu đảm bảo nhánh thành công và ảnh hưởng option phụ.
 - `GiamDinhSach`: random option khi giám định.
 - `NangCapSachTuyetKy`: nâng Sách Tuyệt Kỹ 1.
-- `HocTuyetKy`: học kỹ năng theo hành tinh.
 
 Các giá trị item ID, số lượng nguyên liệu, giá vàng/ngọc và ánh xạ template vẫn nằm trong từng lớp. Tab Combine hiện tập trung vào những biến cân bằng dễ gây ảnh hưởng nhất: tỉ lệ, phần trăm chỉ số và pool option random.

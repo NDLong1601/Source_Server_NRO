@@ -89,6 +89,7 @@ public final class SkillMasteryService {
             long gain = SkillMasteryConfig.getGainPerUse(skill.template.id, skill.getActualLevel());
             skill.masteryProgress = safeAdd(skill.masteryProgress, gain);
             boolean leveledUp = false;
+            int oldLevel = skill.getActualLevel();
             while (skill.getActualLevel() < SkillMasteryConfig.getMaxLevel(skill.template.id)) {
                 long required = SkillMasteryConfig.getRequiredUses(skill.template.id, skill.getActualLevel());
                 if (skill.masteryProgress < required) {
@@ -102,7 +103,9 @@ public final class SkillMasteryService {
             if (leveledUp) {
                 applyConfiguredStats(skill);
                 Service.gI().sendThongBao(player, "Kỹ năng " + skill.template.name
-                        + " đã tự động lên cấp " + skill.getActualLevel() + "!");
+                        + " đã tự động lên cấp " + skill.getActualLevel() + "!"
+                        + " (từ cấp " + oldLevel + ", sát thương " + skill.damage
+                        + ", KI " + skill.manaUse + ", hồi chiêu " + skill.coolDown + "ms)");
                 Service.gI().sendTimeSkill(player, skill);
             }
             refreshClientProgress(skill);
@@ -195,7 +198,10 @@ public final class SkillMasteryService {
                 continue;
             }
             info.append("\n|2|").append(skill.template.name)
-                    .append(": cấp ").append(skill.getActualLevel());
+                    .append(": cấp ").append(skill.getActualLevel())
+                    .append(" | ST ").append(skill.damage)
+                    .append(" | KI ").append(skill.manaUse)
+                    .append(" | hồi ").append(skill.coolDown).append("ms");
             if (skill.getActualLevel() >= SkillMasteryConfig.getBaseLevel()) {
                 info.append(" - ").append(skill.masteryProgress).append("/")
                         .append(getRequiredProgress(skill));

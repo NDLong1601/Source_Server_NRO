@@ -1,6 +1,7 @@
 # Java/NetBeans generated output
 /build/
 /dist/
+/nbproject/private/
 *.class
 
 # Runtime logs and transient server state

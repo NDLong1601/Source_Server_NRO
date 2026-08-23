@@ -1738,6 +1738,182 @@ function List-ItemTypes {
     Invoke-MySql "SELECT `TYPE`, COUNT(*) AS total FROM item_template GROUP BY `TYPE` ORDER BY `TYPE`;"
 }
 
+function List-CostumeCreator {
+    Invoke-MySql @"
+SELECT id,
+       REPLACE(REPLACE(REPLACE(COALESCE(`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS costume_name,
+       icon_id, head, body, leg,
+       CASE WHEN head >= 0 AND body >= 0 AND leg >= 0 THEN 1 ELSE 0 END AS has_three_parts
+FROM item_template
+WHERE `TYPE`=5
+ORDER BY id DESC;
+"@
+}
+
+function Convert-CostumeCreatorPartData {
+    param(
+        [string]$JsonText,
+        [int]$ExpectedCount,
+        [string]$Role,
+        [System.Collections.Generic.List[string]]$Issues
+    )
+
+    $details = @()
+    try {
+        $cleanJson = $JsonText.Replace('\"', '"')
+        $outer = $cleanJson | ConvertFrom-Json
+        foreach ($entry in $outer) {
+            if ($entry -is [string]) {
+                $details += ,@($entry | ConvertFrom-Json)
+            }
+            else {
+                $details += ,@($entry)
+            }
+        }
+    }
+    catch {
+        $Issues.Add("$Role DATA không đọc được: $($_.Exception.Message)")
+    }
+
+    if ($details.Count -ne $ExpectedCount) {
+        $Issues.Add("$Role phải có $ExpectedCount slot, hiện có $($details.Count)")
+    }
+
+    $slots = New-Object System.Collections.Generic.List[object]
+    for ($index = 0; $index -lt $ExpectedCount; $index++) {
+        $imageId = 0
+        $dx = 0
+        $dy = 0
+        $missing = $true
+        if ($index -lt $details.Count) {
+            $tuple = @($details[$index])
+            if ($tuple.Count -eq 3) {
+                try {
+                    $imageId = [int]$tuple[0]
+                    $dx = [int]$tuple[1]
+                    $dy = [int]$tuple[2]
+                    $missing = $false
+                }
+                catch {
+                    $Issues.Add("$Role[$index] chứa giá trị không phải số")
+                }
+            }
+            else {
+                $Issues.Add("$Role[$index] phải có đúng 3 số")
+            }
+        }
+        $slots.Add([ordered]@{
+            imageId = $imageId
+            dx = $dx
+            dy = $dy
+            sourcePath = ""
+            sourceScale = 4
+            sourceWidth = 0
+            sourceHeight = 0
+            placeholder = (-not $missing -and $imageId -eq 0)
+            observed = ""
+            group = ""
+        })
+    }
+    return $slots.ToArray()
+}
+
+function Get-CostumeCreatorPart {
+    param(
+        [int]$PartId,
+        [int]$ExpectedType,
+        [int]$ExpectedCount,
+        [string]$Role,
+        [System.Collections.Generic.List[string]]$Issues
+    )
+
+    if ($PartId -lt 0) {
+        $Issues.Add("$Role chưa được gán Part ID")
+        return [ordered]@{
+            id = $PartId
+            type = $ExpectedType
+            slots = @(Convert-CostumeCreatorPartData -JsonText "[]" -ExpectedCount $ExpectedCount -Role $Role -Issues $Issues)
+        }
+    }
+
+    $raw = Invoke-MySql "SELECT id, `TYPE`, `DATA` FROM part WHERE id=$PartId ORDER BY id ASC;"
+    $lines = @($raw -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) {
+        $Issues.Add("Không tìm thấy $Role Part ID $PartId")
+        return [ordered]@{
+            id = $PartId
+            type = $ExpectedType
+            slots = @(Convert-CostumeCreatorPartData -JsonText "[]" -ExpectedCount $ExpectedCount -Role $Role -Issues $Issues)
+        }
+    }
+    if ($lines.Count -gt 2) {
+        $Issues.Add("$Role Part ID $PartId xuất hiện $($lines.Count - 1) lần")
+    }
+    $fields = $lines[1] -split "`t", 3
+    if ($fields.Count -ne 3) {
+        throw "Không đọc được $Role Part ID $PartId."
+    }
+    $actualType = [int]$fields[1]
+    if ($actualType -ne $ExpectedType) {
+        $Issues.Add("$Role Part ID $PartId có TYPE=$actualType, cần TYPE=$ExpectedType")
+    }
+    return [ordered]@{
+        id = $PartId
+        type = $actualType
+        slots = @(Convert-CostumeCreatorPartData -JsonText $fields[2] -ExpectedCount $ExpectedCount -Role $Role -Issues $Issues)
+    }
+}
+
+function Get-CostumeCreatorDetail {
+    $itemId = SqlInt $Id -1
+    if ($itemId -lt 0) { throw "Item ID cải trang không hợp lệ." }
+    $raw = Invoke-MySql @"
+SELECT id,`TYPE`,gender,
+       REPLACE(REPLACE(REPLACE(COALESCE(`NAME`,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS item_name,
+       REPLACE(REPLACE(REPLACE(COALESCE(description,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS item_description,
+       level,icon_id,part,is_up_to_up,power_require,gold,gem,head,body,leg
+FROM item_template
+WHERE id=$itemId
+LIMIT 1;
+"@
+    $lines = @($raw -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($lines.Count -lt 2) { throw "Không tìm thấy item_template ID $itemId." }
+    $fields = $lines[1] -split "`t", 15
+    if ($fields.Count -ne 15) { throw "Không đọc đủ dữ liệu item_template ID $itemId." }
+    if ([int]$fields[1] -ne 5) { throw "Item ID $itemId không phải cải trang TYPE=5." }
+
+    $issues = New-Object System.Collections.Generic.List[string]
+    if ([int]$fields[7] -ne -1) {
+        $issues.Add("item_template.part=$($fields[7]); cải trang toàn thân thông thường dùng part=-1")
+    }
+    $headPart = Get-CostumeCreatorPart -PartId ([int]$fields[12]) -ExpectedType 0 -ExpectedCount 3 -Role "HEAD" -Issues $issues
+    $bodyPart = Get-CostumeCreatorPart -PartId ([int]$fields[13]) -ExpectedType 1 -ExpectedCount 17 -Role "BODY" -Issues $issues
+    $legPart = Get-CostumeCreatorPart -PartId ([int]$fields[14]) -ExpectedType 2 -ExpectedCount 14 -Role "LEG" -Issues $issues
+
+    [ordered]@{
+        schemaVersion = 1
+        metadata = [ordered]@{
+            itemId = [string]$fields[0]
+            name = [string]$fields[3]
+            description = [string]$fields[4]
+            gender = [int]$fields[2]
+            iconId = [int]$fields[6]
+            level = [int]$fields[5]
+            headPartId = [string]$fields[12]
+            bodyPartId = [string]$fields[13]
+            legPartId = [string]$fields[14]
+        }
+        parts = [ordered]@{
+            head = @($headPart.slots)
+            body = @($bodyPart.slots)
+            leg = @($legPart.slots)
+        }
+        source = "database"
+        sourceItemId = [string]$fields[0]
+        sourceIssues = @($issues.ToArray())
+    } | ConvertTo-Json -Compress -Depth 10
+}
+
 function Save-Item {
     $itemId = SqlInt $Id
     if ($itemId -lt 0) {
@@ -5773,6 +5949,8 @@ try {
         "listitems" { List-Items }
         "listitemcatalog" { List-ItemCatalog }
         "listitemtypes" { List-ItemTypes }
+        "listcostumecreator" { List-CostumeCreator }
+        "getcostumecreator" { Get-CostumeCreatorDetail }
         "getitem" { Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template WHERE id=$(SqlInt $Id) LIMIT 1;" }
         "saveitem" { Save-Item }
         "listoptions" { Invoke-MySql "SELECT id, `NAME` FROM item_option_template ORDER BY id LIMIT 600;" }

@@ -262,6 +262,16 @@ public class SkillService {
             message.writer().writeShort(skill.skillId);
             message.writer().writeByte(0);
             message.writer().writeShort(skill.currLevel);
+            // Client gốc chỉ nhận currLevel ở nhánh này. Bản client mastery
+            // đọc thêm cấp thật và bộ chỉ số hiệu lực để không còn hiển thị
+            // cấp/chỉ số tĩnh của skill cấp 7 sau khi tự lên cấp.
+            message.writer().writeShort(Math.min(Short.MAX_VALUE, skill.getActualLevel()));
+            message.writer().writeShort(Math.max(0, Math.min(Short.MAX_VALUE, skill.damage)));
+            message.writer().writeInt(skill.manaUse);
+            message.writer().writeInt(skill.coolDown);
+            message.writer().writeInt(skill.dx);
+            message.writer().writeInt(skill.dy);
+            message.writer().writeInt(skill.maxFight);
             player.sendMessage(message);
         } catch (final IOException ex) {
         } finally {
