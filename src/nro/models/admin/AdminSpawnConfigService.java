@@ -84,9 +84,21 @@ public final class AdminSpawnConfigService {
                 drops.computeIfAbsent(key(rs.getString("owner_type"), rs.getInt("owner_id")), ignored -> new ArrayList<>()).add(drop);
             }
             close(rs);
+            String customBossSkillsSelect = hasColumn("admin_boss_config", "skills_json")
+                    ? "COALESCE(NULLIF(skills_json,''),'[]') AS skills_json" : "'[]' AS skills_json";
+            String customBossDefenseSelect = hasColumn("admin_boss_config", "defense")
+                    ? "defense" : "0 AS defense";
+            String customBossDodgeSelect = hasColumn("admin_boss_config", "dodge")
+                    ? "dodge" : "0 AS dodge";
+            String customBossCritSelect = hasColumn("admin_boss_config", "crit")
+                    ? "crit" : "0 AS crit";
+            String customBossLevelsSelect = hasColumn("admin_boss_config", "levels_json")
+                    ? "COALESCE(NULLIF(levels_json,''),'[]') AS levels_json" : "'[]' AS levels_json";
             rs = LocalManager.executeQuery("SELECT id,name,enabled,use_time_range,"
                     + "TIME_FORMAT(time_start,'%H:%i') AS time_start,TIME_FORMAT(time_end,'%H:%i') AS time_end,"
-                    + "use_interval,interval_minutes,map_id,zone_id,spawn_x,spawn_y,gender,head,body,leg,hp,damage,announce "
+                    + "use_interval,interval_minutes,map_id,zone_id,spawn_x,spawn_y,gender,head,body,leg,hp,damage,"
+                    + customBossDefenseSelect + "," + customBossDodgeSelect + "," + customBossCritSelect + ","
+                    + customBossSkillsSelect + ",announce," + customBossLevelsSelect + " "
                     + "FROM admin_boss_config ORDER BY id");
             int bossCount = 0;
             while (rs.next()) {
@@ -97,8 +109,11 @@ public final class AdminSpawnConfigService {
                         Math.max(1, rs.getInt("interval_minutes")), rs.getInt("map_id"),
                         rs.getInt("zone_id"), rs.getInt("spawn_x"), rs.getInt("spawn_y"),
                         rs.getByte("gender"), rs.getShort("head"), rs.getShort("body"),
-                        rs.getShort("leg"), Math.max(1, rs.getInt("hp")),
-                        Math.max(1, rs.getInt("damage")), rs.getBoolean("announce")
+                        rs.getShort("leg"), Math.max(1L, rs.getLong("hp")),
+                        Math.max(1, rs.getInt("damage")), Math.max(0, rs.getInt("defense")),
+                        clamp(rs.getInt("dodge"), 0, 100), clamp(rs.getInt("crit"), 0, 100),
+                        parseSkillMatrix(rs.getString("skills_json")), rs.getBoolean("announce"),
+                        rs.getString("levels_json")
                 );
                 new ManagedBoss(config);
                 bossCount++;
@@ -278,6 +293,75 @@ public final class AdminSpawnConfigService {
         return compact;
     }
 
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static long clamp(long value, long min, long max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static int intValue(Object value, int fallback, int min, int max) {
+        if (value == null) {
+            return fallback;
+        }
+        try {
+            return clamp(Integer.parseInt(value.toString()), min, max);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private static long longValue(Object value, long fallback, long min, long max) {
+        if (value == null) {
+            return fallback;
+        }
+        try {
+            return clamp(Long.parseLong(value.toString()), min, max);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private static String stringValue(JSONObject object, String key, String fallback) {
+        Object value = object.get(key);
+        if (value == null || value.toString().isBlank()) {
+            return fallback;
+        }
+        return value.toString();
+    }
+
+    private static AdminBossLevel[] parseBossLevels(String json, String fallbackName, byte fallbackGender,
+            short fallbackHead, short fallbackBody, short fallbackLeg, long fallbackHp, int fallbackDamage,
+            int fallbackDefense, int fallbackDodge, int fallbackCrit) {
+        List<AdminBossLevel> result = new ArrayList<>();
+        Object parsed = JSONValue.parse(json == null ? "[]" : json);
+        if (parsed instanceof JSONArray array) {
+            for (Object value : array) {
+                if (!(value instanceof JSONObject level)) {
+                    continue;
+                }
+                result.add(new AdminBossLevel(
+                        stringValue(level, "name", fallbackName),
+                        (byte) intValue(level.get("gender"), fallbackGender, 0, 3),
+                        (short) intValue(level.get("head"), fallbackHead, Short.MIN_VALUE, Short.MAX_VALUE),
+                        (short) intValue(level.get("body"), fallbackBody, Short.MIN_VALUE, Short.MAX_VALUE),
+                        (short) intValue(level.get("leg"), fallbackLeg, Short.MIN_VALUE, Short.MAX_VALUE),
+                        longValue(level.get("hp"), fallbackHp, 1L, Long.MAX_VALUE),
+                        intValue(level.get("damage"), fallbackDamage, 1, Integer.MAX_VALUE),
+                        intValue(level.get("defense"), fallbackDefense, 0, Integer.MAX_VALUE),
+                        intValue(level.get("dodge"), fallbackDodge, 0, 100),
+                        intValue(level.get("crit"), fallbackCrit, 0, 100)
+                ));
+            }
+        }
+        if (result.isEmpty()) {
+            result.add(new AdminBossLevel(fallbackName, fallbackGender, fallbackHead, fallbackBody,
+                    fallbackLeg, fallbackHp, fallbackDamage, fallbackDefense, fallbackDodge, fallbackCrit));
+        }
+        return result.toArray(new AdminBossLevel[result.size()]);
+    }
+
     private static int[][] parseSkillMatrix(String json) {
         Object parsed = JSONValue.parse(json == null ? "[]" : json);
         if (!(parsed instanceof JSONArray array)) {
@@ -295,6 +379,18 @@ public final class AdminSpawnConfigService {
             }
         }
         return result.toArray(new int[result.size()][]);
+    }
+
+    private static boolean hasColumn(String tableName, String columnName) {
+        LocalResultSet rs = null;
+        try {
+            rs = LocalManager.executeQuery("SHOW COLUMNS FROM " + tableName + " LIKE '" + columnName + "'");
+            return rs.next();
+        } catch (Exception ignored) {
+            return false;
+        } finally {
+            close(rs);
+        }
     }
 
     private static void close(LocalResultSet rs) {
@@ -361,14 +457,20 @@ public final class AdminSpawnConfigService {
         public final short head;
         public final short body;
         public final short leg;
-        public final int hp;
+        public final long hp;
         public final int damage;
+        public final int defense;
+        public final int dodge;
+        public final int crit;
+        public final int[][] skills;
         public final boolean announce;
+        public final AdminBossLevel[] levels;
 
         private BossConfig(int id, String name, boolean enabled, boolean useTimeRange,
                 LocalTime timeStart, LocalTime timeEnd, boolean useInterval, int intervalMinutes,
                 int mapId, int zoneId, int spawnX, int spawnY, byte gender, short head,
-                short body, short leg, int hp, int damage, boolean announce) {
+                short body, short leg, long hp, int damage, int defense, int dodge, int crit,
+                int[][] skills, boolean announce, String levelsJson) {
             super(id, enabled, useTimeRange, timeStart, timeEnd, useInterval, intervalMinutes);
             this.name = name;
             this.mapId = mapId;
@@ -381,7 +483,40 @@ public final class AdminSpawnConfigService {
             this.leg = leg;
             this.hp = hp;
             this.damage = damage;
+            this.defense = defense;
+            this.dodge = dodge;
+            this.crit = crit;
+            this.skills = skills == null ? new int[0][] : skills;
             this.announce = announce;
+            this.levels = parseBossLevels(levelsJson, name, gender, head, body, leg, hp, damage,
+                    defense, dodge, crit);
+        }
+    }
+
+    public static final class AdminBossLevel {
+        public final String name;
+        public final byte gender;
+        public final short head;
+        public final short body;
+        public final short leg;
+        public final long hp;
+        public final int damage;
+        public final int defense;
+        public final int dodge;
+        public final int crit;
+
+        public AdminBossLevel(String name, byte gender, short head, short body, short leg,
+                long hp, int damage, int defense, int dodge, int crit) {
+            this.name = name;
+            this.gender = gender;
+            this.head = head;
+            this.body = body;
+            this.leg = leg;
+            this.hp = hp;
+            this.damage = damage;
+            this.defense = defense;
+            this.dodge = dodge;
+            this.crit = crit;
         }
     }
 

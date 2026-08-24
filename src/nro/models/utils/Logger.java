@@ -2,15 +2,26 @@ package nro.models.utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
 public class Logger {
+
+    static {
+        try {
+            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
+            System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+        }
+    }
 
     // Reset
     public static final String RESET = "\033[0m"; // Text Reset
@@ -180,8 +191,8 @@ public class Logger {
     private static void writeFile(String filePath, String content) throws IOException {
         File file = new File(filePath);
         file.getParentFile().mkdirs();
-        try (FileWriter fw = new FileWriter(file, true);
-                BufferedWriter bw = new BufferedWriter(fw);
+        try (FileOutputStream fos = new FileOutputStream(file, true);
+                BufferedWriter bw = new BufferedWriter(new java.io.OutputStreamWriter(fos, StandardCharsets.UTF_8));
                 PrintWriter out = new PrintWriter(bw)) {
             out.println(content);
         }

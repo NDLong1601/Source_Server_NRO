@@ -190,7 +190,9 @@ public class BotAttackplayer extends Bot {
                 return;
             }
 
-            Zone newZone = MapService.gI().getMapCanJoin(refPlayer, mapId, mapId);
+            int zoneId = targetPlayer != null && targetPlayer.zone != null
+                    && targetPlayer.zone.map.mapId == mapId ? targetPlayer.zone.zoneId : -1;
+            Zone newZone = MapService.gI().getMapCanJoin(refPlayer, mapId, zoneId);
             if (newZone == null || this.zone == newZone) {
                 return;
             }

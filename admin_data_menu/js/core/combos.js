@@ -99,6 +99,8 @@ function OnComboChanged(id) {
   if (id == "radarType" || id == "radarRequireLevel") UpdateRadarMetaHints();
   if (id == "playerLimitPower") UpdatePlayerTierNote();
   if (id == "bossSkillId") ShowBossSkillInfo();
+  if (id == "customBossSkillId") ShowCustomBossSkillInfo();
+  if (id == "customBossGender") UpdateCustomBossAppearancePreview();
   if (id == "costumeCreatorGender") SyncCostumeCreatorMetadata();
   if (id == "costumeCreatorAction") ChangeCostumeCreatorAction();
   if (id == "costumeCreatorZoom" || id == "costumeCreatorDirection") UpdateCostumeCreatorPreview();

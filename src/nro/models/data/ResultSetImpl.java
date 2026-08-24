@@ -13,6 +13,20 @@ public class ResultSetImpl implements LocalResultSet {
     private Object[][] values;
     private int indexData;
 
+    private static int toInt(Object value) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.parseInt(value.toString());
+    }
+
+    private static long toLong(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.parseLong(value.toString());
+    }
+
     public ResultSetImpl(final ResultSet rs) throws Exception {
         this.indexData = -1;
         try {
@@ -159,7 +173,7 @@ public class ResultSetImpl implements LocalResultSet {
         if (this.indexData == -1) {
             throw new Exception("Results need to be prepared in advance");
         }
-        return (int) (long) this.values[this.indexData][column - 1];
+        return toInt(this.values[this.indexData][column - 1]);
     }
 
     @Override
@@ -170,7 +184,7 @@ public class ResultSetImpl implements LocalResultSet {
         if (this.indexData == -1) {
             throw new Exception("Results need to be prepared in advance");
         }
-        return (int) this.data[this.indexData].get(column.toLowerCase());
+        return toInt(this.data[this.indexData].get(column.toLowerCase()));
     }
 
     @Override
@@ -225,7 +239,7 @@ public class ResultSetImpl implements LocalResultSet {
         if (this.indexData == -1) {
             throw new Exception("Results need to be prepared in advance");
         }
-        return (long) this.values[this.indexData][column - 1];
+        return toLong(this.values[this.indexData][column - 1]);
     }
 
     @Override
@@ -236,7 +250,7 @@ public class ResultSetImpl implements LocalResultSet {
         if (this.indexData == -1) {
             throw new Exception("Results need to be prepared in advance");
         }
-        return (long) this.data[this.indexData].get(column.toLowerCase());
+        return toLong(this.data[this.indexData].get(column.toLowerCase()));
     }
 
     @Override

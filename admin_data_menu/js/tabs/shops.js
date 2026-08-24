@@ -274,6 +274,6 @@ function ClearShopChildren() {
 RegisterTab({
   id: "npc", view: "shops.html", panelId: "panelNpc", navId: "navNpc",
   title: "NPC & Shop", subtitle: "Gán shop, tab, item và option cho NPC",
-  onOpen: function () { LoadItemCatalog(false); LoadShops(); },
+  onOpen: function () { LoadOptions(false); LoadItemCatalog(false); LoadShops(); },
   onRefresh: function () { LoadItemCatalog(true); LoadShops(); }
 });

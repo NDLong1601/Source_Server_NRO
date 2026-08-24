@@ -81,6 +81,6 @@ function SaveDefaultOptions() {
 RegisterTab({
   id: "itemoptions", view: "item-options.html", panelId: "panelItemOptions", navId: "navItemOptions",
   title: "Option mặc định", subtitle: "Cấu hình option dùng chung cho vật phẩm, SHOP và nhiệm vụ",
-  onOpen: function () { LoadDefaultOptionItems(); RenderDefaultOptionPicker(); },
+  onOpen: function () { LoadOptions(false); LoadDefaultOptionItems(); RenderDefaultOptionPicker(); },
   onRefresh: function () { LoadDefaultOptionItems(); if (defaultOptionSelectedId) LoadDefaultOptions(); }
 });

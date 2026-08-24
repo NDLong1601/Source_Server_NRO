@@ -41,18 +41,20 @@ public class DataGame {
 
     private static final byte DEFAULT_MAP_VERSION = 10;
     private static final int MAX_SIGNED_TEMPLATE_COUNT = 127;
-    private static final int MAX_PRELOADED_PLAYER_ICONS = 128;
+    private static final int MAX_PRELOADED_PLAYER_ICONS = 192;
+    private static final int PLAYER_ICON_PRELOAD_RETRY_COUNT = 2;
+    private static final int PLAYER_ICON_PRELOAD_RETRY_DELAY_MS = 900;
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
 
-    // 54 publishes Muichirou's complete landing effect and corrected Giyuu/Tengen flight poses.
-    public static byte vsData = 54;
+    // 60 refreshes Yoriichi's corrected flight animation frames.
+    public static byte vsData = 60;
     public static byte vsMap = loadMapVersion();
     // 2 publishes real skill descriptions instead of the old literal "null".
     public static byte vsSkill = 2;
-    // 26 publishes costume item templates 2067..2070 and inventory icons.
-    public static byte vsItem = 26;
+    // 28 publishes costume item templates 2074..2076 and inventory icons.
+    public static byte vsItem = 28;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -512,13 +514,52 @@ public class DataGame {
         Set<Integer> iconIds = new LinkedHashSet<>();
         collectItemIcons(player.inventory.itemsBody, iconIds);
         collectItemIcons(player.inventory.itemsBag, iconIds);
+        sendItemIcons(player.getSession(), iconIds);
+    }
 
+    public static void preloadPlayerBagIcons(Player player) {
+        if (player == null || player.inventory == null || player.getSession() == null
+                || !player.getSession().isAssetReady()) {
+            return;
+        }
+
+        Set<Integer> iconIds = new LinkedHashSet<>();
+        collectItemIcons(player.inventory.itemsBag, iconIds);
+        sendItemIcons(player.getSession(), iconIds);
+    }
+
+    public static void preloadPlayerItemIconsWithRetry(Player player) {
+        preloadPlayerItemIcons(player);
+        if (player == null || player.getSession() == null || !player.getSession().isAssetReady()) {
+            return;
+        }
+
+        Thread worker = new Thread(() -> {
+            for (int i = 0; i < PLAYER_ICON_PRELOAD_RETRY_COUNT; i++) {
+                try {
+                    Thread.sleep((long) PLAYER_ICON_PRELOAD_RETRY_DELAY_MS * (i + 1));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                MySession session = player.getSession();
+                if (session == null || !session.isConnected() || !session.isAssetReady()) {
+                    return;
+                }
+                preloadPlayerItemIcons(player);
+            }
+        }, "player-icon-preload-" + player.id);
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private static void sendItemIcons(MySession session, Set<Integer> iconIds) {
         int sent = 0;
         for (int iconId : iconIds) {
             if (sent >= MAX_PRELOADED_PLAYER_ICONS) {
                 break;
             }
-            sendIcon(player.getSession(), iconId);
+            sendIcon(session, iconId);
             sent++;
         }
     }
@@ -527,10 +568,22 @@ public class DataGame {
         if (items == null) {
             return;
         }
-        for (Item item : items) {
-            if (item != null && item.template != null && item.template.iconID >= 0) {
-                iconIds.add((int) item.template.iconID);
+
+        if (items instanceof java.util.Collection<?>) {
+            for (Object item : ((java.util.Collection<?>) items).toArray()) {
+                collectItemIcon((Item) item, iconIds);
             }
+            return;
+        }
+
+        for (Item item : items) {
+            collectItemIcon(item, iconIds);
+        }
+    }
+
+    private static void collectItemIcon(Item item, Set<Integer> iconIds) {
+        if (item != null && item.template != null && item.template.iconID >= 0) {
+            iconIds.add((int) item.template.iconID);
         }
     }
 

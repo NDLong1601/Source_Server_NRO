@@ -71,9 +71,13 @@
     [string]$SpawnY = "-1",
     [string]$Hp = "1000000",
     [string]$Damage = "10000",
+    [string]$Defense = "0",
+    [string]$Dodge = "0",
+    [string]$Crit = "0",
     [string]$Announce = "1",
     [string]$DropsJson = "[]",
     [string]$SkillsJson = "[]",
+    [string]$LevelsJson = "[]",
     [string]$PointMultiplier = "1",
     [string]$DropMultiplier = "1",
     [string]$BossId = "",
@@ -163,7 +167,7 @@ foreach ($paramName in @(
         "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
         "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
-        "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "NameLift", "LayerOrder", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Announce", "DropsJson", "SkillsJson",
+        "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "NameLift", "LayerOrder", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Defense", "Dodge", "Crit", "Announce", "DropsJson", "SkillsJson", "LevelsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
         "HeadIconId", "BodyIconId", "LegIconId", "AvatarIconId", "HeadPartId", "BodyPartId", "LegPartId", "HasShop", "NpcSay",
@@ -4782,9 +4786,14 @@ CREATE TABLE IF NOT EXISTS admin_boss_config (
   head SMALLINT NOT NULL DEFAULT 0,
   body SMALLINT NOT NULL DEFAULT 0,
   leg SMALLINT NOT NULL DEFAULT 0,
-  hp INT NOT NULL DEFAULT 1000000,
+  hp BIGINT NOT NULL DEFAULT 1000000,
   damage INT NOT NULL DEFAULT 10000,
+  defense INT NOT NULL DEFAULT 0,
+  dodge SMALLINT NOT NULL DEFAULT 0,
+  crit SMALLINT NOT NULL DEFAULT 0,
+  skills_json TEXT NOT NULL,
   announce TINYINT(1) NOT NULL DEFAULT 1,
+  levels_json LONGTEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -4846,6 +4855,14 @@ ALTER TABLE admin_boss_override ADD COLUMN IF NOT EXISTS use_interval TINYINT(1)
 ALTER TABLE admin_boss_override ADD COLUMN IF NOT EXISTS interval_minutes INT NOT NULL DEFAULT 1 AFTER use_interval;
 ALTER TABLE admin_boss_override ADD COLUMN IF NOT EXISTS map_id INT NOT NULL DEFAULT -1 AFTER interval_minutes;
 ALTER TABLE admin_boss_override ADD COLUMN IF NOT EXISTS map_ids_json TEXT NOT NULL DEFAULT ('[]') AFTER map_id;
+ALTER TABLE admin_boss_config MODIFY COLUMN hp BIGINT NOT NULL DEFAULT 1000000;
+ALTER TABLE admin_boss_config ADD COLUMN IF NOT EXISTS skills_json TEXT NULL AFTER damage;
+ALTER TABLE admin_boss_config ADD COLUMN IF NOT EXISTS defense INT NOT NULL DEFAULT 0 AFTER damage;
+ALTER TABLE admin_boss_config ADD COLUMN IF NOT EXISTS dodge SMALLINT NOT NULL DEFAULT 0 AFTER defense;
+ALTER TABLE admin_boss_config ADD COLUMN IF NOT EXISTS crit SMALLINT NOT NULL DEFAULT 0 AFTER dodge;
+ALTER TABLE admin_boss_config ADD COLUMN IF NOT EXISTS levels_json LONGTEXT NULL AFTER announce;
+UPDATE admin_boss_config SET skills_json='[]' WHERE skills_json IS NULL OR skills_json='';
+UPDATE admin_boss_config SET levels_json='[]' WHERE levels_json IS NULL OR levels_json='';
 UPDATE admin_boss_override SET map_ids_json=CONCAT('[',map_id,']') WHERE map_id>=0 AND (map_ids_json IS NULL OR map_ids_json='' OR map_ids_json='[]');
 ALTER TABLE admin_spawn_drop MODIFY COLUMN owner_type VARCHAR(16) NOT NULL;
 UPDATE admin_spawn_drop SET owner_type='serverboss' WHERE owner_type='serverbo';
@@ -4871,6 +4888,101 @@ function Assert-PositiveInt {
         throw "$Label phải là số nguyên từ 1 đến $Maximum."
     }
     [int]$Value
+}
+
+function Normalize-IntegerText {
+    param([string]$Value)
+    $text = ([string]$Value).Trim() -replace '\s', ''
+    if ($text -match '^-?[\d.]+$') {
+        $text = $text.Replace('.', '')
+    }
+    $text
+}
+
+function Assert-LongRange {
+    param([string]$Value, [string]$Label, [long]$Minimum, [long]$Maximum)
+    $text = Normalize-IntegerText $Value
+    if ($text -notmatch '^-?\d+$') {
+        throw "$Label phải là số nguyên từ $Minimum đến $Maximum."
+    }
+    try {
+        $number = [long]$text
+    } catch {
+        throw "$Label phải là số nguyên từ $Minimum đến $Maximum."
+    }
+    if ($number -lt $Minimum -or $number -gt $Maximum) {
+        throw "$Label phải là số nguyên từ $Minimum đến $Maximum."
+    }
+    $number
+}
+
+function Assert-PositiveLong {
+    param([string]$Value, [string]$Label)
+    Assert-LongRange $Value $Label 1 ([long]::MaxValue)
+}
+
+function Assert-IntRange {
+    param([string]$Value, [string]$Label, [int]$Minimum, [int]$Maximum)
+    [int](Assert-LongRange $Value $Label $Minimum $Maximum)
+}
+
+function Get-ObjectFieldText {
+    param([object]$Object, [string]$Field, [string]$Fallback)
+    if ($null -ne $Object -and $Object.PSObject.Properties[$Field]) {
+        return [string]$Object.$Field
+    }
+    $Fallback
+}
+
+function Convert-AdminBossLevelsJson {
+    $levels = @()
+    if (-not [string]::IsNullOrWhiteSpace($LevelsJson)) {
+        try {
+            $parsedLevels = $LevelsJson | ConvertFrom-Json
+            $levels = @($parsedLevels)
+        } catch {
+            throw "Danh sách phase Boss không phải JSON hợp lệ."
+        }
+    }
+    if ($levels.Count -eq 0) {
+        $levels = @([pscustomobject]@{
+            name=$Name; gender=$Gender; head=$Head; body=$Body; leg=$Leg; hp=$Hp; damage=$Damage;
+            defense=$Defense; dodge=$Dodge; crit=$Crit
+        })
+    }
+    if ($levels.Count -gt 50) {
+        throw "Mỗi Boss tự tạo quản lý tối đa 50 phase."
+    }
+    $normalized = New-Object System.Collections.Generic.List[object]
+    for ($i = 0; $i -lt $levels.Count; $i++) {
+        $levelNumber = $i + 1
+        $level = $levels[$i]
+        $levelName = (Get-ObjectFieldText $level "name" $Name).Trim()
+        if ([string]::IsNullOrWhiteSpace($levelName)) {
+            $levelName = if ([string]::IsNullOrWhiteSpace($Name)) { "Boss phase $levelNumber" } else { "$Name phase $levelNumber" }
+        }
+        if ($levelName.Length -gt 100) {
+            throw "Tên phase $levelNumber tối đa 100 ký tự."
+        }
+        $genderValue = Assert-IntRange (Get-ObjectFieldText $level "gender" $Gender) "Gender phase $levelNumber" 0 3
+        $headValue = Assert-IntRange (Get-ObjectFieldText $level "head" $Head) "HEAD phase $levelNumber" -32768 32767
+        $bodyValue = Assert-IntRange (Get-ObjectFieldText $level "body" $Body) "BODY phase $levelNumber" -32768 32767
+        $legValue = Assert-IntRange (Get-ObjectFieldText $level "leg" $Leg) "LEG phase $levelNumber" -32768 32767
+        $hpValue = Assert-PositiveLong (Get-ObjectFieldText $level "hp" $Hp) "HP phase $levelNumber"
+        $damageValue = Assert-IntRange (Get-ObjectFieldText $level "damage" $Damage) "Sát thương phase $levelNumber" 1 2147483647
+        $defenseValue = Assert-IntRange (Get-ObjectFieldText $level "defense" $Defense) "Giáp phase $levelNumber" 0 2147483647
+        $dodgeValue = Assert-IntRange (Get-ObjectFieldText $level "dodge" $Dodge) "Né phase $levelNumber" 0 100
+        $critValue = Assert-IntRange (Get-ObjectFieldText $level "crit" $Crit) "Chí mạng phase $levelNumber" 0 100
+        $normalized.Add([pscustomobject][ordered]@{
+            name=$levelName; gender=$genderValue; head=$headValue; body=$bodyValue; leg=$legValue;
+            hp=[string]$hpValue; damage=$damageValue; defense=$defenseValue; dodge=$dodgeValue; crit=$critValue
+        })
+    }
+    $json = ConvertTo-Json -InputObject $normalized.ToArray() -Compress -Depth 5
+    if ([string]::IsNullOrWhiteSpace($json)) {
+        $json = '[]'
+    }
+    [pscustomobject]@{ Json=$json; Primary=$normalized[0] }
 }
 
 function Get-DropInsertSql {
@@ -5025,6 +5137,47 @@ function Get-ExistingBossCatalog {
 
 function List-BossSkillCatalog {
     Invoke-MySql "SELECT id, MAX(NAME) AS NAME, MAX(max_point) AS max_point FROM skill_template GROUP BY id ORDER BY id;"
+}
+
+function List-CostumeOutfits {
+    Invoke-MySql @"
+SELECT id,
+       REPLACE(REPLACE(REPLACE(COALESCE(`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
+       REPLACE(REPLACE(REPLACE(COALESCE(description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS description,
+       gender,
+       icon_id,
+       head,
+       body,
+       leg
+FROM item_template
+WHERE `TYPE`=5 AND head>=0 AND body>=0 AND leg>=0
+ORDER BY id;
+"@
+}
+
+function Convert-BossSkillsJson {
+    param([string]$Payload, [switch]$AllowEmpty)
+    $skills = @()
+    if (-not [string]::IsNullOrWhiteSpace($Payload)) {
+        try { $parsedSkills = $Payload | ConvertFrom-Json; $skills = @($parsedSkills) } catch { throw "Danh sách skill không phải JSON hợp lệ." }
+    }
+    if ($skills.Count -eq 0) {
+        if ($AllowEmpty) { return '[]' }
+        throw "Boss phải có ít nhất một skill."
+    }
+    $validated = New-Object System.Collections.Generic.List[object]
+    foreach ($skill in $skills) {
+        $skillId = SqlInt -Value ([string]$skill.id) -Default -1
+        $levelValue = SqlInt -Value ([string]$skill.level) -Default -1
+        $cooldownValue = SqlInt -Value ([string]$skill.cooldown) -Default -1
+        if ($skillId -lt 0) { throw "ID skill không hợp lệ." }
+        if ($levelValue -lt 1 -or $levelValue -gt 7) { throw "Cấp skill phải từ 1 đến 7." }
+        if ($cooldownValue -lt 50 -or $cooldownValue -gt 3600000) { throw "Hồi chiêu phải từ 50 đến 3.600.000 ms." }
+        $validated.Add([pscustomobject]@{ id=$skillId; level=$levelValue; cooldown=$cooldownValue })
+    }
+    $skillsJson = ConvertTo-Json -InputObject $validated.ToArray() -Compress -Depth 5
+    if ([string]::IsNullOrWhiteSpace($skillsJson)) { $skillsJson = '[]' }
+    $skillsJson
 }
 
 function Get-SkillMasteryGeneralFields {
@@ -5387,19 +5540,7 @@ function Save-BossOverride {
     if ($bossId -ge 0) { throw "ID Boss server phải là số âm hợp lệ." }
     if ([string]::IsNullOrWhiteSpace($Name)) { throw "Thiếu mã Boss server." }
     $enabledValue = Assert-BoolValue $Enabled "Trạng thái Boss"
-    try { $parsedSkills = $SkillsJson | ConvertFrom-Json; $skills = @($parsedSkills) } catch { throw "Danh sách skill không phải JSON hợp lệ." }
-    if ($skills.Count -eq 0) { throw "Boss phải có ít nhất một skill." }
-    $validated = New-Object System.Collections.Generic.List[object]
-    foreach ($skill in $skills) {
-        $skillId = SqlInt -Value ([string]$skill.id) -Default -1
-        $levelValue = SqlInt -Value ([string]$skill.level) -Default -1
-        $cooldownValue = SqlInt -Value ([string]$skill.cooldown) -Default -1
-        if ($skillId -lt 0) { throw "ID skill không hợp lệ." }
-        if ($levelValue -lt 1 -or $levelValue -gt 7) { throw "Cấp skill phải từ 1 đến 7." }
-        if ($cooldownValue -lt 50 -or $cooldownValue -gt 3600000) { throw "Hồi chiêu phải từ 50 đến 3.600.000 ms." }
-        $validated.Add([pscustomobject]@{ id=$skillId; level=$levelValue; cooldown=$cooldownValue })
-    }
-    $skillsJson = ConvertTo-Json -InputObject $validated.ToArray() -Compress -Depth 5
+    $skillsJson = Convert-BossSkillsJson $SkillsJson
     $rangeValue = Assert-BoolValue $UseTimeRange "Chế độ khoảng giờ"
     $intervalValue = Assert-BoolValue $UseInterval "Chế độ chu kỳ"
     $startSql = "NULL"; $endSql = "NULL"
@@ -5439,7 +5580,7 @@ function List-AdminBosses {
         $where = if ($Search -match '^\d+$') { "WHERE b.id=$(SqlInt $Search) OR b.name LIKE '%$safe%'" } else { "WHERE b.name LIKE '%$safe%'" }
     }
     $drops = Get-SpawnDropsExpression 'boss' 'b.id'
-    Invoke-MySql "SELECT b.id,b.name,b.enabled,b.use_time_range,COALESCE(TIME_FORMAT(b.time_start,'%H:%i'),''),COALESCE(TIME_FORMAT(b.time_end,'%H:%i'),''),b.use_interval,b.interval_minutes,b.map_id,COALESCE(m.NAME,''),b.zone_id,b.spawn_x,b.spawn_y,b.gender,b.head,b.body,b.leg,b.hp,b.damage,b.announce,$drops AS drops_json FROM admin_boss_config b LEFT JOIN map_template m ON m.id=b.map_id $where ORDER BY b.id DESC;"
+    Invoke-MySql "SELECT b.id,b.name,b.enabled,b.use_time_range,COALESCE(TIME_FORMAT(b.time_start,'%H:%i'),''),COALESCE(TIME_FORMAT(b.time_end,'%H:%i'),''),b.use_interval,b.interval_minutes,b.map_id,COALESCE(m.NAME,''),b.zone_id,b.spawn_x,b.spawn_y,b.gender,b.head,b.body,b.leg,b.hp,b.damage,b.defense,b.dodge,b.crit,COALESCE(NULLIF(b.skills_json,''),'[]'),b.announce,COALESCE(NULLIF(b.levels_json,''),'[]'),$drops AS drops_json FROM admin_boss_config b LEFT JOIN map_template m ON m.id=b.map_id $where ORDER BY b.id DESC;"
 }
 
 function Save-AdminBoss {
@@ -5457,10 +5598,17 @@ function Save-AdminBoss {
     $interval = if ($intervalValue -eq 1) { Assert-PositiveInt $IntervalMinutes "Chu kỳ xuất hiện" 525600 } else { 1 }
     $map = SqlInt $MapId -1
     if ($map -lt 0) { throw "Hãy chọn map xuất hiện cho Boss." }
-    $hpValue = Assert-PositiveInt $Hp "HP" 2147483647
-    $damageValue = Assert-PositiveInt $Damage "Sát thương" 2147483647
+    $skillsJson = Convert-BossSkillsJson -Payload $SkillsJson -AllowEmpty
+    $levelPayload = Convert-AdminBossLevelsJson
+    $primary = $levelPayload.Primary
+    $hpValue = Assert-PositiveLong ([string]$primary.hp) "HP"
+    $damageValue = Assert-IntRange ([string]$primary.damage) "Sát thương" 1 2147483647
+    $defenseValue = Assert-IntRange ([string]$primary.defense) "Giáp" 0 2147483647
+    $dodgeValue = Assert-IntRange ([string]$primary.dodge) "Né" 0 100
+    $critValue = Assert-IntRange ([string]$primary.crit) "Chí mạng" 0 100
+    $configName = [string]$primary.name
     $bossId = SqlInt $OwnerId
-    $fields = "name=$(SqlString $Name),enabled=$enabledValue,use_time_range=$rangeValue,time_start=$startSql,time_end=$endSql,use_interval=$intervalValue,interval_minutes=$interval,map_id=$map,zone_id=$(SqlInt $ZoneId -1),spawn_x=$(SqlInt $SpawnX -1),spawn_y=$(SqlInt $SpawnY -1),gender=$(SqlInt $Gender),head=$(SqlInt $Head),body=$(SqlInt $Body),leg=$(SqlInt $Leg),hp=$hpValue,damage=$damageValue,announce=$announceValue"
+    $fields = "name=$(SqlString $configName),enabled=$enabledValue,use_time_range=$rangeValue,time_start=$startSql,time_end=$endSql,use_interval=$intervalValue,interval_minutes=$interval,map_id=$map,zone_id=$(SqlInt $ZoneId -1),spawn_x=$(SqlInt $SpawnX -1),spawn_y=$(SqlInt $SpawnY -1),gender=$($primary.gender),head=$($primary.head),body=$($primary.body),leg=$($primary.leg),hp=$hpValue,damage=$damageValue,defense=$defenseValue,dodge=$dodgeValue,crit=$critValue,skills_json=$(SqlString $skillsJson),announce=$announceValue,levels_json=$(SqlString $levelPayload.Json)"
     if ($bossId -gt 0) {
         Invoke-MySql "UPDATE admin_boss_config SET $fields WHERE id=$bossId;" | Out-Null
     } else {
@@ -5949,6 +6097,7 @@ try {
         "listitems" { List-Items }
         "listitemcatalog" { List-ItemCatalog }
         "listitemtypes" { List-ItemTypes }
+        "listcostumeoutfits" { List-CostumeOutfits }
         "listcostumecreator" { List-CostumeCreator }
         "getcostumecreator" { Get-CostumeCreatorDetail }
         "getitem" { Invoke-MySql "SELECT id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg FROM item_template WHERE id=$(SqlInt $Id) LIMIT 1;" }

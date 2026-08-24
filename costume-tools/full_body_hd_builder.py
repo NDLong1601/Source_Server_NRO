@@ -50,6 +50,7 @@ class CostumeConfig:
     shop_id: int = 112
     tab_id: int = 1120
     shop_cost: int = 2000
+    global_body_offset_adjustment: tuple[int, int] = (0, 0)
 
     @property
     def body_image_ids(self) -> tuple[int, ...]:
@@ -611,7 +612,7 @@ def _write_install_files(config: CostumeConfig, manifest: dict) -> None:
     head_id, body_id, leg_id = config.part_ids
     escaped_name = config.name.replace("'", "''")
     escaped_description = config.description.replace("'", "''")
-    install_sql = f"""-- Install {config.name}; IDs were allocated contiguously from the live team2026 database.\nSTART TRANSACTION;\n\nINSERT INTO part (id, `TYPE`, `DATA`) VALUES\n({head_id}, 0, '{head_data}'),\n({body_id}, 1, '{body_data}'),\n({leg_id}, 2, '{leg_data}')\nON DUPLICATE KEY UPDATE `TYPE`=VALUES(`TYPE`), `DATA`=VALUES(`DATA`);\n\nINSERT INTO head_avatar (head_id, avatar_id) VALUES ({head_id}, {config.profile_icon_id})\nON DUPLICATE KEY UPDATE avatar_id=VALUES(avatar_id);\n\nINSERT INTO item_template\n(id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)\nVALUES\n({config.item_id}, 5, 3, '{escaped_name}', '{escaped_description}', 1, {config.item_icon_id}, -1, 0, 0, 0, 0, {head_id}, {body_id}, {leg_id})\nON DUPLICATE KEY UPDATE\n`TYPE`=VALUES(`TYPE`), gender=VALUES(gender), `NAME`=VALUES(`NAME`),\ndescription=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id),\npart=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require),\ngold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);\n\nDELETE FROM item_default_option WHERE item_template_id = {config.item_id};\n\nINSERT INTO item_shop\n(tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, option_mode, create_time)\nSELECT {config.tab_id}, {config.item_id}, 1, 1, 1, {config.shop_cost}, 0, 0, NOW()\nWHERE EXISTS (SELECT 1 FROM tab_shop WHERE id = {config.tab_id} AND shop_id = {config.shop_id})\n  AND NOT EXISTS (SELECT 1 FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id});\n\nCOMMIT;\n"""
+    install_sql = f"""-- Install {config.name}; IDs were allocated contiguously from the live team2026 database.\nSTART TRANSACTION;\n\nDELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});\nINSERT INTO part (id, `TYPE`, `DATA`) VALUES\n({head_id}, 0, '{head_data}'),\n({body_id}, 1, '{body_data}'),\n({leg_id}, 2, '{leg_data}');\n\nDELETE FROM head_avatar WHERE head_id = {head_id};\nINSERT INTO head_avatar (head_id, avatar_id) VALUES ({head_id}, {config.profile_icon_id});\n\nINSERT INTO item_template\n(id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)\nVALUES\n({config.item_id}, 5, 3, '{escaped_name}', '{escaped_description}', 1, {config.item_icon_id}, -1, 0, 0, 0, 0, {head_id}, {body_id}, {leg_id})\nON DUPLICATE KEY UPDATE\n`TYPE`=VALUES(`TYPE`), gender=VALUES(gender), `NAME`=VALUES(`NAME`),\ndescription=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id),\npart=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require),\ngold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);\n\nDELETE FROM item_default_option WHERE item_template_id = {config.item_id};\n\nINSERT INTO item_shop\n(tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, option_mode, create_time)\nSELECT {config.tab_id}, {config.item_id}, 1, 1, 1, {config.shop_cost}, 0, 0, NOW()\nWHERE EXISTS (SELECT 1 FROM tab_shop WHERE id = {config.tab_id} AND shop_id = {config.shop_id})\n  AND NOT EXISTS (SELECT 1 FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id});\n\nCOMMIT;\n"""
     rollback_sql = f"""-- Remove only the rows installed for {config.name}.\nSTART TRANSACTION;\n\nDELETE FROM item_shop_option WHERE item_shop_id IN\n    (SELECT id FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id});\nDELETE FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id};\nDELETE FROM item_default_option WHERE item_template_id = {config.item_id};\nDELETE FROM head_avatar WHERE head_id = {head_id} AND avatar_id = {config.profile_icon_id};\nDELETE FROM item_template WHERE id = {config.item_id}\n    AND head = {head_id} AND body = {body_id} AND leg = {leg_id};\nDELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});\n\nCOMMIT;\n"""
     (config.project_dir / "install.sql").write_text(install_sql, encoding="utf-8")
     (config.project_dir / "rollback.sql").write_text(rollback_sql, encoding="utf-8")
@@ -707,11 +708,15 @@ def build(
             raise ValueError(f"Invalid mapping at BODY[{slot}]: {mapping}") from error
         if mapping.horizontal_flip:
             frame = mirror_frame(frame)
+        combined_offset_adjustment = (
+            config.global_body_offset_adjustment[0] + mapping.offset_adjustment[0],
+            config.global_body_offset_adjustment[1] + mapping.offset_adjustment[1],
+        )
         export, preview = _write_frame_scales(
             config,
             image_id,
             frame,
-            mapping.offset_adjustment,
+            combined_offset_adjustment,
             write_output=selected_slots is None or slot in selected_slots,
         )
         export.update(

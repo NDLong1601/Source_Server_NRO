@@ -314,16 +314,11 @@ public class MapService {
     }
 
     public Zone getZoneByMapIDAndZoneID(int mapId, int zoneId) {
-        Zone zoneJoin = null;
-        try {
-            Map map = getMapById(mapId);
-            if (map != null) {
-                zoneJoin = map.zones.get(zoneId);
-            }
-        } catch (Exception e) {
-            Logger.logException(MapService.class, e);
+        Map map = getMapById(mapId);
+        if (map == null || zoneId < 0 || zoneId >= map.zones.size()) {
+            return null;
         }
-        return zoneJoin;
+        return map.zones.get(zoneId);
     }
 
     public Map getMapById(int mapId) {

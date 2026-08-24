@@ -682,9 +682,11 @@ public class Controller implements IMessageHandler {
                             default -> {
                                 if (player.isAdmin()) {
                                     Boss boss = BossManager.gI().getBoss(_id);
-                                    if (boss != null) {
+                                    if (boss != null && boss.zone != null && !boss.isDie()) {
                                         ChangeMapService.gI().changeMapYardrat(player, boss.zone, boss.location.x,
                                                 boss.location.y);
+                                    } else {
+                                        Service.gI().sendThongBao(player, "Boss chưa xuất hiện hoặc đã bị tiêu diệt");
                                     }
                                 } else {
                                     Service.gI().sendThongBao(player, "Không thể thực hiện");
@@ -781,8 +783,8 @@ public class Controller implements IMessageHandler {
                     case 13:
                         // client ok
                         if (player != null && player.isPl()) {
+                            DataGame.preloadPlayerItemIconsWithRetry(player);
                             Service.gI().player(player);
-                            DataGame.preloadPlayerItemIcons(player);
                             Service.gI().Send_Caitrang(player);
 
                             // -64 my flag bag

@@ -717,16 +717,23 @@ public class MrFinn {
             dataArray.clear();
 
             // data nhiệm vụ
-            dataArray = (JSONArray) JSONValue.parse(rs.getString("data_task"));
-            TaskMain taskMain = TaskService.gI().getTaskMainById(player,
-                    Byte.parseByte(String.valueOf(dataArray.get(0))));
-            taskMain.index = Byte.parseByte(String.valueOf(dataArray.get(1)));
-            taskMain.subTasks.get(taskMain.index).count = Short.parseShort(String.valueOf(dataArray.get(2)));
-            if (dataArray.size() > 3) {
-                taskMain.lastTime = Long.parseLong(String.valueOf(dataArray.get(3)));
-            } else {
-                taskMain.lastTime = System.currentTimeMillis();
+            dataArray = parseJsonArray(rs.getString("data_task"));
+            int taskId = jsonInt(dataArray, 0);
+            TaskMain taskMain = TaskService.gI().getTaskMainById(player, taskId);
+            if (taskMain == null || taskMain.subTasks == null || taskMain.subTasks.isEmpty()) {
+                throw new IllegalStateException("Khong co task template hop le de load player " + player.name);
             }
+            int taskIndex = jsonInt(dataArray, 1);
+            if (taskIndex < 0 || taskIndex >= taskMain.subTasks.size()) {
+                Logger.warningln("Task index " + taskIndex + " khong hop le cho player " + player.name
+                        + ", reset ve 0");
+                taskIndex = 0;
+            }
+            taskMain.index = taskIndex;
+            int taskCount = jsonInt(dataArray, 2);
+            taskCount = Math.max(0, Math.min(taskCount, Short.MAX_VALUE));
+            taskMain.subTasks.get(taskMain.index).count = (short) taskCount;
+            taskMain.lastTime = jsonLong(dataArray, 3, System.currentTimeMillis());
             player.playerTask.taskMain = taskMain;
             dataArray.clear();
 
@@ -1416,17 +1423,44 @@ public class MrFinn {
     }
 
     private static int jsonInt(JSONArray data, int index) {
-        return (int) jsonLong(data, index);
+        long value = jsonLong(data, index);
+        if (value > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        if (value < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) value;
     }
 
     private static long jsonLong(JSONArray data, int index) {
+        return jsonLong(data, index, 0);
+    }
+
+    private static long jsonLong(JSONArray data, int index, long defaultValue) {
         if (data == null || index < 0 || index >= data.size() || data.get(index) == null) {
-            return 0;
+            return defaultValue;
         }
         try {
-            return Long.parseLong(data.get(index).toString());
+            Object value = data.get(index);
+            if (value instanceof Number number) {
+                return number.longValue();
+            }
+            String text = value.toString().trim();
+            if (text.isEmpty() || "null".equalsIgnoreCase(text)) {
+                return defaultValue;
+            }
+            return Long.parseLong(text);
         } catch (NumberFormatException e) {
-            return 0;
+            return defaultValue;
         }
+    }
+
+    private static JSONArray parseJsonArray(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return new JSONArray();
+        }
+        Object parsed = JSONValue.parse(value);
+        return parsed instanceof JSONArray ? (JSONArray) parsed : new JSONArray();
     }
 }

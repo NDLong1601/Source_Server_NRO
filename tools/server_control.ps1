@@ -291,7 +291,7 @@ function Start-Server {
 
     $process = Start-Process -FilePath "java.exe" `
         -WorkingDirectory $Root `
-        -ArgumentList @("-server", "-Dfile.encoding=UTF-8", "-jar", "20.jar") `
+        -ArgumentList @("-server", "-Dfile.encoding=UTF-8", "-Dsun.stdout.encoding=UTF-8", "-Dsun.stderr.encoding=UTF-8", "-jar", "20.jar") `
         -RedirectStandardOutput $ServerLog `
         -RedirectStandardError $ServerErrorLog `
         -WindowStyle Hidden `

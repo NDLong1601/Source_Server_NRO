@@ -50,20 +50,48 @@ public class TaskService {
     }
 
     public TaskMain getTaskMainById(Player player, int id) {
+        TaskMain taskMain = createTaskMain(player, id);
+        if (taskMain != null) {
+            return taskMain;
+        }
+        if (player != null && player.playerTask != null && player.playerTask.taskMain != null) {
+            return player.playerTask.taskMain;
+        }
+        TaskMain fallback = getFirstTaskMain(player);
+        if (fallback != null) {
+            Logger.warningln("Task id " + id + " khong ton tai, fallback ve task id " + fallback.id);
+        }
+        return fallback;
+    }
+
+    private TaskMain createTaskMain(Player player, int id) {
         for (TaskMain tm : Manager.TASKS) {
             if (tm.id == id) {
-                TaskMain newTaskMain = new TaskMain(tm);
-                newTaskMain.detail = transformName(player, newTaskMain.detail);
-                for (SubTaskMain stm : newTaskMain.subTasks) {
-                    stm.mapId = (short) transformMapId(player, stm.mapId);
-                    stm.npcId = (byte) transformNpcId(player, stm.npcId);
-                    stm.notify = transformName(player, stm.notify);
-                    stm.name = transformName(player, stm.name);
-                }
-                return newTaskMain;
+                return buildTaskMain(player, tm);
             }
         }
-        return player.playerTask.taskMain;
+        return null;
+    }
+
+    private TaskMain getFirstTaskMain(Player player) {
+        for (TaskMain tm : Manager.TASKS) {
+            if (tm != null && tm.subTasks != null && !tm.subTasks.isEmpty()) {
+                return buildTaskMain(player, tm);
+            }
+        }
+        return null;
+    }
+
+    private TaskMain buildTaskMain(Player player, TaskMain taskMain) {
+        TaskMain newTaskMain = new TaskMain(taskMain);
+        newTaskMain.detail = transformName(player, newTaskMain.detail);
+        for (SubTaskMain stm : newTaskMain.subTasks) {
+            stm.mapId = (short) transformMapId(player, stm.mapId);
+            stm.npcId = (byte) transformNpcId(player, stm.npcId);
+            stm.notify = transformName(player, stm.notify);
+            stm.name = transformName(player, stm.name);
+        }
+        return newTaskMain;
     }
 
     public void sendTaskMain(Player player) {
@@ -1138,6 +1166,9 @@ public class TaskService {
     }
 
     private int transformMapId(Player player, int id) {
+        if (player == null) {
+            return id;
+        }
         if (id == ConstTask.MAP_NHA) {
             return (short) (player.gender + 21);
         } else if (id == ConstTask.MAP_200) {
@@ -1169,6 +1200,9 @@ public class TaskService {
     }
 
     private int transformNpcId(Player player, int id) {
+        if (player == null) {
+            return id;
+        }
         if (id == ConstTask.NPC_NHA) {
             return player.gender == ConstPlayer.TRAI_DAT
                     ? ConstNpc.ONG_GOHAN : (player.gender == ConstPlayer.NAMEC
@@ -1190,7 +1224,12 @@ public class TaskService {
     }
 
     private String transformName(Player player, String text) {
-        byte gender = player.gender;
+        if (text == null) {
+            return "";
+        }
+        if (player == null) {
+            return text;
+        }
         text = text.replaceAll(ConstTask.TEN_QUAI_1000, player.gender == ConstPlayer.XAYDA
                 ? "thằn lằn mẹ" : (player.gender == ConstPlayer.TRAI_DAT
                         ? "phi long mẹ" : "quỷ bay mẹ"));

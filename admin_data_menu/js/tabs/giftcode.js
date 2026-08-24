@@ -352,6 +352,6 @@ function DeleteGiftCode() {
 RegisterTab({
   id: "gift", view: "giftcode.html", panelId: "panelGift", navId: "navGift",
   title: "Quản lý Giftcode", subtitle: "Quản lý mã, số lượt, thời gian và quà kèm option riêng",
-  onOpen: function () { LoadGiftItems(false); LoadGiftCodes(); },
+  onOpen: function () { LoadOptions(false); LoadGiftItems(false); LoadGiftCodes(); },
   onRefresh: function () { LoadGiftItems(true); LoadGiftCodes(); }
 });

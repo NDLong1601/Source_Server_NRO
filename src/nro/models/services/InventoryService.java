@@ -1,5 +1,6 @@
 package nro.models.services;
 
+import nro.models.data.DataGame;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
 import nro.models.combine.NangCapNhan;
@@ -743,6 +744,7 @@ public class InventoryService {
 
     public void sendItemBags(Player player) {
         sortItems(player.inventory.itemsBag);
+        DataGame.preloadPlayerBagIcons(player);
         Message msg;
         try {
             msg = new Message(-36);

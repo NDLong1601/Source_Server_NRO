@@ -11,6 +11,11 @@
 /20.jar.bak_*
 /20.jar.pending
 
+# Costume tool scratch output
+/costume-tools/backups/
+/costume-tools/tmp-*.tsv
+/costume-tools/projects/*/staging-root/
+
 # Re-creatable NPC preview and diagnostic output
 /output/
 
