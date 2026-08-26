@@ -235,6 +235,20 @@ function NewItem() {
   UpdateItemIconPreview();
 }
 
+function UpdateItemInMemory() {
+  var id = Trim(V("itemId"));
+  var newRow = [id, V("itemType"), V("itemGender"), V("itemName"), V("itemDesc"),
+    V("itemLevel"), V("itemIcon"), V("itemPart"), V("itemUp"), V("itemPower"),
+    V("itemGold"), V("itemGem"), V("itemHead"), V("itemBody"), V("itemLeg")];
+  var found = false;
+  for (var i = 1; i < itemAllRows.length; i++) {
+    if (Trim(itemAllRows[i][0]) == id) { itemAllRows[i] = newRow; found = true; break; }
+  }
+  if (!found) itemAllRows.push(newRow);
+  SyncItemCaches();
+  ApplyItemFilters(false);
+}
+
 function SaveItem() {
   if (!V("itemId")) { Msg("itemMessage", "Cần nhập ID vật phẩm."); return; }
   var text = RunAdmin("saveitem", {
@@ -244,7 +258,7 @@ function SaveItem() {
     Head: V("itemHead"), Body: V("itemBody"), Leg: V("itemLeg")
   });
   Msg("itemMessage", StatusText(text));
-  if (!IsAdminError(text)) LoadItems(true);
+  if (!IsAdminError(text)) UpdateItemInMemory();
 }
 
 RegisterTab({

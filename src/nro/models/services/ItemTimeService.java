@@ -1,6 +1,7 @@
 package nro.models.services;
 
 import nro.models.consts.ConstPlayer;
+import nro.models.fishing.FishingItems;
 import nro.models.item.Item;
 import static nro.models.item.ItemTime.*;
 import nro.models.player.Fusion;
@@ -121,6 +122,24 @@ public class ItemTimeService {
         if (player.itemTime.isUseRX) {
             sendItemTime(player, 8579, player.itemTime.timeRX / 1000);
         }
+        sendFishingSupportItemTime(player, FishingItems.FISH_FINDER,
+                player.itemEvent.fishingFishFinderExpiresAt);
+        sendFishingSupportItemTime(player, FishingItems.LUCKY_CHARM,
+                player.itemEvent.fishingLuckyCharmExpiresAt);
+    }
+
+    private void sendFishingSupportItemTime(Player player, short itemTemplateId, long expiresAt) {
+        int iconId = ItemService.gI().getTemplate(itemTemplateId).iconID;
+        // Earlier fishing builds accidentally sent template IDs. Clear that
+        // legacy timer so reconnecting players do not keep the wrong image.
+        removeItemTime(player, itemTemplateId);
+        long remainingMillis = expiresAt - System.currentTimeMillis();
+        if (remainingMillis <= 0) {
+            removeItemTime(player, iconId);
+            return;
+        }
+        int remainingSeconds = (int) Math.min(Short.MAX_VALUE, (remainingMillis + 999L) / 1000L);
+        sendItemTime(player, iconId, remainingSeconds);
     }
 
     public void turnOnTDLT(Player player, Item item) {

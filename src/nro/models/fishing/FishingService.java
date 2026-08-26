@@ -14,6 +14,7 @@ import nro.models.player.ItemEvent;
 import nro.models.player.Player;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
+import nro.models.services.ItemTimeService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
@@ -40,6 +41,7 @@ public final class FishingService {
     private static final long BITE_DELAY_MAX_MILLIS = 2_500L;
     private static final long REACTION_WINDOW_MILLIS = 1_500L;
     private static final long PERFECT_WINDOW_MILLIS = 250L;
+    private static final int FISHING_SUPPORT_ITEM_DURATION_SECONDS = 15 * 60;
 
     public static final int CRAFT_REPAIR_KIT = 0;
     public static final int CRAFT_BAIT_BOX = 1;
@@ -79,15 +81,24 @@ public final class FishingService {
         }
     }
 
-    public void selectBait(Player player, short itemId) {
-        if (!ensureNotFishing(player) || !hasInBag(player, itemId)) {
+    public void selectBait(Player player, Item bait) {
+        if (bait == null || bait.template == null) {
             return;
         }
+        short itemId = bait.template.id;
+        if (!ensureNotFishing(player) || !FishingItems.isBait(itemId) || !hasInBag(player, itemId)) {
+            return;
+        }
+        markEquippedItem(player, bait);
         player.itemEvent.fishingBaitId = itemId;
         Service.gI().sendThongBao(player, "Đã chọn " + ItemService.gI().getTemplate(itemId).name + " làm mồi câu.");
     }
 
-    public void selectGear(Player player, short itemId) {
+    public void selectGear(Player player, Item gear) {
+        if (gear == null || gear.template == null) {
+            return;
+        }
+        short itemId = gear.template.id;
         if (!ensureNotFishing(player) || !hasInBag(player, itemId)) {
             return;
         }
@@ -103,7 +114,37 @@ public final class FishingService {
         } else {
             return;
         }
+        markEquippedItem(player, gear);
         Service.gI().sendThongBao(player, "Đã trang bị " + ItemService.gI().getTemplate(itemId).name + ".");
+    }
+
+    /**
+     * Keeps the marker on one concrete bag item. This matters if a player has
+     * several otherwise-identical bait/tackle stacks: only the clicked stack
+     * receives the client-side glow and the "Đang sử dụng" tooltip entry.
+     */
+    private void markEquippedItem(Player player, Item selectedItem) {
+        int selectedItemId = selectedItem.template.id;
+        for (Item item : player.inventory.itemsBag) {
+            if (!item.isNotNullItem() || item.template == null
+                    || !FishingItems.isSameEquipmentSlot(item.template.id, selectedItemId)) {
+                continue;
+            }
+            removeEquippedMarker(item);
+        }
+        selectedItem.itemOptions.add(new Item.ItemOption(
+                FishingItems.EQUIPPED_MARKER_OPTION_ID,
+                FishingItems.EQUIPPED_MARKER_EFFECT));
+    }
+
+    private void removeEquippedMarker(Item item) {
+        for (int index = item.itemOptions.size() - 1; index >= 0; index--) {
+            Item.ItemOption option = item.itemOptions.get(index);
+            if (option != null && option.optionTemplate != null
+                    && option.optionTemplate.id == FishingItems.EQUIPPED_MARKER_OPTION_ID) {
+                item.itemOptions.remove(index);
+            }
+        }
     }
 
     public boolean useFishFinder(Player player) {
@@ -111,6 +152,9 @@ public final class FishingService {
             return false;
         }
         player.itemEvent.fishingFishFinderExpiresAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15);
+        ItemTimeService.gI().removeItemTime(player, FishingItems.FISH_FINDER);
+        ItemTimeService.gI().sendItemTime(player, ItemService.gI().getTemplate(FishingItems.FISH_FINDER).iconID,
+                FISHING_SUPPORT_ITEM_DURATION_SECONDS);
         Service.gI().sendThongBao(player, "Máy dò cá hoạt động trong 15 phút.");
         return true;
     }
@@ -120,6 +164,9 @@ public final class FishingService {
             return false;
         }
         player.itemEvent.fishingLuckyCharmExpiresAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15);
+        ItemTimeService.gI().removeItemTime(player, FishingItems.LUCKY_CHARM);
+        ItemTimeService.gI().sendItemTime(player, ItemService.gI().getTemplate(FishingItems.LUCKY_CHARM).iconID,
+                FISHING_SUPPORT_ITEM_DURATION_SECONDS);
         Service.gI().sendThongBao(player, "Bùa May Mắn Ngư Phủ hoạt động trong 15 phút.");
         return true;
     }

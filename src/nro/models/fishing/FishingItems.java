@@ -11,6 +11,15 @@ public final class FishingItems {
     private FishingItems() {
     }
 
+    /**
+     * Per-item marker persisted on the fishing bait or tackle that the player
+     * has selected. The patched local client renders this option as a glowing
+     * border around the inventory slot; its option-template text also makes
+     * the state visible in the normal item tooltip.
+     */
+    public static final int EQUIPPED_MARKER_OPTION_ID = 251;
+    public static final int EQUIPPED_MARKER_EFFECT = 1;
+
     public static final short ROD_CRUDE = 2083;
     public static final short ROD_COMMON = 2084;
     public static final short ROD_ADVANCED = 2085;
@@ -101,6 +110,19 @@ public final class FishingItems {
 
     public static boolean isHook(int itemId) {
         return itemId >= HOOK_STEEL && itemId <= HOOK_GOLDEN;
+    }
+
+    /**
+     * Returns true only when two fishing items occupy the same selectable
+     * equipment slot. A bait replaces bait only; a reel never clears a hook,
+     * for example.
+     */
+    public static boolean isSameEquipmentSlot(int firstItemId, int secondItemId) {
+        return (isBait(firstItemId) && isBait(secondItemId))
+                || (isLine(firstItemId) && isLine(secondItemId))
+                || (isFloat(firstItemId) && isFloat(secondItemId))
+                || (isReel(firstItemId) && isReel(secondItemId))
+                || (isHook(firstItemId) && isHook(secondItemId));
     }
 
     public static boolean isFish(int itemId) {

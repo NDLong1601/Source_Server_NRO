@@ -36,6 +36,16 @@ public final class FishingProgressService {
         "Sử thi", "Huyền thoại", "Cực hiếm"
     };
 
+    /**
+     * Reused, currently unspawned normal-mob slots.  The native radar screen
+     * displays type-0 cards through a mob template, so these IDs provide the
+     * matching large fish illustration without increasing the 127-template
+     * client limit.
+     */
+    private static final short[] FISH_BOOK_MOB_IDS = {
+        86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100
+    };
+
     private static final String[] QUEST_NAMES = {"Dễ", "Vừa", "Khó", "Cực khó"};
     private static final int[] QUEST_MIN_TIER = {1, 5, 9, 13};
     private static final int[] QUEST_MAX_TIER = {4, 8, 12, 15};
@@ -79,31 +89,7 @@ public final class FishingProgressService {
             message = new Message(127);
             message.writer().writeByte(0);
             message.writer().writeShort(FISH_NAMES.length);
-            for (int index = 0; index < FISH_NAMES.length; index++) {
-                short itemId = (short) (FishingItems.FISH_SILVER + index);
-                int bit = 1 << index;
-                boolean caught = (player.itemEvent.fishingFishCaughtMask & bit) != 0;
-                boolean giant = (player.itemEvent.fishingGiantFishCaughtMask & bit) != 0;
-                int tier = index + 1;
-
-                message.writer().writeShort(itemId);
-                message.writer().writeShort(ItemService.gI().getTemplate(itemId).iconID);
-                message.writer().writeByte(bookRank(tier));
-                message.writer().writeByte(caught ? 1 : 0);
-                message.writer().writeByte(1);
-                // The native collection screen applies its grey lock state from level 0.
-                message.writer().writeByte(0);
-                message.writer().writeShort(0);
-                message.writer().writeUTF(FISH_NAMES[index]);
-                message.writer().writeUTF(caught
-                        ? "Cấp cá " + tier + " - " + FISH_RARITIES[index] + "\nĐã câu: "
-                                + player.itemEvent.fishingFishCatchCounts[index] + " lần"
-                                + (giant ? "\nĐã bắt được phiên bản Khổng Lồ." : "\nChưa bắt được phiên bản Khổng Lồ.")
-                        : "Chưa khám phá. Hãy câu được loài này để khôi phục màu sắc và ghi nhận vào sổ tay.");
-                message.writer().writeByte(caught ? 1 : 0);
-                message.writer().writeByte(0);
-                message.writer().writeByte(0);
-            }
+            appendFishBookEntries(message, player);
             message.writer().flush();
             player.sendMessage(message);
         } catch (Exception exception) {
@@ -112,6 +98,38 @@ public final class FishingProgressService {
             if (message != null) {
                 message.cleanup();
             }
+        }
+    }
+
+    /**
+     * Writes the dedicated fishing codex cards. Their type-0 template is a
+     * fish sprite mob, which the native radar screen renders in its preview.
+     */
+    public void appendFishBookEntries(Message message, Player player) throws Exception {
+        for (int index = 0; index < FISH_NAMES.length; index++) {
+            short itemId = (short) (FishingItems.FISH_SILVER + index);
+            int bit = 1 << index;
+            boolean caught = (player.itemEvent.fishingFishCaughtMask & bit) != 0;
+            boolean giant = (player.itemEvent.fishingGiantFishCaughtMask & bit) != 0;
+            int tier = index + 1;
+
+            message.writer().writeShort(itemId);
+            message.writer().writeShort(ItemService.gI().getTemplate(itemId).iconID);
+            message.writer().writeByte(bookRank(tier));
+            message.writer().writeByte(caught ? 1 : 0);
+            message.writer().writeByte(1);
+            // The native collection screen applies its grey lock state from level 0.
+            message.writer().writeByte(0);
+            message.writer().writeShort(FISH_BOOK_MOB_IDS[index]);
+            message.writer().writeUTF(FISH_NAMES[index]);
+            message.writer().writeUTF(caught
+                    ? "Cấp cá " + tier + " - " + FISH_RARITIES[index] + "\nĐã câu: "
+                            + player.itemEvent.fishingFishCatchCounts[index] + " lần"
+                            + (giant ? "\nĐã bắt được phiên bản Khổng Lồ." : "\nChưa bắt được phiên bản Khổng Lồ.")
+                    : "Chưa khám phá. Hãy câu được loài này để khôi phục màu sắc và ghi nhận vào sổ tay.");
+            message.writer().writeByte(caught ? 1 : 0);
+            message.writer().writeByte(0);
+            message.writer().writeByte(0);
         }
     }
 

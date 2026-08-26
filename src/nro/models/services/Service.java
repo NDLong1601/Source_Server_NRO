@@ -766,6 +766,31 @@ public class Service {
         }
     }
 
+    private void writeAdvancedPlayerInfo(Message msg, Player player) throws IOException {
+        // The damage routine caps this mitigation at 86%; show the same
+        // effective value that is used in combat instead of an uncapped sum.
+        msg.writer().writeInt(Math.min(86, Math.max(0, player.nPoint.tlGiap)));
+        msg.writer().writeInt(Math.max(0, player.nPoint.tlPST));
+        msg.writer().writeInt(player.nPoint.getRealTlNeDon());
+
+        // The client only has one "Hút HP" row. Include the mob-specific
+        // portion because it is active when the player attacks a monster.
+        msg.writer().writeInt(Math.max(0, player.nPoint.getTileHutHp(true)));
+        msg.writer().writeInt(Math.max(0, player.nPoint.getTiLeHutMp()));
+
+        // This server currently has no independent reduction-duration model
+        // for Thái Dương Hạ San. Send zero explicitly; the client filter hides
+        // these inactive rows instead of presenting misleading "0%" text.
+        msg.writer().writeInt(0);
+        msg.writer().writeInt(0);
+
+        msg.writer().writeBoolean(player.nPoint.khangTDHS);
+        msg.writer().writeBoolean(player.nPoint.isKhongLanh);
+        msg.writer().writeBoolean(player.nPoint.wearingVoHinh);
+        msg.writer().writeBoolean(player.nPoint.teleport);
+
+    }
+
     public void point(Player player) {
         if (player == null || player.nPoint == null) {
             return;
@@ -794,6 +819,7 @@ public class Service {
                 msg.writer().writeShort(100);
                 msg.writer().writeShort(player.nPoint.defg);
                 msg.writer().writeByte(player.nPoint.critg);
+                writeAdvancedPlayerInfo(msg, player);
                 player.sendMessage(msg);
                 msg.cleanup();
             } catch (Exception e) {

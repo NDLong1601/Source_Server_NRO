@@ -772,7 +772,7 @@ public class UseItem {
                             case FishingItems.BAIT_BLUE_FISH:
                             case FishingItems.BAIT_CRYSTAL:
                             case FishingItems.BAIT_GOLDEN_CARP:
-                                FishingService.gI().selectBait(pl, item.template.id);
+                                FishingService.gI().selectBait(pl, item);
                                 break;
                             case FishingItems.LINE_MONOFILAMENT:
                             case FishingItems.LINE_STEEL:
@@ -786,7 +786,7 @@ public class UseItem {
                             case FishingItems.HOOK_STEEL:
                             case FishingItems.HOOK_JADE:
                             case FishingItems.HOOK_GOLDEN:
-                                FishingService.gI().selectGear(pl, item.template.id);
+                                FishingService.gI().selectGear(pl, item);
                                 break;
                             case FishingItems.FISH_FINDER:
                                 if (FishingService.gI().useFishFinder(pl)) {

@@ -30,7 +30,7 @@ public class NguDan extends Npc {
         "NĂM NGƯ TRƯỜNG\n\nBạn có thể câu tại Làng Chài, Khu vực đánh bắt, Khu Câu cá 1, Khu Câu cá 2 và Khu Câu cá 3. Cả năm nơi đều có thể xuất hiện đủ các loài cá; sức của cần, loại mồi và độ khó của lượt kéo mới quyết định cá quý đến đâu.",
         "KHI PHAO CHUYỂN ĐỘNG\n\nDùng cần một lần để thả câu. Khi phao động, dùng lại đúng chiếc cần đó. Một chuỗi hướng Lên, Xuống, Trái, Phải sẽ hiện ra; nhập đúng theo thứ tự trước khi hết giờ. Sai một hướng hoặc quá chậm đều khiến cá giật hụt. Chuỗi dài hơn mở cơ hội gặp cá cấp cao hơn.",
         "BỘ ĐỒ NGƯ PHỦ\n\nCần tốt mở giới hạn cá quý. Dây chắc giảm nguy cơ đứt, phao tốt kéo dài thời gian phản ứng, máy câu tăng sức kéo và lưỡi chùm có thể mang thêm cá phụ. Cửa hàng thường bán vật dụng cơ bản; Cửa hàng Điểm đổi trang bị cao nhất và cải trang bằng Xu Ngư Phủ.",
-        "SỔ TAY VÀ NHIỆM VỤ\n\nSổ tay cá là một sổ riêng, không dùng chung với Sổ Sưu Tầm. Loài chưa câu sẽ bị khóa và mất màu; lần câu đầu tiên sẽ khôi phục hình ảnh cùng số lần bắt được. Mỗi ngày được nhận tối đa mười nhiệm vụ. Có thể xóa nhiệm vụ đang nhận, nhưng lượt đã dùng sẽ không được hoàn lại.",
+        "SỔ TAY VÀ NHIỆM VỤ\n\nSổ sưu tầm chỉ hiển thị các thẻ nhân vật. Gặp Ngư Dân và chọn Sổ tay để mở riêng Sổ Tay Ngư Phủ. Loài chưa câu sẽ bị khóa và mất màu; lần câu đầu tiên sẽ khôi phục hình ảnh cùng số lần bắt được. Mỗi ngày được nhận tối đa mười nhiệm vụ. Có thể xóa nhiệm vụ đang nhận, nhưng lượt đã dùng sẽ không được hoàn lại.",
         "GIỮ BIỂN SẠCH\n\nNếu kéo lên rác, đừng vứt trở lại biển. Mang rác đến mục Dọn rác để nhận Điểm Làm Sạch, rồi đổi điểm lấy xu, mồi, rương và Huy Hiệu. Một số rác còn dùng làm nguyên liệu chế tạo. Đó là cách mỗi Ngư Phủ tiếp tục lời hứa năm xưa."
     };
 

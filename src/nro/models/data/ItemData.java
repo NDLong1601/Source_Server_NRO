@@ -11,17 +11,19 @@ public class ItemData {
 
     /*
      * The legacy client finalizes its item cache after the first subtype-2
-     * append packet. Keep exactly one reload packet and one append packet;
-     * 1,019 balances the current compacted data below the 65,535-byte limit.
+     * append packet. Keep exactly one reload packet and one append packet.
+     * The template text is data-dependent, so calculate the split instead of
+     * relying on a fixed item count that can overflow after a content update.
      */
-    private static final int FIRST_TEMPLATE_PACKET_COUNT = 1_019;
     private static final int MAX_PACKET_PAYLOAD_BYTES = 65_535;
+    private static final int RELOAD_PACKET_OVERHEAD_BYTES = 5;
+    private static final int APPEND_PACKET_OVERHEAD_BYTES = 7;
 
     public static void updateItem(MySession session) {
         updateItemOptionItemplate(session);
         updateItemArrHead2FTemplate(session);
         int total = Manager.ITEM_TEMPLATES.size();
-        int firstChunk = Math.min(FIRST_TEMPLATE_PACKET_COUNT, total);
+        int firstChunk = findReloadTemplateCount(total);
         assertTemplatePacketFits(0, firstChunk, false);
         updateItemTemplate(session, firstChunk);
         if (firstChunk < total) {
@@ -30,16 +32,42 @@ public class ItemData {
         }
     }
 
+    /**
+     * Fits as many leading templates as possible in the reload packet.  This
+     * minimizes the trailing append packet while preserving the old client's
+     * required one-reload/one-append sequence.
+     */
+    private static int findReloadTemplateCount(int total) {
+        int payloadBytes = RELOAD_PACKET_OVERHEAD_BYTES;
+        int end = 0;
+        while (end < total) {
+            int templateBytes = templatePacketBytes(Manager.ITEM_TEMPLATES.get(end));
+            if (payloadBytes + templateBytes > MAX_PACKET_PAYLOAD_BYTES) {
+                break;
+            }
+            payloadBytes += templateBytes;
+            end++;
+        }
+        if (end == 0 && total > 0) {
+            throw new IllegalStateException("Item template 0 vượt giới hạn gói 65.535 byte.");
+        }
+        return end;
+    }
+
     private static void assertTemplatePacketFits(int start, int end, boolean append) {
-        int payloadBytes = append ? 7 : 5;
+        int payloadBytes = append ? APPEND_PACKET_OVERHEAD_BYTES : RELOAD_PACKET_OVERHEAD_BYTES;
         for (int index = start; index < end; index++) {
-            Template.ItemTemplate template = Manager.ITEM_TEMPLATES.get(index);
-            payloadBytes += 16 + modifiedUtfLength(template.name) + modifiedUtfLength(template.description);
+            payloadBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(index));
         }
         if (payloadBytes > MAX_PACKET_PAYLOAD_BYTES) {
             throw new IllegalStateException("Packet item template " + (append ? "append" : "reload")
                     + " vượt 65.535 byte: " + payloadBytes + " byte, range " + start + ".." + (end - 1));
         }
+    }
+
+    private static int templatePacketBytes(Template.ItemTemplate template) {
+        // 12 fixed fields plus two unsigned-short UTF lengths.
+        return 16 + modifiedUtfLength(template.name) + modifiedUtfLength(template.description);
     }
 
     private static int modifiedUtfLength(String value) {
