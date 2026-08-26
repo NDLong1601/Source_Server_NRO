@@ -28,7 +28,7 @@
     <div class="right-pane">
       <div class="section-title">Chi tiết vật phẩm</div>
       <div class="row">
-        <div class="cell"><label>ID</label><input type="text" id="itemId"></div>
+        <div class="cell"><label>ID</label><input type="text" id="itemId" onkeyup="UpdateItemIconPreview()"></div>
         <div class="cell">
           <label>Type / group</label>
           <input type="text" id="itemType" class="hidden-value" value="27">
@@ -53,7 +53,7 @@
       <div class="row">
         <div class="cell"><label>Level</label><input type="text" id="itemLevel"></div>
         <div class="cell"><label>Icon</label><input type="text" id="itemIcon" onkeyup="UpdateItemIconPreview()"></div>
-        <div class="cell"><label>Part</label><input type="text" id="itemPart"></div>
+        <div class="cell"><label>Part</label><input type="text" id="itemPart" onkeyup="UpdateItemIconPreview()"></div>
       </div>
       <div class="item-icon-preview" id="itemIconPreview">Chưa có icon</div>
       <div class="row">

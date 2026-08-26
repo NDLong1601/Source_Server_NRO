@@ -3,6 +3,8 @@ var currentTab = "items";
 window.onload = function () {
   FitWindowToScreen();
   LoadTabViews();
+  InitAdminCheckboxes();
+  InitAdminSelects();
   InitCombos();
   LoadStatus();
   ShowTab(currentTab);
@@ -18,6 +20,7 @@ window.onresize = function () {
 
 document.onclick = function () {
   CloseCombos("");
+  CloseAdminSelects("");
 };
 
 function LoadTabViews() {
@@ -32,6 +35,8 @@ function LoadTabViews() {
     html += view;
   }
   host.innerHTML = html;
+  QueueAdminCheckboxDecoration();
+  QueueAdminSelectDecoration();
 }
 
 
@@ -50,6 +55,8 @@ function FitWindowToScreen() {
 
 function AdjustTableOffsets() {
   try {
+    QueueAdminCheckboxDecoration();
+    QueueAdminSelectDecoration();
     var nodes = document.getElementsByTagName("div");
     for (var i = 0; i < nodes.length; i++) {
       var tb = nodes[i];

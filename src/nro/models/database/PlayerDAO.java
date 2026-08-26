@@ -906,6 +906,33 @@ public class PlayerDAO {
                 dataArray.add(player.itemEvent.lastItemKeoDuong);
                 dataArray.add(player.itemEvent.remainingManhVo);
                 dataArray.add(player.itemEvent.lastItemManhVo);
+                dataArray.add(player.itemEvent.fishingStarterClaimed);
+                dataArray.add(player.itemEvent.fishingBaitId);
+                dataArray.add(player.itemEvent.fishingLineId);
+                dataArray.add(player.itemEvent.fishingFloatId);
+                dataArray.add(player.itemEvent.fishingReelId);
+                dataArray.add(player.itemEvent.fishingHookId);
+                dataArray.add(player.itemEvent.fishingCombo);
+                dataArray.add(player.itemEvent.fishingFishFinderExpiresAt);
+                dataArray.add(player.itemEvent.fishingLuckyCharmExpiresAt);
+                dataArray.add(player.itemEvent.fishingCleaningPoints);
+                dataArray.add(player.itemEvent.fishingDailyResetAt);
+                dataArray.add(player.itemEvent.fishingDirectChestsToday);
+                dataArray.add(player.itemEvent.fishingDirectBadgesToday);
+                dataArray.add(player.itemEvent.fishingCleaningChestsToday);
+                dataArray.add(player.itemEvent.fishingFishCaughtMask);
+                dataArray.add(player.itemEvent.fishingGiantFishCaughtMask);
+                JSONArray fishingCatchCounts = new JSONArray();
+                for (int catchCount : player.itemEvent.fishingFishCatchCounts) {
+                    fishingCatchCounts.add(catchCount);
+                }
+                dataArray.add(fishingCatchCounts);
+                dataArray.add(player.itemEvent.fishingQuestDifficulty);
+                dataArray.add(player.itemEvent.fishingQuestProgress);
+                dataArray.add(player.itemEvent.fishingQuestResetAt);
+                dataArray.add(player.itemEvent.fishingQuestCompletedMask);
+                dataArray.add(player.itemEvent.fishingQuestsAcceptedToday);
+                dataArray.add(player.itemEvent.fishingQuestsCompletedToday);
                 String dataItemEvent = dataArray.toJSONString();
                 dataArray.clear();
 

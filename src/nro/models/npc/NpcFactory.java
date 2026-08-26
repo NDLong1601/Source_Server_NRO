@@ -87,6 +87,7 @@ import nro.models.services.shenron.Shenron_Service;
 import java.util.List;
 import nro.models.event.XeNuocMia;
 import nro.models.npc_list.Kanao;
+import nro.models.npc_list.NguDan;
 import nro.models.npc_list.ChiChi;
 import nro.models.npc_list.DrMyuu;
 import nro.models.npc_list.DuaHau;
@@ -236,6 +237,8 @@ public class NpcFactory {
                     new Bardock(mapId, status, cx, cy, tempId, avatar);
                 case ConstNpc.KANAO ->
                     new Kanao(mapId, status, cx, cy, tempId, avatar);
+                case ConstNpc.NGU_DAN ->
+                    new NguDan(mapId, status, cx, cy, tempId, avatar);
                 default ->
                     new Npc(mapId, status, cx, cy, tempId, avatar) {
                         @Override

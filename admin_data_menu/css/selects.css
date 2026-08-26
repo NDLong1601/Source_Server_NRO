@@ -1,0 +1,245 @@
+/* Shared AdminSelect component: the same full menu treatment used by .combo. */
+#app .admin-select-control {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  height: 34px;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+#app .admin-select-control.admin-select-fill {
+  display: block;
+  width: 100%;
+}
+
+#app .admin-select-control:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+#app .admin-select-control.focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px #ccfbf1;
+}
+
+#app .admin-select-text {
+  position: absolute;
+  left: 9px;
+  top: 0;
+  right: 36px;
+  z-index: 1;
+  height: 100%;
+  overflow: hidden;
+  color: #0f172a;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 32px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#app .admin-select-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  width: 32px;
+  height: 100%;
+  box-sizing: border-box;
+  border-left: 1px solid #e2e8f0;
+  border-radius: 0 6px 6px 0;
+  background: #f8fafc;
+}
+
+#app .admin-select-caret {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin-top: -2px;
+  border-top: 6px solid #334155;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+}
+
+#app .admin-select-control.open {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px #ccfbf1;
+}
+
+#app .admin-select-control select[data-admin-select="1"] {
+  display: none;
+}
+
+#app .admin-select-menu {
+  position: absolute;
+  left: -1px;
+  top: 35px;
+  z-index: 80;
+  display: none;
+  width: 100%;
+  max-height: 210px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid #94a3b8;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+#app .admin-select-control.open .admin-select-menu {
+  display: block;
+}
+
+#app .admin-select-option {
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 9px;
+  overflow: hidden;
+  border-bottom: 1px solid #eef2f7;
+  color: #172033;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 30px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#app .admin-select-option:hover,
+#app .admin-select-option.active {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+#app .admin-select-option.disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: default;
+}
+
+#app .admin-select-control.disabled {
+  border-color: #d8e0ea;
+  background: #eef2f7;
+  cursor: default;
+}
+
+#app .admin-select-control.disabled .admin-select-text {
+  color: #94a3b8;
+}
+
+#panelSkillMastery .skill-mastery-toolbar .admin-select-control[data-admin-select-id="skillMasteryClassFilter"] {
+  width: 145px;
+  margin-right: 5px;
+  vertical-align: top;
+}
+
+#panelMapCreator .map-resize-card > .admin-select-control {
+  display: block;
+  width: 100%;
+  height: 29px;
+  margin-top: 5px;
+}
+
+#panelMapCreator .map-tile-mode.admin-select-control {
+  display: block;
+  width: 100%;
+  height: 27px;
+  margin-top: 5px;
+}
+
+#panelMapCreator .map-tile-mode.admin-select-control .admin-select-text {
+  font-size: 10px;
+  line-height: 25px;
+}
+
+#panelMapCreator .map-canvas-center-pane .map-subheader .admin-select-control[data-admin-select-id="mapCanvasZoom"] {
+  width: 64px;
+  height: 25px;
+}
+
+#panelMapCreator .map-triple-input > .admin-select-control,
+#panelMapCreator .map-triple-input > span > .admin-select-control {
+  display: block;
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+}
+
+#panelMapCreator .map-asset-filter > .admin-select-control {
+  flex: 1 1 0;
+  width: 50%;
+  min-width: 0;
+  height: 29px;
+}
+
+#panelMapCreator .map-qa-actions .admin-select-control {
+  width: 235px;
+  height: 27px;
+}
+
+#panelMapCreator .map-resize-card > .admin-select-control .admin-select-text,
+#panelMapCreator .map-asset-filter > .admin-select-control .admin-select-text {
+  font-size: 10px;
+  line-height: 27px;
+}
+
+#panelMapCreator .map-resize-card > .admin-select-control .admin-select-menu,
+#panelMapCreator .map-asset-filter > .admin-select-control .admin-select-menu {
+  top: 30px;
+}
+
+#panelMapCreator .map-canvas-center-pane .map-subheader .admin-select-control[data-admin-select-id="mapCanvasZoom"] .admin-select-text {
+  font-size: 10px;
+  line-height: 23px;
+}
+
+#panelMapCreator .map-canvas-center-pane .map-subheader .admin-select-control[data-admin-select-id="mapCanvasZoom"] .admin-select-menu {
+  top: 26px;
+}
+
+#panelMapCreator .map-qa-actions .admin-select-control .admin-select-text {
+  font-size: 10px;
+  line-height: 25px;
+}
+
+#panelMapCreator .map-tile-mode.admin-select-control .admin-select-menu,
+#panelMapCreator .map-qa-actions .admin-select-control .admin-select-menu {
+  top: 28px;
+}
+
+#panelNpcCreator .npc-bg-select.admin-select-control {
+  flex: 1;
+  height: 30px;
+}
+
+#panelNpcCreator .npc-bg-select.admin-select-control .admin-select-text {
+  line-height: 28px;
+}
+
+#panelNpcCreator .npc-bg-select.admin-select-control .admin-select-menu {
+  top: 31px;
+}
+
+#panelNpcCreator .npc-runtime-preview-controls label .admin-select-control {
+  display: block;
+  min-width: 88px;
+  height: 28px;
+}
+
+#panelNpcCreator .npc-runtime-preview-controls label .admin-select-text {
+  font-size: 12px;
+  line-height: 26px;
+}
+
+#panelNpcCreator .npc-runtime-preview-controls label .admin-select-menu {
+  top: 29px;
+}

@@ -1,0 +1,13 @@
+{
+  "staticStatus": "passed-with-client-check-needed",
+  "checks": [
+    "HEAD has 3 slots",
+    "BODY has 17 slots",
+    "LEG has 14 slots",
+    "all referenced image IDs are in Java short range",
+    "all dx/dy values are in Java byte range",
+    "runtime PNGs were written to x1-x4",
+    "profile is cropped and bottom-aligned to 64x64 x1 canvas",
+    "default item options are present"
+  ]
+}

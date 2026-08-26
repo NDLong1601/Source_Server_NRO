@@ -1,0 +1,3381 @@
+{
+  "itemId": 2081,
+  "name": "Cải trang Iron Man",
+  "description": "Cải trang thành Iron Man",
+  "gender": 3,
+  "sourceDir": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man",
+  "offsetSource": "estimated from AWN Black Panther part 1667/1668/1669; no matching Iron Man DATA was found locally",
+  "needsClientOffsetCheck": true,
+  "iconId": 26304,
+  "profileIconId": 26336,
+  "headAvatar": {
+    "headId": 2192,
+    "avatarId": 26336
+  },
+  "partIds": {
+    "head": 2192,
+    "body": 2193,
+    "leg": 2194
+  },
+  "placeholderImageId": 2955,
+  "oldToNewImageIds": {
+    "18079": 26304,
+    "18080": 26305,
+    "18081": 26306,
+    "18082": 26307,
+    "18083": 26308,
+    "18084": 26309,
+    "18085": 26310,
+    "18086": 26311,
+    "18087": 26312,
+    "18088": 26313,
+    "18089": 26314,
+    "18090": 26315,
+    "18091": 26316,
+    "18092": 26317,
+    "18093": 26318,
+    "18094": 26319,
+    "18095": 26320,
+    "18096": 26321,
+    "18097": 26322,
+    "18098": 26323,
+    "18099": 26324,
+    "18100": 26325,
+    "18101": 26326,
+    "18102": 26327,
+    "18103": 26328,
+    "18104": 26329,
+    "18105": 26330,
+    "18106": 26331,
+    "18107": 26332,
+    "18108": 26333,
+    "18109": 26334,
+    "18110": 26335
+  },
+  "profileSource": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\profile.png",
+  "profileImageId": 26336,
+  "head": [
+    [
+      26304,
+      -4,
+      -9
+    ],
+    [
+      26305,
+      -2,
+      -7
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    [
+      26307,
+      -3,
+      -6
+    ],
+    [
+      26306,
+      2,
+      -1
+    ],
+    [
+      26308,
+      -1,
+      -4
+    ],
+    [
+      26309,
+      6,
+      -4
+    ],
+    [
+      26310,
+      4,
+      -4
+    ],
+    [
+      26311,
+      6,
+      -3
+    ],
+    [
+      26312,
+      5,
+      -4
+    ],
+    [
+      26313,
+      -3,
+      -10
+    ],
+    [
+      26314,
+      -9,
+      -5
+    ],
+    [
+      26315,
+      -3,
+      -6
+    ],
+    [
+      26316,
+      3,
+      -3
+    ],
+    [
+      26317,
+      0,
+      -2
+    ],
+    [
+      26318,
+      1,
+      -3
+    ],
+    [
+      26319,
+      0,
+      -4
+    ],
+    [
+      26320,
+      1,
+      -3
+    ],
+    [
+      26321,
+      2,
+      -4
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "leg": [
+    [
+      26323,
+      -2,
+      -3
+    ],
+    [
+      26322,
+      -1,
+      -1
+    ],
+    [
+      26324,
+      -1,
+      -2
+    ],
+    [
+      26325,
+      7,
+      0
+    ],
+    [
+      26326,
+      -3,
+      -2
+    ],
+    [
+      26327,
+      3,
+      0
+    ],
+    [
+      26328,
+      1,
+      -1
+    ],
+    [
+      26329,
+      0,
+      1
+    ],
+    [
+      26330,
+      -10,
+      -1
+    ],
+    [
+      26331,
+      -2,
+      -3
+    ],
+    [
+      26332,
+      -4,
+      1
+    ],
+    [
+      26333,
+      -7,
+      0
+    ],
+    [
+      26334,
+      -4,
+      2
+    ],
+    [
+      26335,
+      -4,
+      2
+    ]
+  ],
+  "headSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18079,
+      "imageId": 26304,
+      "dx": -4,
+      "dy": -9,
+      "observed": "Đầu chính, dùng cho icon hành trang",
+      "suggestedGroup": "đứng/icon",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18080,
+      "imageId": 26305,
+      "dx": -2,
+      "dy": -7,
+      "observed": "Đầu nghiêng/động",
+      "suggestedGroup": "chạy/bay",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "bodySlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18082,
+      "imageId": 26307,
+      "dx": -3,
+      "dy": -6,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đỡ/chịu đòn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18081,
+      "imageId": 26306,
+      "dx": 2,
+      "dy": -1,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng hoặc chuyển động chính",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 18083,
+      "imageId": 26308,
+      "dx": -1,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 18084,
+      "imageId": 26309,
+      "dx": 6,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 18085,
+      "imageId": 26310,
+      "dx": 4,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 18086,
+      "imageId": 26311,
+      "dx": 6,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 18087,
+      "imageId": 26312,
+      "dx": 5,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 18088,
+      "imageId": 26313,
+      "dx": -3,
+      "dy": -10,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/đòn phụ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 18089,
+      "imageId": 26314,
+      "dx": -9,
+      "dy": -5,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "tụ lực/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 18090,
+      "imageId": 26315,
+      "dx": -3,
+      "dy": -6,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 18091,
+      "imageId": 26316,
+      "dx": 3,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 18092,
+      "imageId": 26317,
+      "dx": 0,
+      "dy": -2,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 18093,
+      "imageId": 26318,
+      "dx": 1,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 18094,
+      "imageId": 26319,
+      "dx": 0,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "ngã/đánh văng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 14,
+      "sourceImageId": 18095,
+      "imageId": 26320,
+      "dx": 1,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng lớn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 15,
+      "sourceImageId": 18096,
+      "imageId": 26321,
+      "dx": 2,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "phòng thủ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 16,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "legSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18098,
+      "imageId": 26323,
+      "dx": -2,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18097,
+      "imageId": 26322,
+      "dx": -1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 18099,
+      "imageId": 26324,
+      "dx": -1,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 18100,
+      "imageId": 26325,
+      "dx": 7,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 18101,
+      "imageId": 26326,
+      "dx": -3,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 18102,
+      "imageId": 26327,
+      "dx": 3,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 18103,
+      "imageId": 26328,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 18104,
+      "imageId": 26329,
+      "dx": 0,
+      "dy": 1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 18105,
+      "imageId": 26330,
+      "dx": -10,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 18106,
+      "imageId": 26331,
+      "dx": -2,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 18107,
+      "imageId": 26332,
+      "dx": -4,
+      "dy": 1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 18108,
+      "imageId": 26333,
+      "dx": -7,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 18109,
+      "imageId": 26334,
+      "dx": -4,
+      "dy": 2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 18110,
+      "imageId": 26335,
+      "dx": -4,
+      "dy": 2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "motion/placeholder",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "runtimeAssets": {
+    "26304": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18079.png",
+      "sourceSize": [
+        128,
+        96
+      ],
+      "sourceBbox": [
+        28,
+        24,
+        93,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "bottom"
+      ],
+      "x1Size": [
+        32,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26304.png",
+          "size": [
+            32,
+            24
+          ],
+          "bytes": 1122,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26304.png",
+          "size": [
+            64,
+            48
+          ],
+          "bytes": 3060,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26304.png",
+          "size": [
+            96,
+            72
+          ],
+          "bytes": 5778,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26304.png",
+          "size": [
+            128,
+            96
+          ],
+          "bytes": 8144,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26305": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18080.png",
+      "sourceSize": [
+        128,
+        96
+      ],
+      "sourceBbox": [
+        30,
+        23,
+        92,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "bottom"
+      ],
+      "x1Size": [
+        32,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26305.png",
+          "size": [
+            32,
+            24
+          ],
+          "bytes": 1145,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26305.png",
+          "size": [
+            64,
+            48
+          ],
+          "bytes": 3178,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26305.png",
+          "size": [
+            96,
+            72
+          ],
+          "bytes": 5963,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26305.png",
+          "size": [
+            128,
+            96
+          ],
+          "bytes": 8766,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26306": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18081.png",
+      "sourceSize": [
+        84,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        84,
+        56
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        21,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26306.png",
+          "size": [
+            21,
+            14
+          ],
+          "bytes": 963,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26306.png",
+          "size": [
+            42,
+            28
+          ],
+          "bytes": 2860,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26306.png",
+          "size": [
+            63,
+            42
+          ],
+          "bytes": 5469,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26306.png",
+          "size": [
+            84,
+            56
+          ],
+          "bytes": 7936,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26307": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18082.png",
+      "sourceSize": [
+        68,
+        52
+      ],
+      "sourceBbox": [
+        4,
+        0,
+        64,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        17,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26307.png",
+          "size": [
+            17,
+            13
+          ],
+          "bytes": 749,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26307.png",
+          "size": [
+            34,
+            26
+          ],
+          "bytes": 2204,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26307.png",
+          "size": [
+            51,
+            39
+          ],
+          "bytes": 4211,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26307.png",
+          "size": [
+            68,
+            52
+          ],
+          "bytes": 6288,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26308": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18083.png",
+      "sourceSize": [
+        56,
+        40
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        56,
+        40
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        14,
+        10
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26308.png",
+          "size": [
+            14,
+            10
+          ],
+          "bytes": 561,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26308.png",
+          "size": [
+            28,
+            20
+          ],
+          "bytes": 1615,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26308.png",
+          "size": [
+            42,
+            30
+          ],
+          "bytes": 3146,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26308.png",
+          "size": [
+            56,
+            40
+          ],
+          "bytes": 4682,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26309": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18084.png",
+      "sourceSize": [
+        80,
+        32
+      ],
+      "sourceBbox": [
+        9,
+        0,
+        70,
+        32
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        8
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26309.png",
+          "size": [
+            20,
+            8
+          ],
+          "bytes": 584,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26309.png",
+          "size": [
+            40,
+            16
+          ],
+          "bytes": 1586,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26309.png",
+          "size": [
+            60,
+            24
+          ],
+          "bytes": 2965,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26309.png",
+          "size": [
+            80,
+            32
+          ],
+          "bytes": 4395,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26310": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18085.png",
+      "sourceSize": [
+        52,
+        36
+      ],
+      "sourceBbox": [
+        3,
+        0,
+        49,
+        36
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        13,
+        9
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26310.png",
+          "size": [
+            13,
+            9
+          ],
+          "bytes": 431,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26310.png",
+          "size": [
+            26,
+            18
+          ],
+          "bytes": 1186,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26310.png",
+          "size": [
+            39,
+            27
+          ],
+          "bytes": 2247,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26310.png",
+          "size": [
+            52,
+            36
+          ],
+          "bytes": 3207,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26311": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18086.png",
+      "sourceSize": [
+        52,
+        36
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        52,
+        36
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        13,
+        9
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26311.png",
+          "size": [
+            13,
+            9
+          ],
+          "bytes": 451,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26311.png",
+          "size": [
+            26,
+            18
+          ],
+          "bytes": 1244,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26311.png",
+          "size": [
+            39,
+            27
+          ],
+          "bytes": 2406,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26311.png",
+          "size": [
+            52,
+            36
+          ],
+          "bytes": 3514,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26312": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18087.png",
+      "sourceSize": [
+        60,
+        32
+      ],
+      "sourceBbox": [
+        4,
+        0,
+        56,
+        32
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        15,
+        8
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26312.png",
+          "size": [
+            15,
+            8
+          ],
+          "bytes": 436,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26312.png",
+          "size": [
+            30,
+            16
+          ],
+          "bytes": 1206,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26312.png",
+          "size": [
+            45,
+            24
+          ],
+          "bytes": 2216,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26312.png",
+          "size": [
+            60,
+            32
+          ],
+          "bytes": 3232,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26313": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18088.png",
+      "sourceSize": [
+        108,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        108,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        27,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26313.png",
+          "size": [
+            27,
+            15
+          ],
+          "bytes": 1186,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26313.png",
+          "size": [
+            54,
+            30
+          ],
+          "bytes": 3520,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26313.png",
+          "size": [
+            81,
+            45
+          ],
+          "bytes": 6807,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26313.png",
+          "size": [
+            108,
+            60
+          ],
+          "bytes": 10072,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26314": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18089.png",
+      "sourceSize": [
+        108,
+        76
+      ],
+      "sourceBbox": [
+        4,
+        0,
+        104,
+        76
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        27,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26314.png",
+          "size": [
+            27,
+            19
+          ],
+          "bytes": 1175,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26314.png",
+          "size": [
+            54,
+            38
+          ],
+          "bytes": 3280,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26314.png",
+          "size": [
+            81,
+            57
+          ],
+          "bytes": 6249,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26314.png",
+          "size": [
+            108,
+            76
+          ],
+          "bytes": 9080,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26315": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18090.png",
+      "sourceSize": [
+        96,
+        48
+      ],
+      "sourceBbox": [
+        13,
+        0,
+        79,
+        48
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26315.png",
+          "size": [
+            24,
+            12
+          ],
+          "bytes": 631,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26315.png",
+          "size": [
+            48,
+            24
+          ],
+          "bytes": 1675,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26315.png",
+          "size": [
+            72,
+            36
+          ],
+          "bytes": 3033,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26315.png",
+          "size": [
+            96,
+            48
+          ],
+          "bytes": 4337,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26316": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18091.png",
+      "sourceSize": [
+        72,
+        44
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        70,
+        44
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        18,
+        11
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26316.png",
+          "size": [
+            18,
+            11
+          ],
+          "bytes": 722,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26316.png",
+          "size": [
+            36,
+            22
+          ],
+          "bytes": 2192,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26316.png",
+          "size": [
+            54,
+            33
+          ],
+          "bytes": 4253,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26316.png",
+          "size": [
+            72,
+            44
+          ],
+          "bytes": 6249,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26317": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18092.png",
+      "sourceSize": [
+        72,
+        40
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        72,
+        40
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        18,
+        10
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26317.png",
+          "size": [
+            18,
+            10
+          ],
+          "bytes": 657,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26317.png",
+          "size": [
+            36,
+            20
+          ],
+          "bytes": 1894,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26317.png",
+          "size": [
+            54,
+            30
+          ],
+          "bytes": 3678,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26317.png",
+          "size": [
+            72,
+            40
+          ],
+          "bytes": 5487,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26318": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18093.png",
+      "sourceSize": [
+        64,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        64,
+        58
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        16,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26318.png",
+          "size": [
+            16,
+            15
+          ],
+          "bytes": 678,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26318.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 1827,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26318.png",
+          "size": [
+            48,
+            45
+          ],
+          "bytes": 3402,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26318.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 5060,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26319": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18094.png",
+      "sourceSize": [
+        108,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        108,
+        59
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        27,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26319.png",
+          "size": [
+            27,
+            15
+          ],
+          "bytes": 1114,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26319.png",
+          "size": [
+            54,
+            30
+          ],
+          "bytes": 3191,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26319.png",
+          "size": [
+            81,
+            45
+          ],
+          "bytes": 6103,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26319.png",
+          "size": [
+            108,
+            60
+          ],
+          "bytes": 9153,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26320": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18095.png",
+      "sourceSize": [
+        80,
+        40
+      ],
+      "sourceBbox": [
+        4,
+        0,
+        76,
+        40
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        10
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26320.png",
+          "size": [
+            20,
+            10
+          ],
+          "bytes": 633,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26320.png",
+          "size": [
+            40,
+            20
+          ],
+          "bytes": 1793,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26320.png",
+          "size": [
+            60,
+            30
+          ],
+          "bytes": 3271,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26320.png",
+          "size": [
+            80,
+            40
+          ],
+          "bytes": 4824,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26321": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18096.png",
+      "sourceSize": [
+        68,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        68,
+        91
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        17,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26321.png",
+          "size": [
+            17,
+            24
+          ],
+          "bytes": 954,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26321.png",
+          "size": [
+            34,
+            48
+          ],
+          "bytes": 2657,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26321.png",
+          "size": [
+            51,
+            72
+          ],
+          "bytes": 4995,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26321.png",
+          "size": [
+            68,
+            96
+          ],
+          "bytes": 7131,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26322": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18097.png",
+      "sourceSize": [
+        72,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        72,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        18,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26322.png",
+          "size": [
+            18,
+            14
+          ],
+          "bytes": 808,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26322.png",
+          "size": [
+            36,
+            28
+          ],
+          "bytes": 2218,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26322.png",
+          "size": [
+            54,
+            42
+          ],
+          "bytes": 4225,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26322.png",
+          "size": [
+            72,
+            56
+          ],
+          "bytes": 5973,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26323": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18098.png",
+      "sourceSize": [
+        112,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        112,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        28,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26323.png",
+          "size": [
+            28,
+            24
+          ],
+          "bytes": 1235,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26323.png",
+          "size": [
+            56,
+            48
+          ],
+          "bytes": 3461,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26323.png",
+          "size": [
+            84,
+            72
+          ],
+          "bytes": 6548,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26323.png",
+          "size": [
+            112,
+            96
+          ],
+          "bytes": 9371,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26324": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18099.png",
+      "sourceSize": [
+        80,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        80,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26324.png",
+          "size": [
+            20,
+            24
+          ],
+          "bytes": 1129,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26324.png",
+          "size": [
+            40,
+            48
+          ],
+          "bytes": 3165,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26324.png",
+          "size": [
+            60,
+            72
+          ],
+          "bytes": 5895,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26324.png",
+          "size": [
+            80,
+            96
+          ],
+          "bytes": 8384,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26325": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18100.png",
+      "sourceSize": [
+        72,
+        52
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        71,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        18,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26325.png",
+          "size": [
+            18,
+            13
+          ],
+          "bytes": 777,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26325.png",
+          "size": [
+            36,
+            26
+          ],
+          "bytes": 2266,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26325.png",
+          "size": [
+            54,
+            39
+          ],
+          "bytes": 4385,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26325.png",
+          "size": [
+            72,
+            52
+          ],
+          "bytes": 6487,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26326": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18101.png",
+      "sourceSize": [
+        100,
+        48
+      ],
+      "sourceBbox": [
+        3,
+        0,
+        97,
+        48
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        25,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26326.png",
+          "size": [
+            25,
+            12
+          ],
+          "bytes": 868,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26326.png",
+          "size": [
+            50,
+            24
+          ],
+          "bytes": 2437,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26326.png",
+          "size": [
+            75,
+            36
+          ],
+          "bytes": 4746,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26326.png",
+          "size": [
+            100,
+            48
+          ],
+          "bytes": 6795,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26327": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18102.png",
+      "sourceSize": [
+        100,
+        48
+      ],
+      "sourceBbox": [
+        3,
+        0,
+        97,
+        48
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        25,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26327.png",
+          "size": [
+            25,
+            12
+          ],
+          "bytes": 878,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26327.png",
+          "size": [
+            50,
+            24
+          ],
+          "bytes": 2445,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26327.png",
+          "size": [
+            75,
+            36
+          ],
+          "bytes": 4589,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26327.png",
+          "size": [
+            100,
+            48
+          ],
+          "bytes": 6592,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26328": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18103.png",
+      "sourceSize": [
+        96,
+        52
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        93,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26328.png",
+          "size": [
+            24,
+            13
+          ],
+          "bytes": 893,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26328.png",
+          "size": [
+            48,
+            26
+          ],
+          "bytes": 2528,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26328.png",
+          "size": [
+            72,
+            39
+          ],
+          "bytes": 4725,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26328.png",
+          "size": [
+            96,
+            52
+          ],
+          "bytes": 6858,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26329": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18104.png",
+      "sourceSize": [
+        56,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        56,
+        51
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        14,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26329.png",
+          "size": [
+            14,
+            14
+          ],
+          "bytes": 639,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26329.png",
+          "size": [
+            28,
+            28
+          ],
+          "bytes": 1748,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26329.png",
+          "size": [
+            42,
+            42
+          ],
+          "bytes": 3252,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26329.png",
+          "size": [
+            56,
+            56
+          ],
+          "bytes": 4616,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26330": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18105.png",
+      "sourceSize": [
+        56,
+        52
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        56,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        14,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26330.png",
+          "size": [
+            14,
+            13
+          ],
+          "bytes": 626,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26330.png",
+          "size": [
+            28,
+            26
+          ],
+          "bytes": 1737,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26330.png",
+          "size": [
+            42,
+            39
+          ],
+          "bytes": 3285,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26330.png",
+          "size": [
+            56,
+            52
+          ],
+          "bytes": 4882,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26331": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18106.png",
+      "sourceSize": [
+        60,
+        56
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        58,
+        56
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        15,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26331.png",
+          "size": [
+            15,
+            14
+          ],
+          "bytes": 715,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26331.png",
+          "size": [
+            30,
+            28
+          ],
+          "bytes": 2021,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26331.png",
+          "size": [
+            45,
+            42
+          ],
+          "bytes": 3937,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26331.png",
+          "size": [
+            60,
+            56
+          ],
+          "bytes": 5703,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26332": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18107.png",
+      "sourceSize": [
+        80,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        80,
+        50
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        20,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26332.png",
+          "size": [
+            20,
+            14
+          ],
+          "bytes": 789,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26332.png",
+          "size": [
+            40,
+            28
+          ],
+          "bytes": 2150,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26332.png",
+          "size": [
+            60,
+            42
+          ],
+          "bytes": 4027,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26332.png",
+          "size": [
+            80,
+            56
+          ],
+          "bytes": 5886,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26333": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18108.png",
+      "sourceSize": [
+        64,
+        84
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        62,
+        84
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        16,
+        21
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26333.png",
+          "size": [
+            16,
+            21
+          ],
+          "bytes": 903,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26333.png",
+          "size": [
+            32,
+            42
+          ],
+          "bytes": 2594,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26333.png",
+          "size": [
+            48,
+            63
+          ],
+          "bytes": 4903,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26333.png",
+          "size": [
+            64,
+            84
+          ],
+          "bytes": 7149,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26334": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18109.png",
+      "sourceSize": [
+        112,
+        60
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        111,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        28,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26334.png",
+          "size": [
+            28,
+            15
+          ],
+          "bytes": 1104,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26334.png",
+          "size": [
+            56,
+            30
+          ],
+          "bytes": 3121,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26334.png",
+          "size": [
+            84,
+            45
+          ],
+          "bytes": 5731,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26334.png",
+          "size": [
+            112,
+            60
+          ],
+          "bytes": 8352,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26335": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\18110.png",
+      "sourceSize": [
+        96,
+        92
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        96,
+        92
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26335.png",
+          "size": [
+            24,
+            23
+          ],
+          "bytes": 1217,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26335.png",
+          "size": [
+            48,
+            46
+          ],
+          "bytes": 3312,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26335.png",
+          "size": [
+            72,
+            69
+          ],
+          "bytes": 6197,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26335.png",
+          "size": [
+            96,
+            92
+          ],
+          "bytes": 8889,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26336": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Iron man\\profile.png",
+      "sourceSize": [
+        312,
+        220
+      ],
+      "sourceBbox": [
+        73,
+        11,
+        238,
+        220
+      ],
+      "canvasX1": [
+        64,
+        64
+      ],
+      "verticalAlign": "bottom",
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26336.png",
+          "size": [
+            64,
+            64
+          ],
+          "bytes": 6061,
+          "bbox": [
+            7,
+            2,
+            56,
+            64
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26336.png",
+          "size": [
+            128,
+            128
+          ],
+          "bytes": 16882,
+          "bbox": [
+            15,
+            4,
+            113,
+            128
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26336.png",
+          "size": [
+            192,
+            192
+          ],
+          "bytes": 31152,
+          "bbox": [
+            22,
+            6,
+            169,
+            192
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26336.png",
+          "size": [
+            256,
+            256
+          ],
+          "bytes": 49087,
+          "bbox": [
+            30,
+            8,
+            226,
+            256
+          ],
+          "transparentBorder": false
+        }
+      }
+    }
+  },
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "cost": 2000
+  },
+  "options": [
+    {
+      "optionId": 50,
+      "param": 30,
+      "sortOrder": 0
+    },
+    {
+      "optionId": 77,
+      "param": 28,
+      "sortOrder": 1
+    },
+    {
+      "optionId": 103,
+      "param": 28,
+      "sortOrder": 2
+    },
+    {
+      "optionId": 5,
+      "param": 25,
+      "sortOrder": 3
+    },
+    {
+      "optionId": 10,
+      "param": 25,
+      "sortOrder": 4
+    },
+    {
+      "optionId": 18,
+      "param": 100,
+      "sortOrder": 5
+    },
+    {
+      "optionId": 30,
+      "param": 0,
+      "sortOrder": 6
+    }
+  ],
+  "previews": {
+    "contactSheet": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\iron-man\\preview\\contact-sheet.png"
+  },
+  "qa": {
+    "staticStatus": "passed-with-client-check-needed",
+    "checks": [
+      "HEAD has 3 slots",
+      "BODY has 17 slots",
+      "LEG has 14 slots",
+      "all referenced image IDs are in Java short range",
+      "all dx/dy values are in Java byte range",
+      "runtime PNGs were written to x1-x4",
+      "profile is cropped and bottom-aligned to 64x64 x1 canvas",
+      "default item options are present"
+    ]
+  }
+}

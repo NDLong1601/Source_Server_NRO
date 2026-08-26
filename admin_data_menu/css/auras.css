@@ -1,0 +1,595 @@
+/* Aura tab: visual selectors, sprite thumbnails and preview panel. */
+.aura-nav-button {
+  position: relative;
+  overflow: visible;
+}
+
+.nav-badge {
+  float: right;
+  min-width: 20px;
+  margin-top: 7px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.nav-badge.aura,
+.aura-nav-button.active .nav-badge,
+.aura-nav-button:hover .nav-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+#panelAuras .left-pane {
+  border-color: #c4d6ef;
+  background: #fbfdff;
+}
+
+#panelAuras .right-pane {
+  border-color: #c4d6ef;
+  background: linear-gradient(180deg, #ffffff 0, #f8fbff 100%);
+}
+
+#panelAuras .aura-toolbar {
+  min-height: 106px;
+  height: 106px;
+  padding: 10px 12px;
+  border-bottom-color: #d7e3f2;
+  background: linear-gradient(120deg, #f7fbff 0%, #f2f7ff 54%, #f9f5ff 100%);
+}
+
+#panelAuras .aura-toolbar + .table-wrap {
+  top: 106px;
+}
+
+.aura-toolbar-meta,
+.aura-toolbar-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aura-toolbar-meta {
+  min-height: 27px;
+  margin-bottom: 9px;
+}
+
+.aura-toolbar-controls {
+  flex-wrap: nowrap;
+}
+
+#panelAuras #auraSearch {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 190px;
+  height: 34px;
+  border-color: #c6d5e8;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+#panelAuras #auraSearch:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px #e0e7ff;
+  outline: 0;
+}
+
+.aura-selection-summary {
+  display: inline-block;
+  max-width: 340px;
+  overflow: hidden;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aura-badge {
+  display: inline-block;
+  min-width: 24px;
+  box-sizing: border-box;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.aura-badge-cyan,
+.aura-tone-0.aura-badge { background: #cffafe; color: #0e7490; }
+.aura-badge-violet,
+.aura-tone-1.aura-badge { background: #ede9fe; color: #6d28d9; }
+.aura-badge-rose,
+.aura-tone-2.aura-badge { background: #ffe4e6; color: #be123c; }
+.aura-badge-amber,
+.aura-tone-3.aura-badge { background: #fef3c7; color: #b45309; }
+.aura-badge-green,
+.aura-tone-4.aura-badge { background: #dcfce7; color: #15803d; }
+.aura-badge-slate,
+.aura-tone-5.aura-badge { background: #e2e8f0; color: #475569; }
+
+#panelAuras .table-wrap {
+  background: #ffffff;
+}
+
+#panelAuras .table-wrap th {
+  height: 36px;
+  background: #f1f6fc;
+  color: #52657d;
+  letter-spacing: 0.2px;
+}
+
+#panelAuras .table-wrap td {
+  height: 54px;
+  padding: 0 7px;
+}
+
+#panelAuras .table-wrap th:nth-child(1),
+#panelAuras .table-wrap td:nth-child(1) { width: 43px; }
+#panelAuras .table-wrap th:nth-child(2),
+#panelAuras .table-wrap td:nth-child(2) { width: 42px; }
+#panelAuras .table-wrap th:nth-child(3),
+#panelAuras .table-wrap td:nth-child(3) { width: 54px; }
+#panelAuras .table-wrap th:nth-child(4),
+#panelAuras .table-wrap td:nth-child(4) { width: 68px; }
+#panelAuras .table-wrap th:nth-child(6),
+#panelAuras .table-wrap td:nth-child(6) { width: 58px; }
+#panelAuras .table-wrap th:nth-child(7),
+#panelAuras .table-wrap td:nth-child(7) { width: 58px; }
+#panelAuras .table-wrap th:nth-child(8),
+#panelAuras .table-wrap td:nth-child(8) { width: 46px; }
+
+#panelAuras .aura-row td {
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+#panelAuras .aura-row:hover td {
+  background: #f1f7ff;
+}
+
+#panelAuras .aura-row.aura-row-active td {
+  background: #ecf5ff;
+  box-shadow: inset 0 1px 0 #bfdbfe, inset 0 -1px 0 #bfdbfe;
+}
+
+#panelAuras .aura-row.aura-row-active td:first-child {
+  box-shadow: inset 3px 0 0 #6366f1, inset 0 1px 0 #bfdbfe, inset 0 -1px 0 #bfdbfe;
+}
+
+.aura-check-cell {
+  text-align: center;
+}
+
+.aura-check-control {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.aura-check-control input,
+.aura-toggle input {
+  position: absolute;
+  width: 1px !important;
+  min-width: 1px !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+}
+
+.aura-check-mark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 2px solid #b5c4d8;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 1px 1px rgba(30, 41, 59, 0.08);
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.aura-check-control:hover .aura-check-mark {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px #e0e7ff;
+}
+
+.aura-check-control input:checked + .aura-check-mark {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  box-shadow: 0 3px 7px rgba(79, 70, 229, 0.24);
+}
+
+.aura-check-control input:checked + .aura-check-mark:after {
+  display: block;
+  width: 5px;
+  height: 9px;
+  margin: 1px auto 0;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.aura-check-control input:focus + .aura-check-mark {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 2px;
+}
+
+.aura-check-all .aura-check-mark {
+  border-radius: 7px;
+}
+
+.aura-number-cell,
+.aura-thumb-cell,
+.aura-id-cell {
+  text-align: center;
+}
+
+.aura-number-badge {
+  min-width: 29px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.aura-id-cell {
+  color: #64748b;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+}
+
+.aura-name-cell {
+  color: #172033;
+  font-weight: 700;
+}
+
+.aura-sprite {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.aura-sprite img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.aura-sprite-list {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d5deeb;
+  border-radius: 11px;
+  background-color: #15233c;
+  background-image: linear-gradient(45deg, rgba(255,255,255,.08) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.08) 75%), linear-gradient(45deg, rgba(255,255,255,.08) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.08) 75%);
+  background-position: 0 0, 6px 6px;
+  background-size: 12px 12px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 2px 4px rgba(15, 23, 42, .12);
+}
+
+.aura-row.aura-tone-0 .aura-sprite-list { border-color: #67e8f9; }
+.aura-row.aura-tone-1 .aura-sprite-list { border-color: #c4b5fd; }
+.aura-row.aura-tone-2 .aura-sprite-list { border-color: #fda4af; }
+.aura-row.aura-tone-3 .aura-sprite-list { border-color: #fcd34d; }
+.aura-row.aura-tone-4 .aura-sprite-list { border-color: #86efac; }
+.aura-row.aura-tone-5 .aura-sprite-list { border-color: #cbd5e1; }
+
+.aura-sprite-missing {
+  color: #94a3b8;
+  font-size: 17px;
+  line-height: 40px;
+  text-align: center;
+}
+
+.aura-preview {
+  display: flex;
+  min-height: 178px;
+  margin-bottom: 16px;
+  padding: 10px;
+  border: 1px solid #d7e3f2;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f7fbff 0%, #ffffff 100%);
+  box-sizing: border-box;
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.05);
+}
+
+.aura-preview-stage {
+  position: relative;
+  flex: 0 0 156px;
+  width: 156px;
+  height: 156px;
+  overflow: hidden;
+  border: 1px solid #31466a;
+  border-radius: 11px;
+  background: radial-gradient(circle at 50% 42%, #355078 0%, #1e3354 45%, #111c32 100%);
+  box-shadow: inset 0 0 34px rgba(3, 7, 18, .5), 0 5px 11px rgba(15, 23, 42, .18);
+}
+
+.aura-preview-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 114px;
+  height: 114px;
+  margin: -57px 0 0 -57px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+  box-shadow: 0 0 24px rgba(255,255,255,.18), inset 0 0 22px rgba(255,255,255,.08);
+}
+
+.aura-preview-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.aura-preview-layer-1 {
+  z-index: 3;
+}
+
+.aura-sprite-preview {
+  width: 156px;
+  height: 156px;
+}
+
+.aura-preview-copy {
+  min-width: 0;
+  padding: 15px 4px 4px 13px;
+}
+
+.aura-preview-overline {
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .7px;
+}
+
+.aura-preview-name {
+  overflow: hidden;
+  color: #172033;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 23px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aura-preview-badges {
+  margin-top: 9px;
+  line-height: 26px;
+}
+
+.aura-preview-badges .aura-badge {
+  margin: 0 4px 4px 0;
+}
+
+.aura-preview-note {
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.aura-preview-empty {
+  align-items: center;
+  min-height: 88px;
+  border-style: dashed;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.aura-preview-empty-icon {
+  width: 43px;
+  height: 43px;
+  margin-right: 10px;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 25px;
+  line-height: 43px;
+  text-align: center;
+}
+
+.aura-preview-empty b {
+  color: #334155;
+}
+
+.aura-preview-empty span {
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.aura-toggle {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  width: auto;
+  margin: 7px 0 0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aura-toggle-mark {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .2);
+  transition: background 120ms ease;
+}
+
+.aura-toggle-mark:after {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .24);
+  content: "";
+  transition: left 120ms ease;
+}
+
+.aura-toggle input:checked + .aura-toggle-mark {
+  background: #14b8a6;
+}
+
+.aura-toggle input:checked + .aura-toggle-mark:after {
+  left: 16px;
+}
+
+.aura-toggle input:focus + .aura-toggle-mark {
+  outline: 2px solid #99f6e4;
+  outline-offset: 2px;
+}
+
+/* Reused by the Item tab to show the first frame of a type-11 aura asset. */
+.item-aura-sprite-list {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #c4b5fd;
+  border-radius: 10px;
+  background: #172554;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.09), 0 2px 4px rgba(15, 23, 42, .12);
+}
+
+.item-aura-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 5px 8px 5px 5px;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+}
+
+.item-aura-preview-stage {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border: 1px solid #4338ca;
+  border-radius: 9px;
+  background: radial-gradient(circle at 50% 42%, #3b5a93 0%, #172554 55%, #0f172a 100%);
+  box-shadow: inset 0 0 14px rgba(3, 7, 18, .55);
+}
+
+.item-aura-preview-ring {
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+}
+
+.item-aura-preview-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 54px;
+  height: 54px;
+}
+
+.item-aura-preview-layer-top {
+  z-index: 3;
+}
+
+.item-aura-sprite-preview {
+  width: 54px;
+  height: 54px;
+}
+
+.item-aura-preview-copy {
+  color: #4c1d95;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.item-aura-preview-copy b,
+.item-aura-preview-copy small {
+  display: block;
+}
+
+.item-aura-preview-copy small {
+  color: #7c3aed;
+  font-size: 10px;
+}
+
+@media screen and (max-width: 1100px) {
+  #panelAuras .aura-toolbar {
+    height: 112px;
+  }
+
+  #panelAuras .aura-toolbar + .table-wrap {
+    top: 112px;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  #panelAuras .aura-toolbar {
+    height: 148px;
+  }
+
+  #panelAuras .aura-toolbar + .table-wrap {
+    top: 148px;
+  }
+
+  .aura-toolbar-controls {
+    flex-wrap: wrap;
+  }
+
+  #panelAuras #auraSearch {
+    flex-basis: 100%;
+  }
+
+  .aura-preview {
+    display: block;
+  }
+
+  .aura-preview-stage {
+    margin: 0 auto 10px;
+  }
+
+  .aura-preview-copy {
+    padding: 2px 4px;
+    text-align: center;
+  }
+}

@@ -2,13 +2,24 @@
 
 Tài liệu này ghi lại phân tích và hướng triển khai để biến các asset `aura_*` trong `data/img_by_name` thành vật phẩm đổi hào quang nhân vật.
 
+## Trạng thái triển khai hiện tại
+
+Đã triển khai 64 item trang bị aura, có tên tuần tự từ **Hào Quang 1** đến **Hào Quang 64** (Item ID `2154..2217`). Mỗi item TYPE `11` lưu Aura Asset ID trong `item_template.part`; server ưu tiên aura đang mặc ở slot `12`, sau đó mới fallback về aura của radar card cũ.
+
+Tab **Hào quang** trong `admin_data_menu` cho phép:
+
+- Khởi tạo an toàn các item/metadata còn thiếu vào database.
+- Đổi tên, mô tả, icon, Aura Asset ID và số frame của item đang chọn.
+- Chuyển đến Giftcode hoặc Hộp quà để phát item.
+- Chọn nhiều aura và thêm/bán hàng loạt trong một tab shop.
+
+Các Aura Asset ID được chọn là các bộ có đủ cả hai layer `_0`, `_1` ở `x1..x4`. Những asset thiếu layer hoặc thiếu zoom không được tạo item.
+
 ## 1. Kết luận kỹ thuật
 
 Có thể làm item đổi hào quang, nhưng source hiện tại chưa hỗ trợ chỉ bằng cách thêm PNG vào `data/img_by_name/x4`.
 
-Server đã có field gửi hào quang cho client qua `pl.getAura()`, nhưng hiện tại `Player.getAura()` chỉ lấy aura từ một số thẻ radar hard-code, chưa đọc item đang mặc.
-
-Muốn làm đúng cần sửa code server để item aura đang trang bị trả về `auraId` mong muốn.
+Server gửi hào quang cho client qua `pl.getAura()`. Hàm này hiện đã đọc item aura đang mặc trước, sau đó fallback về các thẻ radar hard-code cũ.
 
 ## 2. Các file source liên quan
 
@@ -84,31 +95,32 @@ icon_id: 11239
 part: 205
 ```
 
-Source cũng nhận item `1230` là aura item:
+Item legacy `1230` vẫn được giữ tương thích và ánh xạ đến asset `3`. Dải item mới là `2154..2217` (Hào Quang 1..64), TYPE `11`, trong đó `part` là Aura Asset ID.
+
+Source nhận item `1230` và dải item mới là aura item:
 
 ```java
-public static boolean isAuraItem(Item item) {
-    return item != null && item.isNotNullItem() && item.template.id == 1230;
-}
+return item.template.id == 1230
+    || (item.template.id >= 2154 && item.template.id <= 2217);
 ```
 
-Nhưng `Player.getAura()` chưa đọc slot 12, nên item này hiện chưa thật sự điều khiển `idauraeff`.
+`Player.getAura()` hiện đọc slot 12, kiểm tra metadata `aura_<id>_0` và `aura_<id>_1`, rồi trả `template.part` làm Aura Asset ID. Nếu dữ liệu không hợp lệ, server fallback về radar/card cũ.
 
-## 4. Hướng triển khai nên dùng
+## 4. Cách triển khai đang dùng
 
 Nên triển khai theo hướng item trang bị aura:
 
 1. Tạo item TYPE `11` cho từng hào quang.
 2. Khi dùng item, item được mặc vào `PLAYER_AURA_SLOT = 12`.
 3. Sửa `Player.getAura()` để ưu tiên đọc item đang mặc ở slot 12.
-4. Aura ID nên lưu bằng option riêng của item hoặc quy ước từ `template.part`.
+4. Aura ID được lưu trong `item_template.part` của dải ID chuyên dụng `2154..2217`.
 5. Nếu không có item aura đang mặc, fallback về cơ chế radar/card cũ.
 
 ## 5. Cách lưu auraId trên item
 
 Có 2 cách khả thi.
 
-### Cách A: dùng option riêng
+### Cách A: dùng option riêng (phương án mở rộng, chưa dùng)
 
 Khuyến nghị dùng cách này.
 
@@ -135,7 +147,7 @@ Nhược điểm:
 
 - Cần thêm option template nếu chưa có option phù hợp.
 
-### Cách B: dùng `item.template.part`
+### Cách B: dùng `item.template.part` (đang dùng)
 
 Ví dụ:
 
@@ -148,11 +160,7 @@ item_template.part = auraId
 - Dễ cấu hình.
 - Không cần thêm item option.
 
-Nhược điểm:
-
-- TYPE `11` thường dùng `part` cho đồ đeo lưng/flagbag.
-- Dễ nhầm với `getFlagBag()`.
-- Không linh hoạt nếu item vừa cần hình đeo lưng vừa cần aura.
+Lưu ý: chỉ dùng `part` cho dải item aura chuyên dụng `2154..2217`; không áp dụng quy ước này cho TYPE `11` khác.
 
 ## 6. Logic `Player.getAura()` đề xuất
 
@@ -254,15 +262,11 @@ Service.gI().Send_Caitrang(player);
 
 `Send_Caitrang()` chỉ gửi head/body/leg, không gửi aura.
 
-Do đó sau khi mặc item aura, client có thể chỉ thấy aura mới sau khi đổi map/reload nhân vật. Muốn cập nhật ngay cần kiểm tra client hỗ trợ packet nào để refresh aura.
+Sau khi mặc/tháo aura, `itemBagToBody()` gọi lại flow load nhân vật trong zone để gửi aura mới ngay cho bản thân và người chơi xung quanh.
 
 Các hướng xử lý:
 
-1. Gọi lại flow load player trong map nếu source đã có helper phù hợp.
-2. Cho người chơi reload map nhẹ sau khi đổi aura.
-3. Thêm packet riêng nếu client có hỗ trợ.
-
-Không nên tự ý sửa format `Message(-90)` nếu chưa xác nhận client đọc thêm field aura, vì có thể làm lệch packet.
+Không cần sửa format `Message(-90)`; flow load player đang có đã truyền `getAura()` đúng vị trí.
 
 ## 9. Thêm asset aura mới
 
@@ -319,18 +323,12 @@ option 250, param 3
 
 ## 11. Checklist triển khai
 
-- [ ] Chọn danh sách `auraId` muốn dùng.
-- [ ] Kiểm tra file `aura_<id>_0.png`, `aura_<id>_1.png` đủ trong `x1..x4`.
-- [ ] Kiểm tra row `img_by_name` đủ cho các aura name.
-- [ ] Chọn cách lưu auraId: option riêng hoặc `template.part`.
-- [ ] Sửa `Player.getAura()` để ưu tiên item ở slot aura.
-- [ ] Sửa `InventoryService.isAuraItem()` để nhận đúng các item aura mới.
-- [ ] Thêm item template vào `sql/team2026.sql`.
-- [ ] Nếu bán shop, thêm shop item và kiểm tra client item cache.
-- [ ] Build lại `20.jar`.
-- [ ] Restart server khi an toàn.
-- [ ] Test mặc item, tháo item, đổi map, relog.
-- [ ] Test fallback radar/card cũ không bị mất.
+- [x] Chọn 64 Aura Asset ID có đủ hai layer trong `x1..x4`.
+- [x] Thêm metadata `img_by_name` và migration item liên tục `2154..2217`.
+- [x] Dùng `template.part` trong dải item chuyên dụng.
+- [x] Sửa `Player.getAura()` và `InventoryService.isAuraItem()`.
+- [x] Tạo tab admin để khởi tạo/cấu hình/phát/bán.
+- [ ] Khởi tạo dữ liệu trong database đang chạy, build lại `20.jar`, restart server và test client.
 
 ## 12. Rủi ro cần chú ý
 
@@ -340,7 +338,7 @@ option 250, param 3
 - Không sửa format packet nếu chưa biết client đọc packet đó thế nào.
 - `data/img_by_name/x4` một mình không đủ; phải đủ các zoom mà client dùng.
 
-## 13. Hướng triển khai tối thiểu nên làm lần sau
+## 13. Ghi chú kiểm thử legacy (không dùng cho dải item mới)
 
 1. Dùng lại item `1230` để thử.
 2. Sửa `Player.getAura()` đọc slot `PLAYER_AURA_SLOT`.

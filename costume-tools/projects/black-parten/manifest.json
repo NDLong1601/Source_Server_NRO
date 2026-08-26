@@ -1,0 +1,3115 @@
+{
+  "itemId": 2077,
+  "name": "Cải trang Black Parten",
+  "description": "Cải trang thành Black Parten",
+  "gender": 3,
+  "sourceDir": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten",
+  "offsetSource": "estimated from AWN Black Panther part 1667/1668/1669; source IDs 18029..18060 did not match the found nr_part.json",
+  "needsClientOffsetCheck": true,
+  "iconId": 26175,
+  "profileIconId": 26207,
+  "headAvatar": {
+    "headId": 2180,
+    "avatarId": 26207
+  },
+  "partIds": {
+    "head": 2180,
+    "body": 2181,
+    "leg": 2182
+  },
+  "placeholderImageId": 2955,
+  "oldToNewImageIds": {
+    "18029": 26175,
+    "18030": 26176,
+    "18031": 26177,
+    "18032": 26178,
+    "18033": 26179,
+    "18034": 26180,
+    "18035": 26181,
+    "18036": 26182,
+    "18037": 26183,
+    "18038": 26184,
+    "18039": 26185,
+    "18040": 26186,
+    "18041": 26187,
+    "18042": 26188,
+    "18043": 26189,
+    "18044": 26190,
+    "18045": 26191,
+    "18046": 26192,
+    "18047": 26193,
+    "18048": 26194,
+    "18049": 26195,
+    "18050": 26196,
+    "18051": 26197,
+    "18052": 26198,
+    "18053": 26199,
+    "18054": 26200,
+    "18055": 26201,
+    "18056": 26202,
+    "18057": 26203,
+    "18058": 26204,
+    "18059": 26205,
+    "18060": 26206
+  },
+  "profileSource": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\profile.png",
+  "profileImageId": 26207,
+  "head": [
+    [
+      26175,
+      -4,
+      -9
+    ],
+    [
+      26176,
+      -2,
+      -7
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    [
+      26178,
+      -3,
+      -6
+    ],
+    [
+      26177,
+      2,
+      -1
+    ],
+    [
+      26179,
+      -1,
+      -4
+    ],
+    [
+      26180,
+      6,
+      -4
+    ],
+    [
+      26181,
+      4,
+      -4
+    ],
+    [
+      26182,
+      6,
+      -3
+    ],
+    [
+      26183,
+      5,
+      -4
+    ],
+    [
+      26184,
+      -3,
+      -10
+    ],
+    [
+      26185,
+      -9,
+      -5
+    ],
+    [
+      26186,
+      -3,
+      -6
+    ],
+    [
+      26187,
+      3,
+      -3
+    ],
+    [
+      26188,
+      0,
+      -2
+    ],
+    [
+      26189,
+      1,
+      -3
+    ],
+    [
+      26190,
+      0,
+      -4
+    ],
+    [
+      26191,
+      1,
+      -3
+    ],
+    [
+      26192,
+      2,
+      -4
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "leg": [
+    [
+      26194,
+      -2,
+      -3
+    ],
+    [
+      26193,
+      -1,
+      -1
+    ],
+    [
+      26195,
+      -1,
+      -2
+    ],
+    [
+      26196,
+      7,
+      0
+    ],
+    [
+      26197,
+      -3,
+      -2
+    ],
+    [
+      26198,
+      3,
+      0
+    ],
+    [
+      26199,
+      1,
+      -1
+    ],
+    [
+      26200,
+      0,
+      1
+    ],
+    [
+      26201,
+      -10,
+      -1
+    ],
+    [
+      26202,
+      -2,
+      -3
+    ],
+    [
+      26203,
+      -4,
+      1
+    ],
+    [
+      26204,
+      -7,
+      0
+    ],
+    [
+      26205,
+      -4,
+      2
+    ],
+    [
+      26206,
+      -4,
+      2
+    ]
+  ],
+  "headSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18029,
+      "imageId": 26175,
+      "dx": -4,
+      "dy": -9,
+      "observed": "Đầu chính, dùng cho icon hành trang",
+      "suggestedGroup": "đứng/icon",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18030,
+      "imageId": 26176,
+      "dx": -2,
+      "dy": -7,
+      "observed": "Đầu nghiêng/động",
+      "suggestedGroup": "chạy/bay",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "bodySlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18032,
+      "imageId": 26178,
+      "dx": -3,
+      "dy": -6,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đỡ/chịu đòn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18031,
+      "imageId": 26177,
+      "dx": 2,
+      "dy": -1,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng hoặc chuyển động chính",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 18033,
+      "imageId": 26179,
+      "dx": -1,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 18034,
+      "imageId": 26180,
+      "dx": 6,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 18035,
+      "imageId": 26181,
+      "dx": 4,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 18036,
+      "imageId": 26182,
+      "dx": 6,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 18037,
+      "imageId": 26183,
+      "dx": 5,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 18038,
+      "imageId": 26184,
+      "dx": -3,
+      "dy": -10,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/đòn phụ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 18039,
+      "imageId": 26185,
+      "dx": -9,
+      "dy": -5,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "tụ lực/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 18040,
+      "imageId": 26186,
+      "dx": -3,
+      "dy": -6,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 18041,
+      "imageId": 26187,
+      "dx": 3,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 18042,
+      "imageId": 26188,
+      "dx": 0,
+      "dy": -2,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 18043,
+      "imageId": 26189,
+      "dx": 1,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 18044,
+      "imageId": 26190,
+      "dx": 0,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "ngã/đánh văng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 14,
+      "sourceImageId": 18045,
+      "imageId": 26191,
+      "dx": 1,
+      "dy": -3,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng lớn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 15,
+      "sourceImageId": 18046,
+      "imageId": 26192,
+      "dx": 2,
+      "dy": -4,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "phòng thủ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 16,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "legSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 18048,
+      "imageId": 26194,
+      "dx": -2,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 18047,
+      "imageId": 26193,
+      "dx": -1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 18049,
+      "imageId": 26195,
+      "dx": -1,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 18050,
+      "imageId": 26196,
+      "dx": 7,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 18051,
+      "imageId": 26197,
+      "dx": -3,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 18052,
+      "imageId": 26198,
+      "dx": 3,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 18053,
+      "imageId": 26199,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 18054,
+      "imageId": 26200,
+      "dx": 0,
+      "dy": 1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 18055,
+      "imageId": 26201,
+      "dx": -10,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 18056,
+      "imageId": 26202,
+      "dx": -2,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 18057,
+      "imageId": 26203,
+      "dx": -4,
+      "dy": 1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 18058,
+      "imageId": 26204,
+      "dx": -7,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 18059,
+      "imageId": 26205,
+      "dx": -4,
+      "dy": 2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 18060,
+      "imageId": 26206,
+      "dx": -4,
+      "dy": 2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "motion/placeholder",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "runtimeAssets": {
+    "26175": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18029.png",
+      "sourceSize": [
+        128,
+        96
+      ],
+      "sourceBbox": [
+        30,
+        24,
+        91,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "bottom"
+      ],
+      "x1Size": [
+        32,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26175.png",
+          "size": [
+            32,
+            24
+          ],
+          "bytes": 1228,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26175.png",
+          "size": [
+            64,
+            48
+          ],
+          "bytes": 3433,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26175.png",
+          "size": [
+            96,
+            72
+          ],
+          "bytes": 6415,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26175.png",
+          "size": [
+            128,
+            96
+          ],
+          "bytes": 9045,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26176": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18030.png",
+      "sourceSize": [
+        128,
+        96
+      ],
+      "sourceBbox": [
+        32,
+        23,
+        92,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "bottom"
+      ],
+      "x1Size": [
+        32,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26176.png",
+          "size": [
+            32,
+            24
+          ],
+          "bytes": 1178,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26176.png",
+          "size": [
+            64,
+            48
+          ],
+          "bytes": 3335,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26176.png",
+          "size": [
+            96,
+            72
+          ],
+          "bytes": 6076,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26176.png",
+          "size": [
+            128,
+            96
+          ],
+          "bytes": 7821,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26177": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18031.png",
+      "sourceSize": [
+        83,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        83,
+        56
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        21,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26177.png",
+          "size": [
+            21,
+            14
+          ],
+          "bytes": 1080,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26177.png",
+          "size": [
+            42,
+            28
+          ],
+          "bytes": 3180,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26177.png",
+          "size": [
+            63,
+            42
+          ],
+          "bytes": 6047,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26177.png",
+          "size": [
+            84,
+            56
+          ],
+          "bytes": 8479,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26178": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18032.png",
+      "sourceSize": [
+        64,
+        55
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        64,
+        55
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        16,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26178.png",
+          "size": [
+            16,
+            14
+          ],
+          "bytes": 835,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26178.png",
+          "size": [
+            32,
+            28
+          ],
+          "bytes": 2484,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26178.png",
+          "size": [
+            48,
+            42
+          ],
+          "bytes": 4651,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26178.png",
+          "size": [
+            64,
+            56
+          ],
+          "bytes": 7090,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26179": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18033.png",
+      "sourceSize": [
+        67,
+        52
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        67,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        17,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26179.png",
+          "size": [
+            17,
+            13
+          ],
+          "bytes": 823,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26179.png",
+          "size": [
+            34,
+            26
+          ],
+          "bytes": 2452,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26179.png",
+          "size": [
+            51,
+            39
+          ],
+          "bytes": 4727,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26179.png",
+          "size": [
+            68,
+            52
+          ],
+          "bytes": 7094,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26180": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18034.png",
+      "sourceSize": [
+        86,
+        49
+      ],
+      "sourceBbox": [
+        0,
+        3,
+        83,
+        46
+      ],
+      "sourceEdgeTouches": [
+        "left"
+      ],
+      "x1Size": [
+        22,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26180.png",
+          "size": [
+            22,
+            12
+          ],
+          "bytes": 928,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26180.png",
+          "size": [
+            44,
+            24
+          ],
+          "bytes": 2840,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26180.png",
+          "size": [
+            66,
+            36
+          ],
+          "bytes": 5397,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26180.png",
+          "size": [
+            88,
+            48
+          ],
+          "bytes": 8412,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26181": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18035.png",
+      "sourceSize": [
+        60,
+        48
+      ],
+      "sourceBbox": [
+        3,
+        3,
+        57,
+        45
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        15,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26181.png",
+          "size": [
+            15,
+            12
+          ],
+          "bytes": 622,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26181.png",
+          "size": [
+            30,
+            24
+          ],
+          "bytes": 1707,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26181.png",
+          "size": [
+            45,
+            36
+          ],
+          "bytes": 3087,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26181.png",
+          "size": [
+            60,
+            48
+          ],
+          "bytes": 4246,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26182": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18036.png",
+      "sourceSize": [
+        68,
+        49
+      ],
+      "sourceBbox": [
+        3,
+        3,
+        65,
+        46
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        17,
+        12
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26182.png",
+          "size": [
+            17,
+            12
+          ],
+          "bytes": 657,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26182.png",
+          "size": [
+            34,
+            24
+          ],
+          "bytes": 1903,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26182.png",
+          "size": [
+            51,
+            36
+          ],
+          "bytes": 3517,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26182.png",
+          "size": [
+            68,
+            48
+          ],
+          "bytes": 5219,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26183": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18037.png",
+      "sourceSize": [
+        79,
+        54
+      ],
+      "sourceBbox": [
+        6,
+        6,
+        73,
+        48
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        20,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26183.png",
+          "size": [
+            20,
+            14
+          ],
+          "bytes": 774,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26183.png",
+          "size": [
+            40,
+            28
+          ],
+          "bytes": 2031,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26183.png",
+          "size": [
+            60,
+            42
+          ],
+          "bytes": 3623,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26183.png",
+          "size": [
+            80,
+            56
+          ],
+          "bytes": 5613,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26184": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18038.png",
+      "sourceSize": [
+        98,
+        57
+      ],
+      "sourceBbox": [
+        3,
+        3,
+        95,
+        54
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        24,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26184.png",
+          "size": [
+            24,
+            14
+          ],
+          "bytes": 1051,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26184.png",
+          "size": [
+            48,
+            28
+          ],
+          "bytes": 2995,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26184.png",
+          "size": [
+            72,
+            42
+          ],
+          "bytes": 5615,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26184.png",
+          "size": [
+            96,
+            56
+          ],
+          "bytes": 8640,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26185": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18039.png",
+      "sourceSize": [
+        124,
+        97
+      ],
+      "sourceBbox": [
+        3,
+        3,
+        121,
+        91
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        31,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26185.png",
+          "size": [
+            31,
+            24
+          ],
+          "bytes": 1584,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26185.png",
+          "size": [
+            62,
+            48
+          ],
+          "bytes": 4323,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26185.png",
+          "size": [
+            93,
+            72
+          ],
+          "bytes": 7968,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26185.png",
+          "size": [
+            124,
+            96
+          ],
+          "bytes": 11601,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26186": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18040.png",
+      "sourceSize": [
+        115,
+        94
+      ],
+      "sourceBbox": [
+        9,
+        13,
+        107,
+        88
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26186.png",
+          "size": [
+            29,
+            24
+          ],
+          "bytes": 1304,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26186.png",
+          "size": [
+            58,
+            48
+          ],
+          "bytes": 3472,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26186.png",
+          "size": [
+            87,
+            72
+          ],
+          "bytes": 6356,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26186.png",
+          "size": [
+            116,
+            96
+          ],
+          "bytes": 9866,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26187": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18041.png",
+      "sourceSize": [
+        89,
+        54
+      ],
+      "sourceBbox": [
+        4,
+        3,
+        77,
+        50
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26187.png",
+          "size": [
+            22,
+            14
+          ],
+          "bytes": 941,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26187.png",
+          "size": [
+            44,
+            28
+          ],
+          "bytes": 2661,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26187.png",
+          "size": [
+            66,
+            42
+          ],
+          "bytes": 4945,
+          "edgeTouches": [
+            "left",
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26187.png",
+          "size": [
+            88,
+            56
+          ],
+          "bytes": 7730,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26188": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18042.png",
+      "sourceSize": [
+        96,
+        57
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        92,
+        53
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        24,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26188.png",
+          "size": [
+            24,
+            14
+          ],
+          "bytes": 989,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26188.png",
+          "size": [
+            48,
+            28
+          ],
+          "bytes": 2869,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26188.png",
+          "size": [
+            72,
+            42
+          ],
+          "bytes": 5170,
+          "edgeTouches": [
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26188.png",
+          "size": [
+            96,
+            56
+          ],
+          "bytes": 7362,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26189": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18043.png",
+      "sourceSize": [
+        72,
+        67
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        69,
+        63
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        18,
+        17
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26189.png",
+          "size": [
+            18,
+            17
+          ],
+          "bytes": 781,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26189.png",
+          "size": [
+            36,
+            34
+          ],
+          "bytes": 2054,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26189.png",
+          "size": [
+            54,
+            51
+          ],
+          "bytes": 3600,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26189.png",
+          "size": [
+            72,
+            68
+          ],
+          "bytes": 5128,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26190": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18044.png",
+      "sourceSize": [
+        122,
+        65
+      ],
+      "sourceBbox": [
+        4,
+        3,
+        118,
+        61
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        30,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26190.png",
+          "size": [
+            30,
+            16
+          ],
+          "bytes": 1249,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26190.png",
+          "size": [
+            60,
+            32
+          ],
+          "bytes": 3636,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26190.png",
+          "size": [
+            90,
+            48
+          ],
+          "bytes": 6693,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26190.png",
+          "size": [
+            120,
+            64
+          ],
+          "bytes": 10105,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26191": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18045.png",
+      "sourceSize": [
+        98,
+        57
+      ],
+      "sourceBbox": [
+        6,
+        7,
+        92,
+        51
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        24,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26191.png",
+          "size": [
+            24,
+            14
+          ],
+          "bytes": 870,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26191.png",
+          "size": [
+            48,
+            28
+          ],
+          "bytes": 2282,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26191.png",
+          "size": [
+            72,
+            42
+          ],
+          "bytes": 4004,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26191.png",
+          "size": [
+            96,
+            56
+          ],
+          "bytes": 6192,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26192": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18046.png",
+      "sourceSize": [
+        83,
+        109
+      ],
+      "sourceBbox": [
+        3,
+        4,
+        79,
+        105
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        21,
+        27
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26192.png",
+          "size": [
+            21,
+            27
+          ],
+          "bytes": 1201,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26192.png",
+          "size": [
+            42,
+            54
+          ],
+          "bytes": 3378,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26192.png",
+          "size": [
+            63,
+            81
+          ],
+          "bytes": 6198,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26192.png",
+          "size": [
+            84,
+            108
+          ],
+          "bytes": 9542,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26193": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18047.png",
+      "sourceSize": [
+        72,
+        51
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        72,
+        51
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        18,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26193.png",
+          "size": [
+            18,
+            13
+          ],
+          "bytes": 816,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26193.png",
+          "size": [
+            36,
+            26
+          ],
+          "bytes": 2375,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26193.png",
+          "size": [
+            54,
+            39
+          ],
+          "bytes": 4336,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26193.png",
+          "size": [
+            72,
+            52
+          ],
+          "bytes": 6037,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26194": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18048.png",
+      "sourceSize": [
+        120,
+        104
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        116,
+        100
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        30,
+        26
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26194.png",
+          "size": [
+            30,
+            26
+          ],
+          "bytes": 1428,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26194.png",
+          "size": [
+            60,
+            52
+          ],
+          "bytes": 3905,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26194.png",
+          "size": [
+            90,
+            78
+          ],
+          "bytes": 7128,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26194.png",
+          "size": [
+            120,
+            104
+          ],
+          "bytes": 9085,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26195": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18049.png",
+      "sourceSize": [
+        90,
+        104
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        84,
+        100
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        26
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26195.png",
+          "size": [
+            22,
+            26
+          ],
+          "bytes": 1274,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26195.png",
+          "size": [
+            44,
+            52
+          ],
+          "bytes": 3463,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26195.png",
+          "size": [
+            66,
+            78
+          ],
+          "bytes": 6270,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26195.png",
+          "size": [
+            88,
+            104
+          ],
+          "bytes": 9026,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26196": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18050.png",
+      "sourceSize": [
+        82,
+        63
+      ],
+      "sourceBbox": [
+        4,
+        5,
+        78,
+        59
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        20,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26196.png",
+          "size": [
+            20,
+            16
+          ],
+          "bytes": 980,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26196.png",
+          "size": [
+            40,
+            32
+          ],
+          "bytes": 2870,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26196.png",
+          "size": [
+            60,
+            48
+          ],
+          "bytes": 5321,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26196.png",
+          "size": [
+            80,
+            64
+          ],
+          "bytes": 8295,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26197": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18051.png",
+      "sourceSize": [
+        108,
+        59
+      ],
+      "sourceBbox": [
+        4,
+        5,
+        104,
+        56
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        27,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26197.png",
+          "size": [
+            27,
+            15
+          ],
+          "bytes": 1080,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26197.png",
+          "size": [
+            54,
+            30
+          ],
+          "bytes": 2909,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26197.png",
+          "size": [
+            81,
+            45
+          ],
+          "bytes": 5376,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26197.png",
+          "size": [
+            108,
+            60
+          ],
+          "bytes": 8004,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26198": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18052.png",
+      "sourceSize": [
+        108,
+        58
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        104,
+        55
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        27,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26198.png",
+          "size": [
+            27,
+            14
+          ],
+          "bytes": 969,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26198.png",
+          "size": [
+            54,
+            28
+          ],
+          "bytes": 2708,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26198.png",
+          "size": [
+            81,
+            42
+          ],
+          "bytes": 4860,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26198.png",
+          "size": [
+            108,
+            56
+          ],
+          "bytes": 7106,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26199": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18053.png",
+      "sourceSize": [
+        100,
+        63
+      ],
+      "sourceBbox": [
+        3,
+        6,
+        94,
+        58
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        25,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26199.png",
+          "size": [
+            25,
+            16
+          ],
+          "bytes": 991,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26199.png",
+          "size": [
+            50,
+            32
+          ],
+          "bytes": 2627,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26199.png",
+          "size": [
+            75,
+            48
+          ],
+          "bytes": 4703,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26199.png",
+          "size": [
+            100,
+            64
+          ],
+          "bytes": 6963,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26200": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18054.png",
+      "sourceSize": [
+        91,
+        90
+      ],
+      "sourceBbox": [
+        4,
+        7,
+        88,
+        80
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        23,
+        22
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26200.png",
+          "size": [
+            23,
+            22
+          ],
+          "bytes": 1212,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26200.png",
+          "size": [
+            46,
+            44
+          ],
+          "bytes": 3283,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26200.png",
+          "size": [
+            69,
+            66
+          ],
+          "bytes": 5968,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26200.png",
+          "size": [
+            92,
+            88
+          ],
+          "bytes": 9135,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26201": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18055.png",
+      "sourceSize": [
+        102,
+        85
+      ],
+      "sourceBbox": [
+        4,
+        8,
+        88,
+        81
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        26,
+        21
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26201.png",
+          "size": [
+            26,
+            21
+          ],
+          "bytes": 1274,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26201.png",
+          "size": [
+            52,
+            42
+          ],
+          "bytes": 3332,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26201.png",
+          "size": [
+            78,
+            63
+          ],
+          "bytes": 5931,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26201.png",
+          "size": [
+            104,
+            84
+          ],
+          "bytes": 9177,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26202": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18056.png",
+      "sourceSize": [
+        69,
+        65
+      ],
+      "sourceBbox": [
+        4,
+        3,
+        65,
+        61
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        17,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26202.png",
+          "size": [
+            17,
+            16
+          ],
+          "bytes": 822,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26202.png",
+          "size": [
+            34,
+            32
+          ],
+          "bytes": 2360,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26202.png",
+          "size": [
+            51,
+            48
+          ],
+          "bytes": 4328,
+          "edgeTouches": [
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26202.png",
+          "size": [
+            68,
+            64
+          ],
+          "bytes": 6475,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26203": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18057.png",
+      "sourceSize": [
+        93,
+        61
+      ],
+      "sourceBbox": [
+        3,
+        4,
+        89,
+        57
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        23,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26203.png",
+          "size": [
+            23,
+            15
+          ],
+          "bytes": 909,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26203.png",
+          "size": [
+            46,
+            30
+          ],
+          "bytes": 2588,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26203.png",
+          "size": [
+            69,
+            45
+          ],
+          "bytes": 4672,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26203.png",
+          "size": [
+            92,
+            60
+          ],
+          "bytes": 7032,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26204": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18058.png",
+      "sourceSize": [
+        73,
+        95
+      ],
+      "sourceBbox": [
+        5,
+        7,
+        69,
+        91
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        18,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26204.png",
+          "size": [
+            18,
+            24
+          ],
+          "bytes": 1087,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26204.png",
+          "size": [
+            36,
+            48
+          ],
+          "bytes": 2970,
+          "edgeTouches": [
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26204.png",
+          "size": [
+            54,
+            72
+          ],
+          "bytes": 5369,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26204.png",
+          "size": [
+            72,
+            96
+          ],
+          "bytes": 8183,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26205": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18059.png",
+      "sourceSize": [
+        119,
+        76
+      ],
+      "sourceBbox": [
+        4,
+        7,
+        115,
+        67
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        30,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26205.png",
+          "size": [
+            30,
+            19
+          ],
+          "bytes": 1311,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26205.png",
+          "size": [
+            60,
+            38
+          ],
+          "bytes": 3338,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26205.png",
+          "size": [
+            90,
+            57
+          ],
+          "bytes": 5908,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26205.png",
+          "size": [
+            120,
+            76
+          ],
+          "bytes": 8257,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26206": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\18060.png",
+      "sourceSize": [
+        106,
+        100
+      ],
+      "sourceBbox": [
+        4,
+        4,
+        100,
+        96
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        26,
+        25
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26206.png",
+          "size": [
+            26,
+            25
+          ],
+          "bytes": 1334,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26206.png",
+          "size": [
+            52,
+            50
+          ],
+          "bytes": 3870,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26206.png",
+          "size": [
+            78,
+            75
+          ],
+          "bytes": 7011,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26206.png",
+          "size": [
+            104,
+            100
+          ],
+          "bytes": 9876,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26207": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\Black Parten\\profile.png",
+      "sourceSize": [
+        312,
+        220
+      ],
+      "sourceBbox": [
+        72,
+        11,
+        239,
+        220
+      ],
+      "canvasX1": [
+        64,
+        64
+      ],
+      "verticalAlign": "bottom",
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26207.png",
+          "size": [
+            64,
+            64
+          ],
+          "bytes": 8521,
+          "bbox": [
+            7,
+            2,
+            57,
+            64
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26207.png",
+          "size": [
+            128,
+            128
+          ],
+          "bytes": 26868,
+          "bbox": [
+            14,
+            4,
+            113,
+            128
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26207.png",
+          "size": [
+            192,
+            192
+          ],
+          "bytes": 52981,
+          "bbox": [
+            21,
+            6,
+            170,
+            192
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26207.png",
+          "size": [
+            256,
+            256
+          ],
+          "bytes": 85672,
+          "bbox": [
+            29,
+            8,
+            227,
+            256
+          ],
+          "transparentBorder": false
+        }
+      }
+    }
+  },
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "cost": 2000
+  },
+  "options": [
+    {
+      "optionId": 50,
+      "param": 28,
+      "sortOrder": 0
+    },
+    {
+      "optionId": 77,
+      "param": 28,
+      "sortOrder": 1
+    },
+    {
+      "optionId": 103,
+      "param": 28,
+      "sortOrder": 2
+    },
+    {
+      "optionId": 14,
+      "param": 20,
+      "sortOrder": 3
+    },
+    {
+      "optionId": 97,
+      "param": 20,
+      "sortOrder": 4
+    },
+    {
+      "optionId": 30,
+      "param": 0,
+      "sortOrder": 5
+    }
+  ],
+  "previews": {
+    "contactSheet": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\black-parten\\preview\\contact-sheet.png"
+  },
+  "qa": {
+    "staticStatus": "passed-with-client-check-needed",
+    "checks": [
+      "HEAD has 3 slots",
+      "BODY has 17 slots",
+      "LEG has 14 slots",
+      "all referenced image IDs are in Java short range",
+      "all dx/dy values are in Java byte range",
+      "runtime PNGs were written to x1-x4",
+      "profile is cropped and bottom-aligned to 64x64 x1 canvas",
+      "default item options are present"
+    ]
+  }
+}

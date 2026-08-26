@@ -1,12 +1,13 @@
-﻿<!doctype html>
+<!doctype html>
 <html>
 <head>
   <meta http-equiv="x-ua-compatible" content="IE=edge">
   <meta charset="utf-8">
-  <title>NRO Server Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bảng điều khiển NRO Server</title>
   <hta:application
     id="NroServerDashboard"
-    applicationname="NRO Server Dashboard"
+    applicationname="Bảng điều khiển NRO Server"
     icon="C:\Users\PC\Music\Teamobi2026\SRC\assets\icons\server_menu_v2.ico"
     border="thin"
     caption="yes"
@@ -17,512 +18,997 @@
     sysmenu="yes"
     windowstate="normal" />
   <style>
+    * { box-sizing: border-box; outline: none; }
+
     html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #0f172a;
-      color: #e5e7eb;
-      font-family: "Segoe UI", Arial, sans-serif;
-      font-size: 13px;
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background: #0b0f19; color: #e2e8f0;
+      font-family: "Segoe UI", Arial, sans-serif; font-size: 13px;
+      user-select: none;
     }
 
+    /* ─────────── LAYOUT ─────────── */
     #app {
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      min-width: 900px;
-      min-height: 560px;
-      background: #0f172a;
+      display: flex; flex-direction: row;
+      width: 100%; height: 100%;
+      position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+      background: #0b0f19; overflow: hidden;
     }
 
     #sidebar {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 278px;
-      padding: 18px 16px;
-      box-sizing: border-box;
-      background: #111827;
-      border-right: 1px solid #263244;
-      overflow-y: auto;
+      width: 300px; min-width: 280px; max-width: 320px; height: 100%;
+      background: #111827; border-right: 1px solid #1e2d40;
+      display: flex; flex-direction: column;
+      padding: 14px 12px; overflow-y: auto; flex-shrink: 0;
     }
 
     #content {
-      position: absolute;
-      left: 311px;
-      top: 18px;
-      right: 18px;
-      bottom: 18px;
+      flex: 1; height: 100%; display: flex; flex-direction: column;
+      padding: 14px 16px; background: #0b0f19;
+      overflow: hidden; min-width: 0;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      line-height: 28px;
-      font-weight: 650;
-      color: #f9fafb;
+    /* ─────────── BRAND ─────────── */
+    .brand {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1e2d40;
+    }
+    .brand-title {
+      font-size: 16px; font-weight: 700; color: #f8fafc;
+      display: flex; align-items: center; gap: 2px;
+      white-space: nowrap; min-width: 0;
+    }
+    .brand-title span { color: #38bdf8; }
+    .brand-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 3px;
+      background: #1e293b; color: #64748b; border: 1px solid #2d3f55;
+      font-weight: 700; letter-spacing: 0.5px;
     }
 
-    .sub {
-      margin: 4px 0 16px;
-      color: #9ca3af;
-      font-size: 12px;
-    }
-
+    /* ─────────── STATUS CARD ─────────── */
     .status-card {
-      margin-bottom: 16px;
-      padding: 12px;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      background: #1f2937;
+      background: #0f172a; border: 1px solid #1e2d40;
+      border-radius: 7px; padding: 10px 11px; margin-bottom: 10px;
     }
-
-    .status-title {
+    .status-header {
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 8px;
-      color: #9ca3af;
-      font-size: 11px;
-      text-transform: uppercase;
+    }
+    .status-title {
+      font-size: 10px; text-transform: uppercase; font-weight: 700;
+      color: #475569; letter-spacing: 0.8px;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+      border: 1px solid #334155; background: #1e293b; color: #94a3b8;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .status-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+      flex-shrink: 0;
+    }
+    .status-badge.running  { border-color: #10b981; background: #022c22; color: #34d399; }
+    .status-badge.starting { border-color: #f59e0b; background: #431407; color: #fbbf24; }
+    .status-badge.stopped  { border-color: #374151; background: #111827; color: #6b7280; }
+    .status-badge.error    { border-color: #ef4444; background: #450a0a; color: #f87171; }
+
+    /* ─────────── METRICS GRID ─────────── */
+    .metrics-grid {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px;
+    }
+    .metric-item {
+      flex: 1 1 calc(50% - 3px); min-width: 0;
+      background: #080e1a; border: 1px solid #1a2640;
+      border-radius: 5px; padding: 6px 9px;
+    }
+    .metric-item .label {
+      display: block; font-size: 9px; color: #3d5166;
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 2px; font-weight: 700;
+    }
+    .metric-item .value {
+      display: block; font-size: 13px; font-weight: 700; color: #e2e8f0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .status-extra {
+      font-size: 10px; color: #334155; line-height: 15px;
+      border-top: 1px solid #1a2640; padding-top: 5px; margin-top: 3px;
     }
 
-    #statusText {
-      min-height: 74px;
-      color: #d1d5db;
-      white-space: pre-line;
-      line-height: 18px;
-    }
-
+    /* ─────────── SECTION TITLES ─────────── */
     .section-title {
-      margin: 16px 0 8px;
-      color: #cbd5e1;
-      font-size: 12px;
-      font-weight: 650;
-      text-transform: uppercase;
+      font-size: 10px; text-transform: uppercase; font-weight: 700;
+      color: #3d5166; letter-spacing: 0.8px; margin: 9px 0 5px 0;
     }
 
+    /* ─────────── BUTTONS (BASE) ─────────── */
     button {
-      display: block;
-      width: 100%;
-      height: 36px;
-      margin: 0 0 8px;
-      border: 1px solid #475569;
-      border-radius: 6px;
-      background: #334155;
-      color: #f8fafc;
-      font-family: "Segoe UI", Arial, sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      text-align: left;
-      padding: 0 12px;
-      box-sizing: border-box;
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 32px; padding: 0 12px;
+      border: 1px solid #2d3f55; border-radius: 5px;
+      background: #131e2d; color: #94a3b8;
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    button:hover  { background: #1a2942; border-color: #3d5578; color: #cbd5e1; }
+    button:active { transform: translateY(1px); }
+
+    /* ─────────── ACTION BUTTONS ─────────── */
+    .actions-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .actions-grid button {
+      flex: 1 1 118px; min-width: 0;
+      height: 34px; font-size: 11px; padding: 0 6px;
     }
 
-    button:hover {
-      background: #3f4f66;
+    button.btn-start   { background: #064e3b; border-color: #059669; color: #6ee7b7; }
+    button.btn-start:hover  { background: #065f46; border-color: #10b981; color: #a7f3d0; }
+
+    button.btn-restart { background: #1e3a8a; border-color: #2563eb; color: #93c5fd; }
+    button.btn-restart:hover  { background: #1d4ed8; border-color: #3b82f6; color: #bfdbfe; }
+
+    button.btn-stop    { background: #7f1d1d; border-color: #b91c1c; color: #fca5a5; }
+    button.btn-stop:hover   { background: #991b1b; border-color: #dc2626; color: #fecaca; }
+
+    button.btn-build   { background: #1c2535; border-color: #3d5578; color: #7ea6c9; }
+    button.btn-build:hover  { background: #263447; border-color: #5a80a8; color: #93b8d4; }
+
+    /* ─────────── CONFIG CARD ─────────── */
+    .config-card {
+      background: #0f172a; border: 1px solid #1e2d40;
+      border-radius: 7px; padding: 10px; margin-bottom: 10px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .config-group {
+      background: #080e1a; border: 1px solid #1a2640;
+      border-radius: 5px; padding: 8px 10px;
+    }
+    .config-group-label {
+      font-size: 10px; font-weight: 700; color: #475569;
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
+    }
+    .config-select-box { margin-bottom: 7px; }
+    .config-select-box select {
+      width: 100%; height: 30px;
+      background: #0f172a; border: 1px solid #2d3f55;
+      border-radius: 4px; color: #cbd5e1;
+      padding: 0 8px; font-family: inherit; font-size: 12px;
+      font-weight: 500; cursor: pointer;
+      appearance: none; -moz-appearance: none;
+    }
+    .config-select-box select:focus { border-color: #38bdf8; outline: none; }
+    .config-select-box select option { background: #0f172a; color: #cbd5e1; }
+    .config-btn-row { display: flex; gap: 5px; }
+    .config-btn-row button { flex: 1; height: 28px; font-size: 11px; }
+    .btn-cfg-save  { background: #131e2d; border-color: #2d3f55; color: #64748b; }
+    .btn-cfg-save:hover  { background: #1a2942; color: #94a3b8; border-color: #3d5578; }
+    .btn-cfg-apply { background: #1e3a8a; border-color: #3b82f6; color: #93c5fd; font-weight: 700; }
+    .btn-cfg-apply:hover  { background: #1d4ed8; border-color: #60a5fa; color: #bfdbfe; }
+
+    /* ─────────── TOOLS LIST ─────────── */
+    .tools-list { display: flex; flex-direction: column; gap: 4px; }
+    .tool-btn {
+      display: flex; align-items: center; gap: 8px;
+      height: 30px; padding: 0 10px;
+      background: #080e1a; border: 1px solid #1a2640;
+      border-radius: 5px; font-size: 11px; color: #4b6070;
+      text-align: left; justify-content: flex-start;
+    }
+    .tool-btn:hover { background: #0f172a; color: #7ea6c9; border-color: #2d5070; }
+    .tool-btn-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #2d3f55; flex-shrink: 0;
     }
 
-    button.primary {
-      border-color: #059669;
-      background: #047857;
-    }
-
-    button.primary:hover {
-      background: #059669;
-    }
-
-    button.danger {
-      border-color: #dc2626;
-      background: #991b1b;
-    }
-
-    button.danger:hover {
-      background: #b91c1c;
-    }
-
-    button.compact {
-      display: inline-block;
-      width: 112px;
-      height: 32px;
-      margin: 0 0 0 8px;
-      text-align: center;
-      padding: 0;
-    }
-
+    /* ─────────── TOPBAR ─────────── */
     .topbar {
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      height: 54px;
-      border-bottom: 1px solid #263244;
+      display: flex; align-items: center;
+      min-height: 42px; margin-bottom: 10px;
+      padding-bottom: 8px; border-bottom: 1px solid #1e2d40;
+      flex-shrink: 0; gap: 8px; flex-wrap: wrap;
+    }
+    .topbar-left {
+      display: flex; align-items: center; gap: 6px;
+      flex: 0 1 auto; min-width: 0;
+    }
+    .topbar-right {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 5px; flex: 1 1 300px; min-width: 0; margin-left: auto;
+      flex-wrap: wrap;
     }
 
-    .topbar-title {
-      position: absolute;
-      left: 0;
-      top: 2px;
-      font-size: 18px;
-      font-weight: 650;
-      color: #f9fafb;
-    }
-
-    .topbar-sub {
-      position: absolute;
-      left: 0;
-      top: 29px;
-      color: #94a3b8;
-      font-size: 12px;
-    }
-
-    .topbar-actions {
-      position: absolute;
-      right: 0;
-      top: 8px;
-      white-space: nowrap;
-    }
-
-    .log-panel {
-      position: absolute;
-      left: 0;
-      top: 72px;
-      right: 0;
-      bottom: 0;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      background: #020617;
-      overflow: hidden;
-    }
-
+    /* ─────────── LOG TABS ─────────── */
     .log-tabs {
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      height: 42px;
-      background: #111827;
-      border-bottom: 1px solid #263244;
+      display: flex; background: #0b1018;
+      border: 1px solid #1e2d40; border-radius: 5px; padding: 2px; gap: 1px;
+      min-width: 0;
     }
-
     .tab {
-      display: inline-block;
-      width: 130px;
-      height: 42px;
-      line-height: 42px;
-      text-align: center;
-      color: #cbd5e1;
-      cursor: pointer;
-      border-right: 1px solid #263244;
+      padding: 4px 12px; font-size: 12px; font-weight: 600;
+      color: #3d5166; cursor: pointer; border-radius: 4px;
+      white-space: nowrap; transition: all 0.12s;
+      overflow: hidden; text-overflow: ellipsis; min-width: 0;
     }
+    .tab:hover  { color: #94a3b8; background: #131e2d; }
+    .tab.active { background: #1d4ed8; color: #fff; }
 
-    .tab.active {
-      background: #1f2937;
-      color: #f8fafc;
-      font-weight: 650;
+    /* ─────────── SEARCH INPUT ─────────── */
+    .search-input {
+      width: 140px; min-width: 120px; height: 30px;
+      background: #0b1018; border: 1px solid #1e2d40;
+      border-radius: 5px; color: #94a3b8; padding: 0 9px;
+      font-size: 11px; font-family: inherit; flex: 0 1 160px;
     }
+    .search-input:focus { border-color: #2563eb; color: #e2e8f0; outline: none; }
 
+    /* ─────────── CTRL BUTTONS ─────────── */
+    button.btn-ctrl {
+      height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;
+      background: #0b1018; border: 1px solid #1e2d40;
+      color: #3d5166; border-radius: 5px; white-space: nowrap; flex-shrink: 0;
+    }
+    button.btn-ctrl:hover { background: #131e2d; border-color: #2d3f55; color: #94a3b8; }
+    button.btn-ctrl.active { background: #022c22; border-color: #059669; color: #34d399; }
+
+    /* ─────────── LOG PANEL ─────────── */
+    .log-panel {
+      flex: 1; display: flex; flex-direction: column;
+      background: #04080f; border: 1px solid #1e2d40;
+      border-radius: 7px; overflow: hidden; min-height: 0;
+    }
     #logBox {
-      position: absolute;
-      left: 0;
-      top: 42px;
-      width: 100%;
-      height: 400px;
-      box-sizing: border-box;
-      resize: none;
-      border: 0;
-      padding: 12px;
-      background: #020617;
-      color: #d1d5db;
+      flex: 1; width: 100%; border: 0; margin: 0;
+      padding: 10px 13px; background: #04080f; color: #c8d3de;
       font-family: Consolas, "Courier New", monospace;
-      font-size: 12px;
-      line-height: 17px;
-      overflow: auto;
+      font-size: 12px; line-height: 17px; resize: none;
+      white-space: pre-wrap; word-break: break-all; overflow-y: auto;
+    }
+    .log-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 26px; height: auto; padding: 3px 12px;
+      background: #080e1a; border-top: 1px solid #1a2640;
+      font-size: 11px; color: #2d3f55; flex-shrink: 0;
+      gap: 8px; flex-wrap: wrap;
+    }
+    .log-stats { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
+    .log-stat-item { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+    .log-stat-item strong { color: #475569; margin-left: 2px; }
+    .live-badge {
+      padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .live-badge.running { background: #022c22; border: 1px solid #059669; color: #34d399; }
+    .live-badge.stopped { background: #111827; border: 1px solid #374151; color: #4b5563; }
+
+    /* ─────────── TOAST ─────────── */
+    .toast-container { position: fixed; right: 16px; bottom: 16px; z-index: 9999; pointer-events: none; }
+    .toast {
+      background: #131e2d; color: #e2e8f0; border: 1px solid #2563eb;
+      border-radius: 5px; padding: 8px 14px; margin-top: 6px;
+      font-size: 12px; font-weight: 600;
     }
 
-    .footer-note {
-      margin-top: 18px;
-      padding-bottom: 12px;
-      color: #64748b;
-      font-size: 11px;
-      line-height: 16px;
+    /* ════════════════════════════════════════════════
+       COMPACT MODE  (width < 860  OR  height < 580)
+       Sidebar → thin horizontal header strip
+    ════════════════════════════════════════════════ */
+    #app.compact-mode { flex-direction: column; }
+
+    /* Sidebar becomes a horizontal strip */
+    #app.compact-mode #sidebar {
+      width: 100%; min-width: 100%; max-width: 100%;
+      height: auto;
+      border-right: none; border-bottom: 1px solid #1e2d40;
+      padding: 7px 12px; flex-shrink: 0;
+      max-height: 44%;
+      overflow-y: auto; overflow-x: hidden;
     }
+
+    /* Brand: single row with status on same line */
+    #app.compact-mode .brand {
+      display: flex; align-items: center; justify-content: flex-start;
+      margin-bottom: 6px; padding-bottom: 0; border-bottom: none;
+      gap: 10px;
+    }
+    #app.compact-mode .brand-badge { display: none; }
+
+    /* Status header merges into brand row */
+    #app.compact-mode .status-card {
+      background: transparent; border: none; padding: 0; margin-bottom: 6px;
+    }
+    #app.compact-mode .status-header {
+      /* Push badge to right of brand row by not rendering status card as block */
+      display: none;
+    }
+    /* Status badge inline with brand */
+    #app.compact-mode .compact-status-row {
+      display: flex; align-items: center; gap: 10px; margin-left: auto; margin-bottom: 0;
+    }
+
+    /* Metrics row: 4 columns when possible, then wraps cleanly */
+    #app.compact-mode .metrics-grid {
+      flex-wrap: wrap; gap: 5px; margin-bottom: 0;
+    }
+    #app.compact-mode .metric-item {
+      flex: 1 1 76px; min-width: 0; padding: 5px 8px;
+    }
+    #app.compact-mode .metric-item .label { font-size: 9px; }
+    #app.compact-mode .metric-item .value { font-size: 12px; }
+
+    /* Hide the 5th and 6th metric (Event, EXP) in compact */
+    #app.compact-mode .metric-hide-compact { display: none !important; }
+
+    #app.compact-mode .status-extra { display: none; }
+
+    /* Actions row */
+    #app.compact-mode .compact-actions-row {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px;
+    }
+    #app.compact-mode .compact-actions-row button {
+      flex: 1 1 72px; height: 28px; font-size: 11px; padding: 0 4px;
+    }
+
+    /* Hide everything else in compact sidebar */
+    #app.compact-mode .section-title,
+    #app.compact-mode .config-card,
+    #app.compact-mode .tools-list { display: none; }
+
+    /* The desktop actions-grid hidden in compact (replaced by compact-actions-row) */
+    #app.compact-mode .actions-grid { display: none; }
+
+    /* Content in compact */
+    #app.compact-mode #content { padding: 8px 12px; }
+    #app.compact-mode .topbar { min-height: 36px; margin-bottom: 7px; padding-bottom: 7px; }
+    #app.compact-mode .tab { padding: 4px 9px; font-size: 11px; }
+    #app.compact-mode .search-input { width: 110px; min-width: 90px; }
+    #app.compact-mode button.btn-ctrl { padding: 0 8px; }
+
+    /* Narrow width / short height: stack toolbar rows */
+    #app.narrow-mode .topbar {
+      align-items: stretch; gap: 6px;
+    }
+    #app.narrow-mode .topbar-left,
+    #app.narrow-mode .topbar-right {
+      width: 100%; flex: 1 1 100%; margin-left: 0;
+    }
+    #app.narrow-mode .log-tabs { width: 100%; }
+    #app.narrow-mode .tab {
+      flex: 1 1 0; text-align: center; padding-left: 6px; padding-right: 6px;
+    }
+    #app.narrow-mode .search-input {
+      flex: 1 1 130px; width: auto; min-width: 100px;
+    }
+    #app.narrow-mode button.btn-ctrl {
+      flex: 1 1 76px; padding-left: 6px; padding-right: 6px;
+    }
+    #app.narrow-mode .log-footer { align-items: flex-start; }
+    #app.narrow-mode .log-stats {
+      width: 100%; justify-content: space-between; gap: 6px 10px;
+    }
+
+    /* Tiny windows: keep controls reachable and give logs more room */
+    #app.tiny-mode #sidebar { padding: 6px 8px; max-height: 48%; }
+    #app.tiny-mode .brand { margin-bottom: 5px; }
+    #app.tiny-mode .brand-title { font-size: 14px; }
+    #app.tiny-mode .status-badge { padding: 2px 7px; font-size: 10px; }
+    #app.tiny-mode .metric-item { flex: 1 1 118px; padding: 4px 6px; }
+    #app.tiny-mode .metric-item .label { display: none; }
+    #app.tiny-mode .compact-actions-row button { flex: 1 1 118px; }
+    #app.tiny-mode #content { padding: 6px 8px; }
+    #app.tiny-mode .topbar { margin-bottom: 6px; padding-bottom: 6px; }
+    #app.tiny-mode .search-input { flex: 1 1 100%; width: 100%; }
+    #app.tiny-mode .log-footer { display: none; }
+
+    /* Ultra-compact (height < 460) */
+    #app.ultra-compact .metrics-grid { gap: 3px; }
+    #app.ultra-compact .metric-item { padding: 4px 6px; }
+    #app.ultra-compact .compact-actions-row { gap: 3px; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div id="app">
+    <!-- ═══════════ LEFT SIDEBAR ═══════════ -->
     <div id="sidebar">
-      <h1>NRO Server</h1>
-      <div class="sub">Dashboard điều khiển server</div>
 
-      <div class="status-card">
-        <div class="status-title">Trạng thái</div>
-        <div id="statusText">Đang tải trạng thái...</div>
+      <!-- BRAND -->
+      <div class="brand">
+        <div class="brand-title">NRO <span>Server</span></div>
+        <div class="brand-badge">QUẢN TRỊ</div>
+        <div id="compactStatusRow" style="display:none;" class="compact-status-row">
+          <span id="statusBadge2" class="status-badge stopped">
+            <span class="dot"></span>
+            <span id="statusBadgeText2">Kiểm tra...</span>
+          </span>
+        </div>
       </div>
 
-      <div class="section-title">Máy chủ</div>
-      <button class="primary" onclick="RunAction('start')">Bật Server</button>
-      <button onclick="RunAction('restart')">Restart Server</button>
-      <button class="danger" onclick="RunAction('stop')">Tắt Server</button>
+      <!-- STATUS CARD -->
+      <div class="status-card">
+        <div class="status-header">
+          <span class="status-title">Trạng thái máy chủ</span>
+          <span id="statusBadge" class="status-badge stopped">
+            <span class="dot"></span>
+            <span id="statusBadgeText">Kiểm tra...</span>
+          </span>
+        </div>
 
-      <div class="footer-note">
-        Log server và log lỗi được ghi trong thư mục logs.
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <span class="label">Hoạt động</span>
+            <span id="metricUptime" class="value">--:--:--</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">PID</span>
+            <span id="metricPid" class="value">-</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">Cổng</span>
+            <span id="metricPort" class="value">14445</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">RAM</span>
+            <span id="metricMemory" class="value">-</span>
+          </div>
+          <div class="metric-item metric-hide-compact">
+            <span class="label">Sự kiện</span>
+            <span id="metricEvent" class="value">Bình thường</span>
+          </div>
+          <div class="metric-item metric-hide-compact">
+            <span class="label">Hệ số EXP</span>
+            <span id="metricExp" class="value">x1</span>
+          </div>
+        </div>
+
+        <div id="statusExtra" class="status-extra">
+          Đang kết nối giám sát realtime...
+        </div>
+      </div>
+
+      <!-- SERVER ACTIONS (desktop layout: 2x2 grid) -->
+      <div class="section-title">Điều khiển nguồn</div>
+      <div class="actions-grid">
+        <button class="btn-start"   onclick="RunServerAction('start')">Bật Server</button>
+        <button class="btn-restart" onclick="RunServerAction('restart')">Khởi động lại</button>
+        <button class="btn-stop"    onclick="RunServerAction('stop')">Tắt Server</button>
+        <button class="btn-build"   onclick="RunServerAction('build')">Dựng JAR</button>
+      </div>
+
+      <!-- COMPACT ACTIONS ROW (shown in compact, hidden in desktop via CSS) -->
+      <div class="compact-actions-row" style="display:none;" id="compactActionsRow">
+        <button class="btn-start"   onclick="RunServerAction('start')">Bật</button>
+        <button class="btn-restart" onclick="RunServerAction('restart')">Khởi động</button>
+        <button class="btn-stop"    onclick="RunServerAction('stop')">Tắt</button>
+        <button class="btn-build"   onclick="RunServerAction('build')">Dựng</button>
+      </div>
+
+      <!-- QUICK CONFIG (desktop only, hidden in compact) -->
+      <div class="section-title">Cấu hình nhanh</div>
+      <div class="config-card">
+        <div class="config-group">
+          <div class="config-group-label">Sự kiện máy chủ</div>
+          <div class="config-select-box">
+            <select id="selectEvent">
+              <option value="none">Không có (Bình thường)</option>
+              <option value="trung_thu">Tết Trung Thu</option>
+              <option value="tet">Tết Nguyên Đán</option>
+              <option value="he">Sự kiện Hè</option>
+              <option value="halloween">Halloween</option>
+              <option value="noel">Giáng Sinh / Noel</option>
+            </select>
+          </div>
+          <div class="config-btn-row">
+            <button class="btn-cfg-save"  onclick="ApplyEvent(false)">Lưu</button>
+            <button class="btn-cfg-apply" onclick="ApplyEvent(true)">Áp dụng</button>
+          </div>
+        </div>
+        <div class="config-group">
+          <div class="config-group-label">Hệ số EXP tiềm năng</div>
+          <div class="config-select-box">
+            <select id="selectExp">
+              <option value="1">x1 (Mặc định)</option>
+              <option value="2">x2 Tiềm năng</option>
+              <option value="3">x3 Tiềm năng</option>
+              <option value="5">x5 Tiềm năng</option>
+              <option value="10">x10 Tiềm năng</option>
+              <option value="20">x20 Tiềm năng</option>
+              <option value="50">x50 Tiềm năng</option>
+              <option value="100">x100 Tiềm năng</option>
+            </select>
+          </div>
+          <div class="config-btn-row">
+            <button class="btn-cfg-save"  onclick="ApplyExp(false)">Lưu</button>
+            <button class="btn-cfg-apply" onclick="ApplyExp(true)">Áp dụng</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOLS (desktop only) -->
+      <div class="section-title">Tiện ích quản trị</div>
+      <div class="tools-list">
+        <button class="tool-btn" onclick="RunServerAction('openlogs')">
+          <span class="tool-btn-dot"></span>Mở thư mục Logs
+        </button>
+        <button class="tool-btn" onclick="OpenAdminDataMenu()">
+          <span class="tool-btn-dot"></span>Mở Menu Admin Data
+        </button>
+        <button class="tool-btn" onclick="OpenServerFolder()">
+          <span class="tool-btn-dot"></span>Mở thư mục Server
+        </button>
       </div>
     </div>
 
+    <!-- ═══════════ RIGHT CONTENT ═══════════ -->
     <div id="content">
       <div class="topbar">
-        <div class="topbar-title">Bảng log</div>
-        <div class="topbar-sub" id="lastUpdate">Đang cập nhật...</div>
-        <div class="topbar-actions">
-          <button class="compact" onclick="ClearView()">Xóa màn hình</button>
-          <button class="compact" onclick="RefreshAll()">Làm mới</button>
+        <div class="topbar-left">
+          <div class="log-tabs">
+            <span id="tabServer"  class="tab active" onclick="SwitchLogTab('server')">Log Server</span>
+            <span id="tabError"   class="tab" onclick="SwitchLogTab('error')">Log Lỗi</span>
+            <span id="tabControl" class="tab" onclick="SwitchLogTab('control')">Điều Khiển</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <input type="text" id="logSearch" class="search-input"
+            placeholder="Lọc từ khóa..." onkeyup="OnSearchKeyUp()" />
+          <button id="btnAutoScroll" class="btn-ctrl active" onclick="ToggleAutoScroll()">Cuộn BẬT</button>
+          <button class="btn-ctrl" onclick="CopyLogToClipboard()">Sao chép</button>
+          <button class="btn-ctrl" onclick="ClearLogView()">Xóa log</button>
+          <button class="btn-ctrl" onclick="RefreshAll(true)">Làm mới</button>
         </div>
       </div>
 
-      <div id="logPanel" class="log-panel">
-        <div class="log-tabs">
-          <span id="tabServer" class="tab active" onclick="SetLogTab('server')">Log server</span>
-          <span id="tabError" class="tab" onclick="SetLogTab('error')">Log lỗi</span>
-        </div>
+      <div class="log-panel">
         <textarea id="logBox" readonly></textarea>
+        <div class="log-footer">
+          <div class="log-stats">
+            <span class="log-stat-item">Tệp: <strong id="footerLogFile">server.log</strong></span>
+            <span class="log-stat-item">Dung lượng: <strong id="footerLogSize">0 B</strong></span>
+            <span class="log-stat-item">Dòng: <strong id="footerLogLines">0</strong></span>
+          </div>
+          <div class="log-stats">
+            <span class="log-stat-item">Cập nhật: <strong id="footerLogTime">...</strong></span>
+            <span id="footerStreamStatus" class="live-badge running">ĐANG CHẠY</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <div id="toastContainer" class="toast-container"></div>
+
   <script language="JScript">
-    var shell = new ActiveXObject("WScript.Shell");
-    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    window.onerror = function () { return true; };
+
+    var shell  = new ActiveXObject("WScript.Shell");
+    var fso    = new ActiveXObject("Scripting.FileSystemObject");
     var rootDir = GetRootDir();
-    var currentLog = "server";
-    var viewCleared = false;
-    var lastReadError = "";
-    var lastStatusRequestTime = 0;
+
+    var currentTab = "server";
+    var isRunning  = false;
+    var serverStartedAt = null;
+    var autoScroll = true;
+    var maxLogChars = 90000;
+    var searchKeyword = "";
+    var lastStatusCheckTime = 0;
+    var isCompact = false;
+
+    var rawLogs = { server: "", error: "", control: "" };
+    var logFileStates = {
+      server:  { loaded: false, size: -1, lastMod: "" },
+      error:   { loaded: false, size: -1, lastMod: "" },
+      control: { loaded: false, size: -1, lastMod: "" }
+    };
 
     window.onload = function () {
-      window.resizeTo(1120, 680);
-      ResizeLogBox();
-      RefreshAll();
-      window.setInterval("AutoRefresh()", 2500);
+      ApplyResponsiveLayout();
+      RefreshAll(true);
+      window.setInterval("AutoTick()", 1000);
+      window.setInterval("TickUptime()", 1000);
     };
+    window.onresize = function () { ApplyResponsiveLayout(); };
 
-    window.onresize = function () {
-      ResizeLogBox();
-    };
-
+    /* ── Root Directory ── */
     function GetRootDir() {
-      var path = unescape(document.location.pathname);
+      var raw = document.location.pathname;
+      var path = "";
+      try { path = decodeURIComponent(raw); } catch (e) { path = unescape(raw); }
       path = path.replace(/\//g, "\\");
-      if (path.charAt(0) == "\\" && path.charAt(2) == ":") {
-        path = path.substring(1);
-      }
+      if (path.charAt(0) == "\\" && path.charAt(2) == ":") path = path.substring(1);
       return fso.GetParentFolderName(path);
     }
 
-    function RunAction(action) {
-      viewCleared = false;
-      RunBat(action, "", false);
-      window.setTimeout("RefreshAll()", 900);
+    /* ── Responsive Layout ── */
+    function ApplyResponsiveLayout() {
+      var app = document.getElementById("app");
+      if (!app) return;
+      var w = document.documentElement.clientWidth || document.body.clientWidth || 900;
+      var h = document.documentElement.clientHeight || document.body.clientHeight || 560;
+
+      var needCompact = (w < 860 || h < 580);
+      var needNarrow  = (w < 620 || h < 500);
+      var needTiny    = (w < 430 || h < 430);
+      isCompact = needCompact;
+
+      var classes = [];
+      if (needCompact) classes[classes.length] = "compact-mode";
+      if (needCompact && needNarrow) classes[classes.length] = "narrow-mode";
+      if (needCompact && needTiny) classes[classes.length] = "tiny-mode";
+      if (needCompact && h < 460) classes[classes.length] = "ultra-compact";
+      app.className = classes.join(" ");
+
+      /* show/hide compact-only elements */
+      var row = document.getElementById("compactActionsRow");
+      var srow = document.getElementById("compactStatusRow");
+      if (row)  row.style.display  = needCompact ? "flex" : "none";
+      if (srow) srow.style.display = needCompact ? "flex" : "none";
     }
 
-    function RunBat(action, value, wait) {
-      var command = 'cmd /c ""' + rootDir + '\\run.bat" ' + action;
-      if (value && value.length > 0) {
-        command += ' "' + value + '"';
-      }
-      command += '"';
-      shell.Run(command, 0, wait ? true : false);
+    /* ── Tick ── */
+    function AutoTick() { ReadStatus(); ReadLogs(false); }
+    function RefreshAll(force) {
+      if (force) { logFileStates[currentTab].loaded = false; logFileStates[currentTab].size = -1; }
+      RequestStatusRefresh(); ReadStatus(); ReadLogs(force);
     }
-
-    function ResizeLogBox() {
-      var panel = document.getElementById("logPanel");
-      var box = document.getElementById("logBox");
-      if (!panel || !box) {
-        return;
-      }
-
-      var nextHeight = panel.clientHeight - 42;
-      if (nextHeight < 120) {
-        nextHeight = 120;
-      }
-      box.style.height = nextHeight + "px";
-    }
-
-    function RefreshAll() {
-      viewCleared = false;
-      RequestStatusRefresh(true);
-      DoRefresh();
-    }
-
-    function AutoRefresh() {
-      DoRefresh();
-    }
-
-    function DoRefresh() {
-      ReadStatus();
-      if (!viewCleared) {
-        ReadLogs();
-      }
-      RequestStatusRefresh(false);
-    }
-
-    function RequestStatusRefresh(force) {
+    function RequestStatusRefresh() {
       var now = new Date().getTime();
-      if (!force && now - lastStatusRequestTime < 7000) {
-        return;
-      }
-      lastStatusRequestTime = now;
-      RunBat("status", "", false);
+      if (now - lastStatusCheckTime < 5000) return;
+      lastStatusCheckTime = now;
+      RunBatCommand("status", "", false);
     }
 
-    function ReadStatus() {
-      var path = rootDir + "\\logs\\menu_status.txt";
-      if (!fso.FileExists(path)) {
-        document.getElementById("statusText").innerText = "Chưa có trạng thái.";
-        return;
-      }
-
-      var text = ReadFile(path);
-      document.getElementById("statusText").innerText = FormatStatus(text);
-      document.getElementById("lastUpdate").innerText = "Cập nhật: " + FormatTime(new Date());
+    /* ── Server Actions ── */
+    function RunServerAction(action) {
+      if (action == "stop"    && !window.confirm("Dừng Server không?")) return;
+      if (action == "restart" && !window.confirm("Khởi động lại Server?")) return;
+      var labels = {
+        start:"Đang khởi chạy Server...", stop:"Đang tắt Server...",
+        restart:"Đang khởi động lại...", build:"Đang dựng JAR...", openlogs:"Mở thư mục Logs..."
+      };
+      ShowToast(labels[action] || "Đang thực hiện: " + action);
+      RunBatCommand(action, "", false);
+      window.setTimeout(function () { RefreshAll(true); }, 1200);
     }
 
-    function FormatStatus(text) {
-      var lines = text.split(/\r?\n/);
-      var output = [];
-      for (var i = 0; i < lines.length; i++) {
-        if (lines[i].indexOf("Sự kiện:") == 0 || lines[i].indexOf("Su kien:") == 0) {
-          continue;
+    function ApplyEvent(restart) {
+      var val = document.getElementById("selectEvent").value;
+      if (restart) {
+        if (window.confirm("Áp dụng sự kiện '" + val + "' và khởi động lại?")) {
+          ShowToast("Đang cập nhật sự kiện và khởi động lại...");
+          RunBatCommand("eventrestart", val, false);
+          window.setTimeout("RefreshAll(true)", 1500);
         }
-
-        if (lines[i].indexOf("TNSM:") == 0) {
-          continue;
-        }
-
-        if (Trim(lines[i]).length > 0) {
-          output[output.length] = lines[i];
-        }
-      }
-      return output.join("\r\n");
-    }
-
-    function SetLogTab(tab) {
-      viewCleared = false;
-      currentLog = tab;
-      document.getElementById("tabServer").className = tab == "server" ? "tab active" : "tab";
-      document.getElementById("tabError").className = tab == "error" ? "tab active" : "tab";
-      ReadLogs();
-    }
-
-    function ReadLogs() {
-      var path;
-      if (currentLog == "error") {
-        path = rootDir + "\\logs\\server-error.log";
       } else {
-        path = rootDir + "\\logs\\server.log";
+        ShowToast("Đã lưu sự kiện '" + val + "'.");
+        RunBatCommand("event", val, false);
+        window.setTimeout("RefreshAll(true)", 800);
+      }
+    }
+
+    function ApplyExp(restart) {
+      var val = document.getElementById("selectExp").value;
+      if (restart) {
+        if (window.confirm("Áp dụng EXP x" + val + " và khởi động lại?")) {
+          ShowToast("Đang cập nhật EXP x" + val + " và khởi động lại...");
+          RunBatCommand("exprestart", val, false);
+          window.setTimeout("RefreshAll(true)", 1500);
+        }
+      } else {
+        ShowToast("Đã lưu EXP x" + val + ".");
+        RunBatCommand("exp", val, false);
+        window.setTimeout("RefreshAll(true)", 800);
+      }
+    }
+
+    function OpenAdminDataMenu() {
+      ShowToast("Đang mở Admin Data...");
+      var launcher = rootDir + "\\tools\\HtaTaskbarLauncher.exe";
+      var hta = rootDir + "\\admin_data_menu.hta";
+      var ico = rootDir + "\\assets\\icons\\admin_menu.ico";
+      if (fso.FileExists(launcher) && fso.FileExists(hta)) {
+        shell.Run('"' + launcher + '" "' + hta + '" "' + ico + '"', 1, false);
+      } else {
+        shell.Run('mshta.exe "' + hta + '"', 1, false);
+      }
+    }
+    function OpenServerFolder() { shell.Run('explorer.exe "' + rootDir + '"', 1, false); }
+
+    function RunBatCommand(action, value, wait) {
+      var cmd = 'cmd /c ""' + rootDir + '\\run.bat" ' + action;
+      if (value && value.length > 0) cmd += ' "' + value + '"';
+      cmd += '"';
+      shell.Run(cmd, 0, wait ? true : false);
+    }
+
+    /* ── Status Reading ── */
+    function ReadStatus() {
+      var statusPath = rootDir + "\\logs\\menu_status.txt";
+      var d = {
+        state: "STOPPED", pid: "-",
+        port:  ReadConfigValue("server.port",      "14445"),
+        event: ReadConfigValue("server.event",     "none"),
+        exp:   ReadConfigValue("server.expserver", "1"),
+        memory: "-", startedAt: null
+      };
+      if (fso.FileExists(statusPath)) {
+        var content = ReadFileUtf8Safe(statusPath);
+        if (content.length > 0) {
+          var lines = content.split(/\r?\n/);
+          for (var i = 0; i < lines.length; i++) {
+            var line = Trim(lines[i]);
+            var ci = line.indexOf(":");
+            if (ci > 0) {
+              var key = Trim(line.substring(0, ci)).toLowerCase();
+              var val = Trim(line.substring(ci + 1));
+              if      (key == "state")    d.state    = val;
+              else if (key == "pid")      d.pid      = val;
+              else if (key == "port")     d.port     = val;
+              else if (key == "event")    d.event    = val;
+              else if (key == "exp")      d.exp      = val;
+              else if (key == "memory")   d.memory   = val;
+              else if (key == "startedat" && val.length > 0) d.startedAt = ParseDateString(val);
+            }
+          }
+        }
+      }
+      if (d.pid && d.pid != "-") {
+        isRunning = (d.state == "RUNNING" || d.state == "STARTING");
+        if (d.startedAt) serverStartedAt = d.startedAt;
+      } else {
+        isRunning = false; serverStartedAt = null;
+      }
+      UpdateStatusUI(d);
+    }
+
+    function UpdateStatusUI(d) {
+      var cls = "status-badge stopped";
+      var txt = "Đang dừng";
+      if      (d.state == "RUNNING")  { cls = "status-badge running";  txt = "Đang chạy"; isRunning = true;  }
+      else if (d.state == "STARTING") { cls = "status-badge starting"; txt = "Đang khởi động"; isRunning = true;  }
+      else if (d.state == "ERROR")    { cls = "status-badge error";    txt = "Lỗi khởi động"; isRunning = false; }
+      else                            { isRunning = false; }
+
+      /* Update both desktop and compact badges */
+      SetBadge("statusBadge",  "statusBadgeText",  cls, txt);
+      SetBadge("statusBadge2", "statusBadgeText2", cls, txt);
+
+      document.getElementById("metricPid").innerText    = d.pid;
+      document.getElementById("metricPort").innerText   = d.port;
+      document.getElementById("metricMemory").innerText = d.memory;
+
+      var eventMap = {
+        none:"Bình thường", trung_thu:"Trung Thu", tet:"Tết Nguyên Đán",
+        he:"Hè", halloween:"Halloween", noel:"Giáng Sinh"
+      };
+      document.getElementById("metricEvent").innerText = eventMap[d.event] || d.event;
+      document.getElementById("metricExp").innerText   = "x" + d.exp;
+
+      var selEv  = document.getElementById("selectEvent");
+      var selExp = document.getElementById("selectExp");
+      if (selEv  && document.activeElement != selEv)  selEv.value  = d.event;
+      if (selExp && document.activeElement != selExp) selExp.value = d.exp;
+
+      var extra = document.getElementById("statusExtra");
+      if (extra) {
+        var s1 = GetFileStamp(rootDir + "\\logs\\server.log");
+        var s2 = GetFileStamp(rootDir + "\\logs\\server-error.log");
+        extra.innerHTML = "Log: " + s1 + " | Lỗi: " + s2 + "<br>Cập nhật: " + FormatTime(new Date());
+      }
+      TickUptime();
+    }
+
+    function SetBadge(badgeId, textId, cls, txt) {
+      var badge = document.getElementById(badgeId);
+      var text  = document.getElementById(textId);
+      if (badge) badge.className = cls;
+      if (text)  text.innerText  = txt;
+    }
+
+    function TickUptime() {
+      var t = document.getElementById("metricUptime");
+      if (!t) return;
+      if (!isRunning || !serverStartedAt) { t.innerText = "--:--:--"; return; }
+      var diff = Math.floor((new Date().getTime() - serverStartedAt.getTime()) / 1000);
+      if (diff < 0) diff = 0;
+      t.innerText = FormatDuration(diff);
+    }
+
+    /* ── Log Streaming ── */
+    function SwitchLogTab(tab) {
+      currentTab = tab;
+      document.getElementById("tabServer").className  = tab == "server"  ? "tab active" : "tab";
+      document.getElementById("tabError").className   = tab == "error"   ? "tab active" : "tab";
+      document.getElementById("tabControl").className = tab == "control" ? "tab active" : "tab";
+      document.getElementById("footerLogFile").innerText = GetLogFileName(tab);
+      ReadLogs(true);
+    }
+
+    function GetLogFilePath(tab) {
+      if (tab == "error")   return rootDir + "\\logs\\server-error.log";
+      if (tab == "control") return rootDir + "\\logs\\server-control.log";
+      return rootDir + "\\logs\\server.log";
+    }
+    function GetLogFileName(tab) {
+      if (tab == "error")   return "server-error.log";
+      if (tab == "control") return "server-control.log";
+      return "server.log";
+    }
+
+    function ReadLogs(force) {
+      var path = GetLogFilePath(currentTab);
+      var state = logFileStates[currentTab];
+
+      if (!fso.FileExists(path)) {
+        if (!state.loaded || force) {
+          rawLogs[currentTab] = "Chưa có log: " + GetLogFileName(currentTab);
+          RenderLogText(); state.loaded = true; state.size = 0;
+        }
+        UpdateLogFooter(0, 0, "-"); return;
       }
 
-      var text = TailFile(path, 60000);
-      if (text.length == 0) {
-        if (fso.FileExists(path) && fso.GetFile(path).Size > 0) {
-          text = "Không đọc được file log:\r\n" + path + "\r\n" + lastReadError;
-        } else {
-          text = "Chưa có log cho mục này.";
+      var file = fso.GetFile(path);
+      var sz   = file.Size;
+      var lm   = FormatDateTime(file.DateLastModified);
+
+      if (force || !state.loaded || sz != state.size || lm != state.lastMod) {
+        var content = ReadFileUtf8Safe(path);
+        if (content.length > 0 || sz == 0) {
+          rawLogs[currentTab] = TailText(content, maxLogChars);
+          state.loaded = true; state.size = sz; state.lastMod = lm;
+          RenderLogText();
         }
       }
 
-      text = StripAnsi(text);
-      document.getElementById("logBox").value = text;
-      document.getElementById("logBox").scrollTop = document.getElementById("logBox").scrollHeight;
+      var lc = (rawLogs[currentTab].match(/\n/g) || []).length + 1;
+      UpdateLogFooter(sz, lc, lm);
     }
 
-    function ClearView() {
-      viewCleared = true;
+    function RenderLogText() {
+      var box = document.getElementById("logBox");
+      if (!box) return;
+      var text = rawLogs[currentTab] || "";
+      if (searchKeyword.length > 0) text = FilterTextLines(text, searchKeyword);
+      var atBot = (box.scrollTop + box.clientHeight + 40 >= box.scrollHeight);
+      box.value = StripAnsi(text);
+      if (autoScroll || atBot) box.scrollTop = box.scrollHeight;
+    }
+
+    function FilterTextLines(fullText, q) {
+      var lower = q.toLowerCase();
+      var lines = fullText.split(/\r?\n/);
+      var out = ["[--- LỌC: '" + q + "' (" + lines.length + " dòng) ---]"];
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].toLowerCase().indexOf(lower) >= 0) out.push(lines[i]);
+      }
+      if (out.length == 1) out.push("(Không tìm thấy dòng nào khớp)");
+      return out.join("\r\n");
+    }
+
+    function OnSearchKeyUp() {
+      searchKeyword = Trim(document.getElementById("logSearch").value);
+      RenderLogText();
+    }
+
+    function ToggleAutoScroll() {
+      autoScroll = !autoScroll;
+      var btn = document.getElementById("btnAutoScroll");
+      if (autoScroll) {
+        btn.className = "btn-ctrl active"; btn.innerText = "Cuộn BẬT";
+        document.getElementById("logBox").scrollTop = document.getElementById("logBox").scrollHeight;
+      } else {
+        btn.className = "btn-ctrl"; btn.innerText = "Cuộn TẮT";
+      }
+    }
+
+    function CopyLogToClipboard() {
+      var box = document.getElementById("logBox");
+      if (!box || !box.value) { ShowToast("Không có log để sao chép."); return; }
+      try {
+        window.clipboardData.setData("Text", box.value);
+        ShowToast("Đã sao chép log vào Clipboard!");
+      } catch (e) {
+        box.select(); ShowToast("Đã chọn log - nhấn Ctrl+C để sao chép.");
+      }
+    }
+
+    function ClearLogView() {
+      rawLogs[currentTab] = "";
       document.getElementById("logBox").value = "";
+      ShowToast("Đã xóa màn hình log.");
     }
 
-    function ReadFile(path) {
-      lastReadError = "";
-      var text = ReadFileUtf8(path);
-      if (text.length > 0) {
-        return text;
+    function UpdateLogFooter(sz, lines, lm) {
+      document.getElementById("footerLogFile").innerText  = GetLogFileName(currentTab);
+      document.getElementById("footerLogSize").innerText  = FormatBytes(sz);
+      document.getElementById("footerLogLines").innerText = lines;
+      document.getElementById("footerLogTime").innerText  = lm;
+      var badge = document.getElementById("footerStreamStatus");
+      if (badge) {
+        badge.className = isRunning ? "live-badge running" : "live-badge stopped";
+        badge.innerText = isRunning ? "ĐANG CHẠY" : "TẠM DỪNG";
       }
-
-      return ReadFileSystemDefault(path);
     }
 
-    function ReadFileUtf8(path) {
+    /* ── Helpers ── */
+    function ReadFileUtf8Safe(path) {
       try {
-        if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) {
-          return "";
-        }
-
-        var stream = new ActiveXObject("ADODB.Stream");
-        stream.Type = 2;
-        stream.Charset = "utf-8";
-        stream.Open();
-        stream.LoadFromFile(path);
-        var text = stream.ReadText();
-        stream.Close();
-        return text;
+        if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) return "";
+        var s = new ActiveXObject("ADODB.Stream");
+        s.Type = 2; s.Charset = "utf-8"; s.Open(); s.LoadFromFile(path);
+        var t = s.ReadText(); s.Close(); return t;
       } catch (e) {
-        lastReadError = "UTF-8 reader: " + e.message;
-        return "";
+        try {
+          var f = fso.OpenTextFile(path, 1, false, -2);
+          var t2 = f.ReadAll(); f.Close(); return t2;
+        } catch (e2) { return ""; }
       }
     }
 
-    function ReadFileSystemDefault(path) {
-      var file = null;
-      try {
-        if (!fso.FileExists(path) || fso.GetFile(path).Size == 0) {
-          return "";
+    function ReadConfigValue(key, def) {
+      var path = rootDir + "\\Config.properties";
+      if (!fso.FileExists(path)) return def;
+      var text = ReadFileUtf8Safe(path);
+      var lines = text.split(/\r?\n/);
+      for (var i = 0; i < lines.length; i++) {
+        var line = Trim(lines[i]);
+        if (line.indexOf(key + "=") == 0) {
+          var v = Trim(line.substring(key.length + 1));
+          return v.length > 0 ? v : def;
         }
-
-        file = fso.OpenTextFile(path, 1, false, -2);
-        var text = file.ReadAll();
-        file.Close();
-        return text;
-      } catch (e) {
-        if (file) {
-          try { file.Close(); } catch (closeError) {}
-        }
-        lastReadError = lastReadError + "\r\nSystem reader: " + e.message;
-        return "";
       }
+      return def;
     }
 
-    function TailFile(path, maxChars) {
-      try {
-        if (!fso.FileExists(path)) {
-          return "";
-        }
-
-        var text = ReadFile(path);
-        if (text.length > maxChars) {
-          text = text.substring(text.length - maxChars);
-        }
-        return text;
-      } catch (e) {
-        return "";
-      }
+    function TailText(text, max) {
+      if (text.length > max) return "[... log cũ đã lược bớt ...]\r\n" + text.substring(text.length - max);
+      return text;
     }
+    function StripAnsi(v) { return v.replace(/\x1B\[[0-9;]*[A-Za-z]/g, ""); }
+    function Trim(s)  { if (!s) return ""; return ("" + s).replace(/^\s+|\s+$/g, ""); }
+    function Pad(v)   { return v < 10 ? "0" + v : "" + v; }
 
-    function StripAnsi(value) {
-      return value.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
+    function ToJsDate(d) {
+      if (!d) return null;
+      try { var j = new Date(d); return isNaN(j.getTime()) ? null : j; } catch (e) { return null; }
     }
-
-    function Trim(value) {
-      return value.replace(/^\s+|\s+$/g, "");
+    function FormatTime(d) {
+      var dt = ToJsDate(d); if (!dt) return "--:--:--";
+      return Pad(dt.getHours()) + ":" + Pad(dt.getMinutes()) + ":" + Pad(dt.getSeconds());
     }
-
-    function Pad(value) {
-      return value < 10 ? "0" + value : "" + value;
+    function FormatDateTime(d) {
+      var dt = ToJsDate(d);
+      if (!dt) { try { return "" + d; } catch (e) { return "-"; } }
+      return dt.getFullYear() + "-" + Pad(dt.getMonth()+1) + "-" + Pad(dt.getDate()) + " " + FormatTime(dt);
     }
-
-    function FormatTime(date) {
-      return Pad(date.getHours()) + ":" + Pad(date.getMinutes()) + ":" + Pad(date.getSeconds());
+    function ParseDateString(s) {
+      if (!s) return null;
+      var p = s.split(/[- :]/);
+      if (p.length >= 6) return new Date(+p[0], +p[1]-1, +p[2], +p[3], +p[4], +p[5]);
+      return null;
+    }
+    function FormatDuration(sec) {
+      var d = Math.floor(sec/86400); sec %= 86400;
+      var h = Math.floor(sec/3600);  sec %= 3600;
+      var m = Math.floor(sec/60);    sec %= 60;
+      var clk = Pad(h) + ":" + Pad(m) + ":" + Pad(sec);
+      return d > 0 ? d + "d " + clk : clk;
+    }
+    function FormatBytes(b) {
+      if (!b || b <= 0) return "0 B";
+      if (b >= 1048576) return (Math.round(b/10485.76)/100) + " MB";
+      if (b >= 1024)    return (Math.round(b/10.24)/100)    + " KB";
+      return b + " B";
+    }
+    function GetFileStamp(path) {
+      if (!fso.FileExists(path)) return "-";
+      try { return FormatDateTime(fso.GetFile(path).DateLastModified); } catch (e) { return "-"; }
+    }
+    function ShowToast(msg) {
+      var c = document.getElementById("toastContainer"); if (!c) return;
+      var t = document.createElement("div"); t.className = "toast"; t.innerText = msg;
+      c.appendChild(t);
+      window.setTimeout(function () { try { if (t && t.parentNode) t.parentNode.removeChild(t); } catch (e) {} }, 3000);
     }
   </script>
 </body>

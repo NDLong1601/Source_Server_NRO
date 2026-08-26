@@ -30,6 +30,32 @@ public class ItemEvent {
 
     public int remainingBNCount;
 
+    // Fishing Event profile. These values are appended to data_item_event so
+    // existing accounts remain backward compatible with their current JSON.
+    public boolean fishingStarterClaimed;
+    public short fishingBaitId = -1;
+    public short fishingLineId = -1;
+    public short fishingFloatId = -1;
+    public short fishingReelId = -1;
+    public short fishingHookId = -1;
+    public int fishingCombo;
+    public long fishingFishFinderExpiresAt;
+    public long fishingLuckyCharmExpiresAt;
+    public int fishingCleaningPoints;
+    public long fishingDailyResetAt;
+    public int fishingDirectChestsToday;
+    public int fishingDirectBadgesToday;
+    public int fishingCleaningChestsToday;
+    public int fishingFishCaughtMask;
+    public int fishingGiantFishCaughtMask;
+    public final int[] fishingFishCatchCounts = new int[15];
+    public byte fishingQuestDifficulty = -1;
+    public int fishingQuestProgress;
+    public long fishingQuestResetAt;
+    public int fishingQuestCompletedMask;
+    public int fishingQuestsAcceptedToday;
+    public int fishingQuestsCompletedToday;
+
     public ItemEvent(Player player) {
         this.player = player;
     }

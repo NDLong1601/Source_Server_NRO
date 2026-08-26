@@ -94,6 +94,7 @@ function InitCombos() {
 
 function OnComboChanged(id) {
   if (id == "itemTypeFilter") LoadItems();
+  if (id == "itemType") UpdateItemIconPreview();
   if (id == "equipTypeFilter") LoadEquipItems();
   if (id == "radarRankFilter") LoadRadarCards();
   if (id == "radarType" || id == "radarRequireLevel") UpdateRadarMetaHints();

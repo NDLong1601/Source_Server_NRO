@@ -913,6 +913,10 @@ button.compact {
 }
 
 .item-icon-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   min-height: 68px;
   margin: 8px 0;
   padding: 10px;
@@ -1675,6 +1679,25 @@ tr:hover td.gift-status-waiting {
 .appearance-category-head > div {
   display: table-cell;
   vertical-align: middle;
+}
+
+.item-icon-preview-main {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: #475569;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.item-aura-cell {
+  width: 52px;
+  text-align: center;
+}
+
+.item-aura-empty {
+  color: #cbd5e1;
+  font-size: 15px;
 }
 
 .appearance-category-head .section-title {

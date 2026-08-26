@@ -1111,6 +1111,43 @@ public class MrFinn {
                 player.itemEvent.lastItemKeoDuong = jsonLong(dataArray, 15);
                 player.itemEvent.remainingManhVo = jsonInt(dataArray, 16);
                 player.itemEvent.lastItemManhVo = jsonLong(dataArray, 17);
+                if (dataArray.size() > 26) {
+                    player.itemEvent.fishingStarterClaimed = Boolean.parseBoolean(String.valueOf(dataArray.get(18)));
+                    player.itemEvent.fishingBaitId = (short) jsonInt(dataArray, 19);
+                    player.itemEvent.fishingLineId = (short) jsonInt(dataArray, 20);
+                    player.itemEvent.fishingFloatId = (short) jsonInt(dataArray, 21);
+                    player.itemEvent.fishingReelId = (short) jsonInt(dataArray, 22);
+                    player.itemEvent.fishingHookId = (short) jsonInt(dataArray, 23);
+                    player.itemEvent.fishingCombo = jsonInt(dataArray, 24);
+                    player.itemEvent.fishingFishFinderExpiresAt = jsonLong(dataArray, 25);
+                    player.itemEvent.fishingLuckyCharmExpiresAt = jsonLong(dataArray, 26);
+                    if (dataArray.size() > 27) {
+                        player.itemEvent.fishingCleaningPoints = jsonInt(dataArray, 27);
+                        player.itemEvent.fishingDailyResetAt = jsonLong(dataArray, 28);
+                        player.itemEvent.fishingDirectChestsToday = jsonInt(dataArray, 29);
+                        player.itemEvent.fishingDirectBadgesToday = jsonInt(dataArray, 30);
+                        player.itemEvent.fishingCleaningChestsToday = jsonInt(dataArray, 31);
+                        if (dataArray.size() > 38) {
+                            player.itemEvent.fishingFishCaughtMask = jsonInt(dataArray, 32);
+                            player.itemEvent.fishingGiantFishCaughtMask = jsonInt(dataArray, 33);
+                            Object catchCountsValue = dataArray.get(34);
+                            if (catchCountsValue instanceof JSONArray catchCounts) {
+                                for (int index = 0; index < player.itemEvent.fishingFishCatchCounts.length
+                                        && index < catchCounts.size(); index++) {
+                                    player.itemEvent.fishingFishCatchCounts[index] = jsonInt(catchCounts, index);
+                                }
+                            }
+                            player.itemEvent.fishingQuestDifficulty = (byte) jsonInt(dataArray, 35);
+                            player.itemEvent.fishingQuestProgress = jsonInt(dataArray, 36);
+                            player.itemEvent.fishingQuestResetAt = jsonLong(dataArray, 37);
+                            player.itemEvent.fishingQuestCompletedMask = jsonInt(dataArray, 38);
+                            if (dataArray.size() > 40) {
+                                player.itemEvent.fishingQuestsAcceptedToday = jsonInt(dataArray, 39);
+                                player.itemEvent.fishingQuestsCompletedToday = jsonInt(dataArray, 40);
+                            }
+                        }
+                    }
+                }
             } catch (Exception e) {
                 player.itemEvent.remainingTVGSCount = 0;
                 player.itemEvent.lastTVGSTime = 0;
@@ -1130,6 +1167,29 @@ public class MrFinn {
                 player.itemEvent.lastItemKeoNguoiTuyet = 0;
                 player.itemEvent.remainingManhVo = 0;
                 player.itemEvent.lastItemManhVo = 0;
+                player.itemEvent.fishingStarterClaimed = false;
+                player.itemEvent.fishingBaitId = -1;
+                player.itemEvent.fishingLineId = -1;
+                player.itemEvent.fishingFloatId = -1;
+                player.itemEvent.fishingReelId = -1;
+                player.itemEvent.fishingHookId = -1;
+                player.itemEvent.fishingCombo = 0;
+                player.itemEvent.fishingFishFinderExpiresAt = 0;
+                player.itemEvent.fishingLuckyCharmExpiresAt = 0;
+                player.itemEvent.fishingCleaningPoints = 0;
+                player.itemEvent.fishingDailyResetAt = 0;
+                player.itemEvent.fishingDirectChestsToday = 0;
+                player.itemEvent.fishingDirectBadgesToday = 0;
+                player.itemEvent.fishingCleaningChestsToday = 0;
+                player.itemEvent.fishingFishCaughtMask = 0;
+                player.itemEvent.fishingGiantFishCaughtMask = 0;
+                java.util.Arrays.fill(player.itemEvent.fishingFishCatchCounts, 0);
+                player.itemEvent.fishingQuestDifficulty = -1;
+                player.itemEvent.fishingQuestProgress = 0;
+                player.itemEvent.fishingQuestResetAt = 0;
+                player.itemEvent.fishingQuestCompletedMask = 0;
+                player.itemEvent.fishingQuestsAcceptedToday = 0;
+                player.itemEvent.fishingQuestsCompletedToday = 0;
 
             }
             // data luyện tập

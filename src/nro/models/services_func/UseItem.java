@@ -57,6 +57,8 @@ import nro.models.services.ChatGlobalService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Logger;
 import nro.models.database.PlayerDAO;
+import nro.models.fishing.FishingItems;
+import nro.models.fishing.FishingService;
 
 /**
  *
@@ -88,6 +90,7 @@ public class UseItem {
     private static final int UBU_DISCIPLE_EGG_ITEM_ID = 2014;
     private static final int KID_JIREN_DISCIPLE_EGG_ITEM_ID = 2015;
     private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
+    private static final short FISHING_ROD_CRUDE_ITEM_ID = FishingItems.ROD_CRUDE;
 
     private UseItem() {
 
@@ -754,6 +757,49 @@ public class UseItem {
                             case 2050: // Rương Giày Hủy Diệt
                             case 2051: // Rương Nhẫn Hủy Diệt
                                 UseItem.gI().openRuongHuyDiet(pl, item);
+                                break;
+                            case FISHING_ROD_CRUDE_ITEM_ID:
+                            case FishingItems.ROD_COMMON:
+                            case FishingItems.ROD_ADVANCED:
+                            case FishingItems.ROD_ROYAL:
+                            case FishingItems.ROD_SEA_KING:
+                                FishingService.gI().useRod(pl, item);
+                                break;
+                            case FishingItems.BAIT_WORM:
+                            case FishingItems.BAIT_DOUGH:
+                            case FishingItems.BAIT_LARVA:
+                            case FishingItems.BAIT_SHRIMP:
+                            case FishingItems.BAIT_BLUE_FISH:
+                            case FishingItems.BAIT_CRYSTAL:
+                            case FishingItems.BAIT_GOLDEN_CARP:
+                                FishingService.gI().selectBait(pl, item.template.id);
+                                break;
+                            case FishingItems.LINE_MONOFILAMENT:
+                            case FishingItems.LINE_STEEL:
+                            case FishingItems.LINE_DRAGON_SCALE:
+                            case FishingItems.FLOAT_WOOD:
+                            case FishingItems.FLOAT_JADE:
+                            case FishingItems.FLOAT_SEA_GOD:
+                            case FishingItems.REEL_OLD:
+                            case FishingItems.REEL_ADVANCED:
+                            case FishingItems.REEL_SEA_KING:
+                            case FishingItems.HOOK_STEEL:
+                            case FishingItems.HOOK_JADE:
+                            case FishingItems.HOOK_GOLDEN:
+                                FishingService.gI().selectGear(pl, item.template.id);
+                                break;
+                            case FishingItems.FISH_FINDER:
+                                if (FishingService.gI().useFishFinder(pl)) {
+                                    InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+                                }
+                                break;
+                            case FishingItems.LUCKY_CHARM:
+                                if (FishingService.gI().useLuckyCharm(pl)) {
+                                    InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+                                }
+                                break;
+                            case FishingItems.FISHER_CHEST:
+                                FishingService.gI().openFisherChest(pl, item);
                                 break;
                             case 1635: // co bon la
                                 UseItem.gI().useItemTime(pl, item);

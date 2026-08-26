@@ -1,0 +1,3157 @@
+{
+  "itemId": 2080,
+  "name": "Cải trang Hulk",
+  "description": "Cải trang thành Hulk",
+  "gender": 3,
+  "sourceDir": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk",
+  "offsetSource": "AWN_Version\\part\\part new.sql parts 1661/1662/1663",
+  "needsClientOffsetCheck": false,
+  "iconId": 26272,
+  "profileIconId": 26303,
+  "headAvatar": {
+    "headId": 2189,
+    "avatarId": 26303
+  },
+  "partIds": {
+    "head": 2189,
+    "body": 2190,
+    "leg": 2191
+  },
+  "placeholderImageId": 2955,
+  "oldToNewImageIds": {
+    "31099": 26272,
+    "31100": 26273,
+    "31101": 26274,
+    "31102": 26275,
+    "31103": 26276,
+    "31104": 26277,
+    "31105": 26278,
+    "31106": 26279,
+    "31107": 26280,
+    "31108": 26281,
+    "31109": 26282,
+    "31110": 26283,
+    "31111": 26284,
+    "31112": 26285,
+    "31113": 26286,
+    "31114": 26287,
+    "31115": 26288,
+    "31116": 26289,
+    "31117": 26290,
+    "31118": 26291,
+    "31119": 26292,
+    "31120": 26293,
+    "31121": 26294,
+    "31122": 26295,
+    "31123": 26296,
+    "31124": 26297,
+    "31125": 26298,
+    "31126": 26299,
+    "31127": 26300,
+    "31128": 26301,
+    "31129": 26302
+  },
+  "profileSource": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\profile.png",
+  "profileImageId": 26303,
+  "head": [
+    [
+      26272,
+      -2,
+      -12
+    ],
+    [
+      26273,
+      -1,
+      -14
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    [
+      26274,
+      -10,
+      -7
+    ],
+    [
+      26275,
+      -12,
+      -16
+    ],
+    [
+      26276,
+      -12,
+      -16
+    ],
+    [
+      26277,
+      -5,
+      -12
+    ],
+    [
+      26278,
+      -8,
+      -16
+    ],
+    [
+      26279,
+      -4,
+      -14
+    ],
+    [
+      26280,
+      -6,
+      -13
+    ],
+    [
+      26281,
+      -9,
+      -10
+    ],
+    [
+      26282,
+      -7,
+      -12
+    ],
+    [
+      26283,
+      -6,
+      -12
+    ],
+    [
+      26284,
+      -8,
+      -12
+    ],
+    [
+      26285,
+      -9,
+      -14
+    ],
+    [
+      26286,
+      -2,
+      -15
+    ],
+    [
+      26287,
+      -2,
+      -12
+    ],
+    [
+      26288,
+      -6,
+      -9
+    ],
+    [
+      26289,
+      -10,
+      -11
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "leg": [
+    [
+      26290,
+      -1,
+      -4
+    ],
+    [
+      26291,
+      -6,
+      -4
+    ],
+    [
+      26292,
+      0,
+      -3
+    ],
+    [
+      26293,
+      1,
+      -1
+    ],
+    [
+      26294,
+      -1,
+      -4
+    ],
+    [
+      26295,
+      -1,
+      -2
+    ],
+    [
+      26296,
+      1,
+      -1
+    ],
+    [
+      26297,
+      -3,
+      0
+    ],
+    [
+      26298,
+      -4,
+      -1
+    ],
+    [
+      26299,
+      -2,
+      -4
+    ],
+    [
+      26300,
+      -5,
+      -2
+    ],
+    [
+      26301,
+      -5,
+      0
+    ],
+    [
+      26302,
+      -6,
+      -3
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "headSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31099,
+      "imageId": 26272,
+      "dx": -2,
+      "dy": -12,
+      "observed": "Đầu chính, dùng cho icon hành trang",
+      "suggestedGroup": "đứng/icon",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31100,
+      "imageId": 26273,
+      "dx": -1,
+      "dy": -14,
+      "observed": "Đầu nghiêng/động",
+      "suggestedGroup": "chạy/bay",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "bodySlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31101,
+      "imageId": 26274,
+      "dx": -10,
+      "dy": -7,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đỡ/chịu đòn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31102,
+      "imageId": 26275,
+      "dx": -12,
+      "dy": -16,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng hoặc chuyển động chính",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 31103,
+      "imageId": 26276,
+      "dx": -12,
+      "dy": -16,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 31104,
+      "imageId": 26277,
+      "dx": -5,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 31105,
+      "imageId": 26278,
+      "dx": -8,
+      "dy": -16,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 31106,
+      "imageId": 26279,
+      "dx": -4,
+      "dy": -14,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 31107,
+      "imageId": 26280,
+      "dx": -6,
+      "dy": -13,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 31108,
+      "imageId": 26281,
+      "dx": -9,
+      "dy": -10,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/đòn phụ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 31109,
+      "imageId": 26282,
+      "dx": -7,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "tụ lực/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 31110,
+      "imageId": 26283,
+      "dx": -6,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 31111,
+      "imageId": 26284,
+      "dx": -8,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 31112,
+      "imageId": 26285,
+      "dx": -9,
+      "dy": -14,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 31113,
+      "imageId": 26286,
+      "dx": -2,
+      "dy": -15,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 31114,
+      "imageId": 26287,
+      "dx": -2,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "ngã/đánh văng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 14,
+      "sourceImageId": 31115,
+      "imageId": 26288,
+      "dx": -6,
+      "dy": -9,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng lớn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 15,
+      "sourceImageId": 31116,
+      "imageId": 26289,
+      "dx": -10,
+      "dy": -11,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "phòng thủ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 16,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "legSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31117,
+      "imageId": 26290,
+      "dx": -1,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31118,
+      "imageId": 26291,
+      "dx": -6,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 31119,
+      "imageId": 26292,
+      "dx": 0,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 31120,
+      "imageId": 26293,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 31121,
+      "imageId": 26294,
+      "dx": -1,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 31122,
+      "imageId": 26295,
+      "dx": -1,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 31123,
+      "imageId": 26296,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 31124,
+      "imageId": 26297,
+      "dx": -3,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 31125,
+      "imageId": 26298,
+      "dx": -4,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 31126,
+      "imageId": 26299,
+      "dx": -2,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 31127,
+      "imageId": 26300,
+      "dx": -5,
+      "dy": -2,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 31128,
+      "imageId": 26301,
+      "dx": -5,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 31129,
+      "imageId": 26302,
+      "dx": -6,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "runtimeAssets": {
+    "26272": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31099.png",
+      "sourceSize": [
+        88,
+        120
+      ],
+      "sourceBbox": [
+        7,
+        20,
+        80,
+        100
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26272.png",
+          "size": [
+            22,
+            30
+          ],
+          "bytes": 1354,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26272.png",
+          "size": [
+            44,
+            60
+          ],
+          "bytes": 3779,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26272.png",
+          "size": [
+            66,
+            90
+          ],
+          "bytes": 6951,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26272.png",
+          "size": [
+            88,
+            120
+          ],
+          "bytes": 7811,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26273": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31100.png",
+      "sourceSize": [
+        88,
+        116
+      ],
+      "sourceBbox": [
+        10,
+        21,
+        83,
+        101
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26273.png",
+          "size": [
+            22,
+            29
+          ],
+          "bytes": 1340,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26273.png",
+          "size": [
+            44,
+            58
+          ],
+          "bytes": 3599,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26273.png",
+          "size": [
+            66,
+            87
+          ],
+          "bytes": 6565,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26273.png",
+          "size": [
+            88,
+            116
+          ],
+          "bytes": 7486,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26274": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31101.png",
+      "sourceSize": [
+        112,
+        96
+      ],
+      "sourceBbox": [
+        15,
+        15,
+        107,
+        77
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        28,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26274.png",
+          "size": [
+            28,
+            24
+          ],
+          "bytes": 1386,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26274.png",
+          "size": [
+            56,
+            48
+          ],
+          "bytes": 3670,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26274.png",
+          "size": [
+            84,
+            72
+          ],
+          "bytes": 6514,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26274.png",
+          "size": [
+            112,
+            96
+          ],
+          "bytes": 6415,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26275": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31102.png",
+      "sourceSize": [
+        124,
+        116
+      ],
+      "sourceBbox": [
+        4,
+        23,
+        122,
+        109
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        31,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26275.png",
+          "size": [
+            31,
+            29
+          ],
+          "bytes": 2040,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26275.png",
+          "size": [
+            62,
+            58
+          ],
+          "bytes": 5687,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26275.png",
+          "size": [
+            93,
+            87
+          ],
+          "bytes": 9938,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26275.png",
+          "size": [
+            124,
+            116
+          ],
+          "bytes": 9431,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26276": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31103.png",
+      "sourceSize": [
+        124,
+        96
+      ],
+      "sourceBbox": [
+        7,
+        10,
+        118,
+        94
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        31,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26276.png",
+          "size": [
+            31,
+            24
+          ],
+          "bytes": 1757,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26276.png",
+          "size": [
+            62,
+            48
+          ],
+          "bytes": 4732,
+          "edgeTouches": [
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26276.png",
+          "size": [
+            93,
+            72
+          ],
+          "bytes": 8158,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26276.png",
+          "size": [
+            124,
+            96
+          ],
+          "bytes": 7798,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26277": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31104.png",
+      "sourceSize": [
+        92,
+        84
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        92,
+        84
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        23,
+        21
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26277.png",
+          "size": [
+            23,
+            21
+          ],
+          "bytes": 1457,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26277.png",
+          "size": [
+            46,
+            42
+          ],
+          "bytes": 3997,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26277.png",
+          "size": [
+            69,
+            63
+          ],
+          "bytes": 6923,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26277.png",
+          "size": [
+            92,
+            84
+          ],
+          "bytes": 6595,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26278": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31105.png",
+      "sourceSize": [
+        116,
+        92
+      ],
+      "sourceBbox": [
+        28,
+        15,
+        114,
+        76
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26278.png",
+          "size": [
+            29,
+            23
+          ],
+          "bytes": 1162,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26278.png",
+          "size": [
+            58,
+            46
+          ],
+          "bytes": 3004,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26278.png",
+          "size": [
+            87,
+            69
+          ],
+          "bytes": 5196,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26278.png",
+          "size": [
+            116,
+            92
+          ],
+          "bytes": 4895,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26279": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31106.png",
+      "sourceSize": [
+        116,
+        92
+      ],
+      "sourceBbox": [
+        26,
+        17,
+        113,
+        75
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26279.png",
+          "size": [
+            29,
+            23
+          ],
+          "bytes": 1157,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26279.png",
+          "size": [
+            58,
+            46
+          ],
+          "bytes": 2900,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26279.png",
+          "size": [
+            87,
+            69
+          ],
+          "bytes": 4958,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26279.png",
+          "size": [
+            116,
+            92
+          ],
+          "bytes": 4881,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26280": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31107.png",
+      "sourceSize": [
+        116,
+        92
+      ],
+      "sourceBbox": [
+        29,
+        17,
+        115,
+        75
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26280.png",
+          "size": [
+            29,
+            23
+          ],
+          "bytes": 1150,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26280.png",
+          "size": [
+            58,
+            46
+          ],
+          "bytes": 2884,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26280.png",
+          "size": [
+            87,
+            69
+          ],
+          "bytes": 4978,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26280.png",
+          "size": [
+            116,
+            92
+          ],
+          "bytes": 4609,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26281": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31108.png",
+      "sourceSize": [
+        156,
+        76
+      ],
+      "sourceBbox": [
+        22,
+        0,
+        156,
+        76
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        39,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26281.png",
+          "size": [
+            39,
+            19
+          ],
+          "bytes": 1670,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26281.png",
+          "size": [
+            78,
+            38
+          ],
+          "bytes": 4625,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26281.png",
+          "size": [
+            117,
+            57
+          ],
+          "bytes": 8133,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26281.png",
+          "size": [
+            156,
+            76
+          ],
+          "bytes": 7619,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26282": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31109.png",
+      "sourceSize": [
+        128,
+        120
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        128,
+        111
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        32,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26282.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 1985,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26282.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 5261,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26282.png",
+          "size": [
+            96,
+            90
+          ],
+          "bytes": 9232,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26282.png",
+          "size": [
+            128,
+            120
+          ],
+          "bytes": 8776,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26283": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31110.png",
+      "sourceSize": [
+        112,
+        120
+      ],
+      "sourceBbox": [
+        0,
+        6,
+        100,
+        120
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "bottom"
+      ],
+      "x1Size": [
+        28,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26283.png",
+          "size": [
+            28,
+            30
+          ],
+          "bytes": 1648,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26283.png",
+          "size": [
+            56,
+            60
+          ],
+          "bytes": 4482,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26283.png",
+          "size": [
+            84,
+            90
+          ],
+          "bytes": 7840,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26283.png",
+          "size": [
+            112,
+            120
+          ],
+          "bytes": 7496,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26284": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31111.png",
+      "sourceSize": [
+        132,
+        100
+      ],
+      "sourceBbox": [
+        26,
+        7,
+        132,
+        76
+      ],
+      "sourceEdgeTouches": [
+        "right"
+      ],
+      "x1Size": [
+        33,
+        25
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26284.png",
+          "size": [
+            33,
+            25
+          ],
+          "bytes": 1470,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26284.png",
+          "size": [
+            66,
+            50
+          ],
+          "bytes": 4168,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26284.png",
+          "size": [
+            99,
+            75
+          ],
+          "bytes": 7436,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26284.png",
+          "size": [
+            132,
+            100
+          ],
+          "bytes": 7373,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26285": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31112.png",
+      "sourceSize": [
+        176,
+        112
+      ],
+      "sourceBbox": [
+        12,
+        22,
+        164,
+        106
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        44,
+        28
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26285.png",
+          "size": [
+            44,
+            28
+          ],
+          "bytes": 2221,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26285.png",
+          "size": [
+            88,
+            56
+          ],
+          "bytes": 5736,
+          "edgeTouches": [
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26285.png",
+          "size": [
+            132,
+            84
+          ],
+          "bytes": 10142,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26285.png",
+          "size": [
+            176,
+            112
+          ],
+          "bytes": 9348,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26286": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31113.png",
+      "sourceSize": [
+        84,
+        116
+      ],
+      "sourceBbox": [
+        0,
+        1,
+        79,
+        116
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "bottom"
+      ],
+      "x1Size": [
+        21,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26286.png",
+          "size": [
+            21,
+            29
+          ],
+          "bytes": 1415,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26286.png",
+          "size": [
+            42,
+            58
+          ],
+          "bytes": 3685,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26286.png",
+          "size": [
+            63,
+            87
+          ],
+          "bytes": 6330,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26286.png",
+          "size": [
+            84,
+            116
+          ],
+          "bytes": 5423,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26287": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31114.png",
+      "sourceSize": [
+        100,
+        76
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        100,
+        72
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        25,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26287.png",
+          "size": [
+            25,
+            19
+          ],
+          "bytes": 1349,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26287.png",
+          "size": [
+            50,
+            38
+          ],
+          "bytes": 3839,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26287.png",
+          "size": [
+            75,
+            57
+          ],
+          "bytes": 6912,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26287.png",
+          "size": [
+            100,
+            76
+          ],
+          "bytes": 6912,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26288": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31115.png",
+      "sourceSize": [
+        120,
+        88
+      ],
+      "sourceBbox": [
+        0,
+        1,
+        120,
+        70
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        30,
+        22
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26288.png",
+          "size": [
+            30,
+            22
+          ],
+          "bytes": 1645,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26288.png",
+          "size": [
+            60,
+            44
+          ],
+          "bytes": 4734,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26288.png",
+          "size": [
+            90,
+            66
+          ],
+          "bytes": 8435,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26288.png",
+          "size": [
+            120,
+            88
+          ],
+          "bytes": 8324,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26289": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31116.png",
+      "sourceSize": [
+        140,
+        100
+      ],
+      "sourceBbox": [
+        25,
+        1,
+        139,
+        73
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        35,
+        25
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26289.png",
+          "size": [
+            35,
+            25
+          ],
+          "bytes": 1698,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26289.png",
+          "size": [
+            70,
+            50
+          ],
+          "bytes": 4780,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26289.png",
+          "size": [
+            105,
+            75
+          ],
+          "bytes": 8664,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26289.png",
+          "size": [
+            140,
+            100
+          ],
+          "bytes": 8414,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26290": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31117.png",
+      "sourceSize": [
+        80,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        12,
+        80,
+        56
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26290.png",
+          "size": [
+            20,
+            14
+          ],
+          "bytes": 763,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26290.png",
+          "size": [
+            40,
+            28
+          ],
+          "bytes": 2076,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26290.png",
+          "size": [
+            60,
+            42
+          ],
+          "bytes": 3906,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26290.png",
+          "size": [
+            80,
+            56
+          ],
+          "bytes": 5255,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26291": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31118.png",
+      "sourceSize": [
+        84,
+        64
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        84,
+        64
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        21,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26291.png",
+          "size": [
+            21,
+            16
+          ],
+          "bytes": 1087,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26291.png",
+          "size": [
+            42,
+            32
+          ],
+          "bytes": 3151,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26291.png",
+          "size": [
+            63,
+            48
+          ],
+          "bytes": 5676,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26291.png",
+          "size": [
+            84,
+            64
+          ],
+          "bytes": 7537,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26292": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31119.png",
+      "sourceSize": [
+        64,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        64,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        16,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26292.png",
+          "size": [
+            16,
+            15
+          ],
+          "bytes": 856,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26292.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 2399,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26292.png",
+          "size": [
+            48,
+            45
+          ],
+          "bytes": 4258,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26292.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 5714,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26293": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31120.png",
+      "sourceSize": [
+        96,
+        52
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        96,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26293.png",
+          "size": [
+            24,
+            13
+          ],
+          "bytes": 966,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26293.png",
+          "size": [
+            48,
+            26
+          ],
+          "bytes": 2819,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26293.png",
+          "size": [
+            72,
+            39
+          ],
+          "bytes": 5160,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26293.png",
+          "size": [
+            96,
+            52
+          ],
+          "bytes": 5719,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26294": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31121.png",
+      "sourceSize": [
+        64,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        3,
+        64,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        16,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26294.png",
+          "size": [
+            16,
+            15
+          ],
+          "bytes": 825,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26294.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 2201,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26294.png",
+          "size": [
+            48,
+            45
+          ],
+          "bytes": 3857,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26294.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 4000,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26295": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31122.png",
+      "sourceSize": [
+        108,
+        52
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        106,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        27,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26295.png",
+          "size": [
+            27,
+            13
+          ],
+          "bytes": 1058,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26295.png",
+          "size": [
+            54,
+            26
+          ],
+          "bytes": 2884,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26295.png",
+          "size": [
+            81,
+            39
+          ],
+          "bytes": 5120,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26295.png",
+          "size": [
+            108,
+            52
+          ],
+          "bytes": 4986,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26296": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31123.png",
+      "sourceSize": [
+        76,
+        56
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        75,
+        46
+      ],
+      "sourceEdgeTouches": [
+        "top"
+      ],
+      "x1Size": [
+        19,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26296.png",
+          "size": [
+            19,
+            14
+          ],
+          "bytes": 805,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26296.png",
+          "size": [
+            38,
+            28
+          ],
+          "bytes": 2254,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26296.png",
+          "size": [
+            57,
+            42
+          ],
+          "bytes": 4166,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26296.png",
+          "size": [
+            76,
+            56
+          ],
+          "bytes": 4435,
+          "edgeTouches": [
+            "top"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26297": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31124.png",
+      "sourceSize": [
+        68,
+        60
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        58,
+        58
+      ],
+      "sourceEdgeTouches": [
+        "top"
+      ],
+      "x1Size": [
+        17,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26297.png",
+          "size": [
+            17,
+            15
+          ],
+          "bytes": 826,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26297.png",
+          "size": [
+            34,
+            30
+          ],
+          "bytes": 2281,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26297.png",
+          "size": [
+            51,
+            45
+          ],
+          "bytes": 4087,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26297.png",
+          "size": [
+            68,
+            60
+          ],
+          "bytes": 4287,
+          "edgeTouches": [
+            "top"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26298": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31125.png",
+      "sourceSize": [
+        68,
+        88
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        68,
+        85
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        17,
+        22
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26298.png",
+          "size": [
+            17,
+            22
+          ],
+          "bytes": 1008,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26298.png",
+          "size": [
+            34,
+            44
+          ],
+          "bytes": 2932,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26298.png",
+          "size": [
+            51,
+            66
+          ],
+          "bytes": 5380,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26298.png",
+          "size": [
+            68,
+            88
+          ],
+          "bytes": 5637,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26299": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31126.png",
+      "sourceSize": [
+        104,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        104,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        26,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26299.png",
+          "size": [
+            26,
+            15
+          ],
+          "bytes": 1208,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26299.png",
+          "size": [
+            52,
+            30
+          ],
+          "bytes": 3398,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26299.png",
+          "size": [
+            78,
+            45
+          ],
+          "bytes": 6243,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26299.png",
+          "size": [
+            104,
+            60
+          ],
+          "bytes": 5939,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26300": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31127.png",
+      "sourceSize": [
+        80,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        80,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26300.png",
+          "size": [
+            20,
+            24
+          ],
+          "bytes": 1246,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26300.png",
+          "size": [
+            40,
+            48
+          ],
+          "bytes": 3317,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26300.png",
+          "size": [
+            60,
+            72
+          ],
+          "bytes": 5949,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26300.png",
+          "size": [
+            80,
+            96
+          ],
+          "bytes": 5745,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26301": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31128.png",
+      "sourceSize": [
+        96,
+        92
+      ],
+      "sourceBbox": [
+        0,
+        1,
+        96,
+        91
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        24,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26301.png",
+          "size": [
+            24,
+            23
+          ],
+          "bytes": 1186,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26301.png",
+          "size": [
+            48,
+            46
+          ],
+          "bytes": 3219,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26301.png",
+          "size": [
+            72,
+            69
+          ],
+          "bytes": 5948,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26301.png",
+          "size": [
+            96,
+            92
+          ],
+          "bytes": 6067,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26302": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\31129.png",
+      "sourceSize": [
+        116,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        116,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        29,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26302.png",
+          "size": [
+            29,
+            24
+          ],
+          "bytes": 1333,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26302.png",
+          "size": [
+            58,
+            48
+          ],
+          "bytes": 3662,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26302.png",
+          "size": [
+            87,
+            72
+          ],
+          "bytes": 6533,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26302.png",
+          "size": [
+            116,
+            96
+          ],
+          "bytes": 6494,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26303": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\hulk\\profile.png",
+      "sourceSize": [
+        216,
+        288
+      ],
+      "sourceBbox": [
+        0,
+        46,
+        216,
+        288
+      ],
+      "canvasX1": [
+        64,
+        64
+      ],
+      "verticalAlign": "bottom",
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26303.png",
+          "size": [
+            64,
+            64
+          ],
+          "bytes": 6291,
+          "bbox": [
+            4,
+            2,
+            59,
+            64
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26303.png",
+          "size": [
+            128,
+            128
+          ],
+          "bytes": 17308,
+          "bbox": [
+            8,
+            4,
+            119,
+            128
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26303.png",
+          "size": [
+            192,
+            192
+          ],
+          "bytes": 30080,
+          "bbox": [
+            13,
+            6,
+            179,
+            192
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26303.png",
+          "size": [
+            256,
+            256
+          ],
+          "bytes": 44373,
+          "bbox": [
+            17,
+            8,
+            238,
+            256
+          ],
+          "transparentBorder": false
+        }
+      }
+    }
+  },
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "cost": 2000
+  },
+  "options": [
+    {
+      "optionId": 50,
+      "param": 30,
+      "sortOrder": 0
+    },
+    {
+      "optionId": 77,
+      "param": 30,
+      "sortOrder": 1
+    },
+    {
+      "optionId": 103,
+      "param": 30,
+      "sortOrder": 2
+    },
+    {
+      "optionId": 5,
+      "param": 30,
+      "sortOrder": 3
+    },
+    {
+      "optionId": 10,
+      "param": 30,
+      "sortOrder": 4
+    },
+    {
+      "optionId": 80,
+      "param": 50,
+      "sortOrder": 5
+    },
+    {
+      "optionId": 30,
+      "param": 0,
+      "sortOrder": 6
+    }
+  ],
+  "previews": {
+    "contactSheet": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\hulk\\preview\\contact-sheet.png"
+  },
+  "qa": {
+    "staticStatus": "passed-static",
+    "checks": [
+      "HEAD has 3 slots",
+      "BODY has 17 slots",
+      "LEG has 14 slots",
+      "all referenced image IDs are in Java short range",
+      "all dx/dy values are in Java byte range",
+      "runtime PNGs were written to x1-x4",
+      "profile is cropped and bottom-aligned to 64x64 x1 canvas",
+      "default item options are present"
+    ]
+  }
+}

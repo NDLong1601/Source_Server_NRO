@@ -1,0 +1,3128 @@
+{
+  "itemId": 2079,
+  "name": "Cải trang Spider Man",
+  "description": "Cải trang thành Spider Man",
+  "gender": 3,
+  "sourceDir": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man",
+  "offsetSource": "AWN_Version\\part\\part new.sql parts 1658/1659/1660",
+  "needsClientOffsetCheck": false,
+  "iconId": 26240,
+  "profileIconId": 26271,
+  "headAvatar": {
+    "headId": 2186,
+    "avatarId": 26271
+  },
+  "partIds": {
+    "head": 2186,
+    "body": 2187,
+    "leg": 2188
+  },
+  "placeholderImageId": 2955,
+  "oldToNewImageIds": {
+    "31067": 26240,
+    "31068": 26241,
+    "31069": 26242,
+    "31070": 26243,
+    "31071": 26244,
+    "31072": 26245,
+    "31073": 26246,
+    "31074": 26247,
+    "31075": 26248,
+    "31076": 26249,
+    "31077": 26250,
+    "31078": 26251,
+    "31079": 26252,
+    "31080": 26253,
+    "31081": 26254,
+    "31082": 26255,
+    "31083": 26256,
+    "31084": 26257,
+    "31085": 26258,
+    "31086": 26259,
+    "31087": 26260,
+    "31088": 26261,
+    "31089": 26262,
+    "31090": 26263,
+    "31091": 26264,
+    "31092": 26265,
+    "31093": 26266,
+    "31094": 26267,
+    "31095": 26268,
+    "31096": 26269,
+    "31097": 26270
+  },
+  "profileSource": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\profile.png",
+  "profileImageId": 26271,
+  "head": [
+    [
+      26240,
+      -2,
+      -14
+    ],
+    [
+      26241,
+      1,
+      -11
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "body": [
+    [
+      26242,
+      -6,
+      -14
+    ],
+    [
+      26243,
+      -12,
+      -17
+    ],
+    [
+      26244,
+      -6,
+      -11
+    ],
+    [
+      26245,
+      -4,
+      -12
+    ],
+    [
+      26246,
+      -7,
+      -10
+    ],
+    [
+      26247,
+      -1,
+      -12
+    ],
+    [
+      26248,
+      -4,
+      -12
+    ],
+    [
+      26249,
+      -12,
+      -11
+    ],
+    [
+      26250,
+      -7,
+      -12
+    ],
+    [
+      26251,
+      -5,
+      -13
+    ],
+    [
+      26252,
+      -1,
+      -10
+    ],
+    [
+      26253,
+      -7,
+      -13
+    ],
+    [
+      26254,
+      -3,
+      -8
+    ],
+    [
+      26255,
+      -3,
+      -7
+    ],
+    [
+      26256,
+      -4,
+      -8
+    ],
+    [
+      26257,
+      -6,
+      -8
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "leg": [
+    [
+      26258,
+      -3,
+      -6
+    ],
+    [
+      26259,
+      -7,
+      -4
+    ],
+    [
+      26260,
+      1,
+      -1
+    ],
+    [
+      26261,
+      1,
+      -1
+    ],
+    [
+      26262,
+      0,
+      0
+    ],
+    [
+      26263,
+      -2,
+      0
+    ],
+    [
+      26264,
+      2,
+      -1
+    ],
+    [
+      26265,
+      -4,
+      -3
+    ],
+    [
+      26266,
+      -6,
+      -3
+    ],
+    [
+      26267,
+      -1,
+      -3
+    ],
+    [
+      26268,
+      -5,
+      -4
+    ],
+    [
+      26269,
+      -5,
+      -1
+    ],
+    [
+      26270,
+      -6,
+      -3
+    ],
+    [
+      2955,
+      0,
+      0
+    ]
+  ],
+  "headSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31067,
+      "imageId": 26240,
+      "dx": -2,
+      "dy": -14,
+      "observed": "Đầu chính, dùng cho icon hành trang",
+      "suggestedGroup": "đứng/icon",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31068,
+      "imageId": 26241,
+      "dx": 1,
+      "dy": -11,
+      "observed": "Đầu nghiêng/động",
+      "suggestedGroup": "chạy/bay",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "bodySlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31069,
+      "imageId": 26242,
+      "dx": -6,
+      "dy": -14,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đỡ/chịu đòn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31070,
+      "imageId": 26243,
+      "dx": -12,
+      "dy": -17,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng hoặc chuyển động chính",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 31071,
+      "imageId": 26244,
+      "dx": -6,
+      "dy": -11,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 31072,
+      "imageId": 26245,
+      "dx": -4,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 31073,
+      "imageId": 26246,
+      "dx": -7,
+      "dy": -10,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 31074,
+      "imageId": 26247,
+      "dx": -1,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 31075,
+      "imageId": 26248,
+      "dx": -4,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy/tiếp cận",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 31076,
+      "imageId": 26249,
+      "dx": -12,
+      "dy": -11,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/đòn phụ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 31077,
+      "imageId": 26250,
+      "dx": -7,
+      "dy": -12,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "tụ lực/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 31078,
+      "imageId": 26251,
+      "dx": -5,
+      "dy": -13,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 31079,
+      "imageId": 26252,
+      "dx": -1,
+      "dy": -10,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 31080,
+      "imageId": 26253,
+      "dx": -7,
+      "dy": -13,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 31081,
+      "imageId": 26254,
+      "dx": -3,
+      "dy": -8,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 31082,
+      "imageId": 26255,
+      "dx": -3,
+      "dy": -7,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "ngã/đánh văng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 14,
+      "sourceImageId": 31083,
+      "imageId": 26256,
+      "dx": -4,
+      "dy": -8,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng lớn",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 15,
+      "sourceImageId": 31084,
+      "imageId": 26257,
+      "dx": -6,
+      "dy": -8,
+      "observed": "Thân/tay theo thứ tự DATA nguồn",
+      "suggestedGroup": "phòng thủ",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 16,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "legSlots": [
+    {
+      "slot": 0,
+      "sourceImageId": 31085,
+      "imageId": 26258,
+      "dx": -3,
+      "dy": -6,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "bay/ngã",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 1,
+      "sourceImageId": 31086,
+      "imageId": 26259,
+      "dx": -7,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đứng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 2,
+      "sourceImageId": 31087,
+      "imageId": 26260,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 3,
+      "sourceImageId": 31088,
+      "imageId": 26261,
+      "dx": 1,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 4,
+      "sourceImageId": 31089,
+      "imageId": 26262,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 5,
+      "sourceImageId": 31090,
+      "imageId": 26263,
+      "dx": -2,
+      "dy": 0,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 6,
+      "sourceImageId": 31091,
+      "imageId": 26264,
+      "dx": 2,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "chạy",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 7,
+      "sourceImageId": 31092,
+      "imageId": 26265,
+      "dx": -4,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 8,
+      "sourceImageId": 31093,
+      "imageId": 26266,
+      "dx": -6,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "nhảy/đáp",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 9,
+      "sourceImageId": 31094,
+      "imageId": 26267,
+      "dx": -1,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 10,
+      "sourceImageId": 31095,
+      "imageId": 26268,
+      "dx": -5,
+      "dy": -4,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 11,
+      "sourceImageId": 31096,
+      "imageId": 26269,
+      "dx": -5,
+      "dy": -1,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 12,
+      "sourceImageId": 31097,
+      "imageId": 26270,
+      "dx": -6,
+      "dy": -3,
+      "observed": "Chân theo thứ tự DATA nguồn",
+      "suggestedGroup": "đánh/kỹ năng",
+      "placeholder": false,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    },
+    {
+      "slot": 13,
+      "sourceImageId": 2955,
+      "imageId": 2955,
+      "dx": 0,
+      "dy": 0,
+      "observed": "Ảnh trong suốt",
+      "suggestedGroup": "placeholder/motion",
+      "placeholder": true,
+      "sourceFacing": "right/unknown from static asset",
+      "mirrored": false
+    }
+  ],
+  "runtimeAssets": {
+    "26240": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31067.png",
+      "sourceSize": [
+        88,
+        120
+      ],
+      "sourceBbox": [
+        13,
+        25,
+        74,
+        96
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26240.png",
+          "size": [
+            22,
+            30
+          ],
+          "bytes": 1075,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26240.png",
+          "size": [
+            44,
+            60
+          ],
+          "bytes": 2759,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26240.png",
+          "size": [
+            66,
+            90
+          ],
+          "bytes": 4872,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26240.png",
+          "size": [
+            88,
+            120
+          ],
+          "bytes": 6707,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26241": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31068.png",
+      "sourceSize": [
+        88,
+        116
+      ],
+      "sourceBbox": [
+        14,
+        21,
+        74,
+        95
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        22,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26241.png",
+          "size": [
+            22,
+            29
+          ],
+          "bytes": 898,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26241.png",
+          "size": [
+            44,
+            58
+          ],
+          "bytes": 2247,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26241.png",
+          "size": [
+            66,
+            87
+          ],
+          "bytes": 4023,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26241.png",
+          "size": [
+            88,
+            116
+          ],
+          "bytes": 5135,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26242": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31069.png",
+      "sourceSize": [
+        112,
+        96
+      ],
+      "sourceBbox": [
+        10,
+        3,
+        112,
+        92
+      ],
+      "sourceEdgeTouches": [
+        "right"
+      ],
+      "x1Size": [
+        28,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26242.png",
+          "size": [
+            28,
+            24
+          ],
+          "bytes": 1622,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26242.png",
+          "size": [
+            56,
+            48
+          ],
+          "bytes": 4614,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26242.png",
+          "size": [
+            84,
+            72
+          ],
+          "bytes": 8720,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26242.png",
+          "size": [
+            112,
+            96
+          ],
+          "bytes": 12956,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26243": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31070.png",
+      "sourceSize": [
+        124,
+        116
+      ],
+      "sourceBbox": [
+        0,
+        16,
+        124,
+        100
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        31,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26243.png",
+          "size": [
+            31,
+            29
+          ],
+          "bytes": 1852,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26243.png",
+          "size": [
+            62,
+            58
+          ],
+          "bytes": 5193,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26243.png",
+          "size": [
+            93,
+            87
+          ],
+          "bytes": 9695,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26243.png",
+          "size": [
+            124,
+            116
+          ],
+          "bytes": 14483,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26244": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31071.png",
+      "sourceSize": [
+        92,
+        84
+      ],
+      "sourceBbox": [
+        5,
+        14,
+        90,
+        71
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        23,
+        21
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26244.png",
+          "size": [
+            23,
+            21
+          ],
+          "bytes": 1022,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26244.png",
+          "size": [
+            46,
+            42
+          ],
+          "bytes": 2774,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26244.png",
+          "size": [
+            69,
+            63
+          ],
+          "bytes": 5145,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26244.png",
+          "size": [
+            92,
+            84
+          ],
+          "bytes": 7787,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26245": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31072.png",
+      "sourceSize": [
+        124,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        2,
+        121,
+        95
+      ],
+      "sourceEdgeTouches": [
+        "left"
+      ],
+      "x1Size": [
+        31,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26245.png",
+          "size": [
+            31,
+            24
+          ],
+          "bytes": 1653,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26245.png",
+          "size": [
+            62,
+            48
+          ],
+          "bytes": 4931,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26245.png",
+          "size": [
+            93,
+            72
+          ],
+          "bytes": 9523,
+          "edgeTouches": [
+            "left",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26245.png",
+          "size": [
+            124,
+            96
+          ],
+          "bytes": 14964,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26246": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31073.png",
+      "sourceSize": [
+        116,
+        84
+      ],
+      "sourceBbox": [
+        32,
+        7,
+        113,
+        75
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        21
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26246.png",
+          "size": [
+            29,
+            21
+          ],
+          "bytes": 1059,
+          "edgeTouches": [
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26246.png",
+          "size": [
+            58,
+            42
+          ],
+          "bytes": 2814,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26246.png",
+          "size": [
+            87,
+            63
+          ],
+          "bytes": 5199,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26246.png",
+          "size": [
+            116,
+            84
+          ],
+          "bytes": 7586,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26247": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31074.png",
+      "sourceSize": [
+        116,
+        92
+      ],
+      "sourceBbox": [
+        6,
+        7,
+        114,
+        84
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26247.png",
+          "size": [
+            29,
+            23
+          ],
+          "bytes": 1427,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26247.png",
+          "size": [
+            58,
+            46
+          ],
+          "bytes": 3934,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26247.png",
+          "size": [
+            87,
+            69
+          ],
+          "bytes": 7400,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26247.png",
+          "size": [
+            116,
+            92
+          ],
+          "bytes": 10965,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26248": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31075.png",
+      "sourceSize": [
+        116,
+        92
+      ],
+      "sourceBbox": [
+        18,
+        16,
+        114,
+        76
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        29,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26248.png",
+          "size": [
+            29,
+            23
+          ],
+          "bytes": 1101,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26248.png",
+          "size": [
+            58,
+            46
+          ],
+          "bytes": 2912,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26248.png",
+          "size": [
+            87,
+            69
+          ],
+          "bytes": 5326,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26248.png",
+          "size": [
+            116,
+            92
+          ],
+          "bytes": 7785,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26249": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31076.png",
+      "sourceSize": [
+        156,
+        76
+      ],
+      "sourceBbox": [
+        27,
+        0,
+        130,
+        76
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        39,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26249.png",
+          "size": [
+            39,
+            19
+          ],
+          "bytes": 1061,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26249.png",
+          "size": [
+            78,
+            38
+          ],
+          "bytes": 2793,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26249.png",
+          "size": [
+            117,
+            57
+          ],
+          "bytes": 5177,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26249.png",
+          "size": [
+            156,
+            76
+          ],
+          "bytes": 7446,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26250": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31077.png",
+      "sourceSize": [
+        128,
+        120
+      ],
+      "sourceBbox": [
+        0,
+        3,
+        128,
+        103
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        32,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26250.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 1497,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26250.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 4049,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26250.png",
+          "size": [
+            96,
+            90
+          ],
+          "bytes": 7473,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26250.png",
+          "size": [
+            128,
+            120
+          ],
+          "bytes": 10758,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26251": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31078.png",
+      "sourceSize": [
+        112,
+        120
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        93,
+        120
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        28,
+        30
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26251.png",
+          "size": [
+            28,
+            30
+          ],
+          "bytes": 1303,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26251.png",
+          "size": [
+            56,
+            60
+          ],
+          "bytes": 3571,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26251.png",
+          "size": [
+            84,
+            90
+          ],
+          "bytes": 6658,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26251.png",
+          "size": [
+            112,
+            120
+          ],
+          "bytes": 9402,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26252": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31079.png",
+      "sourceSize": [
+        132,
+        100
+      ],
+      "sourceBbox": [
+        14,
+        15,
+        130,
+        76
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        33,
+        25
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26252.png",
+          "size": [
+            33,
+            25
+          ],
+          "bytes": 1227,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26252.png",
+          "size": [
+            66,
+            50
+          ],
+          "bytes": 3204,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26252.png",
+          "size": [
+            99,
+            75
+          ],
+          "bytes": 5835,
+          "edgeTouches": [],
+          "transparentBorder": true
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26252.png",
+          "size": [
+            132,
+            100
+          ],
+          "bytes": 8513,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26253": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31080.png",
+      "sourceSize": [
+        176,
+        112
+      ],
+      "sourceBbox": [
+        5,
+        22,
+        175,
+        110
+      ],
+      "sourceEdgeTouches": [],
+      "x1Size": [
+        44,
+        28
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26253.png",
+          "size": [
+            44,
+            28
+          ],
+          "bytes": 1954,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26253.png",
+          "size": [
+            88,
+            56
+          ],
+          "bytes": 5486,
+          "edgeTouches": [
+            "left",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26253.png",
+          "size": [
+            132,
+            84
+          ],
+          "bytes": 10317,
+          "edgeTouches": [
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26253.png",
+          "size": [
+            176,
+            112
+          ],
+          "bytes": 15116,
+          "edgeTouches": [],
+          "transparentBorder": true
+        }
+      }
+    },
+    "26254": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31081.png",
+      "sourceSize": [
+        84,
+        116
+      ],
+      "sourceBbox": [
+        0,
+        5,
+        73,
+        71
+      ],
+      "sourceEdgeTouches": [
+        "left"
+      ],
+      "x1Size": [
+        21,
+        29
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26254.png",
+          "size": [
+            21,
+            29
+          ],
+          "bytes": 806,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26254.png",
+          "size": [
+            42,
+            58
+          ],
+          "bytes": 2038,
+          "edgeTouches": [
+            "left",
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26254.png",
+          "size": [
+            63,
+            87
+          ],
+          "bytes": 3613,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26254.png",
+          "size": [
+            84,
+            116
+          ],
+          "bytes": 4971,
+          "edgeTouches": [
+            "left"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26255": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31082.png",
+      "sourceSize": [
+        100,
+        76
+      ],
+      "sourceBbox": [
+        0,
+        5,
+        100,
+        67
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        25,
+        19
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26255.png",
+          "size": [
+            25,
+            19
+          ],
+          "bytes": 1224,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26255.png",
+          "size": [
+            50,
+            38
+          ],
+          "bytes": 3467,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26255.png",
+          "size": [
+            75,
+            57
+          ],
+          "bytes": 6491,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26255.png",
+          "size": [
+            100,
+            76
+          ],
+          "bytes": 9334,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26256": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31083.png",
+      "sourceSize": [
+        120,
+        88
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        108,
+        70
+      ],
+      "sourceEdgeTouches": [
+        "top"
+      ],
+      "x1Size": [
+        30,
+        22
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26256.png",
+          "size": [
+            30,
+            22
+          ],
+          "bytes": 1391,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26256.png",
+          "size": [
+            60,
+            44
+          ],
+          "bytes": 3862,
+          "edgeTouches": [
+            "left",
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26256.png",
+          "size": [
+            90,
+            66
+          ],
+          "bytes": 7317,
+          "edgeTouches": [
+            "left",
+            "top"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26256.png",
+          "size": [
+            120,
+            88
+          ],
+          "bytes": 10662,
+          "edgeTouches": [
+            "top"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26257": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31084.png",
+      "sourceSize": [
+        140,
+        100
+      ],
+      "sourceBbox": [
+        22,
+        4,
+        140,
+        72
+      ],
+      "sourceEdgeTouches": [
+        "right"
+      ],
+      "x1Size": [
+        35,
+        25
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26257.png",
+          "size": [
+            35,
+            25
+          ],
+          "bytes": 1461,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26257.png",
+          "size": [
+            70,
+            50
+          ],
+          "bytes": 4029,
+          "edgeTouches": [
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26257.png",
+          "size": [
+            105,
+            75
+          ],
+          "bytes": 7521,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26257.png",
+          "size": [
+            140,
+            100
+          ],
+          "bytes": 10904,
+          "edgeTouches": [
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26258": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31085.png",
+      "sourceSize": [
+        80,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        3,
+        80,
+        54
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        20,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26258.png",
+          "size": [
+            20,
+            14
+          ],
+          "bytes": 702,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26258.png",
+          "size": [
+            40,
+            28
+          ],
+          "bytes": 1835,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26258.png",
+          "size": [
+            60,
+            42
+          ],
+          "bytes": 3258,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26258.png",
+          "size": [
+            80,
+            56
+          ],
+          "bytes": 4418,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26259": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31086.png",
+      "sourceSize": [
+        84,
+        64
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        84,
+        64
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        21,
+        16
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26259.png",
+          "size": [
+            21,
+            16
+          ],
+          "bytes": 931,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26259.png",
+          "size": [
+            42,
+            32
+          ],
+          "bytes": 2445,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26259.png",
+          "size": [
+            63,
+            48
+          ],
+          "bytes": 4373,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26259.png",
+          "size": [
+            84,
+            64
+          ],
+          "bytes": 5960,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26260": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31087.png",
+      "sourceSize": [
+        64,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        64,
+        55
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        16,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26260.png",
+          "size": [
+            16,
+            15
+          ],
+          "bytes": 665,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26260.png",
+          "size": [
+            32,
+            30
+          ],
+          "bytes": 1762,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26260.png",
+          "size": [
+            48,
+            45
+          ],
+          "bytes": 3147,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26260.png",
+          "size": [
+            64,
+            60
+          ],
+          "bytes": 4286,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26261": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31088.png",
+      "sourceSize": [
+        96,
+        52
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        96,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26261.png",
+          "size": [
+            24,
+            13
+          ],
+          "bytes": 857,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26261.png",
+          "size": [
+            48,
+            26
+          ],
+          "bytes": 2226,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26261.png",
+          "size": [
+            72,
+            39
+          ],
+          "bytes": 4037,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26261.png",
+          "size": [
+            96,
+            52
+          ],
+          "bytes": 5539,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26262": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31089.png",
+      "sourceSize": [
+        60,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        60,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        15,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26262.png",
+          "size": [
+            15,
+            14
+          ],
+          "bytes": 631,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26262.png",
+          "size": [
+            30,
+            28
+          ],
+          "bytes": 1615,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26262.png",
+          "size": [
+            45,
+            42
+          ],
+          "bytes": 2904,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26262.png",
+          "size": [
+            60,
+            56
+          ],
+          "bytes": 3916,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26263": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31090.png",
+      "sourceSize": [
+        108,
+        52
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        108,
+        52
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        27,
+        13
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26263.png",
+          "size": [
+            27,
+            13
+          ],
+          "bytes": 923,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26263.png",
+          "size": [
+            54,
+            26
+          ],
+          "bytes": 2404,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26263.png",
+          "size": [
+            81,
+            39
+          ],
+          "bytes": 4466,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26263.png",
+          "size": [
+            108,
+            52
+          ],
+          "bytes": 6055,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26264": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31091.png",
+      "sourceSize": [
+        76,
+        56
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        76,
+        54
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "right"
+      ],
+      "x1Size": [
+        19,
+        14
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26264.png",
+          "size": [
+            19,
+            14
+          ],
+          "bytes": 761,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26264.png",
+          "size": [
+            38,
+            28
+          ],
+          "bytes": 2126,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26264.png",
+          "size": [
+            57,
+            42
+          ],
+          "bytes": 3925,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26264.png",
+          "size": [
+            76,
+            56
+          ],
+          "bytes": 5732,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26265": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31092.png",
+      "sourceSize": [
+        68,
+        60
+      ],
+      "sourceBbox": [
+        1,
+        0,
+        68,
+        60
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "right",
+        "bottom"
+      ],
+      "x1Size": [
+        17,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26265.png",
+          "size": [
+            17,
+            15
+          ],
+          "bytes": 753,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26265.png",
+          "size": [
+            34,
+            30
+          ],
+          "bytes": 1999,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26265.png",
+          "size": [
+            51,
+            45
+          ],
+          "bytes": 3634,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26265.png",
+          "size": [
+            68,
+            60
+          ],
+          "bytes": 5359,
+          "edgeTouches": [
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26266": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31093.png",
+      "sourceSize": [
+        68,
+        88
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        67,
+        88
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        17,
+        22
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26266.png",
+          "size": [
+            17,
+            22
+          ],
+          "bytes": 876,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26266.png",
+          "size": [
+            34,
+            44
+          ],
+          "bytes": 2327,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26266.png",
+          "size": [
+            51,
+            66
+          ],
+          "bytes": 4239,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26266.png",
+          "size": [
+            68,
+            88
+          ],
+          "bytes": 6089,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26267": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31094.png",
+      "sourceSize": [
+        104,
+        60
+      ],
+      "sourceBbox": [
+        0,
+        1,
+        104,
+        56
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "right"
+      ],
+      "x1Size": [
+        26,
+        15
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26267.png",
+          "size": [
+            26,
+            15
+          ],
+          "bytes": 947,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26267.png",
+          "size": [
+            52,
+            30
+          ],
+          "bytes": 2392,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26267.png",
+          "size": [
+            78,
+            45
+          ],
+          "bytes": 4173,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26267.png",
+          "size": [
+            104,
+            60
+          ],
+          "bytes": 5589,
+          "edgeTouches": [
+            "left",
+            "right"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26268": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31095.png",
+      "sourceSize": [
+        80,
+        96
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        79,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        20,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26268.png",
+          "size": [
+            20,
+            24
+          ],
+          "bytes": 986,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26268.png",
+          "size": [
+            40,
+            48
+          ],
+          "bytes": 2584,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26268.png",
+          "size": [
+            60,
+            72
+          ],
+          "bytes": 4614,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26268.png",
+          "size": [
+            80,
+            96
+          ],
+          "bytes": 6197,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26269": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31096.png",
+      "sourceSize": [
+        96,
+        92
+      ],
+      "sourceBbox": [
+        0,
+        0,
+        95,
+        92
+      ],
+      "sourceEdgeTouches": [
+        "left",
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        24,
+        23
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26269.png",
+          "size": [
+            24,
+            23
+          ],
+          "bytes": 1023,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26269.png",
+          "size": [
+            48,
+            46
+          ],
+          "bytes": 2751,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26269.png",
+          "size": [
+            72,
+            69
+          ],
+          "bytes": 5048,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26269.png",
+          "size": [
+            96,
+            92
+          ],
+          "bytes": 6930,
+          "edgeTouches": [
+            "left",
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26270": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\31097.png",
+      "sourceSize": [
+        116,
+        96
+      ],
+      "sourceBbox": [
+        2,
+        0,
+        114,
+        96
+      ],
+      "sourceEdgeTouches": [
+        "top",
+        "bottom"
+      ],
+      "x1Size": [
+        29,
+        24
+      ],
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26270.png",
+          "size": [
+            29,
+            24
+          ],
+          "bytes": 1130,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26270.png",
+          "size": [
+            58,
+            48
+          ],
+          "bytes": 2934,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26270.png",
+          "size": [
+            87,
+            72
+          ],
+          "bytes": 5295,
+          "edgeTouches": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26270.png",
+          "size": [
+            116,
+            96
+          ],
+          "bytes": 7005,
+          "edgeTouches": [
+            "top",
+            "bottom"
+          ],
+          "transparentBorder": false
+        }
+      }
+    },
+    "26271": {
+      "source": "C:\\Users\\PC\\Downloads\\Ảnh chưa làm\\Cải trang\\spider man\\profile.png",
+      "sourceSize": [
+        216,
+        288
+      ],
+      "sourceBbox": [
+        21,
+        80,
+        196,
+        288
+      ],
+      "canvasX1": [
+        64,
+        64
+      ],
+      "verticalAlign": "bottom",
+      "scales": {
+        "x1": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x1\\26271.png",
+          "size": [
+            64,
+            64
+          ],
+          "bytes": 5635,
+          "bbox": [
+            6,
+            2,
+            58,
+            64
+          ],
+          "transparentBorder": false
+        },
+        "x2": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x2\\26271.png",
+          "size": [
+            128,
+            128
+          ],
+          "bytes": 15903,
+          "bbox": [
+            12,
+            4,
+            116,
+            128
+          ],
+          "transparentBorder": false
+        },
+        "x3": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x3\\26271.png",
+          "size": [
+            192,
+            192
+          ],
+          "bytes": 28960,
+          "bbox": [
+            18,
+            6,
+            174,
+            192
+          ],
+          "transparentBorder": false
+        },
+        "x4": {
+          "path": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\data\\icon\\x4\\26271.png",
+          "size": [
+            256,
+            256
+          ],
+          "bytes": 45211,
+          "bbox": [
+            23,
+            8,
+            232,
+            256
+          ],
+          "transparentBorder": false
+        }
+      }
+    }
+  },
+  "shop": {
+    "shopId": 112,
+    "tabId": 1120,
+    "cost": 2000
+  },
+  "options": [
+    {
+      "optionId": 50,
+      "param": 27,
+      "sortOrder": 0
+    },
+    {
+      "optionId": 77,
+      "param": 27,
+      "sortOrder": 1
+    },
+    {
+      "optionId": 103,
+      "param": 27,
+      "sortOrder": 2
+    },
+    {
+      "optionId": 14,
+      "param": 20,
+      "sortOrder": 3
+    },
+    {
+      "optionId": 108,
+      "param": 20,
+      "sortOrder": 4
+    },
+    {
+      "optionId": 30,
+      "param": 0,
+      "sortOrder": 5
+    }
+  ],
+  "previews": {
+    "contactSheet": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\spider-man\\preview\\contact-sheet.png"
+  },
+  "qa": {
+    "staticStatus": "passed-static",
+    "checks": [
+      "HEAD has 3 slots",
+      "BODY has 17 slots",
+      "LEG has 14 slots",
+      "all referenced image IDs are in Java short range",
+      "all dx/dy values are in Java byte range",
+      "runtime PNGs were written to x1-x4",
+      "profile is cropped and bottom-aligned to 64x64 x1 canvas",
+      "default item options are present"
+    ]
+  }
+}

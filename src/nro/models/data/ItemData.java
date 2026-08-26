@@ -10,22 +10,51 @@ import nro.models.player_system.Template;
 public class ItemData {
 
     /*
-     * Command -28 uses a two-byte payload length. With the current 2,062
-     * templates, 1,000 entries serialize to about 63 KB and the remaining
-     * entries to about 54 KB. Keeping exactly one reload packet and one append
-     * packet also matches the cache flow used by older, working builds.
+     * The legacy client finalizes its item cache after the first subtype-2
+     * append packet. Keep exactly one reload packet and one append packet;
+     * 1,019 balances the current compacted data below the 65,535-byte limit.
      */
-    private static final int FIRST_TEMPLATE_PACKET_COUNT = 1_000;
+    private static final int FIRST_TEMPLATE_PACKET_COUNT = 1_019;
+    private static final int MAX_PACKET_PAYLOAD_BYTES = 65_535;
 
     public static void updateItem(MySession session) {
         updateItemOptionItemplate(session);
         updateItemArrHead2FTemplate(session);
         int total = Manager.ITEM_TEMPLATES.size();
         int firstChunk = Math.min(FIRST_TEMPLATE_PACKET_COUNT, total);
+        assertTemplatePacketFits(0, firstChunk, false);
         updateItemTemplate(session, firstChunk);
         if (firstChunk < total) {
+            assertTemplatePacketFits(firstChunk, total, true);
             updateItemTemplate(session, firstChunk, total);
         }
+    }
+
+    private static void assertTemplatePacketFits(int start, int end, boolean append) {
+        int payloadBytes = append ? 7 : 5;
+        for (int index = start; index < end; index++) {
+            Template.ItemTemplate template = Manager.ITEM_TEMPLATES.get(index);
+            payloadBytes += 16 + modifiedUtfLength(template.name) + modifiedUtfLength(template.description);
+        }
+        if (payloadBytes > MAX_PACKET_PAYLOAD_BYTES) {
+            throw new IllegalStateException("Packet item template " + (append ? "append" : "reload")
+                    + " vượt 65.535 byte: " + payloadBytes + " byte, range " + start + ".." + (end - 1));
+        }
+    }
+
+    private static int modifiedUtfLength(String value) {
+        int length = 0;
+        for (int index = 0; index < value.length(); index++) {
+            int character = value.charAt(index);
+            if (character >= 0x0001 && character <= 0x007F) {
+                length++;
+            } else if (character > 0x07FF) {
+                length += 3;
+            } else {
+                length += 2;
+            }
+        }
+        return length;
     }
 
     private static void updateItemOptionItemplate(MySession session) {

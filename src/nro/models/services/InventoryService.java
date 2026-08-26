@@ -38,6 +38,16 @@ public class InventoryService {
     public static final int PLAYER_AURA_SLOT = 12;
     public static final int PLAYER_TITLE_SLOT = 13;
 
+    /**
+     * Aura templates are intentionally kept in one contiguous range. Item
+     * templates are indexed by ID in this server, so these IDs must stay in
+     * sync with the data seed and the Admin Aura tab.
+     */
+    public static final int AURA_ITEM_ID_START = 2154;
+    public static final int AURA_ITEM_ID_END = 2217;
+    public static final int LEGACY_AURA_ITEM_ID = 1230;
+    public static final int LEGACY_AURA_ID = 3;
+
     public static final int PET_COSTUME_SLOT = 5;
     public static final int PET_RING_SLOT = 6;
     public static final int PET_BACK_SLOT = 7;
@@ -322,7 +332,27 @@ public class InventoryService {
     }
 
     public static boolean isAuraItem(Item item) {
-        return item != null && item.isNotNullItem() && item.template.id == 1230;
+        if (item == null || !item.isNotNullItem() || item.template == null || item.template.type != 11) {
+            return false;
+        }
+        int templateId = item.template.id;
+        return templateId == LEGACY_AURA_ITEM_ID
+                || (templateId >= AURA_ITEM_ID_START && templateId <= AURA_ITEM_ID_END);
+    }
+
+    /**
+     * Aura items store their client aura ID in {@code item_template.part}.
+     * This field is safe here because the recognized templates are dedicated
+     * to the aura slot and never use the normal type-11 back-item rendering.
+     */
+    public static int getAuraId(Item item) {
+        if (!isAuraItem(item)) {
+            return -1;
+        }
+        if (item.template.id == LEGACY_AURA_ITEM_ID) {
+            return LEGACY_AURA_ID;
+        }
+        return item.template.part;
     }
 
     private int getPlayerBodySlot(Item item) {
@@ -579,11 +609,20 @@ public class InventoryService {
         }
         Item item = player.inventory.itemsBag.get(index);
         if (item.isNotNullItem()) {
+            boolean isAura = isAuraItem(item);
             player.inventory.itemsBag.set(index, putItemBody(player, item));
             sendItemBags(player);
             sendItemBody(player);
             Service.gI().point(player);
             Service.gI().Send_Caitrang(player);
+            if (isAura && player.zone != null) {
+                // The costume packet does not include idauraeff. Re-send the
+                // regular player/map data so the wearer and nearby players
+                // receive the new aura immediately instead of on map change.
+                Service.gI().player(player);
+                player.zone.load_Me_To_Another(player);
+                player.zone.load_Another_To_Me(player);
+            }
         }
     }
 

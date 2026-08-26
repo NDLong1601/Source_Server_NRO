@@ -1,0 +1,86 @@
+<div id="panelAuras" class="panel">
+  <div class="columns">
+    <div class="left-pane">
+      <div class="toolbar aura-toolbar">
+        <div class="aura-toolbar-meta">
+          <span class="aura-badge aura-badge-violet">64 hào quang</span>
+          <span class="aura-badge aura-badge-cyan">Asset x1–x4</span>
+          <span class="aura-badge aura-badge-amber">Slot aura 12</span>
+          <span id="auraSelectionSummary" class="aura-selection-summary">Đang tải danh sách...</span>
+        </div>
+        <div class="aura-toolbar-controls">
+          <input type="text" id="auraSearch" placeholder="Tìm số, Item ID, tên hoặc Asset ID" onkeyup="RenderAuraItems()">
+          <button type="button" onclick="LoadAuraItems()">Tải lại</button>
+          <button type="button" class="primary" onclick="InstallAuraItems()">Khởi tạo 64 aura</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="auraItemsTable"></table>
+      </div>
+    </div>
+
+    <div class="right-pane">
+      <div id="auraPreview" class="aura-preview aura-preview-empty">
+        <div class="aura-preview-empty-icon">✦</div>
+        <div><b>Chọn một hào quang</b><br><span>Preview sẽ ghép frame đầu của hai layer aura.</span></div>
+      </div>
+      <div class="section-title">Cấu hình hào quang</div>
+      <div class="row">
+        <div class="cell"><label>Item ID</label><input type="text" id="auraItemId" readonly></div>
+        <div class="cell"><label>Số hiển thị</label><input type="text" id="auraNumber" readonly></div>
+        <div class="cell"><label>Đang có ở shop</label><input type="text" id="auraShopCount" readonly></div>
+      </div>
+      <label>Tên item</label><input type="text" id="auraItemName" placeholder="Hào Quang 1">
+      <label>Mô tả</label><textarea id="auraItemDescription" placeholder="Trang bị để đổi hào quang."></textarea>
+      <div class="row">
+        <div class="cell"><label>Icon ID</label><input type="text" id="auraItemIcon" value="11239"></div>
+        <div class="cell"><label>Aura Asset ID</label><input type="text" id="auraAssetId"></div>
+      </div>
+      <div class="row">
+        <div class="cell"><label>Frame layer _0</label><input type="text" id="auraFrame0" value="4"></div>
+        <div class="cell"><label>Frame layer _1</label><input type="text" id="auraFrame1" value="4"></div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" onclick="SaveAuraItem()">Lưu cấu hình</button>
+      </div>
+      <div class="notice">Asset ID phải có đủ aura_&lt;id&gt;_0.png và aura_&lt;id&gt;_1.png ở x1 đến x4. Frame mặc định là 4; chỉ đổi khi đã kiểm tra animation trên client.</div>
+
+      <div class="split-small">
+        <div class="section-title">Phát hào quang</div>
+        <div class="notice">Mở Giftcode hoặc Hộp quà với Item ID của hào quang đã chọn để thêm vào phần thưởng. Các item aura cũng có sẵn trong danh sách item của Event.</div>
+        <div class="actions">
+          <button type="button" onclick="OpenAuraGiftcode()">Phát qua Giftcode</button>
+          <button type="button" onclick="OpenAuraGiftBox()">Phát qua Hộp quà</button>
+        </div>
+      </div>
+
+      <div class="split-small">
+        <div class="section-title">Bán hàng loạt trong shop</div>
+        <div class="actions">
+          <button type="button" onclick="LoadAuraShops()">Tải shop</button>
+          <button type="button" onclick="LoadAuraShopTabs()">Tải tab</button>
+          <button type="button" onclick="LoadAuraShopItems()">Tải aura trong tab</button>
+        </div>
+        <div class="mini-table"><table id="auraShopsTable"></table></div>
+        <label>Shop đã chọn</label><input type="text" id="auraShopLabel" readonly>
+        <input type="hidden" id="auraShopId" value="">
+        <div class="mini-table"><table id="auraShopTabsTable"></table></div>
+        <label>Tab đã chọn</label><input type="text" id="auraShopTabLabel" readonly>
+        <input type="hidden" id="auraShopTabId" value="">
+        <div class="row">
+          <div class="cell"><label>Giá</label><input type="text" id="auraShopCost" value="0"></div>
+          <div class="cell"><label>Loại tiền</label><select id="auraShopTypeSell"><option value="0">Vàng</option><option value="1">Ngọc</option><option value="3">Ruby</option><option value="4">Coupon</option></select></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label class="aura-toggle"><input type="checkbox" id="auraShopIsNew"><span class="aura-toggle-mark"></span><span>Đánh dấu mới</span></label></div>
+          <div class="cell"><label class="aura-toggle"><input type="checkbox" id="auraShopIsSell" checked><span class="aura-toggle-mark"></span><span>Đang bán</span></label></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="primary" onclick="AddSelectedAurasToShop()">Thêm các aura đã chọn vào tab</button>
+        </div>
+        <div class="mini-table"><table id="auraShopItemsTable"></table></div>
+      </div>
+      <div id="auraMessage" class="message"></div>
+    </div>
+  </div>
+</div>

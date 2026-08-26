@@ -1,0 +1,138 @@
+/* Shared AdminCheckbox component. The native input stays keyboard/click accessible. */
+#app .admin-checkbox-control {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 0 6px 0 0;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+#app .admin-checkbox-control input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: block;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  cursor: pointer;
+}
+
+#app .admin-checkbox-mark {
+  display: block;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 2px solid #b5c4d8;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 1px 1px rgba(30, 41, 59, 0.08);
+  pointer-events: none;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+#app .admin-checkbox-control:hover .admin-checkbox-mark {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px #e0e7ff;
+}
+
+#app .admin-checkbox-control input:checked + .admin-checkbox-mark {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  box-shadow: 0 3px 7px rgba(79, 70, 229, 0.24);
+}
+
+#app .admin-checkbox-control input:checked + .admin-checkbox-mark:after {
+  display: block;
+  width: 5px;
+  height: 9px;
+  margin: 1px auto 0;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: rotate(45deg);
+}
+
+#app .admin-checkbox-control input:focus + .admin-checkbox-mark {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 2px;
+}
+
+#app .admin-checkbox-control input:disabled + .admin-checkbox-mark {
+  border-color: #d8e0ea;
+  background: #eef2f7;
+  box-shadow: none;
+}
+
+#app .admin-checkbox-control input:disabled:checked + .admin-checkbox-mark {
+  border-color: #94a3b8;
+  background: #94a3b8;
+}
+
+#app label .admin-checkbox-control,
+#app .option-default-toggle .admin-checkbox-control,
+#app .player-inline-check .admin-checkbox-control {
+  margin-right: 7px;
+}
+
+/* Shared horizontal layout for boolean controls in all editor tabs. */
+#app .inline-check {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 8px 0;
+  color: #172033;
+  line-height: 18px;
+}
+
+#app .inline-check .admin-checkbox-control {
+  flex: 0 0 20px;
+  margin: 0 8px 0 0;
+  vertical-align: top;
+}
+
+#app .inline-check label {
+  display: inline;
+  margin: 0;
+  color: #172033;
+  line-height: 18px;
+}
+
+#app .schedule-toggle-cell .inline-check {
+  min-height: 34px;
+  margin: 0;
+}
+
+#app .schedule-toggle-cell > label:first-child {
+  display: block;
+  margin: 9px 0 4px;
+}
+
+#panelGiftBox .gift-box-enabled-cell .option-default-toggle {
+  display: inline-flex;
+  min-height: 34px;
+  margin: 0;
+  padding: 5px 10px;
+}
+
+#panelGiftBox .gift-box-enabled-cell .admin-checkbox-control,
+#panelGiftBox .option-default-toggle .admin-checkbox-control {
+  flex: 0 0 20px;
+  margin: 0 7px 0 0;
+}
+
+#panelGiftBox .option-picker-item .admin-checkbox-control,
+#panelGiftBox .param-option-row .admin-checkbox-control {
+  margin: 0 7px 0 0;
+  vertical-align: top;
+}

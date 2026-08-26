@@ -19,6 +19,7 @@ import nro.models.services.TaskService;
 import nro.models.map.service.ItemMapService;
 import nro.models.services.FriendAndEnemyService;
 import nro.models.data.LocalManager;
+import nro.models.fishing.FishingProgressService;
 import nro.models.consts.ConstIgnoreName;
 import nro.models.consts.ConstMap;
 import nro.models.utils.Util;
@@ -137,6 +138,9 @@ public class Controller implements IMessageHandler {
                         switch (actionRadar) {
                             case 0:
                                 RadarService.gI().sendRadar(player, player.Cards);
+                                break;
+                            case 42:
+                                FishingProgressService.gI().openFishBook(player);
                                 break;
                             case 1:
                                 short idC = _msg.reader().readShort();
@@ -469,6 +473,7 @@ public class Controller implements IMessageHandler {
                 case -32:
                     int bgId = _msg.reader().readShort();
                     if (_session.isAssetReady()) {
+                        _session.noteFishingBackgroundRequest(bgId);
                         DataGame.sendItemBGTemplate(_session, bgId);
                     }
                     break;

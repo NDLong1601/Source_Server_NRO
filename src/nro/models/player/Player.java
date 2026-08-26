@@ -6,6 +6,8 @@ import nro.models.npc.NonInteractiveNPC;
 import nro.models.radar.Card;
 import nro.models.radar.RadarCard;
 import nro.models.services.RadarService;
+import nro.models.services.InventoryService;
+import nro.models.server.Manager;
 import nro.models.services_dungeon.MajinBuuService;
 import nro.models.skill.PlayerSkill;
 import java.util.List;
@@ -53,7 +55,6 @@ import nro.models.services_dungeon.SuperDivineWaterService;
 import nro.models.matches.dai_hoi_vo_thuat.The23rdMartialArtCongress;
 import nro.models.daily_Giftcode.DailyGiftData;
 import nro.models.daily_Giftcode.DailyGiftService;
-import nro.models.services.InventoryService;
 import nro.models.services_dungeon.NgocRongNamecService;
 import nro.models.server.Maintenance;
 import nro.models.services.shenron.Shenron_Event;
@@ -735,6 +736,10 @@ public class Player implements Runnable {
     }
 
     public byte getAura() {
+        byte auraFromItem = getAuraFromEquippedItem();
+        if (auraFromItem >= 0) {
+            return auraFromItem;
+        }
         if (!isPl() || this.Cards.isEmpty()) {
             return -1;
         }
@@ -747,6 +752,23 @@ public class Player implements Runnable {
             }
         }
         return -1;
+    }
+
+    private byte getAuraFromEquippedItem() {
+        if (!isPl() || this.inventory == null || this.inventory.itemsBody == null
+                || this.inventory.itemsBody.size() <= InventoryService.PLAYER_AURA_SLOT) {
+            return -1;
+        }
+        Item auraItem = this.inventory.itemsBody.get(InventoryService.PLAYER_AURA_SLOT);
+        int auraId = InventoryService.getAuraId(auraItem);
+        if (auraId < 0 || auraId > Byte.MAX_VALUE) {
+            return -1;
+        }
+        if (Manager.getNFrameImageByName("aura_" + auraId + "_0") <= 0
+                || Manager.getNFrameImageByName("aura_" + auraId + "_1") <= 0) {
+            return -1;
+        }
+        return (byte) auraId;
     }
 
     public byte getEffFront() {

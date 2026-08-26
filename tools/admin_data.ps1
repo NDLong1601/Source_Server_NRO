@@ -51,6 +51,8 @@
     [string]$RequireId = "-1",
     [string]$RequireLevel = "0",
     [string]$AuraId = "-1",
+    [string]$AuraFrame0 = "4",
+    [string]$AuraFrame1 = "4",
     [string]$OptionsJson = "[]",
     [string]$MilestonesJson = "[]",
     [string]$MobDropsJson = "[]",
@@ -166,7 +168,7 @@ foreach ($paramName in @(
         "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
         "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
-        "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
+        "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "AuraFrame0", "AuraFrame1", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "NameLift", "LayerOrder", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Defense", "Dodge", "Crit", "Announce", "DropsJson", "SkillsJson", "LevelsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
@@ -4193,6 +4195,146 @@ COMMIT;
     "OK`tĐã xóa tab ID $tabIdNum và toàn bộ item/options trong tab."
 }
 
+function Get-AuraDefinitions {
+    $assetIds = @(0, 1, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 50, 56, 57, 58, 59, 60, 61, 63, 64, 65, 66, 77, 80, 81, 82, 83, 84, 86, 87, 88, 89, 90, 91, 92, 93, 94)
+    $definitions = @()
+    for ($index = 0; $index -lt $assetIds.Count; $index++) {
+        $assetId = [int]$assetIds[$index]
+        $definitions += [pscustomobject]@{
+            ItemId = 2154 + $index
+            Number = $index + 1
+            AuraId = $assetId
+            Frame0 = if ($assetId -in @(3, 4)) { 8 } else { 4 }
+            Frame1 = if ($assetId -in @(3, 4)) { 8 } else { 4 }
+        }
+    }
+    return $definitions
+}
+
+function Test-AuraAssets {
+    param([int]$AuraValue)
+    if ($AuraValue -lt 0 -or $AuraValue -gt 127) {
+        throw "Aura ID phải nằm trong khoảng 0..127."
+    }
+    foreach ($zoom in @(1, 2, 3, 4)) {
+        foreach ($layer in @(0, 1)) {
+            $assetPath = Join-Path $Root "data\\img_by_name\\x$zoom\\aura_$AuraValue`_$layer.png"
+            if (-not (Test-Path -LiteralPath $assetPath)) {
+                throw "Thiếu asset aura_$AuraValue`_$layer.png ở x$zoom."
+            }
+        }
+    }
+}
+
+function Get-AuraImageEnsureSql {
+    param([string]$ImageName, [int]$FrameCount)
+    return @"
+SET @nro_aura_next_image_id = (SELECT COALESCE(MAX(id), 0) + 1 FROM img_by_name);
+INSERT INTO img_by_name (id, `NAME`, n_frame)
+SELECT @nro_aura_next_image_id, $(SqlString $ImageName), $FrameCount
+WHERE NOT EXISTS (SELECT 1 FROM img_by_name WHERE `NAME`=$(SqlString $ImageName));
+"@
+}
+
+function Get-AuraImageUpsertSql {
+    param([string]$ImageName, [int]$FrameCount)
+    return @"
+SET @nro_aura_next_image_id = (SELECT COALESCE(MAX(id), 0) + 1 FROM img_by_name);
+INSERT INTO img_by_name (id, `NAME`, n_frame)
+VALUES (@nro_aura_next_image_id, $(SqlString $ImageName), $FrameCount)
+ON DUPLICATE KEY UPDATE n_frame=VALUES(n_frame);
+"@
+}
+
+function Get-AuraItemTemplateSql {
+    param([int]$ItemId, [string]$ItemName, [string]$ItemDescription, [int]$IconValue, [int]$AuraValue)
+    return @"
+INSERT INTO item_template
+(`id`, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)
+VALUES ($ItemId, 11, 3, $(SqlString $ItemName), $(SqlString $ItemDescription), 0, $IconValue, $AuraValue, 0, 0, 0, 0, -1, -1, -1)
+ON DUPLICATE KEY UPDATE
+`TYPE`=VALUES(`TYPE`), gender=VALUES(gender), `NAME`=VALUES(`NAME`), description=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id), part=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require), gold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);
+"@
+}
+
+function Get-AuraItemTemplateEnsureSql {
+    param([int]$ItemId, [string]$ItemName, [string]$ItemDescription, [int]$IconValue, [int]$AuraValue)
+    return @"
+INSERT IGNORE INTO item_template
+(`id`, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)
+VALUES ($ItemId, 11, 3, $(SqlString $ItemName), $(SqlString $ItemDescription), 0, $IconValue, $AuraValue, 0, 0, 0, 0, -1, -1, -1);
+"@
+}
+
+function List-AuraItems {
+    Invoke-MySql @"
+SELECT t.id,
+       t.id - 2153 AS aura_number,
+       REPLACE(REPLACE(REPLACE(COALESCE(t.`NAME`, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_name,
+       REPLACE(REPLACE(REPLACE(COALESCE(t.description, ''), CHAR(9), ' '), CHAR(13), ' '), CHAR(10), ' ') AS item_description,
+       t.icon_id,
+       t.part AS aura_id,
+       COALESCE(image0.n_frame, 0) AS frame_0,
+       COALESCE(image1.n_frame, 0) AS frame_1,
+       COUNT(DISTINCT shop_item.id) AS shop_count
+FROM item_template t
+LEFT JOIN img_by_name image0 ON image0.`NAME`=CONCAT('aura_', t.part, '_0')
+LEFT JOIN img_by_name image1 ON image1.`NAME`=CONCAT('aura_', t.part, '_1')
+LEFT JOIN item_shop shop_item ON shop_item.temp_id=t.id
+WHERE t.id BETWEEN 2154 AND 2217
+GROUP BY t.id, t.`NAME`, t.description, t.icon_id, t.part, image0.n_frame, image1.n_frame
+ORDER BY t.id;
+"@
+}
+
+function Install-AuraItems {
+    $sql = New-Object System.Text.StringBuilder
+    [void]$sql.AppendLine("START TRANSACTION;")
+    foreach ($definition in @(Get-AuraDefinitions)) {
+        Test-AuraAssets -AuraValue $definition.AuraId
+        $name = "Hào Quang $($definition.Number)"
+        $description = "Trang bị để đổi thành hào quang $($definition.Number) (asset $($definition.AuraId))."
+        [void]$sql.AppendLine((Get-AuraItemTemplateEnsureSql -ItemId $definition.ItemId -ItemName $name -ItemDescription $description -IconValue 11239 -AuraValue $definition.AuraId))
+        [void]$sql.AppendLine((Get-AuraImageEnsureSql -ImageName "aura_$($definition.AuraId)_0" -FrameCount $definition.Frame0))
+        [void]$sql.AppendLine((Get-AuraImageEnsureSql -ImageName "aura_$($definition.AuraId)_1" -FrameCount $definition.Frame1))
+    }
+    [void]$sql.AppendLine("COMMIT;")
+    Invoke-MySql $sql.ToString() | Out-Null
+    "OK`tĐã khởi tạo hoặc kiểm tra 64 item hào quang (ID 2154–2217). Restart server để nạp template và ảnh theo tên."
+}
+
+function Save-AuraItem {
+    $itemId = SqlInt $Id -1
+    if ($itemId -lt 2154 -or $itemId -gt 2217) {
+        throw "Item hào quang chỉ được phép nằm trong dải ID 2154–2217."
+    }
+    $auraValue = SqlInt $AuraId -1
+    $frame0 = SqlInt $AuraFrame0 0
+    $frame1 = SqlInt $AuraFrame1 0
+    if ($frame0 -lt 1 -or $frame0 -gt 127 -or $frame1 -lt 1 -or $frame1 -gt 127) {
+        throw "Số frame của mỗi layer phải nằm trong khoảng 1..127."
+    }
+    Test-AuraAssets -AuraValue $auraValue
+    $itemName = $Name.Trim()
+    if ([string]::IsNullOrWhiteSpace($itemName)) {
+        throw "Tên hào quang không được để trống."
+    }
+    $itemDescription = $Description.Trim()
+    if ([string]::IsNullOrWhiteSpace($itemDescription)) {
+        $itemDescription = "Trang bị để đổi hào quang asset $auraValue."
+    }
+    $iconValue = SqlInt $IconId 11239
+    if ($iconValue -lt 0) { throw "Icon ID không hợp lệ." }
+    $sql = New-Object System.Text.StringBuilder
+    [void]$sql.AppendLine("START TRANSACTION;")
+    [void]$sql.AppendLine((Get-AuraItemTemplateSql -ItemId $itemId -ItemName $itemName -ItemDescription $itemDescription -IconValue $iconValue -AuraValue $auraValue))
+    [void]$sql.AppendLine((Get-AuraImageUpsertSql -ImageName "aura_$auraValue`_0" -FrameCount $frame0))
+    [void]$sql.AppendLine((Get-AuraImageUpsertSql -ImageName "aura_$auraValue`_1" -FrameCount $frame1))
+    [void]$sql.AppendLine("COMMIT;")
+    Invoke-MySql $sql.ToString() | Out-Null
+    "OK`tĐã lưu Hào Quang item $itemId (asset $auraValue). Restart server để áp dụng thay đổi runtime."
+}
+
 function List-ShopItems {
     Ensure-ItemDefaultOptionSchema
     Invoke-MySql @"
@@ -5742,6 +5884,8 @@ function Get-AuditSummary {
     param([string]$ActionName)
     switch ($ActionName) {
         "saveitem" { "Lưu vật phẩm ID $Id - $Name (type $Type, gender $Gender)" }
+        "installauraitems" { "Khởi tạo hoặc kiểm tra 64 item hào quang ID 2154–2217" }
+        "saveauraitem" { "Lưu hào quang item $Id - $Name (asset $AuraId, frame $AuraFrame0/$AuraFrame1)" }
         "saveshop" { "Lưu shop $(if ($ShopId) { "ID $ShopId" } else { $TagName }) cho NPC $NpcId, type $TypeShop" }
         "savetab" { "Lưu tab shop $(if ($TabId) { "ID $TabId" } else { $Name }) vào shop $ShopId" }
         "deletetab" { "Xóa tab shop ID $TabId" }
@@ -5809,6 +5953,26 @@ function Get-AuditContext {
     $fileSnapshots = New-Object System.Collections.Generic.List[object]
     switch ($ActionName) {
         "saveitem" { $snapshots.Add((New-DbAuditSnapshot "item_template" "id=$(SqlInt $Id)")) }
+        "installauraitems" {
+            $definitions = @(Get-AuraDefinitions)
+            $itemIds = ($definitions | ForEach-Object { $_.ItemId }) -join ','
+            $imageNames = New-Object System.Collections.Generic.List[string]
+            foreach ($definition in $definitions) {
+                $imageNames.Add("aura_$($definition.AuraId)_0")
+                $imageNames.Add("aura_$($definition.AuraId)_1")
+            }
+            $imageNameSql = ($imageNames | ForEach-Object { SqlString $_ }) -join ','
+            $snapshots.Add((New-DbAuditSnapshot "item_template" "id IN ($itemIds)"))
+            $snapshots.Add((New-DbAuditSnapshot "img_by_name" "NAME IN ($imageNameSql)"))
+        }
+        "saveauraitem" {
+            $itemId = SqlInt $Id
+            $auraValue = SqlInt $AuraId -1
+            $snapshots.Add((New-DbAuditSnapshot "item_template" "id=$itemId"))
+            if ($auraValue -ge 0) {
+                $snapshots.Add((New-DbAuditSnapshot "img_by_name" "NAME IN ($(SqlString "aura_$auraValue`_0"),$(SqlString "aura_$auraValue`_1"))"))
+            }
+        }
         "saveshop" {
             $where = if ((SqlInt $ShopId) -gt 0) { "id=$(SqlInt $ShopId)" } else { "npc_id=$(SqlInt $NpcId) AND tag_name=$(SqlString $TagName) AND type_shop=$(SqlInt $TypeShop)" }
             $snapshots.Add((New-DbAuditSnapshot "shop" $where))
@@ -6053,7 +6217,7 @@ function Record-ManualAuditEntry {
 
 $actionLower = $Action.ToLowerInvariant()
 $mutationActions = @(
-    "saveitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
+    "saveitem", "installauraitems", "saveauraitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
     "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savegiftbox", "deletegiftbox",
     "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
@@ -6095,6 +6259,9 @@ try {
         "saveeventitem" { Save-EventItem }
         "deleteeventitem" { Delete-EventItem }
         "listitems" { List-Items }
+        "listauraitems" { List-AuraItems }
+        "installauraitems" { Install-AuraItems }
+        "saveauraitem" { Save-AuraItem }
         "listitemcatalog" { List-ItemCatalog }
         "listitemtypes" { List-ItemTypes }
         "listcostumeoutfits" { List-CostumeOutfits }

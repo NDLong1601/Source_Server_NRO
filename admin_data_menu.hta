@@ -19,9 +19,12 @@
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/base.css">
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/layout.css">
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/components.css">
+  <link rel="stylesheet" type="text/css" href="admin_data_menu/css/auras.css">
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/map-creator.css">
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/costume-creator.css">
   <link rel="stylesheet" type="text/css" href="admin_data_menu/css/responsive.css">
+  <link rel="stylesheet" type="text/css" href="admin_data_menu/css/checkboxes.css">
+  <link rel="stylesheet" type="text/css" href="admin_data_menu/css/selects.css">
 </head>
 <body>
   <div id="app">
@@ -29,6 +32,7 @@
       <h1>NRO Admin Data</h1>
       <div class="sub">Menu quản trị dữ liệu riêng</div>
       <button id="navItems" class="nav-button active" onclick="ShowTab('items')">Vật phẩm</button>
+      <button id="navAuras" class="nav-button aura-nav-button" onclick="ShowTab('auras')">Hào quang</button>
       <button id="navItemOptions" class="nav-button" onclick="ShowTab('itemoptions')">Option mặc định</button>
       <button id="navEvents" class="nav-button" onclick="ShowTab('events')">Sự kiện</button>
       <button id="navPlayerConfig" class="nav-button" onclick="ShowTab('playerconfig')">Cấu hình Player</button>
@@ -71,6 +75,8 @@
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/core/utils.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/core/ui.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/core/registry.js"></script>
+  <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/admin-checkbox.js"></script>
+  <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/admin-select.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/checklist.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/catalog.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/options.js"></script>
@@ -78,6 +84,7 @@
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/components/config.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/core/combos.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/tabs/items.js"></script>
+  <script language="JScript" charset="utf-8" src="admin_data_menu/js/tabs/auras.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/tabs/item-options.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/tabs/events.js"></script>
   <script language="JScript" charset="utf-8" src="admin_data_menu/js/tabs/combine.js"></script>

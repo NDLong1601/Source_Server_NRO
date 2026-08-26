@@ -39,12 +39,12 @@
           <div id="bossMapSummary" class="option-picker-summary">Chưa chọn map, dùng map mặc định trong BossesData</div>
           <div id="bossMapChecklist" class="option-picker-list"></div>
           <div class="row">
-            <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseRange" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseRange">Chỉ trong khoảng giờ</label></div></div>
+            <div class="cell schedule-toggle-cell"><label>Lịch thời gian</label><div class="inline-check"><input type="checkbox" id="bossUseRange" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseRange">Chỉ trong khoảng giờ</label></div></div>
             <div class="cell"><label>Từ (HH:mm)</label><input type="text" id="bossTimeStart" value="08:00" disabled></div>
             <div class="cell"><label>Đến (HH:mm)</label><input type="text" id="bossTimeEnd" value="22:00" disabled></div>
           </div>
           <div class="row">
-            <div class="cell"><div class="inline-check"><input type="checkbox" id="bossUseInterval" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseInterval">Xuất hiện theo chu kỳ</label></div></div>
+            <div class="cell schedule-toggle-cell"><label>Chu kỳ</label><div class="inline-check"><input type="checkbox" id="bossUseInterval" onclick="ToggleSpawnSchedule('boss')"><label for="bossUseInterval">Xuất hiện theo chu kỳ</label></div></div>
             <div class="cell"><label>Số phút / lần</label><input type="text" id="bossInterval" value="10" disabled></div>
           </div>
         </div>
@@ -147,12 +147,12 @@
           <div id="customBossMapSummary" class="option-picker-summary">Chưa chọn map xuất hiện.</div>
           <div id="customBossMapChecklist" class="option-picker-list"></div>
           <div class="row">
-            <div class="cell"><div class="inline-check"><input type="checkbox" id="customBossUseRange" onclick="ToggleSpawnSchedule('customBoss')"><label for="customBossUseRange">Chỉ trong khoảng giờ</label></div></div>
+            <div class="cell schedule-toggle-cell"><label>Lịch thời gian</label><div class="inline-check"><input type="checkbox" id="customBossUseRange" onclick="ToggleSpawnSchedule('customBoss')"><label for="customBossUseRange">Chỉ trong khoảng giờ</label></div></div>
             <div class="cell"><label>Từ (HH:mm)</label><input type="text" id="customBossTimeStart" value="08:00" disabled></div>
             <div class="cell"><label>Đến (HH:mm)</label><input type="text" id="customBossTimeEnd" value="22:00" disabled></div>
           </div>
           <div class="row">
-            <div class="cell"><div class="inline-check"><input type="checkbox" id="customBossUseInterval" onclick="ToggleSpawnSchedule('customBoss')"><label for="customBossUseInterval">Hồi sinh theo chu kỳ</label></div></div>
+            <div class="cell schedule-toggle-cell"><label>Chu kỳ</label><div class="inline-check"><input type="checkbox" id="customBossUseInterval" onclick="ToggleSpawnSchedule('customBoss')"><label for="customBossUseInterval">Hồi sinh theo chu kỳ</label></div></div>
             <div class="cell"><label>Số phút / lần</label><input type="text" id="customBossInterval" value="10" disabled></div>
           </div>
         </div>

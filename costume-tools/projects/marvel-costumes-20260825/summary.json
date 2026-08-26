@@ -1,0 +1,20 @@
+{
+  "items": {
+    "2077": "Cải trang Black Parten",
+    "2078": "Cải trang Captain America",
+    "2079": "Cải trang Spider Man",
+    "2080": "Cải trang Hulk",
+    "2081": "Cải trang Iron Man",
+    "2082": "Cải trang Gojo"
+  },
+  "partRange": [
+    2180,
+    2197
+  ],
+  "imageRange": [
+    26175,
+    26368
+  ],
+  "installSql": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\marvel-costumes-20260825\\install_all.sql",
+  "rollbackSql": "C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\costume-tools\\projects\\marvel-costumes-20260825\\rollback_all.sql"
+}

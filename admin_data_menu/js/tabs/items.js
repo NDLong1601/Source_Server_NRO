@@ -38,19 +38,63 @@ function ItemImageHtml(iconId, className) {
     '" onerror="HandleItemImageError(this, \'' + EscapeJs(iconId) + '\')">';
 }
 
+function ItemAuraAssetId(itemType, part) {
+  var type = parseInt(itemType, 10);
+  var assetId = parseInt(part, 10);
+  if (type != 11 || isNaN(assetId) || assetId < 0) return -1;
+  return assetId;
+}
+
+function ItemAuraImageExists(assetId, layer) {
+  try {
+    return fso.FileExists(rootDir + "\\data\\img_by_name\\x4\\aura_" + assetId + "_" + layer + ".png");
+  } catch (e) {
+    return true;
+  }
+}
+
+function ItemAuraSpriteHtml(assetId, layer, sizeClass) {
+  if (assetId < 0 || !ItemAuraImageExists(assetId, layer)) return "";
+  var title = "Hào quang asset " + assetId + " · frame đầu · layer _" + layer;
+  return '<span class="aura-sprite ' + sizeClass + '" title="' + HtmlAttr(title) + '"><img src="data/img_by_name/x4/aura_' + assetId + '_' + layer + '.png" alt="' + HtmlAttr(title) + '"></span>';
+}
+
+function ItemAuraListHtml(itemType, part) {
+  var assetId = ItemAuraAssetId(itemType, part);
+  var sprite = ItemAuraSpriteHtml(assetId, 0, "item-aura-sprite-list");
+  if (!sprite) return '<span class="item-aura-empty">—</span>';
+  return sprite;
+}
+
+function ItemAuraPreviewHtml(itemType, part) {
+  var assetId = ItemAuraAssetId(itemType, part);
+  var layer0 = ItemAuraSpriteHtml(assetId, 0, "item-aura-sprite-preview");
+  if (!layer0) return "";
+  var layer1 = ItemAuraSpriteHtml(assetId, 1, "item-aura-sprite-preview");
+  return '<div class="item-aura-preview">'
+    + '<div class="item-aura-preview-stage">'
+    + '<span class="item-aura-preview-ring"></span>'
+    + '<span class="item-aura-preview-layer">' + layer0 + '</span>'
+    + (layer1 ? '<span class="item-aura-preview-layer item-aura-preview-layer-top">' + layer1 + '</span>' : '')
+    + '</div>'
+    + '<span class="item-aura-preview-copy"><b>Hào quang · Asset ' + Html(assetId) + '</b><small>Frame đầu từ sprite x4</small></span>'
+    + '</div>';
+}
+
 function UpdateItemIconPreview() {
   var target = document.getElementById("itemIconPreview");
   if (!target) return;
   var iconId = Trim(V("itemIcon"));
-  target.innerHTML = ItemImageHtml(iconId, "item-icon-preview-image") +
-    '<span>Icon ' + Html(iconId || "mặc định") + '</span>';
+  target.innerHTML = '<div class="item-icon-preview-main">' + ItemImageHtml(iconId, "item-icon-preview-image") +
+    '<span>Icon ' + Html(iconId || "mặc định") + '</span></div>' + ItemAuraPreviewHtml(V("itemType"), V("itemPart"));
 }
 
 function RenderItems() {
-  var html = "<thead><tr><th>Ảnh</th><th>ID</th><th>Type</th><th>Gender</th><th>Tên</th><th>Mô tả</th><th>Level</th><th>Icon</th><th>Part</th></tr></thead><tbody>";
+  var html = "<thead><tr><th>Ảnh</th><th>Aura</th><th>ID</th><th>Type</th><th>Gender</th><th>Tên</th><th>Mô tả</th><th>Level</th><th>Icon</th><th>Part</th></tr></thead><tbody>";
   for (var i = 1; i < itemRows.length; i++) {
     var row = itemRows[i];
     html += '<tr onclick="PickItem(' + i + ')"><td class="item-icon-cell">' + ItemImageHtml(row[6], "item-list-icon") + '</td>';
+    html += '<td class="item-aura-cell">' + ItemAuraListHtml(row[1], row[7]) + '</td>';
     html += '<td>' + Html(row[0]) + '</td><td>' + Html(ItemTypeLabel(row[1])) + '</td><td>' + Html(GenderLabel(row[2])) + '</td>';
     html += '<td>' + Html(row[3]) + '</td><td>' + Html(row[4]) + '</td><td>' + Html(row[5]) + '</td>';
     html += '<td>' + Html(row[6]) + '</td><td>' + Html(row[7]) + '</td></tr>';
