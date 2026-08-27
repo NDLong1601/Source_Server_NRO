@@ -734,19 +734,6 @@ public class Pet extends Player {
         return SkillService.gI().useSkill(this, target, targetMob, -1, null);
     }
 
-    private long lastTimeIncreasePoint;
-
-    private void increasePoint() {
-        if (this.nPoint != null && Util.canDoWithTime(lastTimeIncreasePoint,
-                PetConfig.getInt("pet.ai.autoStatIntervalMs", 0, 0, Integer.MAX_VALUE))) {
-            int attempts = PetConfig.getInt("pet.ai.autoStatAttempts", 20, 0, 10_000);
-            for (int i = 0; i < attempts; i++) {
-                this.nPoint.increasePoint((byte) Util.nextInt(0, 4), (short) 1, false);
-            }
-            lastTimeIncreasePoint = System.currentTimeMillis();
-        }
-    }
-
     public void followMaster() {
         if (this.isDie() || effectSkill.isHaveEffectSkill()) {
             return;
@@ -982,6 +969,24 @@ public class Pet extends Player {
 
     public void openSkill1() {
         setRandomSkillFromPool(1);
+    }
+
+    private long lastTimeIncreasePoint;
+
+    /**
+     * The disciple spends one point automatically per configured interval.
+     * Players can still spend points manually from the pet panel at any time;
+     * both paths share NPoint.increasePoint so costs and limits are identical.
+     */
+    private void increasePoint() {
+        int intervalMs = PetConfig.getInt("pet.ai.autoStatIntervalMs", 60_000, 1_000, Integer.MAX_VALUE);
+        if (this.nPoint != null && Util.canDoWithTime(lastTimeIncreasePoint, intervalMs)) {
+            int attempts = PetConfig.getInt("pet.ai.autoStatAttempts", 1, 1, 10_000);
+            for (int i = 0; i < attempts; i++) {
+                this.nPoint.increasePoint((byte) Util.nextInt(0, 4), (short) 1, false);
+            }
+            lastTimeIncreasePoint = System.currentTimeMillis();
+        }
     }
 
     public void openSkill2() {

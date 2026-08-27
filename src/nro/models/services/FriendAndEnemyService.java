@@ -92,8 +92,9 @@ public class FriendAndEnemyService {
     private void reloadFriend(Player player) {
         for (Friend f : player.friends) {
             Player pl = null;
-            if ((pl = Client.gI().getPlayerByUser(f.id)) != null || (pl = Client.gI().getPlayer(f.name)) != null) {
+            if ((pl = Client.gI().getPlayer(f.id)) != null) {
                 try {
+                    f.name = pl.name;
                     f.power = pl.nPoint.power;
                     f.head = pl.getHead();
                     f.body = pl.getBody();
@@ -111,8 +112,9 @@ public class FriendAndEnemyService {
     private void reloadEnemy(Player player) {
         for (Enemy e : player.enemies) {
             Player pl = null;
-            if ((pl = Client.gI().getPlayerByUser(e.id)) != null || (pl = Client.gI().getPlayer(e.name)) != null) {
+            if ((pl = Client.gI().getPlayer(e.id)) != null) {
                 try {
+                    e.name = pl.name;
                     e.power = pl.nPoint.power;
                     e.head = pl.getHead();
                     e.body = pl.getBody();

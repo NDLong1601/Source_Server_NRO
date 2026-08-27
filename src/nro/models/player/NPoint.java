@@ -35,6 +35,16 @@ import nro.models.utils.TimeUtil;
  */
 public class NPoint {
 
+    // Keep this table in sync with Panel.t_tiemnang in the Unity client.
+    // Index is the current base critical level before one point is added.
+    private static final long[] CRITICAL_POTENTIAL_COSTS = {
+        50_000_000L, 250_000_000L, 1_250_000_000L, 5_000_000_000L,
+        15_000_000_000L, 30_000_000_000L, 45_000_000_000L,
+        60_000_000_000L, 75_000_000_000L, 90_000_000_000L,
+        110_000_000_000L, 130_000_000_000L, 150_000_000_000L,
+        170_000_000_000L
+    };
+
     public static final byte MAX_LIMIT = 9;
 
     @Setter
@@ -1767,7 +1777,9 @@ public class NPoint {
             }
         }
         if (type == 3) {
-            tiemNangUse = 2 * (this.defg + 5) / 2 * 100000;
+            // Sum the price of every requested armor point.  The previous
+            // implementation charged the one-point price even for +10/+100.
+            tiemNangUse = (long) point * (2L * (this.defg + 5L) + point - 1L) / 2L * 100_000L;
             if ((this.defg + point) <= getDefLimit()) {
                 if (doUseTiemNang(tiemNangUse, notify)) {
                     defg += point;
@@ -1781,9 +1793,10 @@ public class NPoint {
             }
         }
         if (type == 4) {
-            tiemNangUse = 50000000L;
-            for (int i = 0; i < this.critg; i++) {
-                tiemNangUse *= 5L;
+            tiemNangUse = 0L;
+            for (int i = 0; i < point; i++) {
+                int criticalLevel = Math.min(this.critg + i, CRITICAL_POTENTIAL_COSTS.length - 1);
+                tiemNangUse += CRITICAL_POTENTIAL_COSTS[criticalLevel];
             }
             if ((this.critg + point) <= getCritLimit()) {
                 if (doUseTiemNang(tiemNangUse, notify)) {
@@ -1847,7 +1860,9 @@ public class NPoint {
             tng = ((defg * (500000L + (500000L + (defg - 1L) * 100000L))) / 2L);
         }
         if (critg > 0) {
-            tncm = ((50L * (((long) Math.pow(5L, critg) - 1L)) / (5L - 1L) * 1000000L));
+            for (int i = 0; i < critg; i++) {
+                tncm += CRITICAL_POTENTIAL_COSTS[Math.min(i, CRITICAL_POTENTIAL_COSTS.length - 1)];
+            }
         }
         return tnhp + tnki + tnsd + tng + tncm;
     }

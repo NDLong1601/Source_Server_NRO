@@ -80,10 +80,9 @@ public class DataGame {
     public static byte vsMap = loadMapVersion();
     // 2 publishes real skill descriptions instead of the old literal "null".
     public static byte vsSkill = 2;
-    // 37 republishes the item cache with the size-safe reload/append split.
-    // Existing clients must refresh once so a previous oversized packet cannot
-    // leave their template list incomplete.
-    public static byte vsItem = 37;
+    // 38 publishes the character rename card template (ID 2218) while keeping
+    // the size-safe reload/append split introduced in version 37.
+    public static byte vsItem = 38;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 

@@ -665,6 +665,10 @@ function Get-PlayerConfigCatalog {
         [pscustomobject]@{ Key="player.max.bagSlots"; Category="Giới hạn toàn server"; Name="Ô hành trang tối đa"; Default="80"; Kind="slot"; Scope="Runtime"; Description="Trần hành trang; giao thức hiện dùng một byte nên tối đa an toàn là 127." },
         [pscustomobject]@{ Key="player.max.boxSlots"; Category="Giới hạn toàn server"; Name="Ô rương tối đa"; Default="100"; Kind="slot"; Scope="Runtime"; Description="Trần rương; giao thức hiện dùng một byte nên tối đa an toàn là 127." },
 
+        [pscustomobject]@{ Key="player.rename.itemId"; Category="Đổi tên nhân vật"; Name="ID thẻ đổi tên"; Default="2218"; Kind="item-id"; Scope="Runtime"; Description="Template ID vật phẩm mở ô nhập tên và bị trừ khi đổi tên thành công." },
+        [pscustomobject]@{ Key="player.rename.minCodePoints"; Category="Đổi tên nhân vật"; Name="Độ dài tên tối thiểu"; Default="2"; Kind="positive-int"; Scope="Runtime"; Description="Số ký tự Unicode tối thiểu của tên nhân vật mới." },
+        [pscustomobject]@{ Key="player.rename.maxCodePoints"; Category="Đổi tên nhân vật"; Name="Độ dài tên tối đa"; Default="16"; Kind="positive-int"; Scope="Runtime"; Description="Số ký tự Unicode tối đa của tên nhân vật mới; không vượt 20." },
+
         [pscustomobject]@{ Key="player.limit.power"; Category="Giới hạn 10 cấp"; Name="Trần sức mạnh"; Default="17999999999,19999999999,24999999999,29999999999,39999999999,50010000000,60010000000,70010000000,80010000000,90010000000"; Kind="long-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
         [pscustomobject]@{ Key="player.limit.hpMp"; Category="Giới hạn 10 cấp"; Name="Trần HP/KI gốc"; Default="220000,240000,300000,350000,400000,450000,500000,525000,550000,575000"; Kind="int-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
         [pscustomobject]@{ Key="player.limit.damage"; Category="Giới hạn 10 cấp"; Name="Trần sức đánh gốc"; Default="11000,12000,15000,18000,20000,22000,24000,24500,25000,26000"; Kind="int-list"; Scope="Runtime"; Description="Đúng 10 số tương ứng limitPower 0 đến 9." },
@@ -682,7 +686,7 @@ function Assert-PlayerConfigValue {
     param($Entry, [string]$Value)
     $Value = $Value.Trim()
     if ([string]::IsNullOrWhiteSpace($Value)) { throw "Giá trị không được để trống." }
-    if ($Entry.Kind -in @("int", "positive-int", "slot", "stamina", "critical", "limit-level")) {
+    if ($Entry.Kind -in @("int", "positive-int", "slot", "stamina", "critical", "limit-level", "item-id")) {
         if ($Value -notmatch '^\d+$' -or [decimal]$Value -gt 2147483647) { throw "Giá trị phải là số nguyên từ 0 đến 2.147.483.647." }
         $number = [long]$Value
         if ($Entry.Kind -eq "positive-int" -and $number -lt 1) { throw "Giá trị phải lớn hơn 0." }
@@ -690,6 +694,7 @@ function Assert-PlayerConfigValue {
         if ($Entry.Kind -eq "stamina" -and ($number -lt 1 -or $number -gt 32767)) { throw "Thể lực phải từ 1 đến 32.767." }
         if ($Entry.Kind -eq "critical" -and $number -gt 127) { throw "Chí mạng không được vượt 127." }
         if ($Entry.Kind -eq "limit-level" -and $number -gt 9) { throw "Cấp giới hạn phải từ 0 đến 9." }
+        if ($Entry.Kind -eq "item-id" -and ($number -lt 1 -or $number -gt 32767)) { throw "ID vật phẩm phải từ 1 đến 32.767." }
     } elseif ($Entry.Kind -in @("long", "positive-long")) {
         $parsed = 0L
         if (-not [long]::TryParse($Value, [ref]$parsed) -or $parsed -lt 0) { throw "Giá trị phải là số nguyên 64-bit không âm." }

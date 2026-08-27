@@ -431,6 +431,18 @@ public class Clan {
         }
     }
 
+    /** Lưu riêng tên bang để thao tác đổi tên không ghi đè dữ liệu thành viên. */
+    public void updateName() {
+        try (Connection con = LocalManager.getConnection();
+                PreparedStatement ps = con.prepareStatement("update clan set name = ? where id = ? limit 1")) {
+            ps.setString(1, this.name);
+            ps.setInt(2, this.id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            Logger.logException(Clan.class, e, "Có lỗi khi cập nhật tên bang");
+        }
+    }
+
     public void deleteDB(int id) {
         PreparedStatement ps;
         try (Connection con = LocalManager.getConnection();) {

@@ -1603,6 +1603,20 @@ public class Service {
             Message msg;
             try {
                 pl.pet.nPoint.calPoint();
+                // This Unity build enables ModFunc.isReadInt, so Message.readLong()
+                // consumes a 32-bit int. Keep these fields identical to the
+                // player's -42 packet; writing 64-bit longs shifts every field
+                // after HP and makes HP/KI/damage/defense appear under the wrong
+                // labels in the disciple panel.
+                msg = new Message(-109);
+                msg.writer().writeInt(pl.pet.nPoint.hpg);
+                msg.writer().writeInt(pl.pet.nPoint.mpg);
+                msg.writer().writeInt(pl.pet.nPoint.dameg);
+                msg.writer().writeInt(pl.pet.nPoint.defg);
+                msg.writer().writeInt(pl.pet.nPoint.critg);
+                pl.sendMessage(msg);
+                msg.cleanup();
+
                 msg = new Message(-107);
                 msg.writer().writeByte(2);
                 msg.writer().writeShort(pl.pet.getAvatar());
@@ -1639,7 +1653,9 @@ public class Service {
                 msg.writer().writeShort(pl.pet.nPoint.stamina); // stamina
                 msg.writer().writeShort(pl.pet.nPoint.maxStamina); // stamina full
                 msg.writer().writeByte(pl.pet.nPoint.crit); // crit
-                msg.writer().writeShort(pl.pet.nPoint.def); // def
+                // Pet defense can exceed the signed-short range.  Use the
+                // same 32-bit representation as the player's -42 packet.
+                msg.writer().writeInt(pl.pet.nPoint.def); // def
                 msg.writer().writeByte(5); // count pet skill
                 for (int i = 0; i < 5; i++) {
                     Skill petSkill = i < pl.pet.playerSkill.skills.size() ? pl.pet.playerSkill.skills.get(i) : null;

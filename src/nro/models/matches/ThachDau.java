@@ -3,6 +3,7 @@ import nro.models.consts.ConstAchievement;
 import nro.models.matches.PVP;
 import nro.models.matches.TYPE_LOSE_PVP;
 import nro.models.matches.TYPE_PVP;
+import nro.models.database.PKHistoryDAO;
 import nro.models.services.AchievementService;
 import nro.models.player.Player;
 import nro.models.server.Client;
@@ -51,6 +52,8 @@ public class ThachDau extends PVP {
 
     @Override
     public void sendResult(Player plLose, TYPE_LOSE_PVP typeLose) {
+        Player plWin = p1.equals(plLose) ? p2 : p1;
+        PKHistoryDAO.insert(plWin, plLose, typeLose, goldThachDau);
         if (typeLose == TYPE_LOSE_PVP.RUNS_AWAY) {
             Player plL = Client.gI().getPlayer(plLose.id);
             if (plL == null) {

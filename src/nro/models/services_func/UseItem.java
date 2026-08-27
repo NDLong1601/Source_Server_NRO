@@ -283,6 +283,11 @@ public class UseItem {
                 InventoryService.gI().sendItemBags(pl);
                 return;
             }
+            int renameItemId = PlayerConfig.getInt("player.rename.itemId", 2218, 1, Short.MAX_VALUE);
+            if (item.template.id == renameItemId) {
+                Input.gI().createFormChangeNameByItem(pl);
+                return;
+            }
             if (item.template.strRequire <= pl.nPoint.power) {
                 switch (item.template.type) {
                     case 33: //card
@@ -963,9 +968,6 @@ public class UseItem {
                                 } else {
                                     Service.gI().sendThongBao(pl, "Bạn đã có quả trứng nên không thể sử dụng");
                                 }
-                                break;
-                            case 2006:
-                                Input.gI().createFormChangeNameByItem(pl);
                                 break;
                             case PET_SKILL_1_REROLL_ITEM_ID:
                                 if (!rerollPetSkill(pl, item, 1)) {

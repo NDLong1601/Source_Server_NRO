@@ -25,6 +25,8 @@ import nro.models.utils.Util;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import nro.models.utils.TimeUtil;
@@ -35,11 +37,15 @@ public class ClanService {
     private static final byte ACCEPT_CREATE_CLAN = 2;
     private static final byte REQUEST_FLAGS_CHOOSE_CHANGE_CLAN = 3;
     private static final byte ACCEPT_CHANGE_INFO_CLAN = 4;
+    private static final byte ACCEPT_CHANGE_NAME_CLAN = 5;
+    private static final int RENAME_CLAN_GEM_COST = 1000;
+    private static final long SHARE_LOCATION_COOLDOWN_MS = 2 * 60 * 1000L;
 
     // clan message
     private static final byte CHAT = 0;
     private static final byte ASK_FOR_PEA = 1;
     private static final byte ASK_FOR_JOIN_CLAN = 2;
+    private static final byte SHARE_LOCATION = 3;
 
     // join clan
     private static final byte ACCEPT_ASK_JOIN_CLAN = 0;
@@ -56,6 +62,7 @@ public class ClanService {
     private static final byte ACCEPT_JOIN_CLAN = 1;
 
     private static ClanService instance;
+    private final Map<Long, Long> lastClanLocationShareTimes = new HashMap<>();
 
     private ClanService() {
     }
@@ -137,6 +144,9 @@ public class ClanService {
                     String slogan = msg.reader().readUTF();
                     changeInfoClan(player, imgId, slogan);
                     break;
+                case ACCEPT_CHANGE_NAME_CLAN:
+                    changeClanName(player, msg.reader().readUTF());
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,6 +166,9 @@ public class ClanService {
                     break;
                 case ASK_FOR_JOIN_CLAN:
                     askForJoinClan(player, msg.reader().readInt());
+                    break;
+                case SHARE_LOCATION:
+                    shareLocation(player);
                     break;
             }
         } catch (Exception e) {
@@ -526,6 +539,82 @@ public class ClanService {
         } else {
             changeFlag(player, imgId);
         }
+    }
+
+    /**
+     * Đổi tên bang. Tên được chuẩn hóa và kiểm tra ở server để mọi client đều
+     * nhận cùng một dữ liệu hợp lệ, kể cả khi gói tin được gửi thủ công.
+     */
+    private void changeClanName(Player player, String requestedName) {
+        Clan clan = player.clan;
+        if (clan == null || !clan.isLeader(player)) {
+            Service.gI().sendThongBao(player, "Chỉ bang chủ mới có thể đổi tên bang");
+            return;
+        }
+
+        String newName = normalizeClanName(requestedName);
+        if (newName == null) {
+            Service.gI().sendThongBao(player, "Tên bang phải từ 3 đến 30 ký tự hợp lệ");
+            return;
+        }
+        if (clan.name.equalsIgnoreCase(newName)) {
+            Service.gI().sendThongBao(player, "Tên bang mới trùng với tên hiện tại");
+            return;
+        }
+        if (isClanNameTaken(clan, newName)) {
+            Service.gI().sendThongBao(player, "Tên bang này đã được sử dụng");
+            return;
+        }
+        if (player.inventory.gem < RENAME_CLAN_GEM_COST) {
+            Service.gI().sendThongBao(player, "Bạn cần 1.000 ngọc để đổi tên bang");
+            return;
+        }
+
+        String oldName = clan.name;
+        player.inventory.gem -= RENAME_CLAN_GEM_COST;
+        PlayerService.gI().sendInfoHpMpMoney(player);
+        clan.name = newName;
+        clan.updateName();
+        clan.sendMyClanForAllMember();
+
+        ClanMember leader = clan.getClanMember((int) player.id);
+        if (leader != null) {
+            ClanMessage message = new ClanMessage(clan);
+            message.type = CHAT;
+            message.playerId = leader.id;
+            message.playerName = leader.name;
+            message.role = leader.role;
+            message.text = "Đã đổi tên bang từ " + oldName + " thành " + newName;
+            message.color = ClanMessage.RED;
+            clan.addClanMessage(message);
+            clan.sendMessageClan(message);
+        }
+        Service.gI().sendThongBao(player, "Đã đổi tên bang thành " + newName);
+    }
+
+    private String normalizeClanName(String name) {
+        if (name == null) {
+            return null;
+        }
+        String normalized = name.trim().replaceAll("\\s+", " ");
+        if (normalized.length() < 3 || normalized.length() > 30) {
+            return null;
+        }
+        for (int i = 0; i < normalized.length(); i++) {
+            if (Character.isISOControl(normalized.charAt(i))) {
+                return null;
+            }
+        }
+        return normalized;
+    }
+
+    private boolean isClanNameTaken(Clan currentClan, String name) {
+        for (Clan clan : Manager.CLANS) {
+            if (clan != currentClan && clan.name != null && clan.name.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -968,6 +1057,38 @@ public class ClanService {
                 clan.sendMessageClan(cmg);
             }
         }
+    }
+
+    /**
+     * Tọa độ được đọc từ trạng thái server của nhân vật, không nhận từ client.
+     */
+    private void shareLocation(Player player) {
+        Clan clan = player.clan;
+        if (clan == null || clan.getClanMember((int) player.id) == null) {
+            Service.gI().sendThongBao(player, "Bạn chưa tham gia bang");
+            return;
+        }
+        if (player.zone == null || player.zone.map == null || player.location == null) {
+            Service.gI().sendThongBao(player, "Không thể lấy vị trí hiện tại");
+            return;
+        }
+        long now = System.currentTimeMillis();
+        long lastShareTime;
+        synchronized (lastClanLocationShareTimes) {
+            lastShareTime = lastClanLocationShareTimes.getOrDefault(player.id, 0L);
+            if (now - lastShareTime >= SHARE_LOCATION_COOLDOWN_MS) {
+                lastClanLocationShareTimes.put(player.id, now);
+                lastShareTime = 0L;
+            }
+        }
+        if (lastShareTime != 0L) {
+            Service.gI().sendThongBao(player,
+                    "Vui lòng chờ " + TimeUtil.getTimeLeft(lastShareTime, 60 * 2) + " nữa để gửi tọa độ");
+            return;
+        }
+        String location = "[Vị trí] " + player.zone.map.mapName + " - Khu " + player.zone.zoneId
+                + " (X: " + player.location.x + ", Y: " + player.location.y + ")";
+        chat(player, location);
     }
 
     private void checkDoneTaskJoinClan(Clan clan) {

@@ -66,6 +66,18 @@ public class Client implements Runnable {
 
     }
 
+    /**
+     * Keeps the online-name lookup in sync when a connected player changes
+     * their character name. Player IDs and account IDs are unaffected.
+     */
+    public void updatePlayerName(Player player, String previousName) {
+        if (player == null || previousName == null) {
+            return;
+        }
+        this.players_name.remove(previousName, player);
+        this.players_name.put(player.name, player);
+    }
+
     private void remove(MySession session) {
         if (session.player != null) {
             this.remove(session.player);

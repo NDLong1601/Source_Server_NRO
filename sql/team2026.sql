@@ -9455,7 +9455,7 @@ CREATE TABLE `phongchat` (
 CREATE TABLE `player` (
   `id` int(11) NOT NULL,
   `account_id` int(11) DEFAULT NULL,
-  `name` varchar(20) NOT NULL,
+  `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `head` int(11) NOT NULL DEFAULT 102,
   `gender` int(11) NOT NULL,
   `have_tennis_space_ship` tinyint(1) DEFAULT 0,

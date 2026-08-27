@@ -35,6 +35,7 @@ import nro.models.data.ItemData;
 import nro.models.database.PlayerDAO;
 import nro.models.radar.Card;
 import nro.models.services.RadarService;
+import nro.models.services.PKHistoryService;
 import nro.models.map.service.NpcManager;
 import nro.models.player.Player;
 import nro.models.matches.PVPService;
@@ -141,6 +142,9 @@ public class Controller implements IMessageHandler {
                                 break;
                             case 42:
                                 FishingProgressService.gI().openFishBook(player);
+                                break;
+                            case PKHistoryService.ACTION_HISTORY:
+                                PKHistoryService.gI().sendHistory(player);
                                 break;
                             case 1:
                                 short idC = _msg.reader().readShort();
@@ -854,14 +858,25 @@ public class Controller implements IMessageHandler {
                 byte command = _msg.reader().readByte();
                 switch (command) {
                     case 16:
+                        // Potential for the player.  The Unity client uses a
+                        // separate sub-command for a disciple, so do not infer
+                        // the target from a recent pet-info request here.
                         byte type = _msg.reader().readByte();
                         short point = _msg.reader().readShort();
-                        if (isPetPointRequest(player)) {
-                            player.pet.nPoint.increasePoint(type, point);
+                        if (player != null && player.nPoint != null) {
+                            player.nPoint.increasePoint(type, point);
+                        }
+                        break;
+                    case 18:
+                        // Potential for the disciple.  Older code sent this
+                        // command but the server never handled it, which made
+                        // every upgrade request silently disappear.
+                        byte petType = _msg.reader().readByte();
+                        short petPoint = _msg.reader().readShort();
+                        if (player != null && player.pet != null && player.pet.nPoint != null) {
+                            player.pet.nPoint.increasePoint(petType, petPoint);
                             player.lastTimeOpenPetInfo = System.currentTimeMillis();
                             Service.gI().showInfoPet(player);
-                        } else if (player != null && player.nPoint != null) {
-                            player.nPoint.increasePoint(type, point);
                         }
                         break;
                     case 64:

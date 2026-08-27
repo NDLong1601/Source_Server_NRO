@@ -19,6 +19,7 @@ import nro.models.services.GiftCodeService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.map.service.NpcService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import nro.models.Bot.BotManager;
 import nro.models.Bot.NewBot;
 import nro.models.Bot.BotGiaoDich;
 import nro.models.consts.ConstTaskBadges;
+import nro.models.player.Enemy;
+import nro.models.player.Friend;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.server.Manager;
@@ -37,6 +40,12 @@ import nro.models.services.PlayerService;
 import nro.models.server.ServerLog;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Util;
+import nro.models.utils.Logger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.Normalizer;
 
 /**
  *
@@ -413,33 +422,7 @@ public class Input {
                     }
                 }
                 case CHANGE_NAME_BY_ITEM -> {
-                    if (player != null) {
-                        if (LocalManager.executeQuery("select * from player where name = ?", text[0]).next()) {
-                            Service.gI().sendThongBao(player, "Tên nhân vật đã tồn tại");
-                            createFormChangeNameByItem(player);
-                        } else if (Util.haveSpecialCharacter(text[0])) {
-                            Service.gI().sendThongBaoOK(player, "Tên nhân vật không được chứa ký tự đặc biệt");
-                        } else if (text[0].length() < 5) {
-                            Service.gI().sendThongBaoOK(player, "Tên nhân vật quá ngắn");
-                        } else if (text[0].length() > 10) {
-                            Service.gI().sendThongBaoOK(player, "Tên nhân vật chỉ đồng ý các ký tự a-z, 0-9 và chiều dài từ 5 đến 10 ký tự");
-                        } else {
-                            Item theDoiTen = InventoryService.gI().findItem(player.inventory.itemsBag, 2006);
-                            if (theDoiTen == null) {
-                                Service.gI().sendThongBao(player, "Không tìm thấy thẻ đổi tên");
-                            } else {
-                                InventoryService.gI().subQuantityItemsBag(player, theDoiTen, 1);
-                                player.name = text[0].toLowerCase();
-                                LocalManager.executeUpdate("update player set name = ? where id = ?", player.name, player.id);
-                                Service.gI().player(player);
-                                Service.gI().Send_Caitrang(player);
-                                Service.gI().sendFlagBag(player);
-                                Zone zone = player.zone;
-                                ChangeMapService.gI().changeMap(player, zone, player.location.x, player.location.y);
-                                Service.gI().sendThongBao(player, "Chúc mừng bạn đã có cái tên mới đẹp đẽ hơn tên ban đầu");
-                            }
-                        }
-                    }
+                    changeNameByItem(player, text);
                 }
                 case CHOOSE_LEVEL_BDKB -> {
                     int level = Integer.parseInt(text[0]);
@@ -579,6 +562,220 @@ public class Input {
             }
         } catch (Exception e) {
         }
+    }
+
+    private void changeNameByItem(Player player, String[] text) {
+        if (player == null) {
+            return;
+        }
+        if (text == null || text.length != 1) {
+            Service.gI().sendThongBao(player, "Dữ liệu đổi tên không hợp lệ");
+            return;
+        }
+
+        int minLength = PlayerConfig.getInt("player.rename.minCodePoints", 2, 1, 20);
+        int maxLength = PlayerConfig.getInt("player.rename.maxCodePoints", 16, minLength, 20);
+        RenameNameValidation validation = validateRenameName(text[0], minLength, maxLength);
+        if (!validation.isValid()) {
+            Service.gI().sendThongBaoOK(player, validation.error());
+            return;
+        }
+
+        String newName = validation.name();
+        if (newName.equals(player.name)) {
+            Service.gI().sendThongBao(player, "Tên mới trùng với tên hiện tại");
+            return;
+        }
+
+        int renameItemId = PlayerConfig.getInt("player.rename.itemId", 2218, 1, Short.MAX_VALUE);
+        Item renameItem = InventoryService.gI().findItemBag(player, renameItemId);
+        if (renameItem == null) {
+            Service.gI().sendThongBao(player, "Không tìm thấy thẻ đổi tên");
+            return;
+        }
+
+        try {
+            renamePlayerInDatabase(player, newName);
+        } catch (NameAlreadyTakenException e) {
+            Service.gI().sendThongBao(player, "Tên nhân vật đã tồn tại");
+            createFormChangeNameByItem(player);
+            return;
+        } catch (Exception e) {
+            Logger.logException(Input.class, e, "Không thể đổi tên nhân vật bằng vật phẩm");
+            Service.gI().sendThongBao(player, "Đổi tên thất bại, thẻ chưa bị trừ");
+            return;
+        }
+
+        String oldName = player.name;
+        player.name = newName;
+        InventoryService.gI().subQuantityItemsBag(player, renameItem, 1);
+        InventoryService.gI().sendItemBags(player);
+        refreshRenamedPlayer(player, oldName);
+        Service.gI().sendThongBao(player, "Chúc mừng bạn đã có cái tên mới đẹp đẽ hơn tên ban đầu");
+    }
+
+    private RenameNameValidation validateRenameName(String rawName, int minLength, int maxLength) {
+        if (rawName == null) {
+            return RenameNameValidation.invalid("Tên nhân vật không hợp lệ");
+        }
+
+        String normalized = Normalizer.normalize(rawName, Normalizer.Form.NFKC);
+        StringBuilder name = new StringBuilder();
+        boolean hasBaseCharacter = false;
+        boolean previousWasSpace = true;
+        for (int offset = 0; offset < normalized.length();) {
+            int codePoint = normalized.codePointAt(offset);
+            offset += Character.charCount(codePoint);
+            int category = Character.getType(codePoint);
+
+            if (Character.isLetterOrDigit(codePoint)) {
+                name.appendCodePoint(codePoint);
+                hasBaseCharacter = true;
+                previousWasSpace = false;
+            } else if (category == Character.NON_SPACING_MARK || category == Character.COMBINING_SPACING_MARK) {
+                if (!hasBaseCharacter || previousWasSpace) {
+                    return RenameNameValidation.invalid("Tên nhân vật không hợp lệ");
+                }
+                name.appendCodePoint(codePoint);
+            } else if (category == Character.SPACE_SEPARATOR) {
+                if (!previousWasSpace && name.length() > 0) {
+                    name.append(' ');
+                }
+                previousWasSpace = true;
+            } else {
+                return RenameNameValidation.invalid(
+                        "Tên chỉ gồm chữ cái, chữ số và một khoảng trắng giữa các từ");
+            }
+        }
+
+        if (name.length() > 0 && name.charAt(name.length() - 1) == ' ') {
+            name.setLength(name.length() - 1);
+        }
+        String result = name.toString();
+        int length = result.codePointCount(0, result.length());
+        if (length < minLength) {
+            return RenameNameValidation.invalid("Tên nhân vật quá ngắn (tối thiểu " + minLength + " ký tự)");
+        }
+        if (length > maxLength) {
+            return RenameNameValidation.invalid("Tên nhân vật quá dài (tối đa " + maxLength + " ký tự)");
+        }
+        return RenameNameValidation.valid(result);
+    }
+
+    private void renamePlayerInDatabase(Player player, String newName) throws Exception {
+        try (Connection connection = LocalManager.getConnection()) {
+            boolean autoCommit = connection.getAutoCommit();
+            int isolationLevel = connection.getTransactionIsolation();
+            try {
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                connection.setAutoCommit(false);
+
+                try (PreparedStatement checkName = connection.prepareStatement(
+                        "SELECT id FROM player WHERE name = ? AND id <> ? LIMIT 1 FOR UPDATE")) {
+                    checkName.setString(1, newName);
+                    checkName.setLong(2, player.id);
+                    try (ResultSet result = checkName.executeQuery()) {
+                        if (result.next()) {
+                            throw new NameAlreadyTakenException();
+                        }
+                    }
+                }
+
+                try (PreparedStatement updateName = connection.prepareStatement(
+                        "UPDATE player SET name = ? WHERE id = ?")) {
+                    updateName.setString(1, newName);
+                    updateName.setLong(2, player.id);
+                    if (updateName.executeUpdate() != 1) {
+                        throw new SQLException("Không tìm thấy nhân vật cần đổi tên");
+                    }
+                }
+                connection.commit();
+            } catch (Exception e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            } finally {
+                connection.setTransactionIsolation(isolationLevel);
+                connection.setAutoCommit(autoCommit);
+            }
+        }
+    }
+
+    private void refreshRenamedPlayer(Player player, String oldName) {
+        Client.gI().updatePlayerName(player, oldName);
+        refreshFriendAndEnemyNames(player);
+        if (player.clan != null && player.clanMember != null) {
+            player.clanMember.name = player.name;
+            player.clan.update();
+            player.clan.sendMyClanForAllMember();
+        }
+        try {
+            LocalManager.executeUpdate("UPDATE super_rank SET name = ? WHERE player_id = ?", player.name, player.id);
+        } catch (Exception e) {
+            Logger.logException(Input.class, e, "Không thể đồng bộ tên nhân vật trong xếp hạng");
+        }
+        Service.gI().player(player);
+        Service.gI().Send_Caitrang(player);
+        Service.gI().sendFlagBag(player);
+        Zone zone = player.zone;
+        if (zone != null) {
+            ChangeMapService.gI().changeMap(player, zone, player.location.x, player.location.y);
+        }
+    }
+
+    private void refreshFriendAndEnemyNames(Player renamedPlayer) {
+        for (Player onlinePlayer : new ArrayList<>(Client.gI().getPlayers())) {
+            if (onlinePlayer == null) {
+                continue;
+            }
+            for (Friend friend : onlinePlayer.friends) {
+                if (friend.id == renamedPlayer.id) {
+                    friend.name = renamedPlayer.name;
+                }
+            }
+            for (Enemy enemy : onlinePlayer.enemies) {
+                if (enemy.id == renamedPlayer.id) {
+                    enemy.name = renamedPlayer.name;
+                }
+            }
+        }
+    }
+
+    private static final class RenameNameValidation {
+
+        private final String name;
+        private final String error;
+
+        private RenameNameValidation(String name, String error) {
+            this.name = name;
+            this.error = error;
+        }
+
+        private static RenameNameValidation valid(String name) {
+            return new RenameNameValidation(name, null);
+        }
+
+        private static RenameNameValidation invalid(String error) {
+            return new RenameNameValidation(null, error);
+        }
+
+        private boolean isValid() {
+            return this.name != null;
+        }
+
+        private String name() {
+            return this.name;
+        }
+
+        private String error() {
+            return this.error;
+        }
+    }
+
+    private static final class NameAlreadyTakenException extends Exception {
     }
 
     public void createForm(Player pl, int typeInput, String title, SubInput... subInputs) {
