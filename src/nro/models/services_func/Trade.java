@@ -10,6 +10,7 @@ import nro.models.services.ItemService;
 import nro.models.services.PlayerService;
 import nro.models.services.Service;
 import nro.models.services.InventoryService;
+import nro.models.services.CostumeCollectionService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 import java.util.ArrayList;
@@ -382,6 +383,13 @@ public class Trade {
                     player2.inventory.gold -= goldTrade2;
                     player1.inventory.itemsBag = itemsBag1;
                     player2.inventory.itemsBag = itemsBag2;
+
+                    for (Item item : itemsTrade1) {
+                        CostumeCollectionService.gI().recordOwnership(player2, item);
+                    }
+                    for (Item item : itemsTrade2) {
+                        CostumeCollectionService.gI().recordOwnership(player1, item);
+                    }
 
                     InventoryService.gI().sendItemBags(player1);
                     InventoryService.gI().sendItemBags(player2);

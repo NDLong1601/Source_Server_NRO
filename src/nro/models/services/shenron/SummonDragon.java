@@ -12,6 +12,7 @@ import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.services.Service;
+import nro.models.services.DayNightService;
 import nro.models.utils.Util;
 import nro.models.network.Message;
 import nro.models.services.ItemService;
@@ -135,6 +136,11 @@ public class SummonDragon {
             instance = new SummonDragon();
         }
         return instance;
+    }
+
+    public static boolean isShenronActive() {
+        SummonDragon current = instance;
+        return current != null && current.isShenronAppear;
     }
 
     public void openMenuSummonShenron(Player pl, byte dragonBallStar) {
@@ -552,6 +558,7 @@ public class SummonDragon {
         this.shenronStar = -1;
         this.mapShenronAppear = null;
         lastTimeShenronAppeared = System.currentTimeMillis();
+        DayNightService.gI().restoreAfterShenron();
     }
 
 }

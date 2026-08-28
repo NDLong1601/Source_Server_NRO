@@ -14,6 +14,7 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.map.service.NpcService;
 import nro.models.services.Service;
+import nro.models.services.DayNightService;
 import nro.models.utils.Util;
 
 /**
@@ -45,6 +46,11 @@ public class SummonDragonNamek {
             instance = new SummonDragonNamek();
         }
         return instance;
+    }
+
+    public static boolean isShenronActive() {
+        SummonDragonNamek current = instance;
+        return current != null && current.isShenronAppear;
     }
 
     private SummonDragonNamek() {
@@ -327,5 +333,6 @@ public class SummonDragonNamek {
         this.playerSummonShenron = null;
         this.playerSummonShenronId = -1;
         this.mapShenronAppear = null;
+        DayNightService.gI().restoreAfterShenron();
     }
 }

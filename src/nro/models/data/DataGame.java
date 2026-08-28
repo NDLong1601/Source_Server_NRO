@@ -27,8 +27,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import nro.models.server.Manager;
 import nro.models.network.MySession;
 import nro.models.item.Item;
@@ -47,34 +45,6 @@ public class DataGame {
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
-    private static final ExecutorService FISHING_ASSET_PRELOADER = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable, "fishing-map-asset-preloader");
-        thread.setDaemon(true);
-        return thread;
-    });
-    private static final int[] FISHING_MAP_192_IMAGES = {
-        872, 919, 920, 921, 922, 931, 932, 933, 934, 935, 936, 937, 938, 939, 940, 941,
-        942, 943, 944, 945, 946, 947, 948, 949, 950, 951, 952, 953, 954, 955, 956, 957,
-        958, 959, 960, 961, 962, 963, 964, 983, 984, 985, 986
-    };
-    private static final int[] FISHING_MAP_193_IMAGES = {
-        919, 920, 989, 990, 991, 992, 993, 994, 995, 996, 997, 998, 999, 1000, 1001,
-        1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014,
-        1015, 1016, 1017, 1088, 1089, 1090, 1091, 1092, 1093, 1094, 1095
-    };
-    private static final int[] FISHING_MAP_194_IMAGES = {
-        919, 920, 989, 1021, 1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030,
-        1031, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043,
-        1044, 1045, 1046, 1047, 1048, 1049, 1050, 1096, 1089, 1098, 1093, 1100, 1101,
-        1102, 1103
-    };
-    private static final int[] FISHING_MAP_195_IMAGES = {
-        919, 920, 989, 1054, 1055, 1056, 1058, 1060, 1061, 1062, 1001, 1065, 1066,
-        1067, 1068, 1069, 1008, 1071, 1072, 1073, 1010, 1075, 1076, 1077, 1078, 1079,
-        1080, 1081, 1084, 1085, 1087, 1104, 1105, 1106, 1107, 1100, 1109, 1093, 1099,
-        1112
-    };
-
     // 64 keeps the costume baseline fix and republishes deduplicated fishing backgrounds.
     public static byte vsData = 64;
     public static byte vsMap = loadMapVersion();
@@ -479,68 +449,6 @@ public class DataGame {
         // map-info so the client never falls back to the default Earth backdrop.
         sendItemBGTemplate(session, 516);
         sendItemBGTemplate(session, 565);
-    }
-
-    /**
-     * Downloads the next fishing scene while the player is still walking in
-     * the current one. Images are throttled and sent only once per session so
-     * entering a map does not compete with a large burst of background data.
-     */
-    public static void preloadNextFishingMapAssets(MySession session, int currentMapId) {
-        int nextMapId;
-        int[] imageIds;
-        switch (currentMapId) {
-            case 186 -> {
-                nextMapId = 192;
-                imageIds = FISHING_MAP_192_IMAGES;
-            }
-            case 192 -> {
-                nextMapId = 193;
-                imageIds = FISHING_MAP_193_IMAGES;
-            }
-            case 193 -> {
-                nextMapId = 194;
-                imageIds = FISHING_MAP_194_IMAGES;
-            }
-            case 194 -> {
-                nextMapId = 195;
-                imageIds = FISHING_MAP_195_IMAGES;
-            }
-            default -> {
-                return;
-            }
-        }
-        if (session == null || !session.markFishingMapAssetsSent(nextMapId)) {
-            return;
-        }
-        FISHING_ASSET_PRELOADER.execute(() -> {
-            try {
-                // A background request proves this client is missing at least
-                // part of the fishing asset set. Fully cached clients should
-                // not receive tens of megabytes of unnecessary push data.
-                for (int retry = 0; retry < 20 && session.isConnected()
-                        && !session.hasFishingBackgroundRequest(); retry++) {
-                    Thread.sleep(250L);
-                }
-                if (!session.hasFishingBackgroundRequest()) {
-                    return;
-                }
-                for (int imageId : imageIds) {
-                    if (!session.isConnected()) {
-                        return;
-                    }
-                    while (session.getNumMessages() > 8 && session.isConnected()) {
-                        Thread.sleep(200L);
-                    }
-                    sendItemBGTemplate(session, imageId);
-                    Thread.sleep(120L);
-                }
-            } catch (InterruptedException interrupted) {
-                Thread.currentThread().interrupt();
-            } catch (Exception exception) {
-                Logger.logException(DataGame.class, exception, "Cannot preload fishing map assets");
-            }
-        });
     }
 
     public static void sendDataItemBG(MySession session) {

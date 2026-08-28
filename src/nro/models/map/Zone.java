@@ -619,7 +619,6 @@ public class Zone {
             if (this.map.mapId >= 187 && this.map.mapId <= 190) {
                 DataGame.preloadInfinityCastleAssets(pl.getSession());
             }
-            DataGame.preloadNextFishingMapAssets(pl.getSession(), this.map.mapId);
             msg = new Message(-24);
             msg.writer().writeByte(this.map.mapId);
             msg.writer().writeByte(this.map.planetId);

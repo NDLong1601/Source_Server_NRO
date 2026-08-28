@@ -14,6 +14,7 @@ import nro.models.services.InventoryService;
 import nro.models.services.ItemTimeService;
 import nro.models.map.service.NpcService;
 import nro.models.services.Service;
+import nro.models.services.DayNightService;
 import nro.models.services.IntrinsicService;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
@@ -268,6 +269,7 @@ public class Shenron_Event {
             zone.shenronType = -1;
             player.lastTimeShenronAppeared = System.currentTimeMillis();
             Shenron_Manager.gI().remove(this);
+            DayNightService.gI().restoreAfterShenron();
         }
     }
 }

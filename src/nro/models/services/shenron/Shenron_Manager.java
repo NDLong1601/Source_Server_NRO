@@ -23,6 +23,10 @@ public class Shenron_Manager implements Runnable {
         return instance;
     }
 
+    public static boolean hasActiveShenronEvent() {
+        return !list.isEmpty();
+    }
+
     @Override
     public void run() {
         while (!Maintenance.isRunning) {

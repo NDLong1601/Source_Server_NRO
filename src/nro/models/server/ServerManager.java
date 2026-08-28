@@ -49,6 +49,7 @@ import nro.models.minigame.ChonAiDay_Gold;
 import nro.models.minigame.ConSoMayManGem;
 import nro.models.minigame.ConSoMayManGold;
 import nro.models.services.ClanService;
+import nro.models.services.DayNightService;
 import nro.models.services.TaskService;
 import nro.models.shop.ShopTab;
 import nro.models.shop_ky_gui.ConsignShopManager;
@@ -124,6 +125,7 @@ public class ServerManager {
             AutoMaintenance.AutoMaintenance = true;
             AutoMaintenance.gI().start();
             new Thread(ShenronEventManager.gI(), "Update Shenron").start();
+            new Thread(DayNightService.gI(), "Day and night").start();
 
             AdminSpawnConfigService.gI().load();
             AdminEventConfigService.gI().load();

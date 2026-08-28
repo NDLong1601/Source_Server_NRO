@@ -7,6 +7,7 @@ import nro.models.boss.Boss;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.consts.ConstAchievement;
 import nro.models.services.ClanService;
+import nro.models.services.DayNightService;
 import nro.models.services.ChatGlobalService;
 import nro.models.services.SubMenuService;
 import nro.models.services.Service;
@@ -36,6 +37,7 @@ import nro.models.database.PlayerDAO;
 import nro.models.radar.Card;
 import nro.models.services.RadarService;
 import nro.models.services.PKHistoryService;
+import nro.models.services.CostumeCollectionService;
 import nro.models.map.service.NpcManager;
 import nro.models.player.Player;
 import nro.models.matches.PVPService;
@@ -142,6 +144,12 @@ public class Controller implements IMessageHandler {
                                 break;
                             case 42:
                                 FishingProgressService.gI().openFishBook(player);
+                                break;
+                            case CostumeCollectionService.ACTION_COLLECTION:
+                                CostumeCollectionService.gI().sendCollection(player);
+                                break;
+                            case CostumeCollectionService.ACTION_CLAIM_COLLECTION_ACHIEVEMENT:
+                                CostumeCollectionService.gI().claimCollectionAchievement(player, _msg.reader().readShort());
                                 break;
                             case PKHistoryService.ACTION_HISTORY:
                                 PKHistoryService.gI().sendHistory(player);
@@ -477,7 +485,6 @@ public class Controller implements IMessageHandler {
                 case -32:
                     int bgId = _msg.reader().readShort();
                     if (_session.isAssetReady()) {
-                        _session.noteFishingBackgroundRequest(bgId);
                         DataGame.sendItemBGTemplate(_session, bgId);
                     }
                     break;
@@ -824,6 +831,7 @@ public class Controller implements IMessageHandler {
                                 Service.gI().sendChibi(player);
                             }
                             player.zone.mapInfo(player);
+                            DayNightService.gI().sendCurrentState(player);
                             if (player.getSession().version >= 220) {
                                 for (Skill skill : player.playerSkill.skills) {
                                     if (!SkillMasteryService.gI().shouldSendProgressToClient(skill)) {

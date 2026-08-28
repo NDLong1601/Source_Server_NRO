@@ -1034,11 +1034,19 @@ public class InventoryService {
                 BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.ME_RONG, 1);
             }
         }
-        return addItemList(player.inventory.itemsBag, item);
+        boolean added = addItemList(player.inventory.itemsBag, item);
+        if (added) {
+            CostumeCollectionService.gI().recordOwnership(player, item);
+        }
+        return added;
     }
 
     public boolean addItemBox(Player player, Item item) {
-        return addItemList(player.inventory.itemsBox, item);
+        boolean added = addItemList(player.inventory.itemsBox, item);
+        if (added) {
+            CostumeCollectionService.gI().recordOwnership(player, item);
+        }
+        return added;
     }
 
     public boolean addItemList(List<Item> items, Item itemAdd) {

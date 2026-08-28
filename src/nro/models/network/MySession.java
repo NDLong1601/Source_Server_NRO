@@ -44,8 +44,6 @@ public class MySession extends Session {
     private volatile boolean clientInfoReady;
     private boolean assetVersionsSent;
     private boolean infinityCastleAssetsSent;
-    private int fishingMapAssetsSentMask;
-    private volatile boolean fishingBackgroundRequested;
 
     public long lastTimeLogout;
     public boolean joinedGame;
@@ -130,31 +128,6 @@ public class MySession extends Session {
         }
         this.infinityCastleAssetsSent = true;
         return true;
-    }
-
-    public synchronized boolean markFishingMapAssetsSent(int mapId) {
-        int index = switch (mapId) {
-            case 192 -> 0;
-            case 193 -> 1;
-            case 194 -> 2;
-            case 195 -> 3;
-            default -> -1;
-        };
-        if (!this.isAssetReady() || index < 0 || (this.fishingMapAssetsSentMask & (1 << index)) != 0) {
-            return false;
-        }
-        this.fishingMapAssetsSentMask |= 1 << index;
-        return true;
-    }
-
-    public void noteFishingBackgroundRequest(int imageId) {
-        if (imageId >= 620 && imageId <= 1112) {
-            this.fishingBackgroundRequested = true;
-        }
-    }
-
-    public boolean hasFishingBackgroundRequest() {
-        return this.fishingBackgroundRequested;
     }
 
     public void sendAssetVersionsIfNeeded() {
