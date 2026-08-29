@@ -39,6 +39,7 @@ public class CostumeCollectionService {
     private static final int CHUNK_SIZE = 50;
     private static final byte ACHIEVEMENT_BY_COUNT = 0;
     private static final byte ACHIEVEMENT_BY_THEME = 1;
+    private static final byte ACHIEVEMENT_DETAIL_VERSION = 1;
 
     private static CostumeCollectionService instance;
     private volatile boolean schemaReady;
@@ -159,6 +160,14 @@ public class CostumeCollectionService {
                 + "PRIMARY KEY (id)"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         LocalManager.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS costume_collection_achievement_reward ("
+                + "achievement_id SMALLINT NOT NULL,"
+                + "item_template_id SMALLINT NOT NULL,"
+                + "quantity INT NOT NULL DEFAULT 1,"
+                + "PRIMARY KEY (achievement_id, item_template_id),"
+                + "KEY idx_costume_collection_reward_item (item_template_id)"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        LocalManager.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS player_costume_collection_achievement ("
                 + "player_id INT NOT NULL,"
                 + "achievement_id SMALLINT NOT NULL,"
@@ -219,7 +228,7 @@ public class CostumeCollectionService {
         return result;
     }
 
-    public void claimCollectionAchievement(Player player, short achievementId) {
+    public synchronized void claimCollectionAchievement(Player player, short achievementId) {
         if (player == null || !player.isPl()) {
             return;
         }
@@ -239,6 +248,11 @@ public class CostumeCollectionService {
                 sendCollectionAchievements(player, ownedIds, costumes);
                 return;
             }
+            if (!canReceiveItemRewards(player, achievement)) {
+                Service.gI().sendThongBao(player, "Hành trang không đủ chỗ để nhận phần thưởng vật phẩm");
+                sendCollectionAchievements(player, ownedIds, costumes);
+                return;
+            }
             if (!markAchievementClaimed(player.id, achievement.id)) {
                 Service.gI().sendThongBao(player, "Phần thưởng này đã được nhận");
                 sendCollectionAchievements(player, ownedIds, costumes);
@@ -249,9 +263,11 @@ public class CostumeCollectionService {
             player.inventory.gold += Math.min(goldSpace, achievement.rewardGold);
             int gemSpace = Math.max(0, PlayerConfig.getMaxGem() - player.inventory.gem);
             player.inventory.gem += Math.min(gemSpace, achievement.rewardGem);
+            grantItemRewards(player, achievement);
             Service.gI().sendMoney(player);
+            InventoryService.gI().sendItemBags(player);
             Service.gI().sendThongBao(player, "Đã nhận thưởng " + achievement.name + ": "
-                    + achievement.rewardGold + " vàng, " + achievement.rewardGem + " ngọc.");
+                    + achievement.getRewardSummary() + ".");
             sendCollectionAchievements(player, ownedIds, costumes);
         } catch (Exception ex) {
             Logger.logException(CostumeCollectionService.class, ex,
@@ -276,7 +292,7 @@ public class CostumeCollectionService {
                 int target = achievement.getTarget();
                 message.writer().writeShort(achievement.id);
                 message.writer().writeUTF(safe(achievement.name));
-                message.writer().writeUTF(safe(achievement.description));
+                message.writer().writeUTF(achievement.getDescriptionWithRewardItems());
                 message.writer().writeShort(Math.min(Short.MAX_VALUE, progress));
                 message.writer().writeShort(Math.min(Short.MAX_VALUE, target));
                 message.writer().writeLong(achievement.rewardGold);
@@ -284,18 +300,78 @@ public class CostumeCollectionService {
                 message.writer().writeBoolean(progress >= target);
                 message.writer().writeBoolean(claimedIds.contains(achievement.id));
             }
+            writeAchievementDetails(message, achievements, ownedIds, costumes);
             player.sendMessage(message);
         } finally {
             message.cleanup();
         }
     }
 
+    /**
+     * Appended after the legacy achievement rows so older clients can ignore
+     * it while newer clients can render complete rewards and theme targets.
+     */
+    private void writeAchievementDetails(Message message, List<CollectionAchievement> achievements,
+            Set<Short> ownedIds, List<CostumeGroup> costumes) throws Exception {
+        int achievementCount = Math.min(255, achievements.size());
+        message.writer().writeByte(ACHIEVEMENT_DETAIL_VERSION);
+        message.writer().writeByte(achievementCount);
+        for (int index = 0; index < achievementCount; index++) {
+            CollectionAchievement achievement = achievements.get(index);
+            message.writer().writeShort(achievement.id);
+            message.writer().writeUTF(safe(achievement.description));
+            message.writer().writeByte(achievement.conditionType);
+
+            int rewardCount = Math.min(255, achievement.itemRewards.size());
+            message.writer().writeByte(rewardCount);
+            for (int rewardIndex = 0; rewardIndex < rewardCount; rewardIndex++) {
+                CollectionItemReward reward = achievement.itemRewards.get(rewardIndex);
+                Template.ItemTemplate template = getItemTemplate(reward.itemTemplateId);
+                message.writer().writeShort(reward.itemTemplateId);
+                message.writer().writeShort(template == null ? -1 : template.iconID);
+                message.writer().writeInt(reward.quantity);
+                message.writer().writeUTF(template == null
+                        ? "Vật phẩm " + reward.itemTemplateId : safe(template.name));
+            }
+
+            short[] requiredIds = achievement.conditionType == ACHIEVEMENT_BY_THEME
+                    ? achievement.getRequiredTemplateIds() : new short[0];
+            int requiredCount = Math.min(255, requiredIds.length);
+            message.writer().writeByte(requiredCount);
+            for (int requiredIndex = 0; requiredIndex < requiredCount; requiredIndex++) {
+                short templateId = requiredIds[requiredIndex];
+                Template.ItemTemplate template = getItemTemplate(templateId);
+                CostumeGroup group = findCostumeGroup(costumes, templateId);
+                boolean owned = group == null ? ownedIds.contains(templateId) : group.hasOwnedTemplate(ownedIds);
+                message.writer().writeShort(templateId);
+                message.writer().writeShort(template == null ? -1 : template.iconID);
+                message.writer().writeUTF(template == null
+                        ? "Cải trang " + templateId : safe(template.name));
+                message.writer().writeBoolean(owned);
+            }
+        }
+    }
+
+    private CostumeGroup findCostumeGroup(List<CostumeGroup> costumes, short templateId) {
+        for (CostumeGroup group : costumes) {
+            if (group.containsTemplate(templateId)) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     private List<CollectionAchievement> loadAchievements() throws Exception {
         List<CollectionAchievement> result = new ArrayList<>();
         try (Connection connection = LocalManager.getConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT id, name, description, condition_type, required_count, required_template_ids, "
-                        + "reward_gold, reward_gem FROM costume_collection_achievement ORDER BY id");
+                        "SELECT a.id, a.name, a.description, a.condition_type, a.required_count, "
+                        + "a.required_template_ids, a.reward_gold, a.reward_gem, "
+                        + "COALESCE((SELECT GROUP_CONCAT(CONCAT(r.item_template_id, ':', r.quantity) "
+                        + "ORDER BY r.item_template_id SEPARATOR ',') "
+                        + "FROM costume_collection_achievement_reward r "
+                        + "WHERE r.achievement_id = a.id), '') AS reward_items "
+                        + "FROM costume_collection_achievement a ORDER BY a.id");
                 ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 result.add(new CollectionAchievement(
@@ -306,7 +382,8 @@ public class CostumeCollectionService {
                         resultSet.getInt("required_count"),
                         resultSet.getString("required_template_ids"),
                         Math.max(0L, resultSet.getLong("reward_gold")),
-                        Math.max(0, resultSet.getInt("reward_gem"))));
+                        Math.max(0, resultSet.getInt("reward_gem")),
+                        resultSet.getString("reward_items")));
             }
         }
         return result;
@@ -345,6 +422,78 @@ public class CostumeCollectionService {
             statement.setShort(2, achievementId);
             return statement.executeUpdate() > 0;
         }
+    }
+
+    private boolean canReceiveItemRewards(Player player, CollectionAchievement achievement) {
+        int neededBagSlots = 0;
+        int addedBagSlots = 0;
+        long predictedGold = Math.min(PlayerConfig.getMaxGold(), player.inventory.gold + achievement.rewardGold);
+        long predictedGem = Math.min(Integer.MAX_VALUE, (long) player.inventory.gem + achievement.rewardGem);
+        long predictedRuby = player.inventory.ruby;
+        for (CollectionItemReward reward : achievement.itemRewards) {
+            Template.ItemTemplate template = getItemTemplate(reward.itemTemplateId);
+            if (template == null) {
+                return false;
+            }
+            if (reward.itemTemplateId == 517) {
+                addedBagSlots += reward.quantity;
+                if ((long) player.inventory.itemsBag.size() + addedBagSlots > PlayerConfig.getMaxBagSlots()) {
+                    return false;
+                }
+                continue;
+            }
+            if (reward.itemTemplateId == 518) {
+                if ((long) player.inventory.itemsBox.size() + reward.quantity > PlayerConfig.getMaxBoxSlots()) {
+                    return false;
+                }
+                continue;
+            }
+            switch (template.type) {
+                case 9:
+                    predictedGold += reward.quantity;
+                    if (predictedGold > PlayerConfig.getMaxGold()) {
+                        return false;
+                    }
+                    break;
+                case 10:
+                    predictedGem += reward.quantity;
+                    if (predictedGem > Integer.MAX_VALUE) {
+                        return false;
+                    }
+                    break;
+                case 34:
+                    predictedRuby += reward.quantity;
+                    if (predictedRuby > Integer.MAX_VALUE) {
+                        return false;
+                    }
+                    break;
+                default:
+                    neededBagSlots++;
+                    break;
+            }
+        }
+        return neededBagSlots <= InventoryService.gI().getCountEmptyBag(player) + addedBagSlots;
+    }
+
+    private void grantItemRewards(Player player, CollectionAchievement achievement) {
+        for (CollectionItemReward reward : achievement.itemRewards) {
+            if (reward.itemTemplateId == 517 || reward.itemTemplateId == 518) {
+                for (int count = 0; count < reward.quantity; count++) {
+                    Item expansion = ItemService.gI().createNewItemWithDefaultOptions(reward.itemTemplateId, 1);
+                    InventoryService.gI().addItemBag(player, expansion);
+                }
+                continue;
+            }
+            Item item = ItemService.gI().createNewItemWithDefaultOptions(reward.itemTemplateId, reward.quantity);
+            if (item != null) {
+                InventoryService.gI().addItemBag(player, item);
+            }
+        }
+    }
+
+    private Template.ItemTemplate getItemTemplate(short itemTemplateId) {
+        return itemTemplateId >= 0 && itemTemplateId < Manager.ITEM_TEMPLATES.size()
+                ? Manager.ITEM_TEMPLATES.get(itemTemplateId) : null;
     }
 
     private int countOwnedGroups(Set<Short> ownedIds, List<CostumeGroup> costumes) {
@@ -538,9 +687,11 @@ public class CostumeCollectionService {
         private final String requiredTemplateIds;
         private final long rewardGold;
         private final int rewardGem;
+        private final List<CollectionItemReward> itemRewards;
 
         private CollectionAchievement(short id, String name, String description, byte conditionType,
-                int requiredCount, String requiredTemplateIds, long rewardGold, int rewardGem) {
+                int requiredCount, String requiredTemplateIds, long rewardGold, int rewardGem,
+                String rewardItems) {
             this.id = id;
             this.name = name;
             this.description = description;
@@ -549,6 +700,72 @@ public class CostumeCollectionService {
             this.requiredTemplateIds = requiredTemplateIds == null ? "" : requiredTemplateIds;
             this.rewardGold = rewardGold;
             this.rewardGem = rewardGem;
+            this.itemRewards = parseItemRewards(rewardItems);
+        }
+
+        private List<CollectionItemReward> parseItemRewards(String value) {
+            List<CollectionItemReward> result = new ArrayList<>();
+            if (value == null || value.trim().isEmpty()) {
+                return result;
+            }
+            for (String entry : value.split(",")) {
+                String[] values = entry.split(":", 2);
+                if (values.length != 2) {
+                    continue;
+                }
+                try {
+                    short itemTemplateId = Short.parseShort(values[0].trim());
+                    int quantity = Integer.parseInt(values[1].trim());
+                    if (itemTemplateId >= 0 && quantity > 0) {
+                        result.add(new CollectionItemReward(itemTemplateId, quantity));
+                    }
+                } catch (NumberFormatException ignored) {
+                    // Ignore stale or malformed reward data until it is corrected in admin.
+                }
+            }
+            return result;
+        }
+
+        private String getDescriptionWithRewardItems() {
+            if (itemRewards.isEmpty()) {
+                return CostumeCollectionService.gI().safe(description);
+            }
+            String baseDescription = CostumeCollectionService.gI().safe(description);
+            return baseDescription + (baseDescription.isEmpty() ? "" : "\n")
+                    + "Thưởng vật phẩm: " + getItemRewardSummary();
+        }
+
+        private String getRewardSummary() {
+            List<String> parts = new ArrayList<>();
+            if (rewardGold > 0) {
+                parts.add(rewardGold + " vàng");
+            }
+            if (rewardGem > 0) {
+                parts.add(rewardGem + " ngọc");
+            }
+            if (!itemRewards.isEmpty()) {
+                parts.add("vật phẩm: " + getItemRewardSummary());
+            }
+            return parts.isEmpty() ? "không có vật phẩm" : String.join(", ", parts);
+        }
+
+        private String getItemRewardSummary() {
+            StringBuilder result = new StringBuilder();
+            int visibleCount = Math.min(4, itemRewards.size());
+            for (int index = 0; index < visibleCount; index++) {
+                if (index > 0) {
+                    result.append(", ");
+                }
+                CollectionItemReward reward = itemRewards.get(index);
+                Template.ItemTemplate template = CostumeCollectionService.gI().getItemTemplate(reward.itemTemplateId);
+                String itemName = template == null ? "Vật phẩm " + reward.itemTemplateId
+                        : CostumeCollectionService.gI().safe(template.name);
+                result.append(itemName).append(" x").append(reward.quantity);
+            }
+            if (itemRewards.size() > visibleCount) {
+                result.append(" và ").append(itemRewards.size() - visibleCount).append(" vật phẩm khác");
+            }
+            return result.toString();
         }
 
         private short[] getRequiredTemplateIds() {
@@ -577,6 +794,17 @@ public class CostumeCollectionService {
                 return configuredSize > 0 ? configuredSize : requiredCount;
             }
             return requiredCount;
+        }
+    }
+
+    private static class CollectionItemReward {
+
+        private final short itemTemplateId;
+        private final int quantity;
+
+        private CollectionItemReward(short itemTemplateId, int quantity) {
+            this.itemTemplateId = itemTemplateId;
+            this.quantity = quantity;
         }
     }
 

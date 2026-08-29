@@ -1518,6 +1518,175 @@ tr:hover td.gift-status-waiting {
   top: 58px;
 }
 
+/* Collection book keeps every collection in one top-level admin tab while
+   reusing the standard category-pill component for its inner navigation. */
+#panelRadar .collection-content {
+  position: absolute;
+  left: 0;
+  top: 58px;
+  right: 0;
+  bottom: 0;
+  display: none;
+}
+
+#panelRadar .collection-content.active {
+  display: block;
+}
+
+#panelRadar .collection-content .columns {
+  top: 0;
+}
+
+#panelRadar .collection-content .left-pane {
+  width: 58%;
+}
+
+#panelRadar .collection-content .right-pane {
+  width: 40%;
+}
+
+.collection-summary {
+  min-height: 38px;
+  margin: 2px 0 10px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border-left: 3px solid #0f766e;
+  border-radius: 5px;
+  background: #ecfeff;
+  color: #155e75;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.collection-summary .radar-icon {
+  margin: -2px 5px -2px 0;
+  vertical-align: middle;
+}
+
+.collection-badge {
+  display: inline-block;
+  min-width: 22px;
+  margin: 1px 4px 2px 0;
+  padding: 2px 7px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 14px;
+  letter-spacing: 0.25px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.collection-badge.radar { border-color: #67e8f9; background: #cffafe; color: #0e7490; }
+.collection-badge.costume { border-color: #d8b4fe; background: #f3e8ff; color: #7e22ce; }
+.collection-badge.fish { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
+.collection-badge.id { border-color: #cbd5e1; background: #f1f5f9; color: #334155; }
+.collection-badge.new { border-color: #86efac; background: #dcfce7; color: #166534; }
+.collection-badge.count { border-color: #5eead4; background: #ccfbf1; color: #0f766e; }
+.collection-badge.theme { border-color: #fdba74; background: #ffedd5; color: #9a3412; }
+.collection-badge.mob { border-color: #86efac; background: #dcfce7; color: #15803d; }
+.collection-badge.character { border-color: #fda4af; background: #ffe4e6; color: #be123c; }
+.collection-badge.require { border-color: #fcd34d; background: #fef3c7; color: #92400e; }
+.collection-badge.option { border-color: #a5b4fc; background: #e0e7ff; color: #4338ca; }
+.collection-badge.gold { border-color: #fbbf24; background: #fef3c7; color: #a16207; }
+.collection-badge.gem { border-color: #c4b5fd; background: #ede9fe; color: #6d28d9; }
+.collection-badge.item { border-color: #7dd3fc; background: #e0f2fe; color: #0369a1; }
+.collection-badge.quantity { border-color: #6ee7b7; background: #d1fae5; color: #047857; }
+.collection-badge.more { border-color: #f0abfc; background: #fae8ff; color: #a21caf; }
+.collection-badge.off, .collection-badge.common { border-color: #cbd5e1; background: #e2e8f0; color: #475569; }
+.collection-badge.uncommon { border-color: #5eead4; background: #ccfbf1; color: #0f766e; }
+.collection-badge.rare { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
+.collection-badge.epic { border-color: #c4b5fd; background: #ede9fe; color: #6d28d9; }
+.collection-badge.legendary { border-color: #fbbf24; background: #fef3c7; color: #a16207; }
+.collection-badge.mythic { border-color: #fda4af; background: #ffe4e6; color: #be123c; }
+.collection-badge.rank-0 { border-color: #cbd5e1; background: #f1f5f9; color: #475569; }
+.collection-badge.rank-1 { border-color: #86efac; background: #dcfce7; color: #15803d; }
+.collection-badge.rank-2 { border-color: #67e8f9; background: #cffafe; color: #0e7490; }
+.collection-badge.rank-3 { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
+.collection-badge.rank-4 { border-color: #c4b5fd; background: #ede9fe; color: #6d28d9; }
+.collection-badge.rank-5 { border-color: #f9a8d4; background: #fce7f3; color: #be185d; }
+.collection-badge.rank-6 { border-color: #fbbf24; background: #fef3c7; color: #92400e; }
+
+#collectionTabs .player-config-tab {
+  padding: 6px 11px 6px 7px;
+}
+
+#collectionTabs .collection-badge {
+  margin: 0 7px 0 0;
+}
+
+#collectionTabs .player-config-tab.active .collection-badge {
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.collection-tab-label {
+  display: inline-block;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.collection-badge-list {
+  line-height: 22px;
+}
+
+.collection-summary-item {
+  display: inline-block;
+  margin: 0 8px 2px 0;
+  color: #334155;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.collection-preview-name {
+  display: inline-block;
+  margin: 0 0 2px 4px;
+  color: #0f172a;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+#panelRadar .section-title .collection-badge {
+  margin-left: 5px;
+}
+
+.collection-item-list {
+  max-height: 245px;
+}
+
+.collection-item-list .costume-collection-item,
+.collection-item-list .costume-collection-reward-item {
+  width: 100%;
+  min-height: 34px;
+  padding-right: 9px;
+}
+
+/* Dense collection pickers use the checklist component's lightweight mode.
+   Avoiding the global checkbox wrapper/filter keeps legacy HTA text input
+   responsive while the item catalog is visible. */
+#panelRadar .collection-item-list .checklist-lightweight-checkbox {
+  display: inline-block;
+  position: static;
+  width: 16px !important;
+  min-width: 16px;
+  max-width: 16px;
+  height: 16px !important;
+  min-height: 16px;
+  max-height: 16px;
+  margin: 1px 7px 0 0 !important;
+  padding: 0 !important;
+  opacity: 1;
+  filter: none;
+  vertical-align: top;
+  cursor: pointer;
+}
+
 #panelCombine .left-pane {
   width: 34%;
 }

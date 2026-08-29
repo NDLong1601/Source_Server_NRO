@@ -7,6 +7,103 @@ var radarBossDrops = [];
 var radarOptionEditIndex = -1;
 var radarMobDropEditIndex = -1;
 var radarBossDropEditIndex = -1;
+var selectedCollectionSection = "radar";
+var costumeCollectionAchievementRows = [];
+var costumeCollectionFilteredRows = [];
+var costumeCollectionSelectedItemIds = [];
+var costumeCollectionRewardItemIds = [];
+var costumeCollectionRewardQuantities = {};
+var costumeCollectionIsNew = false;
+var costumeCollectionItemSearchTimer = null;
+var costumeCollectionRewardSearchTimer = null;
+var fishBookRows = [];
+var fishBookFilteredRows = [];
+
+function CollectionSections() {
+  return [
+    ["radar", "Thẻ radar", "Thẻ sưu tầm, mốc kích hoạt và nguồn rơi", "RADAR", "radar"],
+    ["costume", "Cải trang", "Mốc thành tựu và bộ cải trang cần sưu tầm", "THỜI TRANG", "costume"],
+    ["fish", "Sổ tay cá", "Thẻ sưu tầm của hệ thống câu cá", "NGƯ PHỦ", "fish"]
+  ];
+}
+
+function CollectionBadge(text, tone, title) {
+  return '<span class="collection-badge ' + HtmlAttr(tone || "off") + '"'
+    + (title ? ' title="' + HtmlAttr(title) + '"' : "") + ">" + Html(text) + "</span>";
+}
+
+function CollectionRankBadge(value) {
+  var rank = parseInt(value, 10);
+  if (isNaN(rank) || rank < 0) rank = 0;
+  if (rank > 6) rank = 6;
+  return CollectionBadge("RANK " + rank, "rank-" + rank);
+}
+
+function CollectionRarityTone(value) {
+  var rarity = Trim(value).toLowerCase();
+  if (rarity.indexOf("huyền thoại") >= 0) return "legendary";
+  if (rarity.indexOf("sử thi") >= 0) return "epic";
+  if (rarity.indexOf("cực hiếm") >= 0 || rarity.indexOf("siêu hiếm") >= 0) return "mythic";
+  if (rarity.indexOf("không phổ thông") >= 0) return "uncommon";
+  if (rarity.indexOf("hiếm") >= 0) return "rare";
+  return "common";
+}
+
+function CollectionRarityBadge(value) {
+  return CollectionBadge(value || "Chưa đặt", CollectionRarityTone(value));
+}
+
+function CollectionRewardBadges(gold, gem, rewardItems) {
+  var html = "";
+  var goldValue = NormalizeInteger(gold || "0");
+  var gemValue = NormalizeInteger(gem || "0");
+  if (/^\d+$/.test(goldValue) && !/^0+$/.test(goldValue)) html += CollectionBadge(FormatNumber(goldValue) + " vàng", "gold");
+  if (/^\d+$/.test(gemValue) && !/^0+$/.test(gemValue)) html += CollectionBadge(FormatNumber(gemValue) + " ngọc", "gem");
+  if (rewardItems && rewardItems.ids && rewardItems.ids.length) {
+    html += CollectionBadge(rewardItems.ids.length + " vật phẩm", "item");
+  }
+  return html || CollectionBadge("Chưa có thưởng", "off");
+}
+
+function RenderCollectionTabs() {
+  var sections = CollectionSections();
+  var html = "";
+  for (var i = 0; i < sections.length; i++) {
+    var section = sections[i];
+    html += '<button type="button" class="player-config-tab' + (section[0] == selectedCollectionSection ? " active" : "")
+      + '" title="' + HtmlAttr(section[2]) + '" onclick="SelectCollectionSection(\'' + section[0] + '\')">'
+      + CollectionBadge(section[3], section[4]) + '<span class="collection-tab-label">' + Html(section[1]) + "</span></button>";
+  }
+  document.getElementById("collectionTabs").innerHTML = html;
+}
+
+function SelectCollectionSection(section) {
+  var sections = CollectionSections();
+  var valid = false;
+  for (var i = 0; i < sections.length; i++) if (sections[i][0] == section) valid = true;
+  if (!valid) return;
+  selectedCollectionSection = section;
+  RenderCollectionTabs();
+  document.getElementById("collectionRadarContent").className = "collection-content" + (section == "radar" ? " active" : "");
+  document.getElementById("collectionCostumeContent").className = "collection-content" + (section == "costume" ? " active" : "");
+  document.getElementById("collectionFishContent").className = "collection-content" + (section == "fish" ? " active" : "");
+  if (section == "radar") {
+    if (!optionRows || optionRows.length < 2) LoadOptions();
+    LoadRadarCards();
+  } else if (section == "costume") {
+    LoadCostumeCollectionAchievements();
+  } else if (section == "fish") {
+    LoadFishBookEntries();
+  }
+  QueueAdminSelectDecoration();
+  AdjustTableOffsetsLater();
+}
+
+function RefreshCollectionSection() {
+  if (selectedCollectionSection == "radar") LoadRadarCards();
+  else if (selectedCollectionSection == "costume") LoadCostumeCollectionAchievements();
+  else if (selectedCollectionSection == "fish") LoadFishBookEntries();
+}
 
 function RadarIconSrc(iconId) {
   iconId = Trim(iconId);
@@ -20,8 +117,8 @@ function UpdateRadarPreview() {
   var iconId = V("radarIconId");
   var src = RadarIconSrc(iconId);
   target.innerHTML = src
-    ? '<img src="' + HtmlAttr(src) + '" onerror="this.style.visibility=\'hidden\'"><b>Icon ' + Html(iconId) + '</b>'
-    : "Ch\u01b0a c\u00f3 icon";
+    ? '<img src="' + HtmlAttr(src) + '" onerror="this.style.visibility=\'hidden\'">' + CollectionBadge("ICON " + iconId, "radar")
+    : CollectionBadge("Chưa có icon", "off");
 }
 
 function LoadRadarCards() {
@@ -41,14 +138,16 @@ function RenderRadarCards() {
     var iconSrc = RadarIconSrc(r[1] || "");
     html += '<tr onclick="PickRadarCard(' + i + ')">';
     html += '<td class="radar-icon-cell">' + (iconSrc ? '<img class="radar-icon" src="' + HtmlAttr(iconSrc) + '" onerror="this.style.visibility=\'hidden\'">' : "") + "</td>";
-    html += "<td>" + Html(r[0] || "") + "</td>";
-    html += "<td>" + Html(r[1] || "") + "</td>";
-    html += "<td>" + Html(r[2] || "") + "</td>";
-    html += "<td>" + Html(r[3] || "") + "</td>";
-  html += "<td>" + Html(RadarTypeLabel(r[4] || "")) + "</td>";
-  html += "<td>" + Html(r[6] || "") + "</td>";
-    html += "<td>" + Html(RadarRequireLabel(r[8], r[9])) + "</td>";
-    html += "<td>" + Html(r[11] || "0") + "</td>";
+    html += "<td>" + CollectionBadge("#" + (r[0] || "?"), "id") + "</td>";
+    html += "<td>" + CollectionBadge("ICON " + (r[1] || "-1"), "radar") + "</td>";
+    html += "<td>" + CollectionRankBadge(r[2] || "0") + "</td>";
+    html += "<td>" + CollectionBadge((r[3] || "0") + " thẻ", "count") + "</td>";
+    html += "<td>" + CollectionBadge(r[4] == "1" ? "NHÂN VẬT" : "QUÁI", r[4] == "1" ? "character" : "mob") + "</td>";
+    html += "<td>" + Html(r[6] || "") + "</td>";
+    html += "<td>" + (!r[8] || r[8] == "-1"
+      ? CollectionBadge("KHÔNG YÊU CẦU", "off")
+      : CollectionBadge("THẺ " + r[8] + " · MỐC " + (r[9] || "0"), "require")) + "</td>";
+    html += "<td>" + CollectionBadge((r[11] || "0") + " option", "option") + "</td>";
     html += "</tr>";
   }
   html += "</tbody>";
@@ -573,12 +672,466 @@ function DeleteRadarCard() {
   }
 }
 
+function CostumeCollectionConditionLabel(value) {
+  return value == "1" ? "Bộ cải trang chỉ định" : "Đủ số cải trang";
+}
+
+function ParseCostumeCollectionItemIds(value) {
+  var result = [];
+  var parts = (value || "").split(",");
+  for (var i = 0; i < parts.length; i++) {
+    var id = Trim(parts[i]);
+    if (/^\d+$/.test(id) && !ArrayContains(result, id)) result.push(id);
+  }
+  return result;
+}
+
+function NextCostumeCollectionAchievementId() {
+  var maximum = 0;
+  for (var i = 1; i < costumeCollectionAchievementRows.length; i++) {
+    var id = parseInt(costumeCollectionAchievementRows[i][0], 10);
+    if (!isNaN(id) && id > maximum) maximum = id;
+  }
+  return maximum + 1;
+}
+
+function LoadCostumeCollectionAchievements() {
+  LoadItemCatalog(false);
+  costumeCollectionAchievementRows = ParseTsv(RunAdmin("listcostumecollectionachievements", {}));
+  FilterCostumeCollectionAchievements();
+  if (costumeCollectionFilteredRows.length > 1) {
+    PickCostumeCollectionAchievement(1);
+  } else {
+    NewCostumeCollectionAchievement();
+  }
+  Msg("costumeCollectionMessage", costumeCollectionAchievementRows.length > 1
+    ? "Đã tải " + (costumeCollectionAchievementRows.length - 1) + " mốc thành tựu cải trang."
+    : "Chưa có mốc thành tựu cải trang.");
+  AdjustTableOffsets();
+}
+
+function FilterCostumeCollectionAchievements() {
+  var query = Trim(V("costumeCollectionSearch")).toLowerCase();
+  costumeCollectionFilteredRows = [costumeCollectionAchievementRows[0] || []];
+  var html = "<thead><tr><th>ID</th><th>Tên mốc</th><th>Điều kiện</th><th>Tiến độ yêu cầu</th><th>Phần thưởng</th></tr></thead><tbody>";
+  for (var i = 1; i < costumeCollectionAchievementRows.length; i++) {
+    var row = costumeCollectionAchievementRows[i];
+    if (query && row.join(" ").toLowerCase().indexOf(query) < 0) continue;
+    costumeCollectionFilteredRows.push(row);
+    var condition = row[3] == "1"
+      ? CollectionBadge("THEO BỘ", "theme", CostumeCollectionConditionLabel(row[3]))
+      : CollectionBadge("SỐ LƯỢNG", "count", CostumeCollectionConditionLabel(row[3]));
+    var requiredCount = row[3] == "1" ? ParseCostumeCollectionItemIds(row[5]).length : (row[4] || "0");
+    var required = CollectionBadge(requiredCount + " cải trang", row[3] == "1" ? "costume" : "count");
+    var rewardItems = ParseCostumeCollectionRewardItems(row[8] || "");
+    var reward = CollectionRewardBadges(row[6], row[7], rewardItems);
+    html += '<tr onclick="PickCostumeCollectionAchievement(' + (costumeCollectionFilteredRows.length - 1) + ')">';
+    html += "<td>" + CollectionBadge("#" + row[0], "id") + "</td><td>" + Html(row[1]) + "</td><td>" + condition + "</td>";
+    html += "<td>" + required + "</td><td class=\"collection-badge-list\">" + reward + "</td></tr>";
+  }
+  document.getElementById("costumeCollectionAchievementsTable").innerHTML = html + "</tbody>";
+}
+
+function PickCostumeCollectionAchievement(index) {
+  var row = costumeCollectionFilteredRows[index];
+  if (!row) return;
+  costumeCollectionIsNew = false;
+  Set("costumeCollectionId", row[0] || "");
+  Set("costumeCollectionName", row[1] || "");
+  Set("costumeCollectionDescription", row[2] || "");
+  Set("costumeCollectionCondition", row[3] || "0");
+  Set("costumeCollectionTarget", row[4] || "0");
+  Set("costumeCollectionRewardGold", row[6] || "0");
+  Set("costumeCollectionRewardGem", row[7] || "0");
+  costumeCollectionSelectedItemIds = ParseCostumeCollectionItemIds(row[5] || "");
+  ApplyCostumeCollectionRewardItems(row[8] || "", false);
+  UpdateCostumeCollectionCondition();
+}
+
+function NewCostumeCollectionAchievement() {
+  costumeCollectionIsNew = true;
+  Set("costumeCollectionId", NextCostumeCollectionAchievementId());
+  Set("costumeCollectionName", "");
+  Set("costumeCollectionDescription", "");
+  Set("costumeCollectionCondition", "0");
+  Set("costumeCollectionTarget", "10");
+  Set("costumeCollectionRewardGold", "0");
+  Set("costumeCollectionRewardGem", "0");
+  Set("costumeCollectionItemSearch", "");
+  Set("costumeCollectionRewardSearch", "");
+  costumeCollectionSelectedItemIds = [];
+  costumeCollectionRewardItemIds = [];
+  costumeCollectionRewardQuantities = {};
+  UpdateCostumeCollectionCondition();
+}
+
+function RenderCostumeCollectionEditorSummary() {
+  var summary = document.getElementById("costumeCollectionSummary");
+  if (!summary) return;
+  var isTheme = V("costumeCollectionCondition") == "1";
+  var target = isTheme ? costumeCollectionSelectedItemIds.length : (V("costumeCollectionTarget") || "0");
+  var html = CollectionBadge(costumeCollectionIsNew ? "MỐC MỚI" : "MỐC #" + V("costumeCollectionId"), costumeCollectionIsNew ? "new" : "id");
+  html += CollectionBadge(isTheme ? "THEO BỘ" : "SỐ LƯỢNG", isTheme ? "theme" : "count");
+  html += CollectionBadge(target + " cải trang", "costume");
+  html += CollectionRewardBadges(V("costumeCollectionRewardGold"), V("costumeCollectionRewardGem"), {
+    ids: costumeCollectionRewardItemIds
+  });
+  summary.innerHTML = html;
+}
+
+function CostumeCollectionSelectedItemMap() {
+  var result = {};
+  for (var i = 0; i < costumeCollectionSelectedItemIds.length; i++) result[costumeCollectionSelectedItemIds[i]] = true;
+  return result;
+}
+
+function CostumeCollectionCostumeRows() {
+  var rows = [itemCatalogRows[0] || ["id", "name", "description", "type", "gender", "icon"]];
+  for (var i = 1; i < itemCatalogRows.length; i++) {
+    if (itemCatalogRows[i][3] == "5") rows.push(itemCatalogRows[i]);
+  }
+  return rows;
+}
+
+function RenderCostumeCollectionItemPicker() {
+  var selected = CostumeCollectionSelectedItemMap();
+  var query = V("costumeCollectionItemSearch");
+  RenderItemPicker({
+    listId: "costumeCollectionItemList",
+    rows: CostumeCollectionCostumeRows(),
+    selected: selected,
+    selectedOrder: costumeCollectionSelectedItemIds,
+    query: query,
+    toggleFunction: "ToggleCostumeCollectionItem",
+    idPrefix: "costumeCollectionItem",
+    itemClass: "costume-collection-item",
+    lightweightCheckbox: true,
+    limit: Trim(query) ? 60 : 24
+  });
+  UpdateCostumeCollectionItemSummary();
+}
+
+function UpdateCostumeCollectionItemSummary() {
+  var summary = document.getElementById("costumeCollectionItemSummary");
+  if (!costumeCollectionSelectedItemIds.length) {
+    summary.innerHTML = CollectionBadge("CHƯA CHỌN", "off") + " Nhập ID hoặc tên để thêm cải trang vào bộ.";
+  } else {
+    var html = CollectionBadge(costumeCollectionSelectedItemIds.length + " CẢI TRANG", "costume");
+    var visibleCount = Math.min(6, costumeCollectionSelectedItemIds.length);
+    for (var i = 0; i < visibleCount; i++) {
+      var itemId = costumeCollectionSelectedItemIds[i];
+      html += CollectionBadge("#" + itemId, "id", ItemCatalogName(itemId));
+    }
+    if (costumeCollectionSelectedItemIds.length > visibleCount) {
+      html += CollectionBadge("+" + (costumeCollectionSelectedItemIds.length - visibleCount), "more");
+    }
+    summary.innerHTML = html;
+  }
+}
+
+function ToggleCostumeCollectionItem(itemId, checked) {
+  var index = ArrayIndexOf(costumeCollectionSelectedItemIds, itemId);
+  if (checked && index < 0) costumeCollectionSelectedItemIds.push(itemId);
+  if (!checked && index >= 0) costumeCollectionSelectedItemIds.splice(index, 1);
+  var checkbox = document.getElementById("costumeCollectionItem_" + itemId);
+  if (checkbox && checkbox.parentNode) {
+    checkbox.parentNode.className = "option-picker-item costume-collection-item"
+      + (checked ? " checklist-item-selected" : "");
+  }
+  UpdateCostumeCollectionCondition(false);
+  UpdateCostumeCollectionItemSummary();
+}
+
+function ScheduleCostumeCollectionItemPicker() {
+  if (costumeCollectionItemSearchTimer) window.clearTimeout(costumeCollectionItemSearchTimer);
+  costumeCollectionItemSearchTimer = window.setTimeout(function () {
+    costumeCollectionItemSearchTimer = null;
+    RenderCostumeCollectionItemPicker();
+  }, 120);
+}
+
+function ParseCostumeCollectionRewardItems(value) {
+  var result = { ids: [], quantities: {} };
+  var parts = (value || "").split(",");
+  for (var i = 0; i < parts.length; i++) {
+    var match = /^\s*(\d+)\s*:\s*(\d+)\s*$/.exec(parts[i]);
+    if (!match || ArrayContains(result.ids, match[1])) continue;
+    result.ids.push(match[1]);
+    result.quantities[match[1]] = match[2];
+  }
+  return result;
+}
+
+function ApplyCostumeCollectionRewardItems(value, renderNow) {
+  var parsed = ParseCostumeCollectionRewardItems(value);
+  costumeCollectionRewardItemIds = parsed.ids;
+  costumeCollectionRewardQuantities = parsed.quantities;
+  if (renderNow !== false) RenderCostumeCollectionRewardPicker();
+}
+
+function CostumeCollectionRewardItemMap() {
+  var result = {};
+  for (var i = 0; i < costumeCollectionRewardItemIds.length; i++) result[costumeCollectionRewardItemIds[i]] = true;
+  return result;
+}
+
+function RenderCostumeCollectionRewardPicker() {
+  var selected = CostumeCollectionRewardItemMap();
+  var query = V("costumeCollectionRewardSearch");
+  RenderItemPicker({
+    listId: "costumeCollectionRewardList",
+    selected: selected,
+    selectedOrder: costumeCollectionRewardItemIds,
+    paramValues: costumeCollectionRewardQuantities,
+    query: query,
+    toggleFunction: "ToggleCostumeCollectionRewardItem",
+    paramFunction: "SetCostumeCollectionRewardQuantity",
+    idPrefix: "costumeCollectionReward",
+    itemClass: "costume-collection-reward-item",
+    showParam: true,
+    lightweightCheckbox: true,
+    limit: Trim(query) ? 60 : 24,
+    emptyText: "Không tìm thấy vật phẩm phù hợp."
+  });
+  UpdateCostumeCollectionRewardSummary();
+}
+
+function UpdateCostumeCollectionRewardSummary() {
+  var summary = document.getElementById("costumeCollectionRewardSummary");
+  if (!costumeCollectionRewardItemIds.length) {
+    summary.innerHTML = CollectionBadge("CHƯA CHỌN", "off") + " Nhập ID hoặc tên để thêm vật phẩm thưởng.";
+    RenderCostumeCollectionEditorSummary();
+    return;
+  }
+  var html = CollectionBadge(costumeCollectionRewardItemIds.length + " VẬT PHẨM", "item");
+  for (var i = 0; i < costumeCollectionRewardItemIds.length && i < 3; i++) {
+    var id = costumeCollectionRewardItemIds[i];
+    html += CollectionBadge("x" + (costumeCollectionRewardQuantities[id] || "1"), "quantity");
+    html += '<span class="collection-summary-item">' + Html(id + " - " + ItemCatalogName(id)) + "</span>";
+  }
+  if (costumeCollectionRewardItemIds.length > 3) {
+    html += CollectionBadge("+" + (costumeCollectionRewardItemIds.length - 3), "more");
+  }
+  summary.innerHTML = html;
+  RenderCostumeCollectionEditorSummary();
+}
+
+function ToggleCostumeCollectionRewardItem(itemId, checked) {
+  var index = ArrayIndexOf(costumeCollectionRewardItemIds, itemId);
+  if (checked && index < 0) {
+    if (costumeCollectionRewardItemIds.length >= 50) {
+      var overLimitCheckbox = document.getElementById("costumeCollectionReward_" + itemId);
+      if (overLimitCheckbox) overLimitCheckbox.checked = false;
+      Msg("costumeCollectionMessage", "Chỉ được chọn tối đa 50 vật phẩm thưởng.");
+      return;
+    }
+    costumeCollectionRewardItemIds.push(itemId);
+    costumeCollectionRewardQuantities[itemId] = "1";
+  }
+  if (!checked && index >= 0) {
+    costumeCollectionRewardItemIds.splice(index, 1);
+    delete costumeCollectionRewardQuantities[itemId];
+  }
+  SyncCostumeCollectionRewardItem(itemId, checked);
+  UpdateCostumeCollectionRewardSummary();
+}
+
+function SetCostumeCollectionRewardQuantity(itemId, quantity) {
+  costumeCollectionRewardQuantities[itemId] = Trim(quantity);
+  UpdateCostumeCollectionRewardSummary();
+}
+
+function SyncCostumeCollectionRewardItem(itemId, checked) {
+  var checkbox = document.getElementById("costumeCollectionReward_" + itemId);
+  if (!checkbox || !checkbox.parentNode) return;
+  var row = checkbox.parentNode;
+  row.className = "option-picker-item costume-collection-reward-item"
+    + (checked ? " checklist-item-selected checklist-item-with-param" : "");
+  var inputs = row.getElementsByTagName("input");
+  for (var index = inputs.length - 1; index >= 0; index--) {
+    if (inputs[index] != checkbox) row.removeChild(inputs[index]);
+  }
+  if (!checked) return;
+  var quantityInput = document.createElement("input");
+  quantityInput.className = "checklist-param-input";
+  quantityInput.value = costumeCollectionRewardQuantities[itemId] || "1";
+  quantityInput.title = "Số lượng";
+  quantityInput.onchange = function () { SetCostumeCollectionRewardQuantity(itemId, this.value); };
+  row.appendChild(quantityInput);
+}
+
+function ScheduleCostumeCollectionRewardPicker() {
+  if (costumeCollectionRewardSearchTimer) window.clearTimeout(costumeCollectionRewardSearchTimer);
+  costumeCollectionRewardSearchTimer = window.setTimeout(function () {
+    costumeCollectionRewardSearchTimer = null;
+    RenderCostumeCollectionRewardPicker();
+  }, 120);
+}
+
+function CollectCostumeCollectionRewardItems() {
+  var rewards = [];
+  for (var i = 0; i < costumeCollectionRewardItemIds.length; i++) {
+    var itemId = costumeCollectionRewardItemIds[i];
+    var quantity = NormalizeInteger(costumeCollectionRewardQuantities[itemId] || "");
+    if (!/^\d+$/.test(quantity) || parseInt(quantity, 10) < 1 || parseInt(quantity, 10) > 100000000) {
+      Msg("costumeCollectionMessage", "Số lượng thưởng của vật phẩm " + itemId + " phải từ 1 đến 100.000.000.");
+      return null;
+    }
+    rewards.push({ itemId: parseInt(itemId, 10), quantity: parseInt(quantity, 10) });
+  }
+  return rewards;
+}
+
+function UpdateCostumeCollectionCondition(renderPickers) {
+  var isTheme = V("costumeCollectionCondition") == "1";
+  var themeEditor = document.getElementById("costumeCollectionThemeEditor");
+  themeEditor.className = isTheme ? "option-picker-box" : "option-picker-box admin-hidden";
+  document.getElementById("costumeCollectionTargetLabel").innerText = isTheme ? "Số cải trang trong bộ" : "Số cải trang cần có";
+  document.getElementById("costumeCollectionTarget").disabled = isTheme;
+  if (isTheme) Set("costumeCollectionTarget", costumeCollectionSelectedItemIds.length);
+  if (renderPickers !== false) {
+    RenderCostumeCollectionItemPicker();
+    RenderCostumeCollectionRewardPicker();
+    QueueAdminSelectDecoration();
+  }
+  RenderCostumeCollectionEditorSummary();
+}
+
+function SaveCostumeCollectionAchievement() {
+  var id = Trim(V("costumeCollectionId"));
+  var name = Trim(V("costumeCollectionName"));
+  var condition = V("costumeCollectionCondition");
+  var target = Trim(V("costumeCollectionTarget"));
+  var gold = NormalizeInteger(V("costumeCollectionRewardGold"));
+  var gem = NormalizeInteger(V("costumeCollectionRewardGem"));
+  if (!/^\d+$/.test(id) || parseInt(id, 10) < 1 || parseInt(id, 10) > 32767) {
+    Msg("costumeCollectionMessage", "ID mốc phải là số từ 1 đến 32767."); return;
+  }
+  if (!name) { Msg("costumeCollectionMessage", "Cần nhập tên thành tựu."); return; }
+  if (condition != "0" && condition != "1") { Msg("costumeCollectionMessage", "Điều kiện thành tựu không hợp lệ."); return; }
+  if (condition == "0" && (!/^\d+$/.test(target) || parseInt(target, 10) < 1)) {
+    Msg("costumeCollectionMessage", "Số cải trang cần có phải là số nguyên dương."); return;
+  }
+  if (condition == "1" && !costumeCollectionSelectedItemIds.length) {
+    Msg("costumeCollectionMessage", "Hãy chọn ít nhất một cải trang cho bộ sưu tầm."); return;
+  }
+  if (!/^\d+$/.test(gold) || !/^\d+$/.test(gem)) {
+    Msg("costumeCollectionMessage", "Thưởng vàng và ngọc phải là số không âm."); return;
+  }
+  var rewardItems = CollectCostumeCollectionRewardItems();
+  if (rewardItems == null) return;
+  var text = RunAdmin("savecostumecollectionachievement", {
+    Id: id,
+    Name: V("costumeCollectionName"),
+    Description: V("costumeCollectionDescription"),
+    CollectionCondition: condition,
+    RequiredCount: condition == "1" ? costumeCollectionSelectedItemIds.length : target,
+    RequiredTemplateIdsJson: JSON.stringify(costumeCollectionSelectedItemIds),
+    Gold: gold,
+    Gem: gem,
+    RewardItemsJson: JSON.stringify(rewardItems)
+  });
+  Msg("costumeCollectionMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadCostumeCollectionAchievements();
+}
+
+function DeleteCostumeCollectionAchievement() {
+  var id = Trim(V("costumeCollectionId"));
+  if (!/^\d+$/.test(id)) return;
+  if (!window.confirm("Xóa mốc thành tựu cải trang ID " + id + "?")) return;
+  var text = RunAdmin("deletecostumecollectionachievement", { Id: id });
+  Msg("costumeCollectionMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadCostumeCollectionAchievements();
+}
+
+function FishBookRankLabel(value) {
+  return "Rank " + (value || "0");
+}
+
+function LoadFishBookEntries() {
+  fishBookRows = ParseTsv(RunAdmin("listfishbookentries", {}));
+  FilterFishBookEntries();
+  if (fishBookFilteredRows.length > 1) PickFishBookEntry(1);
+  else ClearFishBookEntry();
+  Msg("fishBookMessage", fishBookRows.length > 1
+    ? "Đã tải " + (fishBookRows.length - 1) + " thẻ Sổ Tay Ngư Phủ."
+    : "Chưa tải được cấu hình Sổ Tay Ngư Phủ.");
+  AdjustTableOffsets();
+}
+
+function FilterFishBookEntries() {
+  var query = Trim(V("fishBookSearch")).toLowerCase();
+  fishBookFilteredRows = [fishBookRows[0] || []];
+  var html = "<thead><tr><th>Ảnh</th><th>ID</th><th>Cấp</th><th>Tên hiển thị</th><th>Độ hiếm</th><th>Hạng</th><th>Mob</th></tr></thead><tbody>";
+  for (var i = 1; i < fishBookRows.length; i++) {
+    var row = fishBookRows[i];
+    if (query && row.join(" ").toLowerCase().indexOf(query) < 0) continue;
+    fishBookFilteredRows.push(row);
+    var iconSrc = RadarIconSrc(row[2] || "");
+    var tier = parseInt(row[0], 10) - 2124 + 1;
+    html += '<tr onclick="PickFishBookEntry(' + (fishBookFilteredRows.length - 1) + ')">';
+    html += '<td class="radar-icon-cell">' + (iconSrc ? '<img class="radar-icon" src="' + HtmlAttr(iconSrc) + '" onerror="this.style.visibility=\'hidden\'">' : "") + "</td>";
+    html += "<td>" + CollectionBadge("#" + row[0], "id") + "</td><td>" + CollectionBadge("CẤP " + tier, "fish") + "</td><td>" + Html(row[4]) + "</td>";
+    html += "<td>" + CollectionRarityBadge(row[5]) + "</td><td>" + CollectionRankBadge(row[7]) + "</td><td>" + CollectionBadge("MOB " + row[6], "mob") + "</td></tr>";
+  }
+  document.getElementById("fishBookEntriesTable").innerHTML = html + "</tbody>";
+}
+
+function PickFishBookEntry(index) {
+  var row = fishBookFilteredRows[index];
+  if (!row) return;
+  var tier = parseInt(row[0], 10) - 2124 + 1;
+  Set("fishBookItemId", row[0] || "");
+  Set("fishBookTier", tier);
+  Set("fishBookItemName", row[1] || "");
+  Set("fishBookName", row[4] || "");
+  Set("fishBookRarity", row[5] || "");
+  Set("fishBookMobId", row[6] || "-1");
+  Set("fishBookRank", row[7] || "0");
+  var iconSrc = RadarIconSrc(row[2] || "");
+  document.getElementById("fishBookPreview").innerHTML = (iconSrc ? '<img class="radar-icon" src="' + HtmlAttr(iconSrc) + '" onerror="this.style.visibility=\'hidden\'"> ' : "")
+    + CollectionBadge("CẤP " + tier, "fish") + CollectionRarityBadge(row[5]) + CollectionRankBadge(row[7])
+    + '<span class="collection-preview-name">' + Html(row[4] || "") + "</span>";
+  QueueAdminSelectDecoration();
+}
+
+function ClearFishBookEntry() {
+  Set("fishBookItemId", ""); Set("fishBookTier", ""); Set("fishBookItemName", "");
+  Set("fishBookName", ""); Set("fishBookRarity", ""); Set("fishBookMobId", "-1"); Set("fishBookRank", "0");
+  document.getElementById("fishBookPreview").innerHTML = CollectionBadge("CHƯA CHỌN", "off") + " Chọn một loài cá để cấu hình thẻ sưu tầm.";
+}
+
+function SaveFishBookEntry() {
+  var itemId = Trim(V("fishBookItemId"));
+  var name = Trim(V("fishBookName"));
+  var rarity = Trim(V("fishBookRarity"));
+  var mobId = Trim(V("fishBookMobId"));
+  var rank = V("fishBookRank");
+  if (!/^\d+$/.test(itemId) || parseInt(itemId, 10) < 2124 || parseInt(itemId, 10) > 2138) {
+    Msg("fishBookMessage", "Hãy chọn một thẻ cá hợp lệ."); return;
+  }
+  if (!name || !rarity) { Msg("fishBookMessage", "Tên hiển thị và độ hiếm không được để trống."); return; }
+  if (!/^-?\d+$/.test(mobId) || parseInt(mobId, 10) < -1 || parseInt(mobId, 10) > 32767) {
+    Msg("fishBookMessage", "Mob template phải từ -1 đến 32767."); return;
+  }
+  if (!/^[0-6]$/.test(rank)) { Msg("fishBookMessage", "Hạng thẻ phải từ 0 đến 6."); return; }
+  var text = RunAdmin("savefishbookentry", {
+    Id: itemId,
+    FishBookName: name,
+    FishBookRarity: rarity,
+    FishBookMobId: mobId,
+    FishBookRank: rank
+  });
+  Msg("fishBookMessage", StatusText(text));
+  if (!IsAdminError(text)) LoadFishBookEntries();
+}
+
 RegisterTab({
   id: "radar", view: "radar.html", panelId: "panelRadar", navId: "navRadar",
-  title: "Sổ sưu tầm", subtitle: "Quản lý thẻ radar, ảnh icon và option kích hoạt theo từng mốc",
+  title: "Sổ sưu tầm", subtitle: "Cấu hình thẻ radar, thành tựu cải trang và Sổ Tay Ngư Phủ",
   onOpen: function () {
-    if (!optionRows || optionRows.length < 2) LoadOptions();
-    LoadRadarCards();
+    RenderCollectionTabs();
+    SelectCollectionSection(selectedCollectionSection);
   },
-  onRefresh: function () { LoadRadarCards(); }
+  onRefresh: function () { RefreshCollectionSection(); }
 });

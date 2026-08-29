@@ -1,5 +1,8 @@
 <div id="panelRadar" class="panel">
-  <div class="columns">
+  <div id="collectionTabs" class="player-config-tabs"></div>
+
+  <div id="collectionRadarContent" class="collection-content active">
+    <div class="columns">
     <div class="left-pane">
       <div class="toolbar">
         <input type="text" id="radarSearch" placeholder="T&#236;m ID, icon ho&#7863;c t&#234;n th&#7867;">
@@ -18,7 +21,7 @@
     </div>
 
     <div class="right-pane">
-      <div class="section-title">Th&#244;ng tin th&#7867; s&#432;u t&#7847;m</div>
+      <div class="section-title">Th&#244;ng tin th&#7867; s&#432;u t&#7847;m <span class="collection-badge radar">RADAR</span></div>
       <div class="radar-preview" id="radarPreview"></div>
       <div class="row">
         <div class="cell"><label>ID th&#7867; / item</label><input type="text" id="radarId"></div>
@@ -152,6 +155,106 @@
         <div class="mini-table"><table id="radarBossDropsTable"></table></div>
       </div>
       <div id="radarMessage" class="message"></div>
+    </div>
+    </div>
+  </div>
+
+  <div id="collectionCostumeContent" class="collection-content">
+    <div class="columns">
+      <div class="left-pane">
+        <div class="toolbar">
+          <input type="text" id="costumeCollectionSearch" placeholder="Tìm ID, tên hoặc mô tả" onkeyup="FilterCostumeCollectionAchievements()">
+          <button type="button" onclick="LoadCostumeCollectionAchievements()">Tải lại</button>
+          <button type="button" onclick="NewCostumeCollectionAchievement()">Thêm mới</button>
+        </div>
+        <div class="table-wrap"><table id="costumeCollectionAchievementsTable"></table></div>
+      </div>
+
+      <div class="right-pane">
+        <div class="section-title">Mốc thành tựu sưu tầm cải trang <span class="collection-badge costume">THỜI TRANG</span></div>
+        <div id="costumeCollectionSummary" class="collection-summary">Chọn một mốc để cấu hình.</div>
+        <div class="row">
+          <div class="cell"><label>ID mốc</label><input type="text" id="costumeCollectionId" onchange="RenderCostumeCollectionEditorSummary()"></div>
+          <div class="cell">
+            <label>Điều kiện</label>
+            <select id="costumeCollectionCondition" onchange="UpdateCostumeCollectionCondition()">
+              <option value="0">Đủ số cải trang</option>
+              <option value="1">Hoàn thành bộ chỉ định</option>
+            </select>
+          </div>
+        </div>
+        <label>Tên thành tựu</label><input type="text" id="costumeCollectionName">
+        <label>Mô tả hiển thị</label><textarea id="costumeCollectionDescription"></textarea>
+        <div class="row">
+          <div class="cell"><label id="costumeCollectionTargetLabel">Số cải trang cần có</label><input type="text" id="costumeCollectionTarget" value="10" onchange="RenderCostumeCollectionEditorSummary()"></div>
+          <div class="cell"><label>Thưởng vàng</label><input type="text" id="costumeCollectionRewardGold" value="0" onchange="RenderCostumeCollectionEditorSummary()"></div>
+          <div class="cell"><label>Thưởng ngọc</label><input type="text" id="costumeCollectionRewardGem" value="0" onchange="RenderCostumeCollectionEditorSummary()"></div>
+        </div>
+
+        <div class="option-picker-box collection-reward-picker">
+          <div class="section-title">Vật phẩm thưởng <span class="collection-badge item">TÙY CHỈNH</span></div>
+          <div class="option-picker-toolbar"><input type="text" id="costumeCollectionRewardSearch" placeholder="Tìm ID hoặc tên vật phẩm" onkeyup="ScheduleCostumeCollectionRewardPicker()"></div>
+          <div id="costumeCollectionRewardSummary" class="option-picker-summary">Chưa chọn vật phẩm thưởng.</div>
+          <div id="costumeCollectionRewardList" class="option-picker-list collection-item-list"></div>
+        </div>
+
+        <div id="costumeCollectionThemeEditor" class="option-picker-box admin-hidden">
+          <div class="section-title">Bộ cải trang cần sưu tầm <span class="collection-badge theme">ĐIỀU KIỆN</span></div>
+          <div class="option-picker-toolbar"><input type="text" id="costumeCollectionItemSearch" placeholder="Tìm ID hoặc tên cải trang" onkeyup="ScheduleCostumeCollectionItemPicker()"></div>
+          <div id="costumeCollectionItemSummary" class="option-picker-summary">Chưa chọn cải trang nào.</div>
+          <div id="costumeCollectionItemList" class="option-picker-list collection-item-list"></div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="primary" onclick="SaveCostumeCollectionAchievement()">Lưu mốc thành tựu</button>
+          <button type="button" onclick="NewCostumeCollectionAchievement()">Nhập mới</button>
+          <button type="button" class="danger" onclick="DeleteCostumeCollectionAchievement()">Xóa mốc</button>
+        </div>
+        <div class="event-help">Mốc theo số lượng đếm các ngoại hình cải trang khác nhau. Mốc theo bộ chỉ định dùng bộ chọn chỉ hiển thị vật phẩm loại Cải trang; mỗi ngoại hình trong bộ chỉ được tính một lần. Vật phẩm thưởng dùng option mặc định của template; sửa số lượng ngay cạnh vật phẩm đã chọn. Khi ô tìm kiếm trống, danh sách chỉ hiện một số gợi ý để Admin luôn phản hồi nhanh; nhập ID hoặc tên để tìm các vật phẩm còn lại.</div>
+        <div id="costumeCollectionMessage" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="collectionFishContent" class="collection-content">
+    <div class="columns">
+      <div class="left-pane">
+        <div class="toolbar">
+          <input type="text" id="fishBookSearch" placeholder="Tìm ID, tên hoặc độ hiếm" onkeyup="FilterFishBookEntries()">
+          <button type="button" onclick="LoadFishBookEntries()">Tải lại</button>
+        </div>
+        <div class="table-wrap"><table id="fishBookEntriesTable"></table></div>
+      </div>
+
+      <div class="right-pane">
+        <div class="section-title">Thẻ Sổ Tay Ngư Phủ <span class="collection-badge fish">NGƯ PHỦ</span></div>
+        <div id="fishBookPreview" class="collection-summary">Chọn một loài cá để cấu hình thẻ sưu tầm.</div>
+        <div class="row">
+          <div class="cell"><label>ID vật phẩm cá</label><input type="text" id="fishBookItemId" readonly></div>
+          <div class="cell"><label>Cấp cá</label><input type="text" id="fishBookTier" readonly></div>
+        </div>
+        <label>Tên vật phẩm gốc</label><input type="text" id="fishBookItemName" readonly>
+        <label>Tên hiển thị trong sổ tay</label><input type="text" id="fishBookName">
+        <div class="row">
+          <div class="cell"><label>Độ hiếm</label><input type="text" id="fishBookRarity"></div>
+          <div class="cell">
+            <label>Hạng thẻ</label>
+            <select id="fishBookRank">
+              <option value="0">Rank 0</option>
+              <option value="1">Rank 1</option>
+              <option value="2">Rank 2</option>
+              <option value="3">Rank 3</option>
+              <option value="4">Rank 4</option>
+              <option value="5">Rank 5</option>
+              <option value="6">Rank 6</option>
+            </select>
+          </div>
+        </div>
+        <label>Mob template minh họa</label><input type="text" id="fishBookMobId" placeholder="Ví dụ: 86">
+        <div class="actions"><button type="button" class="primary" onclick="SaveFishBookEntry()">Lưu thẻ Sổ Tay Ngư Phủ</button></div>
+        <div class="event-help">ID vật phẩm và cấp cá được cố định theo hệ thống câu cá. Các thay đổi tên, độ hiếm, hạng và mob minh họa áp dụng khi người chơi mở sổ tay tiếp theo (tối đa khoảng 10 giây).</div>
+        <div id="fishBookMessage" class="message"></div>
+      </div>
     </div>
   </div>
 </div>

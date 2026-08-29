@@ -1,7 +1,11 @@
 package nro.models.fishing;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import nro.models.data.LocalManager;
 import nro.models.item.Item;
 import nro.models.network.Message;
 import nro.models.player.ItemEvent;
@@ -50,6 +54,11 @@ public final class FishingProgressService {
     private static final int[] QUEST_MIN_TIER = {1, 5, 9, 13};
     private static final int[] QUEST_MAX_TIER = {4, 8, 12, 15};
     private static final int[] QUEST_TARGET = {5, 8, 5, 2};
+    private static final long FISH_BOOK_CONFIG_CACHE_MILLIS = 10_000L;
+
+    private volatile boolean fishBookSchemaReady;
+    private volatile FishBookEntry[] fishBookEntries = defaultFishBookEntries();
+    private volatile long fishBookEntriesRefreshAt;
 
     private FishingProgressService() {
     }
@@ -75,7 +84,8 @@ public final class FishingProgressService {
             data.fishingFishCatchCounts[index]++;
         }
         if (firstCatch) {
-            Service.gI().sendThongBao(player, "Sổ Tay Ngư Phủ đã ghi nhận loài mới: " + FISH_NAMES[index] + ".");
+            Service.gI().sendThongBao(player, "Sổ Tay Ngư Phủ đã ghi nhận loài mới: "
+                    + getFishBookEntries()[index].name + ".");
         }
         updateQuestProgress(player, index + 1);
     }
@@ -106,24 +116,26 @@ public final class FishingProgressService {
      * fish sprite mob, which the native radar screen renders in its preview.
      */
     public void appendFishBookEntries(Message message, Player player) throws Exception {
+        FishBookEntry[] entries = getFishBookEntries();
         for (int index = 0; index < FISH_NAMES.length; index++) {
             short itemId = (short) (FishingItems.FISH_SILVER + index);
             int bit = 1 << index;
             boolean caught = (player.itemEvent.fishingFishCaughtMask & bit) != 0;
             boolean giant = (player.itemEvent.fishingGiantFishCaughtMask & bit) != 0;
             int tier = index + 1;
+            FishBookEntry entry = entries[index];
 
             message.writer().writeShort(itemId);
             message.writer().writeShort(ItemService.gI().getTemplate(itemId).iconID);
-            message.writer().writeByte(bookRank(tier));
+            message.writer().writeByte(entry.rank);
             message.writer().writeByte(caught ? 1 : 0);
             message.writer().writeByte(1);
             // The native collection screen applies its grey lock state from level 0.
             message.writer().writeByte(0);
-            message.writer().writeShort(FISH_BOOK_MOB_IDS[index]);
-            message.writer().writeUTF(FISH_NAMES[index]);
+            message.writer().writeShort(entry.mobTemplateId);
+            message.writer().writeUTF(entry.name);
             message.writer().writeUTF(caught
-                    ? "Cấp cá " + tier + " - " + FISH_RARITIES[index] + "\nĐã câu: "
+                    ? "Cấp cá " + tier + " - " + entry.rarity + "\nĐã câu: "
                             + player.itemEvent.fishingFishCatchCounts[index] + " lần"
                             + (giant ? "\nĐã bắt được phiên bản Khổng Lồ." : "\nChưa bắt được phiên bản Khổng Lồ.")
                     : "Chưa khám phá. Hãy câu được loài này để khôi phục màu sắc và ghi nhận vào sổ tay.");
@@ -131,6 +143,104 @@ public final class FishingProgressService {
             message.writer().writeByte(0);
             message.writer().writeByte(0);
         }
+    }
+
+    private FishBookEntry[] getFishBookEntries() {
+        long now = System.currentTimeMillis();
+        FishBookEntry[] cached = fishBookEntries;
+        if (cached != null && now < fishBookEntriesRefreshAt) {
+            return cached;
+        }
+        synchronized (this) {
+            now = System.currentTimeMillis();
+            if (fishBookEntries != null && now < fishBookEntriesRefreshAt) {
+                return fishBookEntries;
+            }
+            FishBookEntry[] loaded = defaultFishBookEntries();
+            try {
+                ensureFishBookSchema();
+                try (Connection connection = LocalManager.getConnection();
+                        PreparedStatement statement = connection.prepareStatement(
+                                "SELECT fish_item_id, display_name, rarity, mob_template_id, book_rank "
+                                + "FROM fishing_book_entry WHERE fish_item_id BETWEEN ? AND ?")) {
+                    statement.setShort(1, FishingItems.FISH_SILVER);
+                    statement.setShort(2, FishingItems.FISH_SEA_GOD_DRAGON);
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        while (resultSet.next()) {
+                            int index = resultSet.getShort("fish_item_id") - FishingItems.FISH_SILVER;
+                            if (index < 0 || index >= loaded.length) {
+                                continue;
+                            }
+                            FishBookEntry fallback = loaded[index];
+                            String name = nonBlank(resultSet.getString("display_name"), fallback.name);
+                            String rarity = nonBlank(resultSet.getString("rarity"), fallback.rarity);
+                            short mobTemplateId = (short) Math.max(Short.MIN_VALUE,
+                                    Math.min(Short.MAX_VALUE, resultSet.getInt("mob_template_id")));
+                            byte rank = (byte) Math.max(0, Math.min(6, resultSet.getInt("book_rank")));
+                            loaded[index] = new FishBookEntry(name, rarity, mobTemplateId, rank);
+                        }
+                    }
+                }
+            } catch (Exception exception) {
+                Logger.logException(FishingProgressService.class, exception,
+                        "Không thể tải cấu hình Sổ Tay Ngư Phủ");
+            }
+            fishBookEntries = loaded;
+            fishBookEntriesRefreshAt = now + FISH_BOOK_CONFIG_CACHE_MILLIS;
+            return loaded;
+        }
+    }
+
+    private void ensureFishBookSchema() throws Exception {
+        if (fishBookSchemaReady) {
+            return;
+        }
+        synchronized (this) {
+            if (fishBookSchemaReady) {
+                return;
+            }
+            LocalManager.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS fishing_book_entry ("
+                    + "fish_item_id SMALLINT NOT NULL,"
+                    + "display_name VARCHAR(120) NOT NULL,"
+                    + "rarity VARCHAR(80) NOT NULL,"
+                    + "mob_template_id SMALLINT NOT NULL DEFAULT -1,"
+                    + "book_rank TINYINT NOT NULL DEFAULT 0,"
+                    + "PRIMARY KEY (fish_item_id)"
+                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+            LocalManager.executeUpdate(
+                    "INSERT IGNORE INTO fishing_book_entry "
+                    + "(fish_item_id,display_name,rarity,mob_template_id,book_rank) VALUES "
+                    + "(2124,'Cá Bạc Nhỏ','Phổ thông',86,0),"
+                    + "(2125,'Cá Rô Đá','Phổ thông',87,0),"
+                    + "(2126,'Cá Chép Vàng','Phổ thông',88,0),"
+                    + "(2127,'Cá Lóc Săn Mồi','Không phổ thông',89,0),"
+                    + "(2128,'Cá Trê Khổng Lồ','Không phổ thông',90,1),"
+                    + "(2129,'Cá Hồi Bạc','Không phổ thông',91,1),"
+                    + "(2130,'Cá Tầm Thiết Giáp','Hiếm',92,1),"
+                    + "(2131,'Cá Ngừ Đại Dương','Hiếm',93,1),"
+                    + "(2132,'Cá Kiếm Lam','Hiếm',94,2),"
+                    + "(2133,'Cá Mập Trắng','Cao cấp',95,2),"
+                    + "(2134,'Cá Mập Đầu Búa','Cao cấp',96,2),"
+                    + "(2135,'Cá Mập Voi Khổng Lồ','Siêu hiếm',97,2),"
+                    + "(2136,'Quỷ Ngư Biển Sâu','Sử thi',98,3),"
+                    + "(2137,'Hải Long Lam Ngọc','Huyền thoại',99,3),"
+                    + "(2138,'Kim Long Hải Thần','Cực hiếm',100,3)");
+            fishBookSchemaReady = true;
+        }
+    }
+
+    private static FishBookEntry[] defaultFishBookEntries() {
+        FishBookEntry[] entries = new FishBookEntry[FISH_NAMES.length];
+        for (int index = 0; index < entries.length; index++) {
+            entries[index] = new FishBookEntry(FISH_NAMES[index], FISH_RARITIES[index],
+                    FISH_BOOK_MOB_IDS[index], bookRank(index + 1));
+        }
+        return entries;
+    }
+
+    private static String nonBlank(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 
     public boolean hasActiveQuest(Player player) {
@@ -342,7 +452,7 @@ public final class FishingProgressService {
         return difficulty >= QUEST_EASY && difficulty <= QUEST_EXTREME;
     }
 
-    private byte bookRank(int tier) {
+    private static byte bookRank(int tier) {
         if (tier <= 4) {
             return 0;
         }
@@ -353,5 +463,20 @@ public final class FishingProgressService {
             return 2;
         }
         return 3;
+    }
+
+    private static final class FishBookEntry {
+
+        private final String name;
+        private final String rarity;
+        private final short mobTemplateId;
+        private final byte rank;
+
+        private FishBookEntry(String name, String rarity, short mobTemplateId, byte rank) {
+            this.name = name;
+            this.rarity = rarity;
+            this.mobTemplateId = mobTemplateId;
+            this.rank = rank;
+        }
     }
 }

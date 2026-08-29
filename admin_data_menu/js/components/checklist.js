@@ -56,7 +56,10 @@ function ChecklistItemHtml(config, id, name, checked, param) {
     (checked && selectedClass ? " " + selectedClass : "") +
     (checked && config.showParam ? " checklist-item-with-param" : "");
   var displayText = config.showId === false ? name : id + " - " + name;
-  var html = '<div class="' + itemClass + '"><input type="checkbox" id="' + HtmlAttr(checkboxId) + '" value="' + HtmlAttr(id) + '"' +
+  var checkboxMode = config.lightweightCheckbox
+    ? ' data-admin-checkbox-skin="native" class="checklist-lightweight-checkbox"'
+    : "";
+  var html = '<div class="' + itemClass + '"><input type="checkbox"' + checkboxMode + ' id="' + HtmlAttr(checkboxId) + '" value="' + HtmlAttr(id) + '"' +
     (checked ? ' checked="checked"' : '') + ' onclick="' + config.toggleFunction + '(\'' + EscapeJs(id) + '\', this.checked)">' +
     '<label for="' + HtmlAttr(checkboxId) + '">' + Html(displayText) + '</label>';
   if (config.showParam && checked) {

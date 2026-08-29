@@ -57,6 +57,14 @@
     [string]$MilestonesJson = "[]",
     [string]$MobDropsJson = "[]",
     [string]$BossDropsJson = "[]",
+    [string]$CollectionCondition = "0",
+    [string]$RequiredCount = "0",
+    [string]$RequiredTemplateIdsJson = "[]",
+    [string]$RewardItemsJson = "[]",
+    [string]$FishBookName = "",
+    [string]$FishBookRarity = "",
+    [string]$FishBookMobId = "-1",
+    [string]$FishBookRank = "0",
     [string]$Enabled = "1",
     [string]$UseTimeRange = "0",
     [string]$TimeStart = "",
@@ -168,7 +176,7 @@ foreach ($paramName in @(
         "TabId", "TagName", "TypeShop", "TempId", "IsNew", "IsSell", "TypeSell", "Cost",
         "IconSpec", "OptionMode", "OptionId", "Param", "EventValue", "ExpRate", "ConfigKey", "ConfigValue",
         "GiftCode", "CountLeft", "GiftDetail", "ExpiryMode", "ValidDays", "StartDate", "EndDate",
-        "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "AuraFrame0", "AuraFrame1", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
+        "OwnerId", "TemplateId", "RadarRank", "RadarMax", "RadarType", "RadarMobId", "RequireId", "RequireLevel", "AuraId", "AuraFrame0", "AuraFrame1", "OptionsJson", "MilestonesJson", "MobDropsJson", "BossDropsJson", "CollectionCondition", "RequiredCount", "RequiredTemplateIdsJson", "RewardItemsJson", "FishBookName", "FishBookRarity", "FishBookMobId", "FishBookRank", "Enabled", "UseTimeRange", "TimeStart", "TimeEnd", "UseInterval",
         "IntervalMinutes", "MapId", "MapIdsJson", "KeepOtherMaps", "NameLift", "LayerOrder", "ZoneId", "SpawnX", "SpawnY", "Hp", "Damage", "Defense", "Dodge", "Crit", "Announce", "DropsJson", "SkillsJson", "LevelsJson",
         "PointMultiplier", "DropMultiplier", "BossId", "BossQuantity", "SourceType", "SourceId", "QuantityMin", "QuantityMax", "DropRate", "Points", "Notes", "Notify", "PayloadJson", "Page", "PageSize",
         "HeadPath", "BodyPath", "LegPath", "AvatarPath", "HeadDx", "HeadDy", "BodyDx", "BodyDy", "LegDx", "LegDy",
@@ -2210,6 +2218,221 @@ function Delete-RadarCard {
     if ($radarId -lt 0) { throw "ID thẻ sưu tầm không hợp lệ." }
     Invoke-MySql "DELETE FROM radar WHERE id=$radarId;" | Out-Null
     "OK`tĐã xóa thẻ sưu tầm ID $radarId. Restart server để áp dụng."
+}
+
+function Ensure-CostumeCollectionSchema {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS costume_collection_achievement (
+  id SMALLINT NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  description VARCHAR(255) NOT NULL DEFAULT '',
+  condition_type TINYINT NOT NULL DEFAULT 0,
+  required_count INT NOT NULL DEFAULT 0,
+  required_template_ids VARCHAR(255) NOT NULL DEFAULT '',
+  reward_gold BIGINT NOT NULL DEFAULT 0,
+  reward_gem INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS costume_collection_achievement_reward (
+  achievement_id SMALLINT NOT NULL,
+  item_template_id SMALLINT NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  PRIMARY KEY (achievement_id,item_template_id),
+  KEY idx_costume_collection_reward_item (item_template_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT IGNORE INTO costume_collection_achievement
+  (id,name,description,condition_type,required_count,required_template_ids,reward_gold,reward_gem)
+VALUES
+  (1,'Nhà sưu tầm tập sự','Sở hữu 10 cải trang khác nhau.',0,10,'',500000,25),
+  (2,'Nhà sưu tầm kỳ cựu','Sở hữu 30 cải trang khác nhau.',0,30,'',1500000,50),
+  (3,'Bậc thầy cải trang','Sở hữu 75 cải trang khác nhau.',0,75,'',5000000,100),
+  (10,'Bộ Hải Tặc','Hoàn thành bộ sưu tập Hải Tặc.',1,9,'2001,2002,2003,2004,2005,2006,2007,2008,2009',2000000,75);
+"@ | Out-Null
+}
+
+function Get-CostumeCollectionRequiredIds {
+    param([string]$Json)
+    $ids = @(Convert-UniqueIdPayload -Json $Json -Label "Danh sách cải trang yêu cầu")
+    if ($ids.Count -eq 0) { return @() }
+    $idSql = $ids -join ','
+    $foundCount = SqlInt (Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id IN ($idSql) AND `TYPE`=5;")
+    if ($foundCount -ne $ids.Count) {
+        throw "Bộ sưu tầm chỉ được chứa ID vật phẩm cải trang hợp lệ."
+    }
+    return $ids
+}
+
+function Convert-CostumeCollectionRewardItems {
+    param([string]$Json)
+    try {
+        # ConvertFrom-Json returns one Object[] value for a JSON array on Windows
+        # PowerShell. Wrapping the pipeline directly in @() nests that array and
+        # turns multiple IDs into a single value such as "2061 1535".
+        $parsedItems = $Json | ConvertFrom-Json
+        $rawItems = @($parsedItems)
+    } catch { throw "Danh sách vật phẩm thưởng không đúng JSON." }
+    $result = New-Object System.Collections.Generic.List[object]
+    $seen = @{}
+    foreach ($rawItem in $rawItems) {
+        if ($null -eq $rawItem) { continue }
+        $itemIdText = if ($null -ne $rawItem.itemId) { [string]$rawItem.itemId } elseif ($null -ne $rawItem.id) { [string]$rawItem.id } else { "" }
+        $quantityText = if ($null -ne $rawItem.quantity) { [string]$rawItem.quantity } else { "" }
+        if ($itemIdText -notmatch '^\d+$') { throw "ID vật phẩm thưởng không hợp lệ." }
+        $itemId = [int]$itemIdText
+        if ($itemId -lt 0 -or $itemId -gt 32767) { throw "ID vật phẩm thưởng phải từ 0 đến 32767." }
+        if ($quantityText -notmatch '^\d+$') { throw "Số lượng vật phẩm thưởng phải là số nguyên dương." }
+        $quantity = [long]$quantityText
+        if ($quantity -lt 1 -or $quantity -gt 100000000) { throw "Số lượng vật phẩm thưởng phải từ 1 đến 100000000." }
+        if ($seen.ContainsKey($itemId)) { throw "Vật phẩm thưởng ID $itemId bị trùng." }
+        $seen[$itemId] = $true
+        $result.Add([pscustomobject]@{ ItemId=$itemId; Quantity=[int]$quantity })
+    }
+    if ($result.Count -gt 50) { throw "Chỉ được chọn tối đa 50 vật phẩm thưởng." }
+    if ($result.Count -gt 0) {
+        $idSql = (($result | ForEach-Object { $_.ItemId }) -join ',')
+        $found = SqlInt (Get-MySqlScalar "SELECT COUNT(*) FROM item_template WHERE id IN ($idSql);")
+        if ($found -ne $result.Count) { throw "Có vật phẩm thưởng không tồn tại trong item_template." }
+    }
+    return $result.ToArray()
+}
+
+function List-CostumeCollectionAchievements {
+    Ensure-CostumeCollectionSchema
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safe = $Search.Replace("\", "\\").Replace("'", "''")
+        $where = if ($Search -match '^\d+$') { "WHERE a.id=$(SqlInt $Search) OR a.name LIKE '%$safe%'" } else { "WHERE a.name LIKE '%$safe%' OR a.description LIKE '%$safe%'" }
+    }
+    Invoke-MySql @"
+SELECT a.id,
+       REPLACE(REPLACE(REPLACE(COALESCE(a.name,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS name,
+       REPLACE(REPLACE(REPLACE(COALESCE(a.description,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS description,
+       a.condition_type,a.required_count,COALESCE(a.required_template_ids,''),a.reward_gold,a.reward_gem,
+       COALESCE((SELECT GROUP_CONCAT(CONCAT(cr.item_template_id,':',cr.quantity) ORDER BY cr.item_template_id SEPARATOR ',')
+                 FROM costume_collection_achievement_reward cr WHERE cr.achievement_id=a.id),'') AS reward_items
+FROM costume_collection_achievement a
+$where
+ORDER BY a.id;
+"@
+}
+
+function Save-CostumeCollectionAchievement {
+    Ensure-CostumeCollectionSchema
+    $achievementId = SqlInt $Id -1
+    if ($achievementId -lt 1 -or $achievementId -gt 32767) { throw "ID mốc thành tựu phải từ 1 đến 32767." }
+    $condition = SqlInt $CollectionCondition -1
+    if ($condition -notin @(0,1)) { throw "Điều kiện thành tựu không hợp lệ." }
+    $nameValue = $Name.Trim()
+    if ([string]::IsNullOrWhiteSpace($nameValue) -or $nameValue.Length -gt 120) { throw "Tên thành tựu phải có từ 1 đến 120 ký tự." }
+    $descriptionValue = $Description.Trim()
+    if ($descriptionValue.Length -gt 255) { throw "Mô tả thành tựu không được quá 255 ký tự." }
+    $rewardGold = Assert-LongRange $Gold "Thưởng vàng" 0 ([long]::MaxValue)
+    $rewardGem = Assert-IntRange $Gem "Thưởng ngọc" 0 2147483647
+    $requiredIds = @(Get-CostumeCollectionRequiredIds $RequiredTemplateIdsJson)
+    $requiredCount = SqlInt $RequiredCount -1
+    if ($condition -eq 0) {
+        if ($requiredCount -lt 1 -or $requiredCount -gt 32767) { throw "Số cải trang cần có phải từ 1 đến 32767." }
+        $requiredIds = @()
+    } else {
+        if ($requiredIds.Count -eq 0) { throw "Bộ sưu tầm phải có ít nhất một cải trang." }
+        $requiredCount = $requiredIds.Count
+    }
+    $idsText = $requiredIds -join ','
+    $rewardItems = @(Convert-CostumeCollectionRewardItems $RewardItemsJson)
+    $rewardValues = New-Object System.Collections.Generic.List[string]
+    foreach ($rewardItem in $rewardItems) {
+        $rewardValues.Add("($achievementId,$($rewardItem.ItemId),$($rewardItem.Quantity))")
+    }
+    $rewardInsertSql = if ($rewardValues.Count -gt 0) {
+        "INSERT INTO costume_collection_achievement_reward (achievement_id,item_template_id,quantity) VALUES " + ($rewardValues -join ',') + ";"
+    } else { "" }
+    Invoke-MySql @"
+START TRANSACTION;
+INSERT INTO costume_collection_achievement
+  (id,name,description,condition_type,required_count,required_template_ids,reward_gold,reward_gem)
+VALUES
+  ($achievementId,$(SqlString $nameValue),$(SqlString $descriptionValue),$condition,$requiredCount,$(SqlString $idsText),$rewardGold,$rewardGem)
+ON DUPLICATE KEY UPDATE
+  name=VALUES(name),description=VALUES(description),condition_type=VALUES(condition_type),required_count=VALUES(required_count),
+  required_template_ids=VALUES(required_template_ids),reward_gold=VALUES(reward_gold),reward_gem=VALUES(reward_gem);
+DELETE FROM costume_collection_achievement_reward WHERE achievement_id=$achievementId;
+$rewardInsertSql
+COMMIT;
+"@ | Out-Null
+    "OK`tĐã lưu mốc thành tựu sưu tầm cải trang ID $achievementId với $($rewardItems.Count) vật phẩm thưởng. Áp dụng khi người chơi mở lại sổ sưu tầm."
+}
+
+function Delete-CostumeCollectionAchievement {
+    Ensure-CostumeCollectionSchema
+    $achievementId = SqlInt $Id -1
+    if ($achievementId -lt 1) { throw "ID mốc thành tựu không hợp lệ." }
+    Invoke-MySql "START TRANSACTION; DELETE FROM costume_collection_achievement_reward WHERE achievement_id=$achievementId; DELETE FROM costume_collection_achievement WHERE id=$achievementId; COMMIT;" | Out-Null
+    "OK`tĐã xóa mốc thành tựu sưu tầm cải trang ID $achievementId."
+}
+
+function Ensure-FishingBookSchema {
+    Invoke-MySql @"
+CREATE TABLE IF NOT EXISTS fishing_book_entry (
+  fish_item_id SMALLINT NOT NULL,
+  display_name VARCHAR(120) NOT NULL,
+  rarity VARCHAR(80) NOT NULL,
+  mob_template_id SMALLINT NOT NULL DEFAULT -1,
+  book_rank TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (fish_item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT IGNORE INTO fishing_book_entry (fish_item_id,display_name,rarity,mob_template_id,book_rank) VALUES
+  (2124,'Cá Bạc Nhỏ','Phổ thông',86,0),
+  (2125,'Cá Rô Đá','Phổ thông',87,0),
+  (2126,'Cá Chép Vàng','Phổ thông',88,0),
+  (2127,'Cá Lóc Săn Mồi','Không phổ thông',89,0),
+  (2128,'Cá Trê Khổng Lồ','Không phổ thông',90,1),
+  (2129,'Cá Hồi Bạc','Không phổ thông',91,1),
+  (2130,'Cá Tầm Thiết Giáp','Hiếm',92,1),
+  (2131,'Cá Ngừ Đại Dương','Hiếm',93,1),
+  (2132,'Cá Kiếm Lam','Hiếm',94,2),
+  (2133,'Cá Mập Trắng','Cao cấp',95,2),
+  (2134,'Cá Mập Đầu Búa','Cao cấp',96,2),
+  (2135,'Cá Mập Voi Khổng Lồ','Siêu hiếm',97,2),
+  (2136,'Quỷ Ngư Biển Sâu','Sử thi',98,3),
+  (2137,'Hải Long Lam Ngọc','Huyền thoại',99,3),
+  (2138,'Kim Long Hải Thần','Cực hiếm',100,3);
+"@ | Out-Null
+}
+
+function List-FishingBookEntries {
+    Ensure-FishingBookSchema
+    Invoke-MySql @"
+SELECT b.fish_item_id,
+       REPLACE(REPLACE(REPLACE(COALESCE(t.`NAME`,''),CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS item_name,
+       COALESCE(t.icon_id,-1) AS icon_id,
+       COALESCE(t.`TYPE`,-1) AS item_type,
+       REPLACE(REPLACE(REPLACE(b.display_name,CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS display_name,
+       REPLACE(REPLACE(REPLACE(b.rarity,CHAR(9),' '),CHAR(13),' '),CHAR(10),' ') AS rarity,
+       b.mob_template_id,b.book_rank
+FROM fishing_book_entry b
+LEFT JOIN item_template t ON t.id=b.fish_item_id
+ORDER BY b.fish_item_id;
+"@
+}
+
+function Save-FishingBookEntry {
+    Ensure-FishingBookSchema
+    $fishItemId = SqlInt $Id -1
+    if ($fishItemId -lt 2124 -or $fishItemId -gt 2138) { throw "ID vật phẩm cá không thuộc Sổ Tay Ngư Phủ." }
+    $nameValue = $FishBookName.Trim()
+    $rarityValue = $FishBookRarity.Trim()
+    if ([string]::IsNullOrWhiteSpace($nameValue) -or $nameValue.Length -gt 120) { throw "Tên hiển thị phải có từ 1 đến 120 ký tự." }
+    if ([string]::IsNullOrWhiteSpace($rarityValue) -or $rarityValue.Length -gt 80) { throw "Độ hiếm phải có từ 1 đến 80 ký tự." }
+    $mobId = SqlInt $FishBookMobId -2
+    if ($mobId -lt -1 -or $mobId -gt 32767) { throw "Mob template phải từ -1 đến 32767." }
+    $rank = SqlInt $FishBookRank -1
+    if ($rank -lt 0 -or $rank -gt 6) { throw "Hạng thẻ phải từ 0 đến 6." }
+    Invoke-MySql @"
+UPDATE fishing_book_entry
+SET display_name=$(SqlString $nameValue),rarity=$(SqlString $rarityValue),mob_template_id=$mobId,book_rank=$rank
+WHERE fish_item_id=$fishItemId;
+"@ | Out-Null
+    "OK`tĐã lưu thẻ cá ID $fishItemId. Áp dụng khi người chơi mở Sổ Tay Ngư Phủ tiếp theo."
 }
 
 function List-RadarMobDrops {
@@ -5910,6 +6133,9 @@ function Get-AuditSummary {
         "deleteradarcard" { "Xóa thẻ sưu tầm ID $Id" }
         "saveradarmobdrops" { "Lưu Mob rơi thẻ sưu tầm ID $Id, $(Get-JsonArrayCount $MobDropsJson) Mob" }
         "saveradarbossdrops" { "Lưu Boss rơi thẻ sưu tầm ID $Id, $(Get-JsonArrayCount $BossDropsJson) Boss" }
+        "savecostumecollectionachievement" { "Lưu thành tựu cải trang ID $Id - $Name, $(Get-JsonArrayCount $RewardItemsJson) vật phẩm thưởng" }
+        "deletecostumecollectionachievement" { "Xóa thành tựu cải trang ID $Id" }
+        "savefishbookentry" { "Lưu thẻ Sổ Tay Ngư Phủ ID $Id - $FishBookName" }
         "savebossoverride" { "Lưu Boss $Name ($OwnerId): $(Get-JsonArrayCount $MapIdsJson) map, $(Get-JsonArrayCount $SkillsJson) skill, $(Get-JsonArrayCount $DropsJson) drop, chu kỳ $(if ($UseInterval -eq '1') { "$IntervalMinutes phút" } else { 'mặc định' })" }
         "deletebossoverride" { "Trả Boss $OwnerId về mặc định" }
         "saveadminboss" { "Lưu Boss tùy chỉnh $Name" }
@@ -6043,6 +6269,15 @@ function Get-AuditContext {
             Ensure-SpawnSchema
             $radarId = SqlInt $Id
             $snapshots.Add((New-DbAuditSnapshot "admin_spawn_drop" "owner_type='serverboss' AND item_id=$radarId"))
+        }
+        { $_ -in @("savecostumecollectionachievement", "deletecostumecollectionachievement") } {
+            Ensure-CostumeCollectionSchema
+            $snapshots.Add((New-DbAuditSnapshot "costume_collection_achievement" "id=$(SqlInt $Id)"))
+            $snapshots.Add((New-DbAuditSnapshot "costume_collection_achievement_reward" "achievement_id=$(SqlInt $Id)"))
+        }
+        "savefishbookentry" {
+            Ensure-FishingBookSchema
+            $snapshots.Add((New-DbAuditSnapshot "fishing_book_entry" "fish_item_id=$(SqlInt $Id)"))
         }
         { $_ -in @("savebossoverride", "deletebossoverride") } {
             $bossId = SqlInt $OwnerId
@@ -6225,6 +6460,7 @@ $mutationActions = @(
     "saveitem", "installauraitems", "saveauraitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
     "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savegiftbox", "deletegiftbox",
     "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
+    "savecostumecollectionachievement", "deletecostumecollectionachievement", "savefishbookentry",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
@@ -6310,6 +6546,11 @@ try {
         "saveradarmobdrops" { Save-RadarMobDrops }
         "listradarbossdrops" { List-RadarBossDrops }
         "saveradarbossdrops" { Save-RadarBossDrops }
+        "listcostumecollectionachievements" { List-CostumeCollectionAchievements }
+        "savecostumecollectionachievement" { Save-CostumeCollectionAchievement }
+        "deletecostumecollectionachievement" { Delete-CostumeCollectionAchievement }
+        "listfishbookentries" { List-FishingBookEntries }
+        "savefishbookentry" { Save-FishingBookEntry }
         "listspawnmaps" { List-SpawnMaps }
         "listspawnitems" { List-SpawnItems }
         "listbossskills" { List-BossSkillCatalog }
