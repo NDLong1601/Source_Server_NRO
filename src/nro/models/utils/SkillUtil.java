@@ -158,6 +158,18 @@ public class SkillUtil {
         return SkillMasteryService.gI().applyEffectStat(skill, getTimeThoiMien(skill.point));
     }
 
+    /** Option 124: level 1–7 correspond to 25%, 30%, …, 55%. */
+    public static int getWeakAfterSleepPercent(Skill skill) {
+        int level = Math.max(1, skill == null ? 1 : skill.getActualLevel());
+        return Math.min(100, 20 + level * 5);
+    }
+
+    /** Option 126: level 1–7 correspond to 15%, 17%, …, 27%. */
+    public static int getSocolaDamageReductionPercent(Skill skill) {
+        int level = Math.max(1, skill == null ? 1 : skill.getActualLevel());
+        return Math.min(100, 13 + level * 2);
+    }
+
     public static int getRangeStun(int level) { // phạm vi thái dương hạ san
         return 120 + level * 30;
     }

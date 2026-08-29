@@ -42,6 +42,12 @@ public class TaySach {
             sachTuyetKy.itemOptions.set(i, new Item.ItemOption(217, 0));
         }
         sachTuyetKy.subOptionParam(219, 1);
+        Item.ItemOption appraisal = sachTuyetKy.getOptionById(211);
+        if (appraisal == null) {
+            sachTuyetKy.itemOptions.add(new Item.ItemOption(211, 0));
+        } else {
+            appraisal.param = 0;
+        }
         CombineService.gI().sendEffectSuccessCombine(player);
         InventoryService.gI().sendItemBags(player);
         CombineService.gI().reOpenItemCombine(player);

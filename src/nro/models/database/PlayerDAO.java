@@ -80,6 +80,7 @@ public class PlayerDAO {
             dataArray.add(0); //năng động
             dataArray.add(PlayerConfig.getStartHp(gender)); //hp hiện tại
             dataArray.add(PlayerConfig.getStartMp(gender)); //ki hiện tại
+            dataArray.add(0); //công đức
             String point = dataArray.toJSONString();
             dataArray.clear();
 
@@ -424,6 +425,7 @@ public class PlayerDAO {
                 dataArray.add(0);
                 dataArray.add(hp);
                 dataArray.add(mp);
+                dataArray.add(Math.max(0, Math.min(9999, player.congDuc)));
                 String point = dataArray.toJSONString();
                 dataArray.clear();
 

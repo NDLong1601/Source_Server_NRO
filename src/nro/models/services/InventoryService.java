@@ -230,6 +230,8 @@ public class InventoryService {
                     it.quantity -= quantity;
                     if (it.quantity <= 0) {
                         this.removeItem(items, item);
+                    } else {
+                        syncQuantityOption(it);
                     }
                     break;
                 }
@@ -550,6 +552,7 @@ public class InventoryService {
             Service.gI().sendThongBaoOK(player.isPet ? ((Pet) player).master : player, "Sức mạnh không đủ yêu cầu!");
             return sItem;
         }
+        ItemService.gI().revealBonusOptions(item);
         if (item.template.type == 32) {
             ItemService.gI().ensureTrainArmorTimeOption(item);
         }
@@ -798,11 +801,12 @@ public class InventoryService {
                 msg.writer().writeInt(item.quantity);
                 msg.writer().writeUTF(item.getInfo());
                 msg.writer().writeUTF(item.getContent());
-                msg.writer().writeByte(item.itemOptions.size()); //options
-                for (int j = 0; j < item.itemOptions.size(); j++) {
-                    if (item.itemOptions.get(j).optionTemplate.id == 213) {
+                List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                msg.writer().writeByte(itemOptions.size()); //options
+                for (int j = 0; j < itemOptions.size(); j++) {
+                    if (itemOptions.get(j).optionTemplate.id == 213) {
                         int opId = 213;
-                        int param = item.itemOptions.get(j).param;
+                        int param = itemOptions.get(j).param;
                         if (param > 1_000_000) {
                             opId = 223;
                             param /= 1_000_000;
@@ -813,8 +817,8 @@ public class InventoryService {
                         msg.writer().writeByte(opId);
                         msg.writer().writeShort(param);
                     } else {
-                        msg.writer().writeByte(item.itemOptions.get(j).optionTemplate.id);
-                        msg.writer().writeShort(item.itemOptions.get(j).param);
+                        msg.writer().writeByte(itemOptions.get(j).optionTemplate.id);
+                        msg.writer().writeShort(itemOptions.get(j).param);
                     }
                 }
             }
@@ -840,7 +844,7 @@ public class InventoryService {
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
                     msg.writer().writeUTF(item.getContent());
-                    List<Item.ItemOption> itemOptions = item.itemOptions;
+                    List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
                     msg.writer().writeByte(itemOptions.size());
                     for (Item.ItemOption itemOption : itemOptions) {
                         if (itemOption.optionTemplate.id == 213) {
@@ -881,8 +885,9 @@ public class InventoryService {
                     msg.writer().writeInt(it.quantity);
                     msg.writer().writeUTF(it.getInfo());
                     msg.writer().writeUTF(it.getContent());
-                    msg.writer().writeByte(it.itemOptions.size());
-                    for (Item.ItemOption io : it.itemOptions) {
+                    List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(it);
+                    msg.writer().writeByte(itemOptions.size());
+                    for (Item.ItemOption io : itemOptions) {
                         if (io.optionTemplate.id == 213) {
                             int opId = 213;
                             int param = io.param;
@@ -1050,8 +1055,29 @@ public class InventoryService {
     }
 
     public boolean addItemList(List<Item> items, Item itemAdd) {
+        ItemService.gI().resolveOption231(itemAdd);
         if (itemAdd.itemOptions.isEmpty()) {
             itemAdd.itemOptions.add(new Item.ItemOption(73, 0));
+        }
+
+        if (hasQuantityOption(itemAdd)) {
+            syncQuantityOption(itemAdd);
+            for (Item it : items) {
+                if (it.isNotNullItem() && it.template.id == itemAdd.template.id
+                        && hasQuantityOption(it)
+                        && hasSameOptionsIgnoringQuantity(it.itemOptions, itemAdd.itemOptions)) {
+                    int amountToStack = Math.min(100_000_000 - it.quantity, itemAdd.quantity);
+                    if (amountToStack <= 0) {
+                        continue;
+                    }
+                    it.quantity += amountToStack;
+                    syncQuantityOption(it);
+                    itemAdd.quantity -= amountToStack;
+                    if (itemAdd.quantity == 0) {
+                        return true;
+                    }
+                }
+            }
         }
 
         int[] idParam = isItemIncrementalOption(itemAdd);
@@ -1140,11 +1166,50 @@ public class InventoryService {
             switch (io.optionTemplate.id) {
                 case 1:
                     return new int[]{io.optionTemplate.id, io.param};
-                case 31:
-                    return new int[]{io.optionTemplate.id, io.param};
             }
         }
         return new int[]{-1, -1};
+    }
+
+    /** Keeps option 31 synchronized with the real stack quantity. */
+    private void syncQuantityOption(Item item) {
+        if (item == null || item.itemOptions == null) {
+            return;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option != null && option.optionTemplate != null && option.optionTemplate.id == 31) {
+                option.param = Math.max(0, item.quantity);
+                return;
+            }
+        }
+    }
+
+    private boolean hasQuantityOption(Item item) {
+        if (item == null || item.itemOptions == null) {
+            return false;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option != null && option.optionTemplate != null && option.optionTemplate.id == 31) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasSameOptionsIgnoringQuantity(List<Item.ItemOption> first, List<Item.ItemOption> second) {
+        List<Item.ItemOption> firstWithoutQuantity = new ArrayList<>();
+        List<Item.ItemOption> secondWithoutQuantity = new ArrayList<>();
+        for (Item.ItemOption option : first) {
+            if (option.optionTemplate.id != 31) {
+                firstWithoutQuantity.add(option);
+            }
+        }
+        for (Item.ItemOption option : second) {
+            if (option.optionTemplate.id != 31) {
+                secondWithoutQuantity.add(option);
+            }
+        }
+        return checkListsEqual(firstWithoutQuantity, secondWithoutQuantity);
     }
 
     private void __________________Kiểm_tra_danh_sách_còn_chỗ_trống_________() {
@@ -1426,18 +1491,6 @@ public class InventoryService {
     }
 
     private void checkOption231(Item item) {
-        for (int i = 0; i < item.itemOptions.size(); i++) {
-            Item.ItemOption io = item.itemOptions.get(i);
-            if (io.optionTemplate.id == 231) {
-                item.itemOptions.remove(i);
-                double randomValue = Math.random();
-                if (randomValue <= 0.99) {
-                    int[] validParams = {3, 7, 15, 21};
-                    int selectedParam = validParams[(int) (Math.random() * validParams.length)];
-                    item.itemOptions.add(new Item.ItemOption(93, selectedParam));
-                }
-                break;
-            }
-        }
+        ItemService.gI().resolveOption231(item);
     }
 }

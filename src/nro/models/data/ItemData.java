@@ -51,6 +51,12 @@ public class ItemData {
         if (end == 0 && total > 0) {
             throw new IllegalStateException("Item template 0 vượt giới hạn gói 65.535 byte.");
         }
+        // The legacy client commits this data only after receiving subtype 2.
+        // Reserve the final template for the append packet even when all
+        // templates technically fit inside the reload packet.
+        if (end == total && total > 1) {
+            end--;
+        }
         return end;
     }
 

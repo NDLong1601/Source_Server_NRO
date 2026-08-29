@@ -279,7 +279,7 @@ public class FriendAndEnemyService {
                                 && !MapService.gI().isMapBlackBallWar(pl.zone.map.mapId)
                                 && !MapService.gI().isMapPhoBan(pl.zone.map.mapId)
                                 && !MapService.gI().isMapMaBu(pl.zone.map.mapId)) {
-                            ChangeMapService.gI().changeMapYardrat(player,
+                            ChangeMapService.gI().changeMap(player,
                                     ChangeMapService.gI().checkMapCanJoin(player, pl.zone),
                                     pl.location.x + Util.nextInt(-5, 5), pl.location.y);
                         } else {

@@ -37,6 +37,11 @@ public class ChuyenHoaTrangBi_Ngoc {
             return;
         }
 
+        if (hasBeenTransformed(trangBiGoc) || hasBeenTransformed(trangBiCanChuyenHoa)) {
+            Service.gI().sendThongBaoOK(player, "Mỗi trang bị chỉ được chuyển hóa một lần");
+            return;
+        }
+
         if (levelTrangBi < 4) {
             Service.gI().sendThongBaoOK(player, "Trang bị gốc có cấp từ [+4]");
             return;
@@ -98,6 +103,11 @@ public class ChuyenHoaTrangBi_Ngoc {
         Item trangBiCanChuyenHoa = player.combineNew.itemsCombine.get(1);
         int goldChuyenHoa = 2_000_000_000;
 
+        if (hasBeenTransformed(trangBiGoc) || hasBeenTransformed(trangBiCanChuyenHoa)) {
+            Service.gI().sendThongBaoOK(player, "Mỗi trang bị chỉ được chuyển hóa một lần");
+            return;
+        }
+
         int levelTrangBi = 0;
         int soLanRotCap = 0;
 
@@ -108,7 +118,6 @@ public class ChuyenHoaTrangBi_Ngoc {
                 soLanRotCap += io.param;
             }
         }
-
         int chisogoc = trangBiCanChuyenHoa.itemOptions.get(0).param;
         chisogoc = (int) (chisogoc * Math.pow(1.1, levelTrangBi) * Math.pow(0.9, soLanRotCap));
         Item newItem = ItemService.gI().createNewItem(trangBiCanChuyenHoa.template.id);
@@ -130,6 +139,7 @@ public class ChuyenHoaTrangBi_Ngoc {
                 }
             }
         }
+        newItem.itemOptions.add(new ItemOption(208, 0));
 
         player.inventory.gold -= goldChuyenHoa;
         Service.gI().sendMoney(player);
@@ -194,8 +204,12 @@ public class ChuyenHoaTrangBi_Ngoc {
         return id == 0 || id == 6 || id == 7 || id == 14 || id == 22 || id == 23 || id == 47;
     }
 
+    private static boolean hasBeenTransformed(Item item) {
+        return item != null && item.getOptionById(208) != null;
+    }
+
     private static boolean isIgnoredOption(int id) {
-        return (id == 236 || id == 228
+        return (id == 236 || id == 228 || id == 208
                 || (id >= 127 && id <= 135) || (id >= 136 && id <= 144)
                 || (id >= 233 && id <= 248) || (id >= 136 && id <= 144)
                 || (id >= 210 && id <= 218) || (id >= 224 && id <= 227));

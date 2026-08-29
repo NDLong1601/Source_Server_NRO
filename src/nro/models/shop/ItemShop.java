@@ -27,6 +27,12 @@ public class ItemShop {
 
     public int cost;
 
+    /** Base price retained for a per-player option-112 coupon discount. */
+    public int originalCost = -1;
+
+    /** Discount shown when this player opened the coupon shop. */
+    public int couponDiscountPercent = -1;
+
     public ItemShop() {
         this.options = new ArrayList<>();
     }
@@ -41,6 +47,8 @@ public class ItemShop {
         this.iconSpec = itemShop.iconSpec;
         this.optionMode = itemShop.optionMode;
         this.cost = itemShop.cost;
+        this.originalCost = itemShop.originalCost;
+        this.couponDiscountPercent = itemShop.couponDiscountPercent;
         for (Item.ItemOption io : itemShop.options) {
             this.options.add(new Item.ItemOption(io));
         }

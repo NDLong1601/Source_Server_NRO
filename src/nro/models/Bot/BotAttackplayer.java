@@ -177,7 +177,7 @@ public class BotAttackplayer extends Bot {
 
         if (isPl() && targetPlayer.isPl()
                 && typePk == ConstPlayer.PK_PVP_2 && targetPlayer.typePk == ConstPlayer.PK_PVP_2) {
-            long smtn = nPoint.calSucManhTiemNang(realDame / 10)
+            long smtn = nPoint.calSucManhTiemNangPvp(realDame / 10)
                     / (Math.abs(Service.gI().getCurrLevel(this) - Service.gI().getCurrLevel(targetPlayer)) + 1);
             Service.gI().addSMTN(targetPlayer, (byte) 2, smtn, false);
         }

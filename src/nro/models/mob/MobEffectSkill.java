@@ -2,6 +2,7 @@ package nro.models.mob;
 import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.services.Service;
+import nro.models.services.EquipmentOptionService;
 import nro.models.skill.Skill;
 import nro.models.utils.Util;
 
@@ -17,7 +18,17 @@ public class MobEffectSkill {
     public int timeStun;
     public boolean isStun;
 
+    // thiêu đốt (option 165)
+    public boolean isBurning;
+    public Player burnSource;
+    public long lastTimeBurning;
+    public long lastTimeBurnTick;
+    public int timeBurning;
+
     public void update() {
+        if (isBurning) {
+            EquipmentOptionService.gI().updateMobBurn(mob);
+        }
         if (isStun && (Util.canDoWithTime(lastTimeStun, timeStun) || mob.isDie())) {
             removeStun();
         }

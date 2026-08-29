@@ -115,23 +115,75 @@ public class EffectSkillService {
     }
 
     public void setUseTroi(Player player, long lastTimeTroi, int timeTroi) {
+        timeTroi = reduceControlDurationWhileShielded(player, timeTroi);
+        if (timeTroi <= 0) {
+            return;
+        }
         player.effectSkill.useTroi = true;
         player.effectSkill.lastTimeTroi = lastTimeTroi;
         player.effectSkill.timeTroi = timeTroi;
     }
 
-    public void setThoiMien(Player player, long lastTimeThoiMien, int timeThoiMien) {
+    public void setThoiMien(Player player, long lastTimeThoiMien, int timeThoiMien, int weakAfterSleepPercent) {
+        timeThoiMien = reduceControlDurationWhileShielded(player, timeThoiMien);
+        if (timeThoiMien <= 0) {
+            return;
+        }
         player.effectSkill.isThoiMien = true;
         player.effectSkill.lastTimeThoiMien = lastTimeThoiMien;
         player.effectSkill.timeThoiMien = timeThoiMien;
+        player.effectSkill.pendingWeakAfterSleepPercent = Math.max(0, Math.min(100, weakAfterSleepPercent));
     }
 
     public void removeThoiMien(Player player) {
+        removeThoiMien(player, true);
+    }
+
+    /** Ends sleep and, unless it was cancelled by death, applies option 124. */
+    public void removeThoiMien(Player player, boolean applyWeakness) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
+        int weakPercent = player.effectSkill.pendingWeakAfterSleepPercent;
         player.effectSkill.isThoiMien = false;
+        player.effectSkill.pendingWeakAfterSleepPercent = 0;
         sendEffectPlayer(player, player, TURN_OFF_EFFECT, SLEEP_EFFECT);
+        if (applyWeakness && !player.isDie() && weakPercent > 0) {
+            setWeakAfterSleep(player, weakPercent, 10_000);
+        }
+    }
+
+    public void setWeakAfterSleep(Player player, int weakPercent, int duration) {
+        if (player == null || player.effectSkill == null || player.nPoint == null) {
+            return;
+        }
+        player.effectSkill.isWeakAfterSleep = true;
+        player.effectSkill.weakAfterSleepPercent = Math.max(0, Math.min(100, weakPercent));
+        player.effectSkill.lastTimeWeakAfterSleep = System.currentTimeMillis();
+        player.effectSkill.timeWeakAfterSleep = duration;
+        player.nPoint.calPoint();
+        Service.gI().point(player);
+        Service.gI().Send_Info_NV(player);
+    }
+
+    public void removeWeakAfterSleep(Player player) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
+        player.effectSkill.isWeakAfterSleep = false;
+        player.effectSkill.weakAfterSleepPercent = 0;
+        if (player.nPoint != null) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+        }
     }
 
     public void startStun(Player player, long lastTimeStartBlind, int timeBlind) {
+        timeBlind = reduceControlDurationWhileShielded(player, timeBlind);
+        if (timeBlind <= 0) {
+            return;
+        }
         player.effectSkill.lastTimeStartStun = lastTimeStartBlind;
         player.effectSkill.timeStun = timeBlind;
         player.effectSkill.isStun = true;
@@ -144,14 +196,110 @@ public class EffectSkillService {
     }
 
     public void setSocola(Player player, long lastTimeSocola, int timeSocola) {
+        setSocola(player, lastTimeSocola, timeSocola, 0);
+    }
+
+    /** Applies chocolate form and its option-126 damage penalty when present. */
+    public void setSocola(Player player, long lastTimeSocola, int timeSocola, int damageReductionPercent) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
+        timeSocola = reduceControlDurationWhileShielded(player, timeSocola);
+        if (timeSocola <= 0) {
+            return;
+        }
+        int normalizedPenalty = Math.max(0, Math.min(100, damageReductionPercent));
+        boolean damageChanged = !player.effectSkill.isSocola
+                || player.effectSkill.socolaDamageReductionPercent != normalizedPenalty;
         player.effectSkill.lastTimeSocola = lastTimeSocola;
         player.effectSkill.timeSocola = timeSocola;
         player.effectSkill.isSocola = true;
         player.effectSkill.countPem1hp = 0;
+        player.effectSkill.socolaDamageReductionPercent = normalizedPenalty;
+        if (damageChanged && player.nPoint != null) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+        }
     }
 
     public void removeSocola(Player player) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
         player.effectSkill.isSocola = false;
+        player.effectSkill.socolaDamageReductionPercent = 0;
+        if (player.nPoint != null) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+        }
+        Service.gI().Send_Caitrang(player);
+    }
+
+    /**
+     * Option 115: cosmetic carrot transformation.  It deliberately does not
+     * apply any control effect, so the affected player can keep moving and
+     * using skills; only the 10% damage penalty is recalculated.
+     */
+    public void setCarrot(Player player, int timeCarrot) {
+        if (player == null || player.effectSkill == null || player.nPoint == null) {
+            return;
+        }
+        boolean wasCarrot = player.effectSkill.isCarrot;
+        player.effectSkill.isCarrot = true;
+        player.effectSkill.timeCarrot = timeCarrot;
+        player.effectSkill.lastTimeCarrot = System.currentTimeMillis();
+        ItemTimeService.gI().sendItemTime(player, 4083, timeCarrot / 1000);
+        if (!wasCarrot) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+            Service.gI().Send_Caitrang(player);
+        }
+    }
+
+    public void removeCarrot(Player player) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
+        player.effectSkill.isCarrot = false;
+        ItemTimeService.gI().removeItemTime(player, 4083);
+        if (player.nPoint != null) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+        }
+        Service.gI().Send_Caitrang(player);
+    }
+
+    /** Option 163 changes only appearance and combat stats; it never disables controls. */
+    public void setPumpkin(Player player, int timePumpkin) {
+        if (player == null || player.effectSkill == null || player.nPoint == null) {
+            return;
+        }
+        boolean wasPumpkin = player.effectSkill.isPumpkin;
+        player.effectSkill.isPumpkin = true;
+        player.effectSkill.timePumpkin = timePumpkin;
+        player.effectSkill.lastTimePumpkin = System.currentTimeMillis();
+        if (!wasPumpkin) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+            Service.gI().Send_Caitrang(player);
+        }
+    }
+
+    public void removePumpkin(Player player) {
+        if (player == null || player.effectSkill == null) {
+            return;
+        }
+        player.effectSkill.isPumpkin = false;
+        if (player.nPoint != null) {
+            player.nPoint.calPoint();
+            Service.gI().point(player);
+            Service.gI().Send_Info_NV(player);
+        }
         Service.gI().Send_Caitrang(player);
     }
 
@@ -170,10 +318,20 @@ public class EffectSkillService {
         }
     }
 
-    public void setBlindDCTT(Player player, long lastTimeDCTT, int timeBlindDCTT) {
+    public int setBlindDCTT(Player player, long lastTimeDCTT, int timeBlindDCTT) {
+        if (player == null || player.effectSkill == null) {
+            return 0;
+        }
+        int reductionSeconds = player.nPoint == null ? 0 : Math.max(0, player.nPoint.blindDurationReductionSeconds);
+        int actualDuration = Math.max(0, timeBlindDCTT - reductionSeconds * 1_000);
+        actualDuration = reduceControlDurationWhileShielded(player, actualDuration);
+        if (actualDuration == 0) {
+            return 0;
+        }
         player.effectSkill.isBlindDCTT = true;
         player.effectSkill.lastTimeBlindDCTT = lastTimeDCTT;
-        player.effectSkill.timeBlindDCTT = timeBlindDCTT;
+        player.effectSkill.timeBlindDCTT = actualDuration;
+        return actualDuration;
     }
 
     public void removeBlindDCTT(Player player) {
@@ -189,6 +347,7 @@ public class EffectSkillService {
     public void removeHuytSao(Player player) {
         player.effectSkill.tiLeHPHuytSao = 0;
         sendEffectPlayer(player, player, TURN_OFF_EFFECT, HUYT_SAO_EFFECT);
+        player.nPoint.calPoint();
         Service.gI().point(player);
         Service.gI().Send_Info_NV(player);
     }
@@ -270,6 +429,13 @@ public class EffectSkillService {
 
     public void setIsBinh(Player plAtt, Player player, int time) {
         if (player.effectSkill != null) {
+            int reductionSeconds = player.nPoint == null ? 0
+                    : Math.max(0, player.nPoint.maPhongBaReductionSeconds);
+            time = Math.max(0, time - reductionSeconds * 1_000);
+            time = reduceControlDurationWhileShielded(player, time);
+            if (time <= 0) {
+                return;
+            }
             int typeBinh = plAtt.newSkill.typeItem;
             player.effectSkill.isBinh = true;
             player.effectSkill.typeBinh = typeBinh;
@@ -340,6 +506,13 @@ public class EffectSkillService {
     }
 
     public void setIsStone(Player player, int time) {
+        if (player == null || player.nPoint == null || player.nPoint.khangHoaDa) {
+            return;
+        }
+        time = reduceControlDurationWhileShielded(player, time);
+        if (time <= 0) {
+            return;
+        }
         if (MapService.gI().isMapMaBu(player.zone.map.mapId)) {
             player.nPoint.hp /= 2;
             PlayerService.gI().sendInfoHp(player);
@@ -361,22 +534,49 @@ public class EffectSkillService {
     }
 
     public void setIsLamCham(Player player, int time) {
+        setIsLamCham(player, time, 100);
+    }
+
+    /** Applies a timed movement-speed reduction without changing the source aura. */
+    public void setIsLamCham(Player player, int time, int slowPercent) {
+        time = reduceControlDurationWhileShielded(player, time);
+        if (time <= 0) {
+            return;
+        }
+        int normalizedSlowPercent = Math.max(0, Math.min(100, slowPercent));
+        boolean speedChanged = !player.effectSkill.isLamCham
+                || player.effectSkill.slowPercent != normalizedSlowPercent;
         player.effectSkill.isLamCham = true;
         player.effectSkill.timeLamCham = time;
         player.effectSkill.lastTimeLamCham = System.currentTimeMillis();
-        player.nPoint.speed = 1;
-        Service.gI().point(player);
-        Service.gI().sendSpeedPlayer(player, -1);
+        player.effectSkill.slowPercent = normalizedSlowPercent;
+        if (speedChanged) {
+            player.nPoint.refreshSpeed();
+            Service.gI().point(player);
+            Service.gI().sendSpeedPlayer(player, -1);
+        }
+    }
+
+    /** Option 227 only mitigates control while the target's energy shield is active. */
+    private int reduceControlDurationWhileShielded(Player player, int duration) {
+        if (player == null || player.effectSkill == null || player.nPoint == null
+                || !player.effectSkill.isShielding || duration <= 0) {
+            return duration;
+        }
+        int percent = Math.max(0, Math.min(100, player.nPoint.shieldControlReductionPercent));
+        return duration * (100 - percent) / 100;
     }
 
     public void removeLamCham(Player player) {
+        int oldSlowPercent = player.effectSkill.slowPercent;
         player.effectSkill.isLamCham = false;
-        if (!player.isPl()) {
-            player.nPoint.speed = 8;
-        }
+        player.effectSkill.slowPercent = 0;
+        player.nPoint.refreshSpeed();
         Service.gI().point(player);
         Service.gI().sendSpeedPlayer(player, -1);
-        Service.gI().chat(player, "Nhẹ lại rồi!");
+        if (oldSlowPercent >= 100) {
+            Service.gI().chat(player, "Nhẹ lại rồi!");
+        }
     }
 
     public void setIsTanHinh(Player player, int time) {

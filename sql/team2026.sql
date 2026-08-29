@@ -2470,8 +2470,8 @@ INSERT INTO `item_option_template` (`id`, `NAME`) VALUES
 (178, 'KI+#%/10s'),
 (179, '+2% sức đánh, tối đa 10% khi ở gần Cải Trang tộc Demons Frost'),
 (180, '+#% sức đánh khi ở gần Cải Trang Black Gohan Rose'),
-(181, 'Dịch chuyển tức thời +#% sát thương'),
-(182, '+#% sát thương đệ từ trứng'),
+(181, 'Cấu hình sau'),
+(182, 'Cấu hình sau'),
 (183, 'Giảm #% thời gian hồi Khiên'),
 (184, '+#% sức đánh, tối đa 10% khi ở gần Gohan xanh, Poc đỏ, Arale búp bê'),
 (185, '+# giờ sử dụng'),
@@ -2481,7 +2481,7 @@ INSERT INTO `item_option_template` (`id`, `NAME`) VALUES
 (189, 'Đệ tử chưởng antomic +#% sát thương'),
 (190, 'Đệ tử chưởng masenko +#% sát thương'),
 (191, 'Né chí mạng+#%'),
-(192, '+#% Chí mạng'),
+(192, 'Cấu hình sau'),
 (193, '+#% sức đánh, tối đa 11% khi ở gần Cải trang cầu thủ khác'),
 (194, '+#% sức đánh, tối đa 10% khi ở gần Cải trang hè khác'),
 (195, '+#% sức đánh, tối đa 10% khi ở gần Cải trang siêu nhân khác'),
@@ -12170,6 +12170,13 @@ CREATE TABLE IF NOT EXISTS `gift_box_config` (
   PRIMARY KEY (`box_template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Option 161: khóa phần thưởng ngọc theo nhân vật và ngày máy chủ.
+CREATE TABLE IF NOT EXISTS `equipment_option_daily_claim` (
+  `player_id` bigint NOT NULL,
+  `claim_date` date NOT NULL,
+  PRIMARY KEY (`player_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `gift_box_config` (`box_template_id`,`enabled`,`min_empty_slots`,`consume_quantity`,`draw_count`,`config_json`) VALUES
 (2010,1,1,1,1,'{"boxTemplateId":2010,"enabled":true,"minEmptySlots":1,"consumeQuantity":1,"drawCount":1,"rewards":[{"itemId":2001,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2002,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2003,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2004,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2005,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2006,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2007,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2008,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]},{"itemId":2009,"weight":1,"quantityMin":1,"quantityMax":1,"gender":3,"initBaseOptions":false,"useDefaultOptions":true,"options":[],"expiry":[{"mode":"permanent","weight":1,"daysMin":0,"daysMax":0}]}]}')
 ON DUPLICATE KEY UPDATE `enabled`=VALUES(`enabled`),`min_empty_slots`=VALUES(`min_empty_slots`),`consume_quantity`=VALUES(`consume_quantity`),`draw_count`=VALUES(`draw_count`),`config_json`=VALUES(`config_json`);
@@ -12206,7 +12213,32 @@ INSERT INTO `item_default_option` (`item_template_id`,`option_id`,`param`,`sort_
 (1869,77,20,0),
 (1869,94,10,1),
 (1869,108,10,2),
-(1869,9,0,3)
+(1869,9,0,3),
+-- Cải trang Thỏ Đại Ca: chạm người chơi để biến họ thành cà rốt (option 115).
+(463,115,0,0)
+ON DUPLICATE KEY UPDATE `param`=VALUES(`param`),`sort_order`=VALUES(`sort_order`);
+
+-- Option 181, 182 and 192 are intentionally reserved for future configuration.
+INSERT INTO `item_option_template` (`id`,`NAME`) VALUES
+(181,'Cấu hình sau'),
+(182,'Cấu hình sau'),
+(192,'Cấu hình sau')
+ON DUPLICATE KEY UPDATE `NAME`=VALUES(`NAME`);
+
+-- Proximity costume families for options 184 and 193-196, 205.
+INSERT INTO `item_default_option` (`item_template_id`,`option_id`,`param`,`sort_order`) VALUES
+(912,184,5,90),(913,184,5,90),(914,184,5,90),
+(968,193,1,90),(969,193,1,90),(970,193,1,90),(971,193,1,90),
+(972,193,1,90),(973,193,1,90),(974,193,1,90),(975,193,1,90),
+(976,193,1,90),(977,193,1,90),(978,193,1,90),
+(1010,194,2,90),(1011,194,2,90),(1012,194,2,90),
+(989,195,2,90),(990,195,2,90),(991,195,2,90),
+(1041,196,2,90),(1042,196,2,90),(1043,196,2,90),
+(1087,205,2,90),(1088,205,2,90),(1089,205,2,90),(1091,205,2,90),
+(2062,205,2,90),(2063,205,2,90),(2064,205,2,90),(2065,205,2,90),
+(2066,205,2,90),(2067,205,2,90),(2068,205,2,90),(2069,205,2,90),
+(2070,205,2,90),(2071,205,2,90),(2072,205,2,90),(2073,205,2,90),
+(2075,205,2,90)
 ON DUPLICATE KEY UPDATE `param`=VALUES(`param`),`sort_order`=VALUES(`sort_order`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

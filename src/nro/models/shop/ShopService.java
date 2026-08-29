@@ -81,6 +81,7 @@ public class ShopService {
                 }
             }
             shop = this.resolveShop(player, shop, allGender);
+            applyOption112CouponDiscount(player, shop);
             switch (shop.typeShop) {
                 case KINANG_SHOP:
                     openShopType1(player, shop);
@@ -168,6 +169,11 @@ public class ShopService {
         return s;
     }
 
+    private List<Item.ItemOption> getVisibleShopOptions(ItemShop itemShop) {
+        Item preview = ItemService.gI().createItemFromItemShop(itemShop);
+        return ItemService.gI().getVisibleItemOptions(preview);
+    }
+
     private void openShopType0(Player player, Shop shop) {
         if (shop != null) {
             player.idMark.setShopOpen(shop);
@@ -195,8 +201,9 @@ public class ShopService {
                             msg.writer().writeInt(0);
                             msg.writer().writeInt(itemShop.cost);
                         }
-                        msg.writer().writeByte(itemShop.options.size());
-                        for (Item.ItemOption option : itemShop.options) {
+                        List<Item.ItemOption> itemOptions = getVisibleShopOptions(itemShop);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
                             msg.writer().writeByte(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
@@ -250,8 +257,9 @@ public class ShopService {
                             msg.writer().writeInt(0);
                             msg.writer().writeInt(itemShop.cost);
                         }
-                        msg.writer().writeByte(itemShop.options.size());
-                        for (Item.ItemOption option : itemShop.options) {
+                        List<Item.ItemOption> itemOptions = getVisibleShopOptions(itemShop);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
                             msg.writer().writeByte(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
@@ -304,8 +312,9 @@ public class ShopService {
                                 .orElse(0); // Giá trị mặc định là int
                         msg.writer().writeLong(costPotential);
 
-                        msg.writer().writeByte(itemShop.options.size());
-                        for (Item.ItemOption option : itemShop.options) {
+                        List<Item.ItemOption> itemOptions = getVisibleShopOptions(itemShop);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
                             msg.writer().writeByte(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
@@ -342,8 +351,9 @@ public class ShopService {
                         msg.writer().writeShort(itemShop.temp.id);
                         msg.writer().writeShort(itemShop.iconSpec);
                         msg.writer().writeInt(itemShop.cost);
-                        msg.writer().writeByte(itemShop.options.size());
-                        for (Item.ItemOption option : itemShop.options) {
+                        List<Item.ItemOption> itemOptions = getVisibleShopOptions(itemShop);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
                             msg.writer().writeByte(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
@@ -385,8 +395,9 @@ public class ShopService {
             for (Item item : items) {
                 msg.writer().writeShort(item.template.id);
                 msg.writer().writeUTF("|7| LUCKY REWARD");
-                msg.writer().writeByte(item.itemOptions.size() + 1);
-                for (Item.ItemOption io : item.itemOptions) {
+                List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                msg.writer().writeByte(itemOptions.size() + 1);
+                for (Item.ItemOption io : itemOptions) {
                     msg.writer().writeByte(io.optionTemplate.id);
                     msg.writer().writeShort(io.param);
                 }
@@ -434,8 +445,9 @@ public class ShopService {
                 msg.writer().writeInt(giamualaivang);
                 msg.writer().writeInt(giamualaingoc);
                 msg.writer().writeInt(item.quantity);
-                msg.writer().writeByte(item.itemOptions.size());
-                for (Item.ItemOption io : item.itemOptions) {
+                List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                msg.writer().writeByte(itemOptions.size());
+                for (Item.ItemOption io : itemOptions) {
                     msg.writer().writeByte(io.optionTemplate.id);
                     msg.writer().writeShort(io.param);
                 }
@@ -497,19 +509,23 @@ public class ShopService {
     }
 
     private boolean subMoneyByItemShop(Player player, ItemShop is) {
+        return subMoneyByItemShop(player, is, is.cost);
+    }
+
+    private boolean subMoneyByItemShop(Player player, ItemShop is, int purchaseCost) {
         int gold = 0;
         int gem = 0;
         int ruby = 0;
         int coupon = 0;
         switch (is.typeSell) {
             case COST_GOLD ->
-                gold = is.cost;
+                gold = purchaseCost;
             case COST_GEM ->
-                gem = is.cost;
+                gem = purchaseCost;
             case COST_RUBY ->
-                ruby = is.cost;
+                ruby = purchaseCost;
             case COST_COUPON ->
-                coupon = is.cost;
+                coupon = purchaseCost;
         }
         if (player.inventory.gold < gold) {
             Service.gI().sendThongBao(player, "Bạn không có đủ vàng");
@@ -529,6 +545,87 @@ public class ShopService {
         player.inventory.ruby -= ruby;
         player.inventory.coupon -= coupon;
         return true;
+    }
+
+    private void applyOption112CouponDiscount(Player player, Shop shop) {
+        if (player == null || shop == null) {
+            return;
+        }
+        Item coupon = findBestOption112Coupon(player);
+        if (coupon == null) {
+            return;
+        }
+        int discountPercent = getOption112DiscountPercent(coupon);
+        for (TabShop tab : shop.tabShops) {
+            if (tab.id != 30) {
+                continue;
+            }
+            for (ItemShop itemShop : tab.itemShops) {
+                itemShop.originalCost = Math.max(0, itemShop.cost);
+                itemShop.couponDiscountPercent = discountPercent;
+                itemShop.cost = getDiscountedPrice(itemShop.originalCost, discountPercent);
+            }
+        }
+    }
+
+    private void buyItemWithOption112Coupon(Player player, ItemShop itemShop) {
+        if (InventoryService.gI().getCountEmptyBag(player) == 0) {
+            Service.gI().sendThongBao(player, "Hành trang đã đầy");
+            return;
+        }
+
+        Item coupon = findBestOption112Coupon(player);
+        if (coupon == null) {
+            Service.gI().sendThongBao(player, "Bạn không có phiếu giảm giá hợp lệ!");
+            return;
+        }
+
+        int discountPercent = getOption112DiscountPercent(coupon);
+        if (itemShop.couponDiscountPercent >= 0 && itemShop.couponDiscountPercent != discountPercent) {
+            Service.gI().sendThongBao(player, "Phiếu giảm giá đã thay đổi, hãy mở lại cửa hàng.");
+            return;
+        }
+
+        int originalCost = itemShop.originalCost >= 0 ? itemShop.originalCost : itemShop.cost;
+        int discountedCost = getDiscountedPrice(originalCost, discountPercent);
+        if (!subMoneyByItemShop(player, itemShop, discountedCost)) {
+            return;
+        }
+
+        InventoryService.gI().subQuantityItemsBag(player, coupon, 1);
+        InventoryService.gI().addItemBag(player, ItemService.gI().createItemFromItemShop(itemShop));
+        InventoryService.gI().sendItemBags(player);
+        Service.gI().sendThongBao(player, "Mua thành công " + itemShop.temp.name
+                + " (giảm " + discountPercent + "%).");
+    }
+
+    private Item findBestOption112Coupon(Player player) {
+        Item bestCoupon = null;
+        int bestDiscount = -1;
+        for (Item item : player.inventory.itemsBag) {
+            if (item == null || !item.isNotNullItem() || item.template.id != 459 || item.quantity <= 0) {
+                continue;
+            }
+            int discount = getOption112DiscountPercent(item);
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestCoupon = item;
+            }
+        }
+        return bestCoupon;
+    }
+
+    private int getOption112DiscountPercent(Item coupon) {
+        ItemOption option = coupon.getOptionById(112);
+        // Coupons created by older reward code had no option 112; retain the
+        // former advertised 80% discount for those legacy items.
+        int percent = option == null ? 80 : option.param;
+        return Math.min(100, Math.max(0, percent));
+    }
+
+    private int getDiscountedPrice(int originalCost, int discountPercent) {
+        long payable = (long) Math.max(0, originalCost) * (100 - discountPercent);
+        return (int) Math.min(Integer.MAX_VALUE, (payable + 99) / 100);
     }
 
     private boolean subMoneyByItemShopV2(Player player, ItemShop is) {
@@ -668,18 +765,9 @@ public class ShopService {
             return;
         }
 
-        // Đổi bằng phiếu giảm giá
+        // Mua bằng phiếu giảm giá option 112.
         if (is.tabShop.id == 30) {
-            Item pGG = InventoryService.gI().findItem(player.inventory.itemsBag, 459);
-            if (pGG != null) {
-                Item item = ItemService.gI().createItemFromItemShop(is);
-                InventoryService.gI().subQuantityItemsBag(player, pGG, 1);
-                InventoryService.gI().addItemBag(player, item);
-                InventoryService.gI().sendItemBags(player);
-                Service.gI().sendThongBao(player, "Đổi thành công " + is.temp.name);
-            } else {
-                Service.gI().sendThongBao(player, "Bạn không có phiếu giảm giá!");
-            }
+            buyItemWithOption112Coupon(player, is);
             return;
         }
 
@@ -733,9 +821,16 @@ public class ShopService {
             }
         }
 
-        // Đổi bằng điểm sự kiện
-        if (is.tabShop.id == 59) {
-            int eventPointPrice = Math.max(0, is.cost);
+        // Option 164 is the event-point price. Tab 59 keeps its legacy cost fallback.
+        int optionEventPointPrice = 0;
+        for (Item.ItemOption option : is.options) {
+            if (option != null && option.optionTemplate != null && option.optionTemplate.id == 164) {
+                optionEventPointPrice += Math.max(0, option.param);
+            }
+        }
+        if (is.tabShop.id == 59 || optionEventPointPrice > 0) {
+            int eventPointPrice = optionEventPointPrice > 0
+                    ? optionEventPointPrice : Math.max(0, is.cost);
 
             if (eventPointPrice == 0) {
                 Service.gI().sendThongBao(player, "Vật phẩm chưa được cấu hình giá điểm sự kiện.");
@@ -749,6 +844,8 @@ public class ShopService {
 
             player.event.subEventPoint(eventPointPrice);
             Item item = ItemService.gI().createItemFromItemShop(is);
+            item.itemOptions.removeIf(option -> option != null && option.optionTemplate != null
+                    && option.optionTemplate.id == 164);
             InventoryService.gI().addItemBag(player, item);
             InventoryService.gI().sendItemBags(player);
             Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + eventPointPrice + " điểm sự kiện.");
@@ -994,7 +1091,7 @@ public class ShopService {
             item = pl.inventory.itemsBag.get(index);
         }
         if (item != null && item.isNotNullItem()) {
-            if (item.template.id == 570) {
+            if (item.template.id == 570 || item.getOptionById(154) != null) {
                 Service.gI().sendThongBao(pl, "Bạn không thể bán vật phẩm này");
                 return;
             }
@@ -1049,7 +1146,7 @@ public class ShopService {
             item = pl.inventory.itemsBag.get(index);
         }
         if (item != null) {
-            if (item.template.id == 570) {
+            if (item.template.id == 570 || item.getOptionById(154) != null) {
                 Service.gI().sendThongBao(pl, "Bạn không thể bán vật phẩm này");
                 return;
             }

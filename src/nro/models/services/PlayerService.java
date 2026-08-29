@@ -207,7 +207,7 @@ public class PlayerService {
                     player.isFly = type == 0;
                 } catch (Exception e) {
                 }
-                if (player.isFly && player.getMount() == -1) {
+                if (player.isFly && player.getMount() == -1 && !player.nPoint.flyWithoutKi) {
                     int mp = player.nPoint.mpg / (100 * (player.effectSkill.isMonkey ? 2 : 1));
                     hoiPhuc(player, 0, -mp);
                 }

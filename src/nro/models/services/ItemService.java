@@ -19,6 +19,8 @@ public class ItemService {
 
     private static final int DROP_ACTIVATION_RATE = 5;
     private static final int ACTIVITY_ACTIVATION_RATE = 10;
+    private static final int BONUS_PLACEHOLDER_OPTION_ID = 41;
+    private static final Set<Integer> HIDDEN_BONUS_OPTION_IDS = Set.of(42, 43, 44, 45, 46, 161);
 
     private static ItemService i;
 
@@ -52,7 +54,162 @@ public class ItemService {
         for (Item.ItemOption io : itemShop.options) {
             item.itemOptions.add(new Item.ItemOption(io));
         }
+        resolveOption231(item);
+        prepareBonusOptionsForFirstUse(item);
         return item;
+    }
+
+    /**
+     * Option 41 is the configured number of bonus lines to hide until the
+     * item is first used. A negative parameter is an internal pending marker;
+     * it is never serialized to clients.
+     */
+    public void prepareBonusOptionsForFirstUse(Item item) {
+        if (item == null || item.itemOptions == null) {
+            return;
+        }
+        Item.ItemOption placeholder = findOption(item, BONUS_PLACEHOLDER_OPTION_ID);
+        if (placeholder == null) {
+            return;
+        }
+        int remainingToHide = Math.max(0, placeholder.param);
+        for (Item.ItemOption option : item.itemOptions) {
+            if (remainingToHide == 0) {
+                break;
+            }
+            if (isHiddenBonusOption(option) && option.param > 0) {
+                option.param = -option.param;
+                remainingToHide--;
+            }
+        }
+    }
+
+    /** Opens the configured bonus lines permanently on the first use/equip. */
+    public boolean revealBonusOptions(Item item) {
+        if (item == null || item.itemOptions == null) {
+            return false;
+        }
+        Item.ItemOption placeholder = findOption(item, BONUS_PLACEHOLDER_OPTION_ID);
+        if (placeholder == null) {
+            return false;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (isHiddenBonusOption(option) && option.param < 0) {
+                option.param = -option.param;
+            }
+        }
+        item.itemOptions.remove(placeholder);
+        return true;
+    }
+
+    /**
+     * Returns the option view which may be sent to a client. Pending bonus
+     * lines remain server-side until option 41 has been consumed.
+     */
+    public List<Item.ItemOption> getVisibleItemOptions(Item item) {
+        if (item == null || item.itemOptions == null || item.itemOptions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Item.ItemOption placeholder = findOption(item, BONUS_PLACEHOLDER_OPTION_ID);
+        if (placeholder == null) {
+            return item.itemOptions;
+        }
+        int configuredHiddenCount = Math.max(0, placeholder.param);
+        int hiddenCount = 0;
+        List<Item.ItemOption> visible = new ArrayList<>();
+        for (Item.ItemOption option : item.itemOptions) {
+            if (isHiddenBonusOption(option)) {
+                if (option.param < 0 || hiddenCount < configuredHiddenCount) {
+                    hiddenCount++;
+                    continue;
+                }
+            }
+            visible.add(option);
+        }
+        return visible;
+    }
+
+    /** True while at least one configured bonus is still waiting to open. */
+    public boolean hasPendingBonusOptions(Item item) {
+        if (findOption(item, BONUS_PLACEHOLDER_OPTION_ID) == null || item.itemOptions == null) {
+            return false;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (isHiddenBonusOption(option) && option.param < 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Item.ItemOption findOption(Item item, int optionId) {
+        if (item == null || item.itemOptions == null) {
+            return null;
+        }
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option != null && option.optionTemplate != null && option.optionTemplate.id == optionId) {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Option 231 is a one-time lifetime roll. It resolves when the item is
+     * issued or enters an inventory: 99% receive a duration and 1% remain
+     * permanent. The marker is then removed forever.
+     */
+    public boolean resolveOption231(Item item) {
+        Item.ItemOption marker = findOption(item, 231);
+        if (marker == null) {
+            return false;
+        }
+        item.itemOptions.remove(marker);
+        if (Math.random() < 0.99D) {
+            int[] validDays = {3, 7, 15, 21};
+            item.itemOptions.add(new Item.ItemOption(93, validDays[Util.nextInt(validDays.length)]));
+        }
+        return true;
+    }
+
+    /** A depleted Sách Tuyệt Kỹ must be repaired before any skill can be cast. */
+    public boolean canUseEquippedSkillBook(Player player) {
+        Item.ItemOption durability = getEquippedSkillBookDurability(player);
+        if (durability == null || durability.param > 0) {
+            return true;
+        }
+        Service.gI().sendThongBao(player,
+                "Sách Tuyệt Kỹ đã hết độ bền, hãy hồi phục trước khi sử dụng kỹ năng");
+        return false;
+    }
+
+    /** Deducts one durability after a successful skill use. */
+    public void consumeEquippedSkillBookDurability(Player player) {
+        Item.ItemOption durability = getEquippedSkillBookDurability(player);
+        if (durability == null || durability.param <= 0) {
+            return;
+        }
+        durability.param--;
+        if (durability.param == 0 || durability.param % 10 == 0) {
+            InventoryService.gI().sendItemBody(player);
+        }
+    }
+
+    private Item.ItemOption getEquippedSkillBookDurability(Player player) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null
+                || player.inventory.itemsBody.size() <= InventoryService.PLAYER_SKILL_BOOK_SLOT) {
+            return null;
+        }
+        Item book = player.inventory.itemsBody.get(InventoryService.PLAYER_SKILL_BOOK_SLOT);
+        if (book == null || !book.isNotNullItem() || (!book.isSachTuyetKy() && !book.isSachTuyetKy2())) {
+            return null;
+        }
+        return book.getOptionById(212);
+    }
+
+    private boolean isHiddenBonusOption(Item.ItemOption option) {
+        return option != null && option.optionTemplate != null
+                && HIDDEN_BONUS_OPTION_IDS.contains(option.optionTemplate.id);
     }
 
     public Item copyItem(Item item) {
@@ -89,6 +246,7 @@ public class ItemService {
         Item item = createNewItem(tempId);
         if (item != null) {
             item.itemOptions.addAll(getDefaultItemOptions(tempId));
+            resolveOption231(item);
         }
         return item;
     }
@@ -97,6 +255,7 @@ public class ItemService {
         Item item = createNewItem(tempId, quantity);
         if (item != null) {
             item.itemOptions.addAll(getDefaultItemOptions(tempId));
+            resolveOption231(item);
         }
         return item;
     }
@@ -106,6 +265,7 @@ public class ItemService {
         Item item = createNewItem(tempId, quantity);
         if (item != null) {
             item.itemOptions.addAll(mergeItemOptions(tempId, includeDefaults, additionalOptions));
+            resolveOption231(item);
         }
         return item;
     }
@@ -525,6 +685,13 @@ public class ItemService {
 
     public boolean isOutOfDateTime(Item item) {
         if (item != null) {
+            Item.ItemOption hourDuration = item.getOptionById(185);
+            if (hourDuration != null && hourDuration.param > 0) {
+                long durationMillis = (long) hourDuration.param * 60L * 60L * 1000L;
+                if (System.currentTimeMillis() - item.createTime >= durationMillis) {
+                    return true;
+                }
+            }
             for (Item.ItemOption io : item.itemOptions) {
                 if (io.optionTemplate.id == 93) {
                     int dayPass = (int) TimeUtil.diffDate(new Date(), new Date(item.createTime), TimeUtil.DAY);
@@ -540,6 +707,59 @@ public class ItemService {
             }
         }
         return false;
+    }
+
+    /**
+     * Removes items whose option 93 duration elapsed while the owner remained
+     * online.  Login-time cleanup alone leaves such items usable indefinitely
+     * until the next reconnect.
+     */
+    public boolean removeExpiredItems(Player player) {
+        if (player == null || player.inventory == null) {
+            return false;
+        }
+
+        boolean bodyChanged = removeExpiredItems(player.inventory.itemsBody);
+        boolean bagChanged = removeExpiredItems(player.inventory.itemsBag);
+        boolean boxChanged = removeExpiredItems(player.inventory.itemsBox);
+
+        if (bodyChanged) {
+            if (player.nPoint != null) {
+                player.nPoint.calPoint();
+            }
+            Service.gI().point(player);
+            InventoryService.gI().sendItemBody(player);
+        }
+        if (bagChanged) {
+            InventoryService.gI().sendItemBags(player);
+        }
+        if (boxChanged) {
+            InventoryService.gI().sendItemBox(player);
+        }
+        return bodyChanged || bagChanged || boxChanged;
+    }
+
+    private boolean removeExpiredItems(List<Item> items) {
+        if (items == null) {
+            return false;
+        }
+        boolean changed = false;
+        for (int index = 0; index < items.size(); index++) {
+            Item item = items.get(index);
+            if (item != null && item.isNotNullItem()) {
+                Item.ItemOption duration = item.getOptionById(93);
+                int durationBefore = duration == null ? Integer.MIN_VALUE : duration.param;
+                if (isOutOfDateTime(item)) {
+                    items.set(index, createItemNull());
+                    changed = true;
+                } else if (duration != null && duration.param != durationBefore) {
+                    // The remaining days changed while the player was online;
+                    // refresh this inventory list so the client sees it too.
+                    changed = true;
+                }
+            }
+        }
+        return changed;
     }
 
     public void OpenItem736(Player player, Item itemUse) {
@@ -1062,6 +1282,9 @@ public class ItemService {
                 break;
             case 561: // Nhẫn Thần Linh
                 itemoptions.add(new ItemOption(14, 14 * tiLe / 100));
+                if (tiLe > 100) {
+                    itemoptions.add(new ItemOption(206, tiLe - 100));
+                }
                 break;
             default:
                 break;
@@ -1193,6 +1416,9 @@ public class ItemService {
                 break;
             case 561: // Nhẫn Thần Linh
                 itemoptions.add(new ItemOption(14, 14 * tiLe / 100));
+                if (tiLe > 100) {
+                    itemoptions.add(new ItemOption(207, tiLe - 100));
+                }
                 break;
             default:
                 break;

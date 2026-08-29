@@ -215,6 +215,10 @@ public class Trade {
     }
 
     private boolean isItemCannotTran(Item item) {
+        Item.ItemOption tradeLimit = item.getOptionById(232);
+        if (tradeLimit != null && tradeLimit.param <= 0) {
+            return true;
+        }
         for (Item.ItemOption io : item.itemOptions) {
             if (io.optionTemplate.id == 30) {
                 return true;
@@ -301,8 +305,9 @@ public class Trade {
                     } else {
                         msg.writer().writeInt(item.quantity);
                     }
-                    msg.writer().writeByte(item.itemOptions.size());
-                    for (Item.ItemOption io : item.itemOptions) {
+                    List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                    msg.writer().writeByte(itemOptions.size());
+                    for (Item.ItemOption io : itemOptions) {
                         msg.writer().writeByte(io.optionTemplate.id);
                         msg.writer().writeShort(io.param);
                     }
@@ -318,8 +323,9 @@ public class Trade {
                     } else {
                         msg.writer().writeInt(item.quantity);
                     }
-                    msg.writer().writeByte(item.itemOptions.size());
-                    for (Item.ItemOption io : item.itemOptions) {
+                    List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                    msg.writer().writeByte(itemOptions.size());
+                    for (Item.ItemOption io : itemOptions) {
                         msg.writer().writeByte(io.optionTemplate.id);
                         msg.writer().writeShort(io.param);
                     }
@@ -357,6 +363,10 @@ public class Trade {
         if (tradeStatus != SUCCESS) {
             sendNotifyTrade(tradeStatus);
         } else {
+            if (!consumeTradeLimits(itemsTrade1) || !consumeTradeLimits(itemsTrade2)) {
+                sendNotifyTrade(FAIL_TRADE_LIMIT);
+                return;
+            }
             for (Item item : itemsTrade1) {
                 if (!player2.isBot) {
                     if (!InventoryService.gI().addItemList(itemsBag2, item)) {
@@ -412,6 +422,24 @@ public class Trade {
     private static final byte FAIL_NOT_ENOUGH_BAG_P1 = 3;
     private static final byte FAIL_NOT_ENOUGH_BAG_P2 = 4;
     private static final byte FAIL_ACTVIE = 5;
+    private static final byte FAIL_TRADE_LIMIT = 6;
+
+    /** Each completed transaction consumes one option-232 use from that item. */
+    private boolean consumeTradeLimits(List<Item> tradeItems) {
+        for (Item item : tradeItems) {
+            Item.ItemOption limit = item.getOptionById(232);
+            if (limit != null && limit.param <= 0) {
+                return false;
+            }
+        }
+        for (Item item : tradeItems) {
+            Item.ItemOption limit = item.getOptionById(232);
+            if (limit != null) {
+                limit.param--;
+            }
+        }
+        return true;
+    }
 
     private void sendNotifyTrade(byte status) {
         player1.idMark.setLastTimeTrade(System.currentTimeMillis());
@@ -438,6 +466,10 @@ public class Trade {
             case FAIL_NOT_ENOUGH_BAG_P2:
                 Service.gI().sendThongBao(player1, "Giao dịch thất bại vì " + player2.name + " không đủ chỗ chứa");
                 Service.gI().sendThongBao(player2, "Giao dịch thất bại vì " + player2.name + " không đủ chỗ chứa");
+                break;
+            case FAIL_TRADE_LIMIT:
+                Service.gI().sendThongBao(player1, "Giao dịch thất bại vì vật phẩm đã hết số lần giao dịch");
+                Service.gI().sendThongBao(player2, "Giao dịch thất bại vì vật phẩm đã hết số lần giao dịch");
                 break;
             case FAIL_ACTVIE:
                 Service.gI().sendThongBao(player1,

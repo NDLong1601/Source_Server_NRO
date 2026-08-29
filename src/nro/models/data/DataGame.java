@@ -45,14 +45,13 @@ public class DataGame {
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
-    // 64 keeps the costume baseline fix and republishes deduplicated fishing backgrounds.
-    public static byte vsData = 64;
+    // 70 removes the retired Tomioka Giyuu split-part frame mappings.
+    public static byte vsData = 70;
     public static byte vsMap = loadMapVersion();
     // 2 publishes real skill descriptions instead of the old literal "null".
     public static byte vsSkill = 2;
-    // 38 publishes the character rename card template (ID 2218) while keeping
-    // the size-safe reload/append split introduced in version 37.
-    public static byte vsItem = 38;
+    // 43 removes retired item template 2219 from the client cache.
+    public static byte vsItem = 43;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 

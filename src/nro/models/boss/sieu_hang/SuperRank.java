@@ -188,10 +188,6 @@ public abstract class SuperRank extends Boss {
                 this.precentMabuHold++;
                 damage = 1;
             }
-            if (plAtt != null && this.nPoint.islinhthuydanhbac) {
-                Service.gI().sendThongBao(plAtt, "Không thể tấn công! Vì người chơi này đã nạp lần đầu!");
-                return 0;
-            }
 
             if (plAtt != null && plAtt.playerSkill.skillSelect != null) {
                 switch (plAtt.playerSkill.skillSelect.template.id) {
@@ -260,8 +256,8 @@ public abstract class SuperRank extends Boss {
             if (tlNeDon > 90) {
                 tlNeDon = 90;
             }
-            if (tlGiap > 86) {
-                tlGiap = 86;
+            if (tlGiap > 100) {
+                tlGiap = 100;
             }
 
             if (Util.isTrue(tlNeDon, 100)) {

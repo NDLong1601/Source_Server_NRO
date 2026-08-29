@@ -28,8 +28,11 @@ import nro.models.services.AchievementService;
 import nro.models.services_dungeon.TrainingService;
 import nro.models.services.ChatGlobalService;
 import nro.models.services.ItemService;
+import nro.models.services.EquipmentOptionService;
 import nro.models.services.KanaoQuestService;
 import nro.models.map.service.MapService;
+import nro.models.player_system.Template.ItemTemplate;
+import nro.models.server.Manager;
 import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.TimeUtil;
@@ -120,6 +123,14 @@ public class Mob {
 
     public void injured(Player plAtt, long damage, boolean dieWhenHpFull) {
         if (!this.isDie()) {
+            if (plAtt != null && plAtt.isPl() && plAtt.nPoint != null) {
+                damage = plAtt.nPoint.applyDamageBonusAgainst(this, damage);
+                if (isBigBoss() && plAtt.nPoint.bossTrueDamagePercent > 0) {
+                    // Mobs have no armor pipeline.  Option 204 therefore
+                    // becomes direct additional HP damage only for big bosses.
+                    damage += damage * Math.min(100, plAtt.nPoint.bossTrueDamagePercent) / 100L;
+                }
+            }
             if (damage >= this.point.hp) {
                 damage = this.point.hp;
             }
@@ -169,6 +180,10 @@ public class Mob {
                 this.temporaryEnemies.clear();
                 if (plAtt != null) {
                     this.sendMobDieAffterAttacked(plAtt, (int) damage);
+                    if (plAtt.nPoint != null) {
+                        plAtt.nPoint.increaseMobKillCounters();
+                        EquipmentOptionService.gI().grantDailyMobGem(plAtt);
+                    }
                     TaskService.gI().checkDoneTaskKillMob(plAtt, this);
                     TaskService.gI().checkDoneSideTaskKillMob(plAtt, this);
                     TaskService.gI().checkDoneClanTaskKillMob(plAtt, this);
@@ -356,6 +371,11 @@ public class Mob {
         try {
             List<Player> players = this.zone.getNotBosses();
             for (Player pl : players) {
+                // Option 82 prevents only autonomous target acquisition.
+                // A monster may still retaliate after this player attacks it.
+                if (pl.nPoint != null && pl.nPoint.khongBiQuaiChuDongTanCong) {
+                    continue;
+                }
                 if (!pl.isDie() && !pl.isBoss && !pl.isNewPet && (pl.satellite == null || !pl.satellite.isDefend) && (pl.effectSkin == null || !pl.effectSkin.isVoHinh) && (this.tempId > 18 || (this.tempId > 9 && this.type == 4)) || isBigBoss()) {
                     int dis = Util.getDistance(pl, this);
                     if (dis <= distance || isBigBoss()) {
@@ -618,6 +638,8 @@ public class Mob {
 
         if (this.tempId == 0) {
             list.addAll(AdminSpawnConfigService.gI().createMobDrops(this, player.id, x, yEnd));
+            addBareEventItemDrop(player, x, yEnd, list);
+            applyGoldDropBonus(player, list);
             return list;
         }
         int mapid = player.zone.map.mapId;
@@ -817,100 +839,8 @@ public class Mob {
                 list.add(new ItemMap(zone, 1634, soLuong, x, yEnd, player.id));
             }
         }
-        if (MapService.gI().isMapRiengTu(mapid)) {
-            int baseTileDrop = 2;
-            double tileDrop = baseTileDrop;
-
-            int totalOption236Param = 0;
-            for (Item item : player.inventory.itemsBody) {
-                if (item != null && item.itemOptions != null) {
-                    for (Item.ItemOption op : item.itemOptions) {
-                        if (op.optionTemplate.id == 236) {
-                            totalOption236Param += op.param;
-                        }
-                    }
-                }
-            }
-
-            if (totalOption236Param > 100) {
-                totalOption236Param = 100;
-            }
-
-            double percentFromOption236 = Math.pow(totalOption236Param / 100.0, 1.5) * 20.0; // max 20%
-            tileDrop *= (1 + percentFromOption236 / 100.0);
-
-            if (player.itemTime.isUseCoBonLa) {
-                tileDrop *= 1.5;
-            }
-
-            // Check rơi đồ kích hoạt
-            if (Util.isTrue((int) tileDrop, 9999)) {
-                short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
-                ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
-                List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);
-                if (!ops.isEmpty()) {
-                    it.options = ops;
-                }
-
-                int[] opsrand = ItemService.gI().randOptionItemKichHoat(player.gender);
-                for (int opId : opsrand) {
-                    if (opId > 0) {
-                        it.options.add(new Item.ItemOption(opId, 0));
-                    }
-                }
-                it.options.add(new Item.ItemOption(30, 0));
-                list.add(it);
-
-                //  ChatGlobalService.gI().ThongBaoRoiDo(player, player.name + " vừa nhặt được " + it.itemTemplate.name + " sét kích hoạt tại " + this.zone.map.mapName + " khu " + this.zone.zoneId);
-            }
-        }
-        if (MapService.gI().isMapUpSKH(mapid)) {
-            int baseTileDrop = 2;
-            double tileDrop = baseTileDrop;
-
-            int totalOption236Param = 0;
-            for (Item item : player.inventory.itemsBody) {
-                if (item != null && item.itemOptions != null) {
-                    for (Item.ItemOption op : item.itemOptions) {
-                        if (op.optionTemplate.id == 236) {
-                            totalOption236Param += op.param;
-                        }
-                    }
-                }
-            }
-
-            if (totalOption236Param > 100) {
-                totalOption236Param = 100;
-            }
-
-            double percentFromOption236 = Math.pow(totalOption236Param / 100.0, 1.5) * 20.0; // max 20%
-            tileDrop *= (1 + percentFromOption236 / 100.0);
-
-            if (player.itemTime.isUseCoBonLa) {
-                tileDrop *= 1.5;
-            }
-
-            // Check rơi đồ kích hoạt
-            if (Util.isTrue((int) tileDrop, 9999)) {
-                short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
-                ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
-                List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);
-                if (!ops.isEmpty()) {
-                    it.options = ops;
-                }
-
-                int[] opsrand = ItemService.gI().randOptionItemKichHoat(player.gender);
-                for (int opId : opsrand) {
-                    if (opId > 0) {
-                        it.options.add(new Item.ItemOption(opId, 0));
-                    }
-                }
-                it.options.add(new Item.ItemOption(30, 0));
-                list.add(it);
-
-                //  ChatGlobalService.gI().ThongBaoRoiDo(player, player.name + " vừa nhặt được " + it.itemTemplate.name + " sét kích hoạt tại " + this.zone.map.mapName + " khu " + this.zone.zoneId);
-            }
-        }
+        addActivationDrop(player, mapid, x, yEnd, list);
+        addLuckyNormalEquipmentDrop(player, x, yEnd, list);
 
         //========================Đồ Sao Khác Vải Thô========================
         if (((Util.isTrue(1, 8000))) && MapService.gI().isMapUpSKH(mapid)) {
@@ -1076,20 +1006,203 @@ public class Mob {
             }
         }
 
-        if (this.zone.map.mapId >= 0) {
-            int dropRate = 10;
-            if (player.itemTime.isUseCoBonLa) {
-                dropRate = (int) (dropRate * 1.15);
-            }
-
-            if (Util.isTrue(dropRate, 100)) { // spl
-                list.add(new ItemMap(Util.spl(zone, Util.nextInt(441, 447), 1, x, this.location.y, player.id)));
-            }
+        if (this.zone.map.mapId >= 0 && player.nPoint != null
+                && player.nPoint.isDoSPL && Util.isTrue(30, 100)) {
+            // Option 110: crystal stars can drop only while the killer wears
+            // the detector equipment.  The former global 10% drop is removed.
+            list.add(new ItemMap(Util.spl(zone, Util.nextInt(441, 447), 1, x, this.location.y, player.id)));
         }
 
         list.addAll(AdminSpawnConfigService.gI().createMobDrops(this, player.id, x, yEnd));
+        addBareEventItemDrop(player, x, yEnd, list);
+        applyGoldDropBonus(player, list);
         return list;
 
+    }
+
+    /**
+     * Option 100 (and the gold component of option 155) applies only to gold
+     * generated by a mob kill.  Rewards, shops and player-to-player gold are
+     * deliberately outside this path.
+     */
+    private int getGoldDropAmount(Player player, int baseGold) {
+        if (player == null || player.nPoint == null || player.nPoint.tlGold <= 0) {
+            return baseGold;
+        }
+        long scaledGold = Math.round(baseGold * (100.0d + player.nPoint.tlGold) / 100.0d);
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(baseGold, scaledGold));
+    }
+
+    private void applyGoldDropBonus(Player player, List<ItemMap> drops) {
+        for (ItemMap drop : drops) {
+            if (drop != null && drop.itemTemplate != null && drop.itemTemplate.type == 9 && drop.quantity > 0) {
+                drop.quantity = getGoldDropAmount(player, drop.quantity);
+            }
+        }
+    }
+
+    /** Option 158: while truly bare, a mob kill has a 5% event-material roll. */
+    private void addBareEventItemDrop(Player player, int x, int yEnd, List<ItemMap> drops) {
+        if (player == null || player.nPoint == null || !player.nPoint.canFindEventItemBare
+                || player.inventory == null || player.inventory.itemsBody == null
+                || !isBareWithoutCostume(player) || !Util.isTrue(5, 100)) {
+            return;
+        }
+        int itemId = -1;
+        EventManager events = EventManager.gI();
+        if (events.isActive("summer")) {
+            int[] ids = {1798, 1799, 1800, 1612};
+            itemId = ids[Util.nextInt(ids.length)];
+        } else if (events.isActive("hungvuong")) {
+            int[] ids = {1544, 1545, 1547, 1548, 1549, 1558};
+            itemId = ids[Util.nextInt(ids.length)];
+        } else if (events.isActive("halloween")) {
+            itemId = 585;
+        } else if (events.isActive("christmas")) {
+            itemId = 648;
+        } else if (events.isActive("trungthu")) {
+            int[] ids = {890, 891, 1045};
+            itemId = ids[Util.nextInt(ids.length)];
+        } else if (events.isActive("lunar_new_year")) {
+            itemId = Util.isTrue(1, 2) ? 752 : 753;
+        } else if (events.isActive("womens_day")) {
+            itemId = 709;
+        }
+        if (itemId >= 0) {
+            drops.add(new ItemMap(zone, itemId, 1, x, yEnd, player.id));
+        }
+    }
+
+    private boolean isBareWithoutCostume(Player player) {
+        int upperBodySlot = Math.min(5, player.inventory.itemsBody.size() - 1);
+        for (int slot = 0; slot <= upperBodySlot; slot++) {
+            Item item = player.inventory.itemsBody.get(slot);
+            if (item != null && item.isNotNullItem()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Option 236 increases the existing equipment-activation drop roll. The
+     * roll remains available in its original maps; wearing at least one luck
+     * option extends that same roll to every map.
+     */
+    private void addActivationDrop(Player player, int mapId, int x, int yEnd, List<ItemMap> drops) {
+        int luckPercent = getEquippedOptionPercent(player, 236);
+        boolean originalDropMap = MapService.gI().isMapRiengTu(mapId) || MapService.gI().isMapUpSKH(mapId);
+        if (!originalDropMap && luckPercent == 0) {
+            return;
+        }
+
+        double dropRate = 2.0d;
+        if (luckPercent > 0) {
+            // Preserve the original balance curve: a total of 100% luck gives
+            // a 20% relative bonus to the base activation-drop chance.
+            double luckBonusPercent = Math.pow(luckPercent / 100.0d, 1.5d) * 20.0d;
+            dropRate *= 1.0d + luckBonusPercent / 100.0d;
+        }
+        if (player.itemTime != null && player.itemTime.isUseCoBonLa) {
+            dropRate *= 1.5d;
+        }
+        if (!isTrue(dropRate, 9_999L)) {
+            return;
+        }
+
+        short itemTemplateId = (short) ItemService.gI().randTempItemKichHoat(player.gender);
+        ItemMap item = new ItemMap(zone, itemTemplateId, 1, x, yEnd, player.id);
+        List<Item.ItemOption> options = ItemService.gI().getListOptionItemShop(itemTemplateId);
+        if (!options.isEmpty()) {
+            item.options = options;
+        }
+        for (int optionId : ItemService.gI().randOptionItemKichHoat(player.gender)) {
+            if (optionId > 0) {
+                item.options.add(new Item.ItemOption(optionId, 0));
+            }
+        }
+        item.options.add(new Item.ItemOption(30, 0));
+        drops.add(item);
+    }
+
+    /**
+     * A luck option also gives normal equipment a dedicated drop roll. The
+     * item is selected from the original common-equipment catalog at the
+     * defeated mob's level (level 0 mobs produce level 1 equipment).
+     */
+    private void addLuckyNormalEquipmentDrop(Player player, int x, int yEnd, List<ItemMap> drops) {
+        int luckPercent = getEquippedOptionPercent(player, 236);
+        // Every point of luck is 1 / 10,000: 10% luck = 0.10%; 100% = 1%.
+        if (luckPercent == 0 || !isTrue(luckPercent, 10_000L)) {
+            return;
+        }
+
+        short itemTemplateId = getCommonEquipmentTemplateForMobLevel(player.gender, Byte.toUnsignedInt(this.level));
+        if (itemTemplateId < 0) {
+            return;
+        }
+        ItemMap item = new ItemMap(zone, itemTemplateId, 1, x, yEnd, player.id);
+        List<Item.ItemOption> options = ItemService.gI().getListOptionItemShop(itemTemplateId);
+        if (!options.isEmpty()) {
+            item.options = options;
+        }
+        drops.add(item);
+    }
+
+    private short getCommonEquipmentTemplateForMobLevel(int gender, int mobLevel) {
+        int targetLevel = Math.max(1, Math.min(8, mobLevel));
+        int normalizedGender = Math.max(0, Math.min(2, gender));
+        short selectedTemplateId = -1;
+        int candidateCount = 0;
+
+        // IDs 0..187 are the canonical common armor, pants, gloves, shoes
+        // and radar templates. Later IDs include event and premium equipment.
+        int upperBound = Math.min(187, Manager.ITEM_TEMPLATES.size() - 1);
+        for (int itemId = 0; itemId <= upperBound; itemId++) {
+            ItemTemplate template = Manager.ITEM_TEMPLATES.get(itemId);
+            if (template == null || template.type < 0 || template.type > 4
+                    || template.level != targetLevel
+                    || (template.gender != normalizedGender && template.gender != 3)) {
+                continue;
+            }
+            candidateCount++;
+            if (Util.nextInt(candidateCount) == 0) {
+                selectedTemplateId = template.id;
+            }
+        }
+        return selectedTemplateId;
+    }
+
+    private int getEquippedOptionPercent(Player player, int optionId) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null) {
+            return 0;
+        }
+        int total = 0;
+        for (Item item : player.inventory.itemsBody) {
+            if (item == null || item.itemOptions == null) {
+                continue;
+            }
+            for (Item.ItemOption option : item.itemOptions) {
+                if (option != null && option.optionTemplate != null && option.optionTemplate.id == optionId) {
+                    total += Math.max(0, option.param);
+                }
+            }
+        }
+        if (optionId == 236 && player.setClothes != null && player.setClothes.gohan >= 5) {
+            total += 150;
+        }
+        return Math.min(total, 10_000);
+    }
+
+    /** Performs a probability roll without truncating fractional percentages. */
+    private boolean isTrue(double numerator, long denominator) {
+        if (numerator <= 0.0d || denominator <= 0L) {
+            return false;
+        }
+        final long scale = 10_000L;
+        long scaledNumerator = Math.round(numerator * scale);
+        long scaledDenominator = denominator * scale;
+        return Util.isTrue(scaledNumerator, scaledDenominator);
     }
 
     private ItemMap dropItemTask(Player player) {
@@ -1253,15 +1366,16 @@ public class Mob {
     }
 
     private void phanSatThuong(Player plTarget, long dame) {
-        if (plTarget.nPoint == null) {
-            return;
-        }
         if (plTarget == null || plTarget.inventory == null) {
             return;
         }
+        if (plTarget.nPoint == null || dame <= 0) {
+            return;
+        }
         int percentPST = plTarget.nPoint.tlPST;
-        if (percentPST != 0) {
-            int damePST = (int) (long) (dame * percentPST / 100L);
+        long reflectDamage = dame * percentPST / 100L + plTarget.nPoint.phanDonCanChien;
+        if (reflectDamage > 0) {
+            int damePST = (int) Math.min(Integer.MAX_VALUE, reflectDamage);
             Message msg;
             try {
                 msg = new Message(-9);

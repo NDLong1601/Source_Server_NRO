@@ -208,10 +208,11 @@ public class ConsignShopService {
                     msg.writer().writeByte(itk.quantity);
                 }
                 msg.writer().writeByte(itk.player_sell == pl.id ? 1 : 0); // isMe
-                msg.writer().writeByte(it.itemOptions.size());
-                for (int a = 0; a < it.itemOptions.size(); a++) {
-                    msg.writer().writeByte(it.itemOptions.get(a).optionTemplate.id);
-                    msg.writer().writeShort(it.itemOptions.get(a).param);
+                List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(it);
+                msg.writer().writeByte(itemOptions.size());
+                for (Item.ItemOption option : itemOptions) {
+                    msg.writer().writeByte(option.optionTemplate.id);
+                    msg.writer().writeShort(option.param);
                 }
                 msg.writer().writeByte(0);
             }
@@ -374,16 +375,49 @@ public class ConsignShopService {
         }
     }
 
-    public void KiGui(Player pl, int id, int money, byte moneyType, int quantity) {
-        try {
-            if (!SubThoiVang(pl, 1)) {
-                Service.gI().sendThongBao(pl, "Bạn cần có ít nhất 1 thỏi vàng để làm phí đăng bán");
+    /** Option 37 records each successful consignment of this item. */
+    private void increaseConsignCount(Item item) {
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option.optionTemplate.id == 37) {
+                option.param = Math.min(Short.MAX_VALUE, Math.max(0, option.param) + 1);
                 return;
             }
+        }
+        item.itemOptions.add(new ItemOption(37, 1));
+    }
 
+    private void syncQuantityOption(Item item) {
+        for (Item.ItemOption option : item.itemOptions) {
+            if (option.optionTemplate.id == 31) {
+                option.param = Math.max(0, item.quantity);
+                return;
+            }
+        }
+    }
+
+    /** Option 235 is a finite consignment allowance carried with the item. */
+    private boolean hasConsignmentRemaining(Item item) {
+        Item.ItemOption limit = item.getOptionById(235);
+        return limit == null || limit.param > 0;
+    }
+
+    private boolean consumeConsignmentRemaining(Item item) {
+        Item.ItemOption limit = item.getOptionById(235);
+        if (limit == null) {
+            return true;
+        }
+        if (limit.param <= 0) {
+            return false;
+        }
+        limit.param--;
+        return true;
+    }
+
+    public void KiGui(Player pl, int id, int money, byte moneyType, int quantity) {
+        try {
             Item it = ItemService.gI().copyItem(pl.inventory.itemsBag.get(id));
             for (Item.ItemOption daubuoi : it.itemOptions) {
-                if (daubuoi.optionTemplate.id == 30) {
+                if (daubuoi.optionTemplate.id == 30 || daubuoi.optionTemplate.id == 154) {
                     Service.gI().sendThongBao(pl, "Vật phẩm không thể kí gửi");
                     openShopKyGui(pl);
                     return;
@@ -393,18 +427,53 @@ public class ConsignShopService {
                 openShopKyGui(pl);
                 return;
             }
+            if (!hasConsignmentRemaining(it)) {
+                Service.gI().sendThongBao(pl, "Vật phẩm đã hết số lần ký gửi");
+                openShopKyGui(pl);
+                return;
+            }
+
+            boolean consignForGold = it.itemOptions.stream()
+                    .anyMatch(option -> option != null && option.optionTemplate != null && option.optionTemplate.id == 86);
+            boolean consignForGem = it.itemOptions.stream()
+                    .anyMatch(option -> option != null && option.optionTemplate != null && option.optionTemplate.id == 87);
+            if (moneyType == 0 && consignForGem && !consignForGold) {
+                Service.gI().sendThongBao(pl, "Vật phẩm này chỉ có thể ký gửi bằng ngọc");
+                openShopKyGui(pl);
+                return;
+            }
+            if (moneyType == 1 && consignForGold && !consignForGem) {
+                Service.gI().sendThongBao(pl, "Vật phẩm này chỉ có thể ký gửi bằng vàng");
+                openShopKyGui(pl);
+                return;
+            }
+
+            // Only take the listing fee after the currency rule for options
+            // 86/87 has accepted this request.
+            if (!SubThoiVang(pl, 1)) {
+                Service.gI().sendThongBao(pl, "Bạn cần có ít nhất 1 thỏi vàng để làm phí đăng bán");
+                return;
+            }
 
             if (quantity > 99 && quantity < 0) {
                 Service.gI().sendThongBao(pl, "Ký gửi tối đa x99");
                 openShopKyGui(pl);
                 return;
             }
+            it.quantity = quantity;
+            syncQuantityOption(it);
             switch (moneyType) {
                 case 0:// vàng
                     if (money > 100000 && money < 0) {
                         Service.gI().sendThongBao(pl, "không thể ký gửi quá 100000 thỏi vàng");
                     } else {
+                        if (!consumeConsignmentRemaining(it)) {
+                            Service.gI().sendThongBao(pl, "Vật phẩm đã hết số lần ký gửi");
+                            openShopKyGui(pl);
+                            return;
+                        }
                         InventoryService.gI().subQuantityItemsBag(pl, pl.inventory.itemsBag.get(id), quantity);
+                        increaseConsignCount(it);
                         ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id,
                                 (int) pl.id, getTabKiGui(it), money, -1, quantity, (byte) 0, it.itemOptions, false));
                         InventoryService.gI().sendItemBags(pl);
@@ -418,7 +487,13 @@ public class ConsignShopService {
                     if (money > 1000000 && money < 0) {
                         Service.gI().sendThongBao(pl, "không thể ký gửi quá 1000000 ngọc");
                     } else {
+                        if (!consumeConsignmentRemaining(it)) {
+                            Service.gI().sendThongBao(pl, "Vật phẩm đã hết số lần ký gửi");
+                            openShopKyGui(pl);
+                            return;
+                        }
                         InventoryService.gI().subQuantityItemsBag(pl, pl.inventory.itemsBag.get(id), quantity);
+                        increaseConsignCount(it);
                         ConsignShopManager.gI().listItem.add(new ConsignItem(getMaxId() + 1, it.template.id,
                                 (int) pl.id, getTabKiGui(it), -1, money, quantity, (byte) 0, it.itemOptions, false));
                         InventoryService.gI().sendItemBags(pl);
@@ -475,10 +550,11 @@ public class ConsignShopService {
                         }
                         msg.writer().writeInt(itk.quantity);
                         msg.writer().writeByte(1); // isMe
-                        msg.writer().writeByte(it.itemOptions.size());
-                        for (int a = 0; a < it.itemOptions.size(); a++) {
-                            msg.writer().writeByte(it.itemOptions.get(a).optionTemplate.id);
-                            msg.writer().writeShort(it.itemOptions.get(a).param);
+                        List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(it);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
+                            msg.writer().writeByte(option.optionTemplate.id);
+                            msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(0);
                         msg.writer().writeByte(0);
@@ -506,10 +582,11 @@ public class ConsignShopService {
                         msg.writer().writeByte(0); // buy type
                         msg.writer().writeInt(itk.quantity);
                         msg.writer().writeByte(itk.player_sell == pl.id ? 1 : 0); // isMe
-                        msg.writer().writeByte(it.itemOptions.size());
-                        for (int a = 0; a < it.itemOptions.size(); a++) {
-                            msg.writer().writeByte(it.itemOptions.get(a).optionTemplate.id);
-                            msg.writer().writeShort(it.itemOptions.get(a).param);
+                        List<Item.ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(it);
+                        msg.writer().writeByte(itemOptions.size());
+                        for (Item.ItemOption option : itemOptions) {
+                            msg.writer().writeByte(option.optionTemplate.id);
+                            msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(0);
                         msg.writer().writeByte(0);

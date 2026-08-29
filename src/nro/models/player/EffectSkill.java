@@ -3,6 +3,7 @@ package nro.models.player;
 import lombok.Setter;
 import nro.models.mob.Mob;
 import nro.models.services.EffectSkillService;
+import nro.models.services.EquipmentOptionService;
 import nro.models.services.ItemTimeService;
 import nro.models.utils.Util;
 
@@ -46,6 +47,7 @@ public class EffectSkill {
     public boolean isLamCham;
     public long lastTimeLamCham;
     public int timeLamCham;
+    public int slowPercent = 100;
 
     // Tàn hình
     public boolean isTanHinh;
@@ -79,6 +81,13 @@ public class EffectSkill {
     public boolean isThoiMien;
     public long lastTimeThoiMien;
     public int timeThoiMien;
+    /** Reduction queued by the currently active sleep (option 124). */
+    public int pendingWeakAfterSleepPercent;
+    /** Damage reduction applied for 10 seconds when a sleep naturally ends. */
+    public int weakAfterSleepPercent;
+    public boolean isWeakAfterSleep;
+    public long lastTimeWeakAfterSleep;
+    public int timeWeakAfterSleep;
 
     // trói
     public boolean useTroi;
@@ -98,7 +107,25 @@ public class EffectSkill {
     public boolean isSocola;
     public long lastTimeSocola;
     public int timeSocola;
+    public int socolaDamageReductionPercent;
     public int countPem1hp;
+
+    // cà rốt (option 115)
+    public boolean isCarrot;
+    public long lastTimeCarrot;
+    public int timeCarrot;
+
+    // bí ngô (option 163)
+    public boolean isPumpkin;
+    public long lastTimePumpkin;
+    public int timePumpkin;
+
+    // thiêu đốt (option 165)
+    public boolean isBurning;
+    public Player burnSource;
+    public long lastTimeBurning;
+    public long lastTimeBurnTick;
+    public int timeBurning;
 
     // halloween
     public boolean isHalloween;
@@ -156,7 +183,10 @@ public class EffectSkill {
             EffectSkillService.gI().removeStun(this.player);
         }
         if (isThoiMien) {
-            EffectSkillService.gI().removeThoiMien(this.player);
+            EffectSkillService.gI().removeThoiMien(this.player, false);
+        }
+        if (isWeakAfterSleep) {
+            EffectSkillService.gI().removeWeakAfterSleep(this.player);
         }
         if (isBlindDCTT) {
             EffectSkillService.gI().removeBlindDCTT(this.player);
@@ -176,6 +206,8 @@ public class EffectSkill {
         if (isDameBuff) {
             EffectSkillService.gI().removeDameBuff(this.player);
         }
+        isBurning = false;
+        burnSource = null;
     }
 
     public void update() {
@@ -199,11 +231,23 @@ public class EffectSkill {
         if (isThoiMien && (Util.canDoWithTime(lastTimeThoiMien, timeThoiMien))) {
             EffectSkillService.gI().removeThoiMien(this.player);
         }
+        if (isWeakAfterSleep && Util.canDoWithTime(lastTimeWeakAfterSleep, timeWeakAfterSleep)) {
+            EffectSkillService.gI().removeWeakAfterSleep(this.player);
+        }
         if (isBlindDCTT && (Util.canDoWithTime(lastTimeBlindDCTT, timeBlindDCTT))) {
             EffectSkillService.gI().removeBlindDCTT(this.player);
         }
         if (isSocola && (Util.canDoWithTime(lastTimeSocola, timeSocola))) {
             EffectSkillService.gI().removeSocola(this.player);
+        }
+        if (isCarrot && Util.canDoWithTime(lastTimeCarrot, timeCarrot)) {
+            EffectSkillService.gI().removeCarrot(this.player);
+        }
+        if (isPumpkin && Util.canDoWithTime(lastTimePumpkin, timePumpkin)) {
+            EffectSkillService.gI().removePumpkin(this.player);
+        }
+        if (isBurning) {
+            EquipmentOptionService.gI().updatePlayerBurn(this.player);
         }
         if (tiLeHPHuytSao != 0 && Util.canDoWithTime(lastTimeHuytSao, 30000)) {
             EffectSkillService.gI().removeHuytSao(this.player);
@@ -254,5 +298,6 @@ public class EffectSkill {
         this.plTroi = null;
         this.playerUseMafuba = null;
         this.mobAnTroi = null;
+        this.burnSource = null;
     }
 }

@@ -21,10 +21,12 @@ public class Santa extends Npc {
     public void openBaseMenu(Player player) {
         if (canOpenNpc(player)) {
 
-            Item pGG = InventoryService.gI().findItem(player.inventory.itemsBag, 459);
+            Item pGG = findBestDiscountCoupon(player);
             int soLuong = 0;
+            int discountPercent = 0;
             if (pGG != null) {
                 soLuong = pGG.quantity;
+                discountPercent = getDiscountPercent(pGG);
             }
             List<String> menu = new ArrayList<>(Arrays.asList(
                     "Cửa hàng",
@@ -35,7 +37,7 @@ public class Santa extends Npc {
                     "Danh\nhiệu"));
 
             if (soLuong >= 1) {
-                menu.add(1, "Giảm giá\n80%");
+                menu.add(1, "Giảm giá\n" + discountPercent + "%");
             }
 
             String[] menus = menu.toArray(new String[0]);
@@ -49,7 +51,7 @@ public class Santa extends Npc {
     @Override
     public void confirmMenu(Player player, int select) {
         if (canOpenNpc(player)) {
-            Item pGG = InventoryService.gI().findItem(player.inventory.itemsBag, 459);
+            Item pGG = findBestDiscountCoupon(player);
             int soLuong = 0;
             if (pGG != null) {
                 soLuong = pGG.quantity;
@@ -107,5 +109,27 @@ public class Santa extends Npc {
                 }
             }
         }
+    }
+
+    private Item findBestDiscountCoupon(Player player) {
+        Item bestCoupon = null;
+        int bestDiscount = -1;
+        for (Item item : player.inventory.itemsBag) {
+            if (item == null || !item.isNotNullItem() || item.template.id != 459 || item.quantity <= 0) {
+                continue;
+            }
+            int discount = getDiscountPercent(item);
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestCoupon = item;
+            }
+        }
+        return bestCoupon;
+    }
+
+    private int getDiscountPercent(Item coupon) {
+        Item.ItemOption option = coupon.getOptionById(112);
+        int percent = option == null ? 80 : option.param;
+        return Math.min(100, Math.max(0, percent));
     }
 }

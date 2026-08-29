@@ -360,7 +360,6 @@ public class Pet extends Player {
                                     && PetConfig.isTypeAllowed("pet.ai.hakaiAllowedTypes", this.typePet, 2, 4)
                                     && Util.isTrue(PetConfig.getInt("pet.ai.hakaiRatePercent", 20, 0, 100), 100)
                                     && playerAttack.nPoint.hp < PetConfig.getInt("pet.ai.hakaiMaxTargetHp", 1_000_000_000, 1, Integer.MAX_VALUE)
-                                    && !playerAttack.nPoint.islinhthuydanhbac
                                     && !playerAttack.isBoss) {
                                 playerAttack.setDie(this);
                                 Service.gI().chat(this, "HAKAI " + playerAttack.name + "!");

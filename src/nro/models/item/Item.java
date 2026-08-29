@@ -52,7 +52,7 @@ public class Item {
 
     public String getInfo() {
         String strInfo = "";
-        for (ItemOption itemOption : itemOptions) {
+        for (ItemOption itemOption : ItemService.gI().getVisibleItemOptions(this)) {
             strInfo += itemOption.getOptionString();
         }
         return strInfo;
@@ -305,7 +305,7 @@ public class Item {
 
     public String getOptionInfo() {
         StringJoiner optionInfo = new StringJoiner("\n");
-        for (ItemOption io : this.itemOptions) {
+        for (ItemOption io : ItemService.gI().getVisibleItemOptions(this)) {
             if (io.optionTemplate.id != 72 && io.optionTemplate.id != 73 && io.optionTemplate.id != 102 && io.optionTemplate.id != 107 && io.optionTemplate.id != 218) {
                 optionInfo.add(io.getOptionString());
             }
@@ -502,7 +502,7 @@ public class Item {
 
     public String getInfoItem() {
         String strInfo = "|1|" + template.name + "\n|0|";
-        for (ItemOption itemOption : itemOptions) {
+        for (ItemOption itemOption : ItemService.gI().getVisibleItemOptions(this)) {
             strInfo += itemOption.getOptionString() + "\n";
         }
         strInfo += "|2|" + template.description;

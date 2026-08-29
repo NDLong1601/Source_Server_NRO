@@ -67,16 +67,30 @@ public class GiamDinhSach {
             return;
         }
 
+        Item.ItemOption appraisal = sachTuyetKy.getOptionById(211);
+        if (appraisal == null) {
+            appraisal = new Item.ItemOption(211, 0);
+            sachTuyetKy.itemOptions.add(appraisal);
+        }
+        int remaining = Math.max(0, 5 - appraisal.param);
+        if (remaining == 0) {
+            Service.gI().sendServerMessage(player, "Sách này đã giám định đủ 5 lần");
+            return;
+        }
+
         int[] options = { 77, 103, 50, 108, 94, 14, 80, 81, 175, 5, 214, 216 };
 
-        for (int i = 0; i < sachTuyetKy.itemOptions.size(); i++) {
+        int identified = 0;
+        for (int i = 0; i < sachTuyetKy.itemOptions.size() && identified < remaining; i++) {
             Item.ItemOption io = sachTuyetKy.itemOptions.get(i);
             if (io.optionTemplate.id == 217) {
                 int randomOption = options[Util.nextInt(options.length)];
                 int randomValue = Util.nextInt(1, 10 / Util.nextInt(1, 3));
                 sachTuyetKy.itemOptions.set(i, new Item.ItemOption(randomOption, randomValue));
+                identified++;
             }
         }
+        appraisal.param = Math.min(5, appraisal.param + identified);
 
         CombineService.gI().sendEffectSuccessCombine(player);
         InventoryService.gI().subQuantityItemsBag(player, buaGiamDinh, 1);

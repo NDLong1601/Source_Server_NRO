@@ -70,6 +70,8 @@ import nro.models.npc.DuaHauEgg;
 import nro.models.player_badges.Badges;
 import nro.models.player_badges.BadgesData;
 import nro.models.services.ItemTimeService;
+import nro.models.services.ItemService;
+import nro.models.services.EquipmentOptionService;
 import nro.models.task.BadgesTask;
 import nro.models.task.BadgesTaskService;
 
@@ -81,6 +83,7 @@ import nro.models.task.BadgesTaskService;
 public class Player implements Runnable {
 
     public long lastTimeEatPea;
+    private long lastTimeItemExpirationCheck;
     public Map<Integer, Long> activeEffects = new HashMap<>();
     @Setter
     @Getter
@@ -103,6 +106,8 @@ public class Player implements Runnable {
     public int point_sukien;
     public int point_sukien1;
     public int point_sukien2;
+    /** Merit earned by Namec healers through option 11; persisted in data_point. */
+    public int congDuc;
     public int thachdauwhis = 0;
     public int DuaHau;
     public int point_vuahung;
@@ -438,6 +443,15 @@ public class Player implements Runnable {
     public void update() {
         if (!this.beforeDispose) {
             try {
+                // Option 62 must track equipped time everywhere, including a
+                // home map where the ordinary combat-point update is paused.
+                if (this.isPl() && this.nPoint != null) {
+                    this.nPoint.updateOption62StaminaRecovery();
+                    if (Util.canDoWithTime(lastTimeItemExpirationCheck, 60_000)) {
+                        ItemService.gI().removeExpiredItems(this);
+                        lastTimeItemExpirationCheck = System.currentTimeMillis();
+                    }
+                }
                 if (this.zone != null || (!this.isPl() && this.zone == null)) {
                     if (itemTime != null) {
                         itemTime.update();
@@ -872,6 +886,10 @@ public class Player implements Runnable {
             return (short) ConstPlayer.HEADMONKEY[effectSkill.levelMonkey - 1];
         } else if (effectSkill != null && effectSkill.isSocola) {
             return 412;
+        } else if (effectSkill != null && effectSkill.isCarrot) {
+            return 669;
+        } else if (effectSkill != null && effectSkill.isPumpkin) {
+            return 584;
         } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
             if (nPoint != null && nPoint.isGogeta) {
                 return 2100;
@@ -927,6 +945,10 @@ public class Player implements Runnable {
             return 193;
         } else if (effectSkill != null && effectSkill.isSocola) {
             return 413;
+        } else if (effectSkill != null && effectSkill.isCarrot) {
+            return 670;
+        } else if (effectSkill != null && effectSkill.isPumpkin) {
+            return 585;
         } else if (isPhuHoMapMabu && fusion != null && fusion.typeFusion == ConstPlayer.NON_FUSION) {
             return idOutfitGod[this.gender][1];
         } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
@@ -987,6 +1009,10 @@ public class Player implements Runnable {
             return 194;
         } else if (effectSkill != null && effectSkill.isSocola) {
             return 414;
+        } else if (effectSkill != null && effectSkill.isCarrot) {
+            return 671;
+        } else if (effectSkill != null && effectSkill.isPumpkin) {
+            return 586;
         } else if (isPhuHoMapMabu && fusion != null && fusion.typeFusion == ConstPlayer.NON_FUSION) {
             return idOutfitGod[this.gender][2];
         } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
@@ -1077,6 +1103,11 @@ public class Player implements Runnable {
                 setTemporaryEnemies(plAtt);
             }
 
+            if (plAtt != null && !plAtt.equals(this) && !isMobAttack
+                    && plAtt.isPl() && plAtt.nPoint != null) {
+                damage = plAtt.nPoint.applyDamageBonusAgainst(this, damage);
+            }
+
             if (plAtt != null && plAtt.playerSkill.skillSelect != null && !plAtt.isBoss && MapService.gI().isMapMaBu(this.zone.map.mapId)) {
                 switch (plAtt.playerSkill.skillSelect.template.id) {
                     case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN ->
@@ -1117,8 +1148,32 @@ public class Player implements Runnable {
                 }
             }
 
+            // Option 191 avoids only the critical multiplier, not the whole hit.
+            if (plAtt != null && !plAtt.equals(this) && !isMobAttack && plAtt.isPl()
+                    && plAtt.nPoint != null && plAtt.nPoint.isCrit
+                    && this.nPoint.criticalEvasionPercent > 0
+                    && Util.isTrue(Math.min(100, this.nPoint.criticalEvasionPercent), 100)) {
+                long criticalMultiplier = Math.max(200L, 200L + 2L * Math.max(0, plAtt.nPoint.tlSDCM));
+                damage = Math.max(1L, damage * 100L / criticalMultiplier);
+                plAtt.nPoint.isCrit = false;
+            }
+
+            long satThuongChuan = 0;
+            if (plAtt != null && !plAtt.equals(this) && !isMobAttack && plAtt.isPl() && plAtt.nPoint != null
+                    && (plAtt.effectSkin == null || !plAtt.effectSkin.applyingEquipmentOptionDamage)) {
+                int percentTrueDamage = plAtt.nPoint.getTrueDamagePercent();
+                if (this.isBoss) {
+                    percentTrueDamage += Math.max(0, plAtt.nPoint.bossTrueDamagePercent);
+                }
+                percentTrueDamage = Math.min(100, percentTrueDamage);
+                if (percentTrueDamage > 0 && damage > 0) {
+                    satThuongChuan = damage * percentTrueDamage / 100L;
+                    damage -= satThuongChuan;
+                }
+            }
+
             int tlGiap = this.nPoint.tlGiap;
-            int tlNeDon = this.nPoint.tlNeDon;
+            int tlNeDon = this.nPoint.getRealTlNeDon();
             int tlNeDonXinbato = this.nPoint.tlNeDonXinbato;
 
             if (plAtt != null && !isMobAttack && plAtt.playerSkill.skillSelect != null) {
@@ -1157,8 +1212,8 @@ public class Player implements Runnable {
             if (tlNeDonXinbato > 90) {
                 tlNeDonXinbato = 90;
             }
-            if (tlGiap > 86) {
-                tlGiap = 86;
+            if (tlGiap > 100) {
+                tlGiap = 100;
             }
 
             if (Util.isTrue(tlNeDon, 100)) {
@@ -1208,9 +1263,37 @@ public class Player implements Runnable {
                     damage = 10;
                 }
             }
+            if (isMobAttack && this.nPoint.khongBiQuaiChuDongTanCong && damage > 0) {
+                // Option 82: retain a minimum of one damage for a successful
+                // monster hit, then reduce that hit by the documented 20%.
+                damage = Math.max(1L, damage * 80L / 100L);
+            }
             damage = Math.min(damage, 2_147_483_647);
+            if (satThuongChuan > 0) {
+                damage = Math.min(2_147_483_647L, damage + satThuongChuan);
+            }
             if (isMobAttack && this.charms.tdBatTu > System.currentTimeMillis() && damage >= this.nPoint.hp) {
                 damage = this.nPoint.hp - 1;
+            }
+
+            // Option 157 reduces every final damage type while current KI is below 20%.
+            if (damage > 0 && this.nPoint.lowKiDamageReduction > 0
+                    && this.nPoint.getCurrPercentMP() < 20) {
+                int reduction = Math.min(100, this.nPoint.lowKiDamageReduction);
+                damage = Math.max(0L, damage * (100L - reduction) / 100L);
+            }
+
+            if (damage > 0 && plAtt != null && !isMobAttack) {
+                int raceReduction = this.nPoint.getRaceDamageReductionFrom(plAtt);
+                if (raceReduction > 0) {
+                    damage = Math.max(0L, damage * (100L - raceReduction) / 100L);
+                }
+            }
+
+            // Option 168 applies only to direct hits, not piercing status damage.
+            if (!piercing && damage > 0 && (plAtt != null || isMobAttack)
+                    && this.effectSkin != null && this.effectSkin.tryAbsorbEquipmentDamage(damage)) {
+                return 0;
             }
 
             if (this.zone.map.mapId == 129) {
@@ -1227,6 +1310,13 @@ public class Player implements Runnable {
                 this.totalDamageTaken += damage;
             }
             this.nPoint.subHP(damage);
+            if (damage > 0 && !isDie()) {
+                int percentKiHoi = this.nPoint.getKiRecoveryWhenHitPercent();
+                if (percentKiHoi > 0) {
+                    long kiHoi = (long) this.nPoint.mpMax * percentKiHoi / 100L;
+                    PlayerService.gI().hoiPhuc(this, 0, kiHoi);
+                }
+            }
             if ((plAtt != null || isMobAttack) && isDie() && !isBoss && !isNewPet && !isNewPet1) {
                 if (plAtt != null && this.isPl()) {
                     //TaskService.gI().checkDoneTaskPK(plAtt);
@@ -1254,6 +1344,7 @@ public class Player implements Runnable {
     }
 
     protected void setBom(Player plAtt) {
+        EquipmentOptionService.gI().explodeOnDeath(this);
         setDie(plAtt);
     }
 
@@ -1286,7 +1377,7 @@ public class Player implements Runnable {
         double PhanTramSucManhBiTru = 0.0;
         if (MapService.gI().isMapTuongLai(mapid)) {
             PhanTramSucManhBiTru = 0.001;
-        } else if (MapService.gI().isMapCold(mapid)) {
+        } else if (MapService.gI().isMapCold(this.zone.map) && !this.nPoint.isKhongLanh) {
             PhanTramSucManhBiTru = 0.001;
         }
         if (PhanTramSucManhBiTru > 0) {

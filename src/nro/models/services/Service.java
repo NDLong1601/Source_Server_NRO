@@ -767,9 +767,9 @@ public class Service {
     }
 
     private void writeAdvancedPlayerInfo(Message msg, Player player) throws IOException {
-        // The damage routine caps this mitigation at 86%; show the same
+        // The damage routine caps this mitigation at 100%; show the same
         // effective value that is used in combat instead of an uncapped sum.
-        msg.writer().writeInt(Math.min(86, Math.max(0, player.nPoint.tlGiap)));
+        msg.writer().writeInt(Math.min(100, Math.max(0, player.nPoint.tlGiap)));
         msg.writer().writeInt(Math.max(0, player.nPoint.tlPST));
         msg.writer().writeInt(player.nPoint.getRealTlNeDon());
 
@@ -889,7 +889,7 @@ public class Service {
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
                     msg.writer().writeUTF(item.getContent());
-                    List<ItemOption> itemOptions = item.itemOptions;
+                    List<ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
                     msg.writer().writeByte(itemOptions.size());
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeByte(itemOption.optionTemplate.id);
@@ -909,7 +909,7 @@ public class Service {
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
                     msg.writer().writeUTF(item.getContent());
-                    List<ItemOption> itemOptions = item.itemOptions;
+                    List<ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
                     msg.writer().writeByte(itemOptions.size());
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeByte(itemOption.optionTemplate.id);
@@ -929,7 +929,7 @@ public class Service {
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
                     msg.writer().writeUTF(item.getContent());
-                    List<ItemOption> itemOptions = item.itemOptions;
+                    List<ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
                     msg.writer().writeByte(itemOptions.size());
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeByte(itemOption.optionTemplate.id);
@@ -1631,9 +1631,10 @@ public class Service {
                         msg.writer().writeUTF(item.getInfo());
                         msg.writer().writeUTF(item.getContent());
 
-                        int countOption = item.itemOptions.size();
+                        List<ItemOption> itemOptions = ItemService.gI().getVisibleItemOptions(item);
+                        int countOption = itemOptions.size();
                         msg.writer().writeByte(countOption);
-                        for (ItemOption iop : item.itemOptions) {
+                        for (ItemOption iop : itemOptions) {
                             msg.writer().writeByte(iop.optionTemplate.id);
                             msg.writer().writeShort(iop.param);
                         }

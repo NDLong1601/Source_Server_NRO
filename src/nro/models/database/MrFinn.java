@@ -328,6 +328,9 @@ public class MrFinn {
             dataArray.get(11); // ** Năng động
             plHp = Integer.parseInt(String.valueOf(dataArray.get(12)));
             plMp = Integer.parseInt(String.valueOf(dataArray.get(13)));
+            if (dataArray.size() > 14 && dataArray.get(14) != null) {
+                player.congDuc = Math.max(0, Math.min(9999, Integer.parseInt(String.valueOf(dataArray.get(14)))));
+            }
             dataArray.clear();
 
             // data đậu thần

@@ -270,6 +270,14 @@ public class UseItem {
     private void useItem(Player pl, Item item, int indexBag) {
         if (item != null && item.isNotNullItem()) {
 
+            if (!hasRemainingUses(pl, item)) {
+                return;
+            }
+
+            if (ItemService.gI().revealBonusOptions(item)) {
+                InventoryService.gI().sendItemBags(pl);
+            }
+
             if (item.template.id == 570) {
                 if (!Util.isAfterMidnight(pl.lastTimeRewardWoodChest)) {
                     Service.gI().sendThongBao(pl, "Hãy chờ đến ngày mai");
@@ -280,6 +288,7 @@ public class UseItem {
             }
             if (GiftBoxConfigService.gI().open(pl, item)) {
                 TaskService.gI().checkDoneTaskUseItem(pl, item);
+                consumeRemainingUse(pl, item);
                 InventoryService.gI().sendItemBags(pl);
                 return;
             }
@@ -1059,9 +1068,42 @@ public class UseItem {
                         break;
                 }
                 TaskService.gI().checkDoneTaskUseItem(pl, item);
+                consumeRemainingUse(pl, item);
                 InventoryService.gI().sendItemBags(pl);
             } else {
                 Service.gI().sendThongBaoOK(pl, "Sức mạnh không đủ yêu cầu");
+            }
+        }
+    }
+
+    private boolean hasRemainingUses(Player player, Item item) {
+        if (item.itemOptions == null) {
+            return true;
+        }
+        for (ItemOption option : item.itemOptions) {
+            if (option.optionTemplate != null && option.optionTemplate.id == 12 && option.param <= 0) {
+                InventoryService.gI().removeItemBag(player, item);
+                InventoryService.gI().sendItemBags(player);
+                Service.gI().sendThongBao(player, "Vật phẩm đã hết lượt sử dụng.");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void consumeRemainingUse(Player player, Item item) {
+        if (item == null || !item.isNotNullItem() || item.itemOptions == null
+                || !player.inventory.itemsBag.contains(item)) {
+            return;
+        }
+        for (ItemOption option : item.itemOptions) {
+            if (option.optionTemplate != null && option.optionTemplate.id == 12) {
+                option.param--;
+                if (option.param <= 0) {
+                    InventoryService.gI().removeItemBag(player, item);
+                    Service.gI().sendThongBao(player, "Vật phẩm đã hết lượt sử dụng và biến mất.");
+                }
+                return;
             }
         }
     }

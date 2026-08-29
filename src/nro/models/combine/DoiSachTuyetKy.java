@@ -151,6 +151,7 @@ public class DoiSachTuyetKy {
         sach.itemOptions.add(new Item.ItemOption(30, 0));
         sach.itemOptions.add(new Item.ItemOption(87, 0));
         sach.itemOptions.add(new Item.ItemOption(219, 5));
+        sach.itemOptions.add(new Item.ItemOption(211, 0));
         sach.itemOptions.add(new Item.ItemOption(212, 1000));
         sach.itemOptions.removeIf(opt -> opt.optionTemplate.id == 218);
 
