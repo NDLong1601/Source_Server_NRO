@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadLocalRandom;
 import nro.models.item.Item;
+import nro.models.network.Message;
 import nro.models.player.ItemEvent;
 import nro.models.player.Player;
 import nro.models.services.InventoryService;
@@ -21,11 +22,10 @@ import nro.models.utils.Util;
 /**
  * Server-authoritative core for the Fishing Event.
  *
- * <p>The first production version deliberately uses the existing item-use
- * protocol: click a rod once to cast and once more after the bite message to
- * pull. It keeps RNG, the bite time, and every reward on the server, so a
- * later dedicated client UI can reuse this service without changing rates or
- * reward code.</p>
+ * <p>Every fishing result is selected and validated on the server. Once a
+ * fish bites, the client receives an arrow sequence and may only claim the
+ * result after submitting every expected direction before the stage timer
+ * expires.</p>
  */
 public final class FishingService {
 
@@ -39,9 +39,22 @@ public final class FishingService {
 
     private static final long BITE_DELAY_MIN_MILLIS = 1_500L;
     private static final long BITE_DELAY_MAX_MILLIS = 2_500L;
-    private static final long REACTION_WINDOW_MILLIS = 1_500L;
-    private static final long PERFECT_WINDOW_MILLIS = 250L;
     private static final int FISHING_SUPPORT_ITEM_DURATION_SECONDS = 15 * 60;
+
+    /** Dedicated packet shared with the maintained Unity client. */
+    public static final byte QUICK_TIME_COMMAND = 126;
+    public static final byte QUICK_TIME_START = 0;
+    public static final byte QUICK_TIME_INPUT = 1;
+    public static final byte QUICK_TIME_END = 2;
+    /** Closes the inventory immediately after a validated cast, before the fish bites. */
+    public static final byte QUICK_TIME_PREPARE = 3;
+    /** Distinguishes QTE input from the legacy UTF android-pack payload on command 126. */
+    public static final byte QUICK_TIME_INPUT_MAGIC = 81;
+
+    private static final int DIRECTION_LEFT = 0;
+    private static final int DIRECTION_UP = 1;
+    private static final int DIRECTION_RIGHT = 2;
+    private static final int DIRECTION_DOWN = 3;
 
     public static final int CRAFT_REPAIR_KIT = 0;
     public static final int CRAFT_BAIT_BOX = 1;
@@ -468,16 +481,15 @@ public final class FishingService {
 
         Outcome outcome = rollOutcome(player, bait);
         long biteAt = System.currentTimeMillis() + randomBetween(BITE_DELAY_MIN_MILLIS, BITE_DELAY_MAX_MILLIS);
-        FishingSession session = new FishingSession(rodId, baitId, player.zone.map.mapId, outcome, biteAt,
-                biteAt + reactionWindow(player));
+        FishingSession session = new FishingSession(rodId, baitId, player.zone.map.mapId, outcome, biteAt);
         sessions.put(player.id, session);
+        sendQuickTimePrepare(player);
         InventoryService.gI().sendItemBags(player);
         Service.gI().sendThongBao(player, preserveBait
                 ? "Bạn thả câu xuống nước. Hộp Mồi đã giữ lại mồi lần này."
-                : "Bạn thả câu xuống nước. Hãy chờ phao động rồi dùng cần lần nữa để kéo.");
+                : "Bạn thả câu xuống nước. Hãy chờ phao động rồi nhập chuỗi mũi tên để kéo cá.");
 
         notifier.schedule(() -> notifyBite(player, session), biteAt - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-        notifier.schedule(() -> expireSession(player, session), session.expiresAt - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         return true;
     }
 
@@ -485,6 +497,7 @@ public final class FishingService {
         long now = System.currentTimeMillis();
         if (!isFishingMap(player) || player.zone.map.mapId != session.mapId) {
             sessions.remove(player.id, session);
+            sendQuickTimeEnd(player, false);
             Service.gI().sendThongBao(player, "Bạn đã rời ngư trường, lượt câu bị hủy.");
             return false;
         }
@@ -492,55 +505,20 @@ public final class FishingService {
             Service.gI().sendThongBao(player, "Phao chưa động, hãy chờ thêm một chút.");
             return false;
         }
-        if (now > session.expiresAt) {
-            sessions.remove(player.id, session);
-            resetCombo(player);
-            Service.gI().sendThongBao(player, "Bạn kéo quá muộn, con cá đã thoát mất.");
+        if (session.state == FishingState.QUICK_TIME) {
+            Service.gI().sendThongBao(player, "Cá đang cắn câu. Hãy nhập các phím mũi tên trên màn hình.");
             return false;
         }
-        session.timingBonus = now - session.biteAt <= PERFECT_WINDOW_MILLIS ? 10 : 5;
-        sessions.remove(player.id, session);
-        if (session.outcome == Outcome.JUNK) {
-            return resolveJunk(player, session);
-        }
-        if (session.outcome == Outcome.SPECIAL) {
-            return resolveSpecial(player);
-        }
-        BaitDefinition bait = getBait(session.baitId);
-        if (bait == null) {
-            resetCombo(player);
-            Service.gI().sendThongBao(player, "Mồi câu không còn hợp lệ, lượt câu bị hủy.");
-            return false;
-        }
-        session.fish = rollFish(player, rodMaxFishTier(session.rodId), bait);
-        if (session.fish == null) {
-            resetCombo(player);
-            Service.gI().sendThongBao(player, "Không tìm thấy loài cá phù hợp với bộ câu hiện tại.");
-            return false;
-        }
-        session.giant = roll(1);
-        return resolveFish(player, session, session.timingBonus);
+        return beginQuickTime(player, session);
     }
 
-    private boolean resolveFish(Player player, FishingSession session, int timingBonus) {
+    /**
+     * A completed quick-time sequence is the catch check. The pre-existing
+     * reward, collection, combo, and bonus-hook logic stays unchanged after
+     * this point so all fishing rewards still follow their configured rules.
+     */
+    private boolean resolveFish(Player player, FishingSession session) {
         FishDefinition fish = session.fish;
-        int success = clamp(fish.basePull + rodPullBonus(session.rodId) + reelPullBonus(selectedReel(player))
-                + timingBonus - (session.giant ? 20 : 0), 5, 95);
-        if (!roll(success)) {
-            resetCombo(player);
-            Service.gI().sendThongBao(player, "Cá đã vùng vẫy và thoát mất.");
-            return false;
-        }
-        if (roll(lineBreakRate(selectedLine(player), fish.tier))) {
-            Item repair = InventoryService.gI().findItemBag(player, FishingItems.REPAIR_KIT);
-            if (repair == null) {
-                resetCombo(player);
-                Service.gI().sendThongBao(player, "Dây câu đã đứt, bạn đánh mất con cá.");
-                return false;
-            }
-            InventoryService.gI().subQuantityItemsBag(player, repair, 1);
-            Service.gI().sendThongBao(player, "Bộ Sửa Cần Câu đã cứu lượt câu này.");
-        }
         short caughtItemId = session.giant ? FishingItems.giantFishIdFor(fish.itemId) : fish.itemId;
         if (!grant(player, caughtItemId, 1)) {
             resetCombo(player);
@@ -783,15 +761,228 @@ public final class FishingService {
     }
 
     private void notifyBite(Player player, FishingSession session) {
-        if (sessions.get(player.id) == session && System.currentTimeMillis() <= session.expiresAt) {
-            Service.gI().sendThongBao(player, "Phao đang động! Dùng lại cần câu ngay để kéo.");
+        synchronized (player) {
+            if (sessions.get(player.id) == session && session.state == FishingState.WAITING_BITE) {
+                beginQuickTime(player, session);
+            }
         }
     }
 
-    private void expireSession(Player player, FishingSession session) {
-        if (sessions.remove(player.id, session)) {
-            resetCombo(player);
-            Service.gI().sendThongBao(player, "Bạn không kéo cần kịp lúc nên cá đã thoát mất.");
+    private boolean beginQuickTime(Player player, FishingSession session) {
+        if (sessions.get(player.id) != session || session.state != FishingState.WAITING_BITE) {
+            return false;
+        }
+        if (!isFishingMap(player) || player.zone.map.mapId != session.mapId) {
+            sessions.remove(player.id, session);
+            sendQuickTimeEnd(player, false);
+            Service.gI().sendThongBao(player, "Bạn đã rời ngư trường, lượt câu bị hủy.");
+            return false;
+        }
+        if (session.outcome == Outcome.FISH) {
+            BaitDefinition bait = getBait(session.baitId);
+            if (bait == null) {
+                sessions.remove(player.id, session);
+                resetCombo(player);
+                sendQuickTimeEnd(player, false);
+                Service.gI().sendThongBao(player, "Mồi câu không còn hợp lệ, lượt câu bị hủy.");
+                return false;
+            }
+            session.fish = rollFish(player, rodMaxFishTier(session.rodId), bait);
+            if (session.fish == null) {
+                sessions.remove(player.id, session);
+                resetCombo(player);
+                sendQuickTimeEnd(player, false);
+                Service.gI().sendThongBao(player, "Không tìm thấy loài cá phù hợp với bộ câu hiện tại.");
+                return false;
+            }
+            session.giant = roll(1);
+        }
+
+        QuickTimePlan plan = quickTimePlan(player, session);
+        QuickTime quickTime = new QuickTime(ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE), plan);
+        quickTime.deadline = System.currentTimeMillis() + quickTime.currentDurationMillis();
+        session.quickTime = quickTime;
+        session.state = FishingState.QUICK_TIME;
+        sendQuickTimeStart(player, quickTime);
+        scheduleQuickTimeExpiry(player, session, quickTime);
+        Service.gI().sendThongBao(player, "Phao đang động! Hoàn thành chuỗi mũi tên trước khi hết giờ.");
+        return true;
+    }
+
+    /**
+     * Validates every physical arrow on the server. A mismatched direction,
+     * stale stage, map change, or elapsed timer ends the attempt immediately.
+     */
+    public void submitQuickTimeInput(Player player, int token, int stage, int direction) {
+        if (player == null) {
+            return;
+        }
+        synchronized (player) {
+            FishingSession session = sessions.get(player.id);
+            if (session == null || session.state != FishingState.QUICK_TIME || session.quickTime == null) {
+                return;
+            }
+            QuickTime quickTime = session.quickTime;
+            if (!isFishingMap(player) || player.zone.map.mapId != session.mapId) {
+                failQuickTime(player, session, "Bạn đã rời ngư trường, lượt câu bị hủy.");
+                return;
+            }
+            if (token != quickTime.token || stage != quickTime.stageIndex
+                    || direction < DIRECTION_LEFT || direction > DIRECTION_DOWN) {
+                failQuickTime(player, session, "Bạn nhập sai hướng, con cá đã thoát mất.");
+                return;
+            }
+            if (System.currentTimeMillis() > quickTime.deadline) {
+                failQuickTime(player, session, "Bạn không kịp kéo cá lên.");
+                return;
+            }
+            if (direction != quickTime.stages[quickTime.stageIndex][quickTime.keyIndex]) {
+                failQuickTime(player, session, "Bạn nhập sai hướng, con cá đã thoát mất.");
+                return;
+            }
+
+            quickTime.keyIndex++;
+            if (quickTime.keyIndex < quickTime.stages[quickTime.stageIndex].length) {
+                return;
+            }
+            quickTime.keyIndex = 0;
+            quickTime.stageIndex++;
+            if (quickTime.stageIndex < quickTime.stages.length) {
+                quickTime.deadline = System.currentTimeMillis() + quickTime.currentDurationMillis();
+                scheduleQuickTimeExpiry(player, session, quickTime);
+                return;
+            }
+
+            sessions.remove(player.id, session);
+            session.state = FishingState.RESOLVED;
+            sendQuickTimeEnd(player, true);
+            if (session.outcome == Outcome.JUNK) {
+                resolveJunk(player, session);
+            } else if (session.outcome == Outcome.SPECIAL) {
+                resolveSpecial(player);
+            } else {
+                resolveFish(player, session);
+            }
+        }
+    }
+
+    private void scheduleQuickTimeExpiry(Player player, FishingSession session, QuickTime quickTime) {
+        long delay = Math.max(1L, quickTime.deadline - System.currentTimeMillis());
+        int stage = quickTime.stageIndex;
+        notifier.schedule(() -> expireQuickTimeStage(player, session, quickTime.token, stage), delay, TimeUnit.MILLISECONDS);
+    }
+
+    private void expireQuickTimeStage(Player player, FishingSession session, int token, int stage) {
+        synchronized (player) {
+            if (sessions.get(player.id) != session || session.state != FishingState.QUICK_TIME
+                    || session.quickTime == null || session.quickTime.token != token
+                    || session.quickTime.stageIndex != stage || System.currentTimeMillis() < session.quickTime.deadline) {
+                return;
+            }
+            failQuickTime(player, session, "Bạn không kịp kéo cá lên.");
+        }
+    }
+
+    private void failQuickTime(Player player, FishingSession session, String message) {
+        if (!sessions.remove(player.id, session)) {
+            return;
+        }
+        session.state = FishingState.RESOLVED;
+        resetCombo(player);
+        sendQuickTimeEnd(player, false);
+        Service.gI().sendThongBao(player, message);
+    }
+
+    private QuickTimePlan quickTimePlan(Player player, FishingSession session) {
+        int tier = session.fish == null ? 1 : session.fish.tier;
+        if (session.giant) {
+            tier = Math.min(15, tier + 1);
+        }
+        int stages;
+        int keys;
+        int millis;
+        if (tier <= 3) {
+            stages = 1;
+            keys = 3;
+            millis = 4_000;
+        } else if (tier <= 6) {
+            stages = 1;
+            keys = 4;
+            millis = 3_800;
+        } else if (tier <= 9) {
+            stages = 2;
+            keys = 5;
+            millis = 3_500;
+        } else if (tier <= 12) {
+            stages = 3;
+            keys = 6;
+            millis = 3_200;
+        } else {
+            stages = 4;
+            keys = 7;
+            millis = 3_000;
+        }
+        millis += quickTimeTimeBonus(player);
+        return new QuickTimePlan(stages, keys, millis);
+    }
+
+    private int quickTimeTimeBonus(Player player) {
+        int bonus = 0;
+        short floatId = selectedFloat(player);
+        if (floatId == FishingItems.FLOAT_JADE) {
+            bonus += 500;
+        } else if (floatId == FishingItems.FLOAT_SEA_GOD) {
+            bonus += 1_000;
+        }
+        short reelId = selectedReel(player);
+        if (reelId == FishingItems.REEL_ADVANCED) {
+            bonus += 200;
+        } else if (reelId == FishingItems.REEL_SEA_KING) {
+            bonus += 350;
+        }
+        return bonus;
+    }
+
+    private void sendQuickTimeStart(Player player, QuickTime quickTime) {
+        Message message = new Message(QUICK_TIME_COMMAND);
+        try {
+            message.writer().writeByte(QUICK_TIME_START);
+            message.writer().writeInt(quickTime.token);
+            message.writer().writeByte(quickTime.stages.length);
+            for (int index = 0; index < quickTime.stages.length; index++) {
+                message.writer().writeShort(quickTime.durationsMillis[index]);
+                message.writer().writeByte(quickTime.stages[index].length);
+                for (int direction : quickTime.stages[index]) {
+                    message.writer().writeByte(direction);
+                }
+            }
+            player.sendMessage(message);
+        } catch (Exception ignored) {
+        } finally {
+            message.cleanup();
+        }
+    }
+
+    private void sendQuickTimePrepare(Player player) {
+        Message message = new Message(QUICK_TIME_COMMAND);
+        try {
+            message.writer().writeByte(QUICK_TIME_PREPARE);
+            player.sendMessage(message);
+        } catch (Exception ignored) {
+        } finally {
+            message.cleanup();
+        }
+    }
+
+    private void sendQuickTimeEnd(Player player, boolean success) {
+        Message message = new Message(QUICK_TIME_COMMAND);
+        try {
+            message.writer().writeByte(QUICK_TIME_END);
+            message.writer().writeByte(success ? 1 : 0);
+            player.sendMessage(message);
+        } catch (Exception ignored) {
+        } finally {
+            message.cleanup();
         }
     }
 
@@ -821,13 +1012,6 @@ public final class FishingService {
                 new int[]{1, 15};
             default -> new int[]{1, 0};
         };
-    }
-
-    private int reactionWindow(Player player) {
-        short floatId = selectedFloat(player);
-        if (floatId == FishingItems.FLOAT_SEA_GOD) return (int) REACTION_WINDOW_MILLIS + 1_000;
-        if (floatId == FishingItems.FLOAT_JADE) return (int) REACTION_WINDOW_MILLIS + 500;
-        return (int) REACTION_WINDOW_MILLIS;
     }
 
     private short selectedBait(Player player) {
@@ -1074,24 +1258,65 @@ public final class FishingService {
         FISH, JUNK, SPECIAL
     }
 
+    private enum FishingState {
+        WAITING_BITE, QUICK_TIME, RESOLVED
+    }
+
     private static final class FishingSession {
         private final short rodId;
         private final short baitId;
         private final int mapId;
         private final Outcome outcome;
         private final long biteAt;
-        private final long expiresAt;
         private FishDefinition fish;
         private boolean giant;
-        private int timingBonus;
+        private FishingState state = FishingState.WAITING_BITE;
+        private QuickTime quickTime;
 
-        private FishingSession(short rodId, short baitId, int mapId, Outcome outcome, long biteAt, long expiresAt) {
+        private FishingSession(short rodId, short baitId, int mapId, Outcome outcome, long biteAt) {
             this.rodId = rodId;
             this.baitId = baitId;
             this.mapId = mapId;
             this.outcome = outcome;
             this.biteAt = biteAt;
-            this.expiresAt = expiresAt;
+        }
+    }
+
+    private static final class QuickTimePlan {
+        private final int stages;
+        private final int keysPerStage;
+        private final int durationMillis;
+
+        private QuickTimePlan(int stages, int keysPerStage, int durationMillis) {
+            this.stages = stages;
+            this.keysPerStage = keysPerStage;
+            this.durationMillis = durationMillis;
+        }
+    }
+
+    private static final class QuickTime {
+        private final int token;
+        private final int[][] stages;
+        private final int[] durationsMillis;
+        private int stageIndex;
+        private int keyIndex;
+        private long deadline;
+
+        private QuickTime(int token, QuickTimePlan plan) {
+            this.token = token;
+            this.stages = new int[plan.stages][];
+            this.durationsMillis = new int[plan.stages];
+            for (int stage = 0; stage < plan.stages; stage++) {
+                this.stages[stage] = new int[plan.keysPerStage];
+                for (int key = 0; key < plan.keysPerStage; key++) {
+                    this.stages[stage][key] = ThreadLocalRandom.current().nextInt(DIRECTION_LEFT, DIRECTION_DOWN + 1);
+                }
+                this.durationsMillis[stage] = plan.durationMillis;
+            }
+        }
+
+        private int currentDurationMillis() {
+            return this.durationsMillis[this.stageIndex];
         }
     }
 

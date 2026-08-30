@@ -21,6 +21,7 @@ import nro.models.map.service.ItemMapService;
 import nro.models.services.FriendAndEnemyService;
 import nro.models.data.LocalManager;
 import nro.models.fishing.FishingProgressService;
+import nro.models.fishing.FishingService;
 import nro.models.consts.ConstIgnoreName;
 import nro.models.consts.ConstMap;
 import nro.models.utils.Util;
@@ -716,7 +717,12 @@ public class Controller implements IMessageHandler {
                         finishUpdate(player);
                     }
                     break;
-                case 126: // androidPack2
+                case 126: // Android pack / fishing quick-time input
+                    if (player != null && _msg.reader().readByte() == FishingService.QUICK_TIME_INPUT_MAGIC
+                            && _msg.reader().readByte() == FishingService.QUICK_TIME_INPUT) {
+                        FishingService.gI().submitQuickTimeInput(player, _msg.reader().readInt(),
+                                _msg.reader().readUnsignedByte(), _msg.reader().readUnsignedByte());
+                    }
                     break;
                 case -78: // checkMMove
                     _msg.reader().readInt(); // second

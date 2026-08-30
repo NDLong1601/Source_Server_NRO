@@ -25,8 +25,6 @@ public final class FishingProgressService {
     public static final byte QUEST_EXTREME = 3;
     public static final int MAX_DAILY_QUESTS = 10;
 
-    private static final FishingProgressService INSTANCE = new FishingProgressService();
-
     private static final String[] FISH_NAMES = {
         "Cá Bạc Nhỏ", "Cá Rô Đá", "Cá Chép Vàng", "Cá Lóc Săn Mồi", "Cá Trê Khổng Lồ",
         "Cá Hồi Bạc", "Cá Tầm Thiết Giáp", "Cá Ngừ Đại Dương", "Cá Kiếm Lam", "Cá Mập Trắng",
@@ -56,6 +54,16 @@ public final class FishingProgressService {
     private static final int[] QUEST_TARGET = {5, 8, 5, 2};
     private static final long FISH_BOOK_CONFIG_CACHE_MILLIS = 10_000L;
 
+    /**
+     * Defers singleton construction until all static fish metadata above has
+     * been initialized. The constructor builds default entries from that
+     * metadata, so creating it earlier leaves FISH_NAMES null and disconnects
+     * the player's menu collector.
+     */
+    private static final class Holder {
+        private static final FishingProgressService INSTANCE = new FishingProgressService();
+    }
+
     private volatile boolean fishBookSchemaReady;
     private volatile FishBookEntry[] fishBookEntries = defaultFishBookEntries();
     private volatile long fishBookEntriesRefreshAt;
@@ -64,7 +72,7 @@ public final class FishingProgressService {
     }
 
     public static FishingProgressService gI() {
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     public void recordCatch(Player player, short standardFishId, boolean giant) {
