@@ -5,6 +5,8 @@ import nro.models.mob.Mob;
 import nro.models.services.EffectSkillService;
 import nro.models.services.EquipmentOptionService;
 import nro.models.services.ItemTimeService;
+import nro.models.services.CustomSkillService;
+import nro.models.skill.Skill;
 import nro.models.utils.Util;
 
 public class EffectSkill {
@@ -21,6 +23,27 @@ public class EffectSkill {
     public boolean isShielding;
     public long lastTimeShieldUp;
     public int timeShield;
+
+    // Barrier Prison (movement boundary, not a hard stun)
+    public boolean isBarrierPrison;
+    public Player barrierPrisonOwner;
+    public Skill barrierPrisonSkill;
+    public int barrierPrisonCenterX;
+    public int barrierPrisonCenterY;
+    public int barrierPrisonRadius;
+    public long lastTimeBarrierPrison;
+    public int timeBarrierPrison;
+    public int barrierPrisonDamagePercent;
+    public long lastTimeBarrierPrisonPulse;
+
+    // Energy Absorption
+    public boolean isEnergyAbsorption;
+    public long lastTimeEnergyAbsorption;
+    public int timeEnergyAbsorption;
+    public int energyAbsorptionPercent;
+    public long energyAbsorptionCapacity;
+    public long energyAbsorptionUsed;
+    public int energyAbsorptionHits;
 
     // biến khỉ
     public boolean isMonkey;
@@ -176,6 +199,12 @@ public class EffectSkill {
             EffectSkillService.gI().removeShield(player);
             ItemTimeService.gI().removeItemTime(player, 3784);
         }
+        if (isBarrierPrison) {
+            CustomSkillService.gI().removeBarrierPrison(player);
+        }
+        if (isEnergyAbsorption) {
+            CustomSkillService.gI().removeEnergyAbsorption(player);
+        }
         if (useTroi) {
             EffectSkillService.gI().removeUseTroi(this.player);
         }
@@ -219,6 +248,12 @@ public class EffectSkill {
         }
         if (isShielding && (Util.canDoWithTime(lastTimeShieldUp, timeShield))) {
             EffectSkillService.gI().removeShield(player);
+        }
+        if (isBarrierPrison) {
+            CustomSkillService.gI().updateBarrierPrison(player);
+        }
+        if (isEnergyAbsorption && Util.canDoWithTime(lastTimeEnergyAbsorption, timeEnergyAbsorption)) {
+            CustomSkillService.gI().removeEnergyAbsorption(player);
         }
         if (useTroi && Util.canDoWithTime(lastTimeTroi, timeTroi)
                 || plAnTroi != null && plAnTroi.isDie()
@@ -298,6 +333,8 @@ public class EffectSkill {
         this.plTroi = null;
         this.playerUseMafuba = null;
         this.mobAnTroi = null;
+        this.barrierPrisonOwner = null;
+        this.barrierPrisonSkill = null;
         this.burnSource = null;
     }
 }

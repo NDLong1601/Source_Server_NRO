@@ -91,6 +91,17 @@ public class UseItem {
     private static final int KID_JIREN_DISCIPLE_EGG_ITEM_ID = 2015;
     private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
     private static final short FISHING_ROD_CRUDE_ITEM_ID = FishingItems.ROD_CRUDE;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_1 = 2219;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_2 = 2220;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_3 = 2221;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_4 = 2222;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_5 = 2223;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_6 = 2224;
+    private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_7 = 2225;
+    private static final int HELLZONE_GRENADE_BOOK_LEVEL_1 = 2226;
+    private static final int HELLZONE_GRENADE_BOOK_LEVEL_7 = 2232;
+    private static final int BARRIER_PRISON_BOOK_LEVEL_1 = 2233;
+    private static final int BARRIER_PRISON_BOOK_LEVEL_7 = 2239;
 
     private UseItem() {
 
@@ -303,7 +314,15 @@ public class UseItem {
                         UseCard(pl, item);
                         break;
                     case 7: //sách học, nâng skill
-                        learnSkill(pl, item);
+                        if (isKhiNguyenTramBook(item.template.id)) {
+                            learnKhiNguyenTram(pl, item);
+                        } else if (isHellzoneGrenadeBook(item.template.id)) {
+                            learnHellzoneGrenade(pl, item);
+                        } else if (isBarrierPrisonBook(item.template.id)) {
+                            learnBarrierPrison(pl, item);
+                        } else {
+                            learnSkill(pl, item);
+                        }
                         break;
                     case 6: //đậu thần
                         this.eatPea(pl);
@@ -1911,6 +1930,195 @@ public class UseItem {
             }
         } else if (tempId >= Shenron_Service.NGOC_RONG_1_SAO && tempId <= Shenron_Service.NGOC_RONG_7_SAO) {
             Shenron_Service.gI().openMenuSummonShenron(pl, 0);
+        }
+    }
+
+    private boolean isKhiNguyenTramBook(int itemId) {
+        return itemId >= KHI_NGUYEN_TRAM_BOOK_LEVEL_1 && itemId <= KHI_NGUYEN_TRAM_BOOK_LEVEL_7;
+    }
+
+    private int getKhiNguyenTramBookLevel(int itemId) {
+        return itemId - KHI_NGUYEN_TRAM_BOOK_LEVEL_1 + 1;
+    }
+
+    private boolean isHellzoneGrenadeBook(int itemId) {
+        return itemId >= HELLZONE_GRENADE_BOOK_LEVEL_1
+                && itemId <= HELLZONE_GRENADE_BOOK_LEVEL_7;
+    }
+
+    private int getHellzoneGrenadeBookLevel(int itemId) {
+        return itemId - HELLZONE_GRENADE_BOOK_LEVEL_1 + 1;
+    }
+
+    private boolean isBarrierPrisonBook(int itemId) {
+        return itemId >= BARRIER_PRISON_BOOK_LEVEL_1
+                && itemId <= BARRIER_PRISON_BOOK_LEVEL_7;
+    }
+
+    private int getBarrierPrisonBookLevel(int itemId) {
+        return itemId - BARRIER_PRISON_BOOK_LEVEL_1 + 1;
+    }
+
+    /**
+     * Khí Nguyên Trảm is an Earth-only custom skill. Unlike the legacy book flow,
+     * a new character might not have a level-0 placeholder for template 27 yet,
+     * so this handler validates and creates the first level explicitly.
+     */
+    private void learnKhiNguyenTram(Player pl, Item item) {
+        if (pl.gender != ConstPlayer.TRAI_DAT) {
+            Service.gI().sendThongBao(pl, "Chỉ người Trái Đất mới có thể lĩnh hội Khí Nguyên Trảm.");
+            return;
+        }
+
+        int requestedLevel = getKhiNguyenTramBookLevel(item.template.id);
+        Skill currentSkill = SkillUtil.getSkillbyId(pl, Skill.KHI_NGUYEN_TRAM);
+        int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
+
+        if (currentLevel >= 7) {
+            Service.gI().sendThongBao(pl, "Khí Nguyên Trảm đã đạt cấp tối đa.");
+            return;
+        }
+        if (requestedLevel != currentLevel + 1) {
+            Service.gI().sendThongBao(pl, "Vui lòng học Khí Nguyên Trảm cấp " + (currentLevel + 1) + " trước.");
+            return;
+        }
+
+        Skill learnedSkill = SkillUtil.createSkill(Skill.KHI_NGUYEN_TRAM, requestedLevel);
+        if (learnedSkill == null) {
+            Logger.errorln("Không tìm thấy dữ liệu Khí Nguyên Trảm cấp " + requestedLevel);
+            Service.gI().sendThongBao(pl, "Dữ liệu Khí Nguyên Trảm đang được cập nhật. Hãy thử lại sau.");
+            return;
+        }
+        if (pl.nPoint.power < learnedSkill.powRequire) {
+            Service.gI().sendThongBao(pl,
+                    "Cần đạt " + Util.numberToMoney(learnedSkill.powRequire) + " sức mạnh để học cấp này.");
+            return;
+        }
+
+        try {
+            SkillUtil.setSkill(pl, learnedSkill);
+            if (requestedLevel > 1) {
+                pl.BoughtSkill.add((int) item.template.id);
+            }
+            InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+            InventoryService.gI().sendItemBags(pl);
+
+            Message msg = Service.gI().messageSubCommand((byte) (requestedLevel == 1 ? 23 : 62));
+            msg.writer().writeShort(learnedSkill.skillId);
+            pl.sendMessage(msg);
+            msg.cleanup();
+            Service.gI().sendThongBao(pl, "Đã học Khí Nguyên Trảm cấp " + requestedLevel + ".");
+        } catch (Exception e) {
+            Logger.logException(UseItem.class, e, "Không thể học Khí Nguyên Trảm cấp " + requestedLevel);
+        }
+    }
+
+    /** Hellzone Grenade is a Namek-only seven-level custom skill. */
+    private void learnHellzoneGrenade(Player pl, Item item) {
+        if (pl.gender != ConstPlayer.NAMEC) {
+            Service.gI().sendThongBao(pl, "Chỉ người Namếc mới có thể lĩnh hội Hellzone Grenade.");
+            return;
+        }
+
+        int requestedLevel = getHellzoneGrenadeBookLevel(item.template.id);
+        Skill currentSkill = SkillUtil.getSkillbyId(pl, Skill.HELLZONE_GRENADE);
+        int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
+
+        if (currentLevel >= 7) {
+            Service.gI().sendThongBao(pl, "Hellzone Grenade đã đạt cấp tối đa.");
+            return;
+        }
+        if (requestedLevel != currentLevel + 1) {
+            Service.gI().sendThongBao(pl,
+                    "Vui lòng học Hellzone Grenade cấp " + (currentLevel + 1) + " trước.");
+            return;
+        }
+
+        Skill learnedSkill = SkillUtil.createSkill(Skill.HELLZONE_GRENADE, requestedLevel);
+        if (learnedSkill == null) {
+            Logger.errorln("Không tìm thấy dữ liệu Hellzone Grenade cấp " + requestedLevel);
+            Service.gI().sendThongBao(pl,
+                    "Dữ liệu Hellzone Grenade đang được cập nhật. Hãy thử lại sau.");
+            return;
+        }
+        if (pl.nPoint.power < learnedSkill.powRequire) {
+            Service.gI().sendThongBao(pl,
+                    "Cần đạt " + Util.numberToMoney(learnedSkill.powRequire)
+                    + " sức mạnh để học cấp này.");
+            return;
+        }
+
+        try {
+            SkillUtil.setSkill(pl, learnedSkill);
+            if (requestedLevel > 1) {
+                pl.BoughtSkill.add((int) item.template.id);
+            }
+            InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+            InventoryService.gI().sendItemBags(pl);
+
+            Message msg = Service.gI().messageSubCommand((byte) (requestedLevel == 1 ? 23 : 62));
+            msg.writer().writeShort(learnedSkill.skillId);
+            pl.sendMessage(msg);
+            msg.cleanup();
+            Service.gI().sendThongBao(pl,
+                    "Đã học Hellzone Grenade cấp " + requestedLevel + ".");
+        } catch (Exception e) {
+            Logger.logException(UseItem.class, e,
+                    "Không thể học Hellzone Grenade cấp " + requestedLevel);
+        }
+    }
+
+    /** Barrier Prison is an Earth-only seven-level custom skill. */
+    private void learnBarrierPrison(Player pl, Item item) {
+        if (pl.gender != ConstPlayer.TRAI_DAT) {
+            Service.gI().sendThongBao(pl, "Chỉ người Trái Đất mới có thể lĩnh hội Barrier Prison.");
+            return;
+        }
+
+        int requestedLevel = getBarrierPrisonBookLevel(item.template.id);
+        Skill currentSkill = SkillUtil.getSkillbyId(pl, Skill.BARRIER_PRISON);
+        int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
+
+        if (currentLevel >= 7) {
+            Service.gI().sendThongBao(pl, "Barrier Prison đã đạt cấp tối đa.");
+            return;
+        }
+        if (requestedLevel != currentLevel + 1) {
+            Service.gI().sendThongBao(pl,
+                    "Vui lòng học Barrier Prison cấp " + (currentLevel + 1) + " trước.");
+            return;
+        }
+
+        Skill learnedSkill = SkillUtil.createSkill(Skill.BARRIER_PRISON, requestedLevel);
+        if (learnedSkill == null) {
+            Logger.errorln("Không tìm thấy dữ liệu Barrier Prison cấp " + requestedLevel);
+            Service.gI().sendThongBao(pl,
+                    "Dữ liệu Barrier Prison đang được cập nhật. Hãy thử lại sau.");
+            return;
+        }
+        if (pl.nPoint.power < learnedSkill.powRequire) {
+            Service.gI().sendThongBao(pl,
+                    "Cần đạt " + Util.numberToMoney(learnedSkill.powRequire)
+                    + " sức mạnh để học cấp này.");
+            return;
+        }
+
+        try {
+            SkillUtil.setSkill(pl, learnedSkill);
+            if (requestedLevel > 1) {
+                pl.BoughtSkill.add((int) item.template.id);
+            }
+            InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+            InventoryService.gI().sendItemBags(pl);
+
+            Message msg = Service.gI().messageSubCommand((byte) (requestedLevel == 1 ? 23 : 62));
+            msg.writer().writeShort(learnedSkill.skillId);
+            pl.sendMessage(msg);
+            msg.cleanup();
+            Service.gI().sendThongBao(pl, "Đã học Barrier Prison cấp " + requestedLevel + ".");
+        } catch (Exception e) {
+            Logger.logException(UseItem.class, e,
+                    "Không thể học Barrier Prison cấp " + requestedLevel);
         }
     }
 

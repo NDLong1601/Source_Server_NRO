@@ -3,6 +3,7 @@ import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.services.EquipmentOptionService;
+import nro.models.services.CustomSkillService;
 import nro.models.skill.Skill;
 import nro.models.utils.Util;
 
@@ -43,6 +44,9 @@ public class MobEffectSkill {
         }
         if (isAnTroi && (Util.canDoWithTime(lastTimeAnTroi, timeAnTroi) || mob.isDie())) {
             removeAnTroi();
+        }
+        if (isBarrierPrison) {
+            updateBarrierPrison();
         }
         if (this.isBinh) {
             if (Util.canDoWithTime(lastTimeBinh, timeBinh) || mob.isDie()) {
@@ -160,6 +164,35 @@ public class MobEffectSkill {
         } catch (Exception e) {
 
         }
+    }
+
+    // Barrier Prison state. Capture the prison geometry once at cast time so
+    // both the gameplay boundary and the client VFX use the same fixed center.
+    public boolean isBarrierPrison;
+    public Player barrierPrisonOwner;
+    public Skill barrierPrisonSkill;
+    public int barrierPrisonCenterX;
+    public int barrierPrisonCenterY;
+    public int barrierPrisonRadius;
+    public long lastTimeBarrierPrison;
+    public int timeBarrierPrison;
+    public long lastTimeBarrierPrisonPulse;
+
+    public void updateBarrierPrison() {
+        if (isBarrierPrison) {
+            CustomSkillService.gI().updateBarrierPrison(mob);
+        }
+    }
+
+    public void removeBarrierPrison() {
+        isBarrierPrison = false;
+        barrierPrisonOwner = null;
+        barrierPrisonSkill = null;
+        barrierPrisonCenterX = 0;
+        barrierPrisonCenterY = 0;
+        barrierPrisonRadius = 0;
+        lastTimeBarrierPrison = 0L;
+        lastTimeBarrierPrisonPulse = 0L;
     }
 
     public boolean isSocola;

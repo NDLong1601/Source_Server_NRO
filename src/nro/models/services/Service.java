@@ -1723,6 +1723,9 @@ public class Service {
     }
 
     public void setPos(Player player, int x, int y) {
+        int[] barrierPosition = CustomSkillService.gI().clampBarrierPosition(player, x, y);
+        x = barrierPosition[0];
+        y = barrierPosition[1];
         player.location.x = x;
         player.location.y = y;
         Message msg;
@@ -1740,6 +1743,9 @@ public class Service {
     }
 
     public void setPos2(Player player, int x, int y) {
+        int[] barrierPosition = CustomSkillService.gI().clampBarrierPosition(player, x, y);
+        x = barrierPosition[0];
+        y = barrierPosition[1];
         Message msg;
         try {
             msg = new Message(123);
@@ -1755,6 +1761,9 @@ public class Service {
     }
 
     public void setPos0(Player player, int x, int y) {
+        int[] barrierPosition = CustomSkillService.gI().clampBarrierPosition(player, x, y);
+        x = barrierPosition[0];
+        y = barrierPosition[1];
         player.location.x = x;
         player.location.y = y;
         Message msg;

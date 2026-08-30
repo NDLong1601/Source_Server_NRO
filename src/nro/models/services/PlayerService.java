@@ -163,6 +163,9 @@ public class PlayerService {
             return;
         }
         if (!player.isDie()) {
+            int[] barrierPosition = CustomSkillService.gI().clampBarrierPosition(player, x, y);
+            x = barrierPosition[0];
+            y = barrierPosition[1];
             if (player.effectSkill.isCharging) {
                 EffectSkillService.gI().stopCharge(player);
             }

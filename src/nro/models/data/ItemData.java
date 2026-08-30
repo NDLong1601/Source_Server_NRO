@@ -18,11 +18,19 @@ public class ItemData {
     private static final int MAX_PACKET_PAYLOAD_BYTES = 65_535;
     private static final int RELOAD_PACKET_OVERHEAD_BYTES = 5;
     private static final int APPEND_PACKET_OVERHEAD_BYTES = 7;
+    /*
+     * Item text is the only variable-sized field in the legacy two-packet
+     * protocol. Cap flavour descriptions sent to the client (not the database
+     * value) so every template, including all custom skill books, is present
+     * without exceeding the command's unsigned-short length limit.
+     */
+    private static final int MAX_WIRE_DESCRIPTION_BYTES = 140;
+    private static final String WIRE_DESCRIPTION_SUFFIX = "...";
 
     public static void updateItem(MySession session) {
         updateItemOptionItemplate(session);
         updateItemArrHead2FTemplate(session);
-        int total = Manager.ITEM_TEMPLATES.size();
+        int total = getWireTemplateCount();
         int firstChunk = findReloadTemplateCount(total);
         assertTemplatePacketFits(0, firstChunk, false);
         updateItemTemplate(session, firstChunk);
@@ -30,6 +38,16 @@ public class ItemData {
             assertTemplatePacketFits(firstChunk, total, true);
             updateItemTemplate(session, firstChunk, total);
         }
+    }
+
+    private static int getWireTemplateCount() {
+        int total = Manager.ITEM_TEMPLATES.size();
+        for (int id = 0; id < total; id++) {
+            if (Manager.ITEM_TEMPLATES.get(id).id != id) {
+                throw new IllegalStateException("Item template không liên tục tại ID " + id);
+            }
+        }
+        return total;
     }
 
     /**
@@ -73,7 +91,27 @@ public class ItemData {
 
     private static int templatePacketBytes(Template.ItemTemplate template) {
         // 12 fixed fields plus two unsigned-short UTF lengths.
-        return 16 + modifiedUtfLength(template.name) + modifiedUtfLength(template.description);
+        return 16 + modifiedUtfLength(template.name) + modifiedUtfLength(wireDescription(template));
+    }
+
+    private static String wireDescription(Template.ItemTemplate template) {
+        String description = template.description == null ? "" : template.description;
+        if (modifiedUtfLength(description) <= MAX_WIRE_DESCRIPTION_BYTES) {
+            return description;
+        }
+        int maximumBodyBytes = MAX_WIRE_DESCRIPTION_BYTES - modifiedUtfLength(WIRE_DESCRIPTION_SUFFIX);
+        int end = 0;
+        int usedBytes = 0;
+        while (end < description.length()) {
+            char character = description.charAt(end);
+            int characterBytes = modifiedUtfLength(String.valueOf(character));
+            if (usedBytes + characterBytes > maximumBodyBytes) {
+                break;
+            }
+            usedBytes += characterBytes;
+            end++;
+        }
+        return description.substring(0, end) + WIRE_DESCRIPTION_SUFFIX;
     }
 
     private static int modifiedUtfLength(String value) {
@@ -124,7 +162,7 @@ public class ItemData {
                 msg.writer().writeByte(itemTemplate.type);
                 msg.writer().writeByte(itemTemplate.gender);
                 msg.writer().writeUTF(itemTemplate.name);
-                msg.writer().writeUTF(itemTemplate.description);
+                msg.writer().writeUTF(wireDescription(itemTemplate));
                 msg.writer().writeByte(itemTemplate.level);
                 msg.writer().writeInt(itemTemplate.strRequire);
                 msg.writer().writeShort(itemTemplate.iconID);
@@ -153,7 +191,7 @@ public class ItemData {
                 msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).type);
                 msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).gender);
                 msg.writer().writeUTF(Manager.ITEM_TEMPLATES.get(i).name);
-                msg.writer().writeUTF(Manager.ITEM_TEMPLATES.get(i).description);
+                msg.writer().writeUTF(wireDescription(Manager.ITEM_TEMPLATES.get(i)));
                 msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).level);
                 msg.writer().writeInt(Manager.ITEM_TEMPLATES.get(i).strRequire);
                 msg.writer().writeShort(Manager.ITEM_TEMPLATES.get(i).iconID);

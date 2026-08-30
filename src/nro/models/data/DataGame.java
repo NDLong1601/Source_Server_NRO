@@ -48,10 +48,10 @@ public class DataGame {
     // 70 removes the retired Tomioka Giyuu split-part frame mappings.
     public static byte vsData = 70;
     public static byte vsMap = loadMapVersion();
-    // 2 publishes real skill descriptions instead of the old literal "null".
-    public static byte vsSkill = 2;
-    // 43 removes retired item template 2219 from the client cache.
-    public static byte vsItem = 43;
+    // 6 publishes Khí Nguyên Trảm with its dedicated skill-tab icon.
+    public static byte vsSkill = 6;
+    // 51 republishes every item template in two packet-safe cache chunks.
+    public static byte vsItem = 51;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -429,6 +429,11 @@ public class DataGame {
             case Skill.SUPER_KAME -> "Tụ lực thi triển Super Kamejoko với sức sát thương rất lớn.";
             case Skill.LIEN_HOAN_CHUONG -> "Tung liên tiếp nhiều đòn chưởng năng lượng vào mục tiêu.";
             case Skill.MA_PHONG_BA -> "Thi triển Ma Phong Ba để nhốt đối thủ vào bình chứa.";
+            case Skill.KHI_NGUYEN_TRAM -> "Tạo lưỡi khí xoáy, bay thẳng và xuyên qua tối đa ba mục tiêu.";
+            case Skill.HELLZONE_GRENADE -> "Tạo nhiều quả cầu bao vây rồi hội tụ, gây sát thương diện rộng.";
+            case Skill.BARRIER_PRISON -> "Dựng nhà tù năng lượng, giới hạn di chuyển và gây sát thương theo nhịp.";
+            case Skill.ENERGY_ABSORPTION -> "Hấp thụ một phần sát thương năng lượng để hồi KI trong thời gian ngắn.";
+            case Skill.SUPER_GHOST_KAMIKAZE -> "Triệu hồi các hồn ma tự tìm mục tiêu và phát nổ khi chạm vào.";
             default -> "";
         };
     }

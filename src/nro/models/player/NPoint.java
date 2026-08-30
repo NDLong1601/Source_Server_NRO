@@ -1946,6 +1946,10 @@ public class NPoint {
             case Skill.SUPER_KAME:
             case Skill.LIEN_HOAN_CHUONG:
             case Skill.MA_PHONG_BA:
+            case Skill.KHI_NGUYEN_TRAM:
+            case Skill.HELLZONE_GRENADE:
+            case Skill.BARRIER_PRISON:
+            case Skill.SUPER_GHOST_KAMIKAZE:
                 percentDameSkill = skillSelect.damage;
                 break;
             case Skill.GALICK:

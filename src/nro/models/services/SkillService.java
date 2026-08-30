@@ -20,17 +20,75 @@ import nro.models.utils.Logger;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import nro.models.boss.Boss;
 import nro.models.boss.BossID;
 import nro.models.npc.NonInteractiveNPC;
 import nro.models.services_func.EffectMapService;
 import nro.models.skill.Skill;
+import nro.models.map.Zone;
 
 public class SkillService {
 
     private static SkillService instance;
+    private static final int KHI_NGUYEN_TRAM_MAX_TARGETS = 3;
+    private static final int KHI_NGUYEN_TRAM_CHARGE_TIME = 240;
+    private static final ScheduledExecutorService KHI_NGUYEN_TRAM_SCHEDULER
+            = Executors.newSingleThreadScheduledExecutor(runnable -> {
+                Thread thread = new Thread(runnable, "khi-nguyen-tram");
+                thread.setDaemon(true);
+                return thread;
+            });
+
+    private static final class KienzanCast {
+
+        private final Player caster;
+        private final Zone zone;
+        private final Skill skill;
+        private final int startX;
+        private final int startY;
+        private final int endX;
+        private final int endY;
+        private final byte direction;
+        private final int verticalRange;
+
+        private KienzanCast(Player caster, Skill skill, int startX, int startY,
+                int endX, int endY, byte direction, int verticalRange) {
+            this.caster = caster;
+            this.zone = caster.zone;
+            this.skill = skill;
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = endX;
+            this.endY = endY;
+            this.direction = direction;
+            this.verticalRange = verticalRange;
+        }
+    }
+
+    private static final class KienzanTarget {
+
+        private final Player player;
+        private final Mob mob;
+        private final int distance;
+
+        private KienzanTarget(Player player, int distance) {
+            this.player = player;
+            this.mob = null;
+            this.distance = distance;
+        }
+
+        private KienzanTarget(Mob mob, int distance) {
+            this.player = null;
+            this.mob = mob;
+            this.distance = distance;
+        }
+    }
 
     public static SkillService gI() {
         if (instance == null) {
@@ -99,12 +157,21 @@ public class SkillService {
             return false;
         } else {
             switch (player.playerSkill.skillSelect.template.type) {
-                case 1 ->
-                    useSkillAttack(player, plTarget, mobTarget);
-                case 3 ->
-                    useSkillAlone(player);
-                case 4 ->
-                    useNewSkillNotFocus(player, plTarget, mobTarget, status, skillId, dx, dy, dir, x, y);
+                case 1 -> {
+                    if (!useSkillAttack(player, plTarget, mobTarget)) {
+                        return false;
+                    }
+                }
+                case 3 -> {
+                    if (!useSkillAlone(player)) {
+                        return false;
+                    }
+                }
+                case 4 -> {
+                    if (!useNewSkillNotFocus(player, plTarget, mobTarget, status, skillId, dx, dy, dir, x, y)) {
+                        return false;
+                    }
+                }
                 default -> {
                     return false;
                 }
@@ -113,7 +180,7 @@ public class SkillService {
         return true;
     }
 
-    private void useNewSkillNotFocus(Player player, Player plTarget, Mob mobTarget, int status, byte skillId, Short dx, Short dy, byte dir, Short x, Short y) {
+    private boolean useNewSkillNotFocus(Player player, Player plTarget, Mob mobTarget, int status, byte skillId, Short dx, Short dy, byte dir, Short x, Short y) {
         try {
             if (skillId == -1 && (plTarget != null || mobTarget != null)) {
                 skillId = player.playerSkill.skillSelect.template.id;
@@ -128,16 +195,190 @@ public class SkillService {
                 }
                 dir = (byte) (dx > x ? -1 : 1);
             }
+            boolean started = false;
             switch (skillId) {
                 case Skill.SUPER_KAME, Skill.LIEN_HOAN_CHUONG, Skill.MA_PHONG_BA -> {
                     player.newSkill.setSkillSpecial(dir, dx, dy, x, y);
                     newSkillNotFocus(player, status);
+                    started = true;
                     AchievementService.gI().checkDoneTask(player, ConstAchievement.TUYET_KY_THANH_THAO);
                 }
+                case Skill.KHI_NGUYEN_TRAM -> started = startKhiNguyenTram(player, x, y);
+                case Skill.HELLZONE_GRENADE -> started = CustomSkillService.gI().startHellzoneGrenade(player, x, y);
+                case Skill.SUPER_GHOST_KAMIKAZE -> started = CustomSkillService.gI().startSuperGhostKamikaze(player, x, y);
             }
-            affterUseSkill(player, player.playerSkill.skillSelect.template.id, false);
+            if (started) {
+                affterUseSkill(player, player.playerSkill.skillSelect.template.id,
+                        skillId == Skill.KHI_NGUYEN_TRAM);
+            }
+            return started;
         } catch (Exception e) {
+            Logger.logException(SkillService.class, e, "Không thể thi triển tuyệt kỹ đặc biệt");
+            return false;
         }
+    }
+
+    /**
+     * Khí Nguyên Trảm dùng status 20 để gồng, status 21 để phóng và kết thúc.
+     * Client chạy VFX theo cùng thời gian bay mà server dùng để tính sát thương.
+     * Toạ độ xuất phát luôn lấy từ server; hướng ngắm bị giới hạn bởi dx/dy.
+     */
+    private boolean startKhiNguyenTram(Player player, short requestedX, short requestedY) {
+        if (player == null || player.zone == null || player.isDie()
+                || player.playerSkill == null || player.playerSkill.skillSelect == null
+                || requestedX < 0 || requestedY < 0) {
+            return false;
+        }
+        Skill skill = player.playerSkill.skillSelect;
+        int startX = player.location.x;
+        int startY = player.location.y - 24;
+        int horizontalRange = Math.max(160,
+                SkillMasteryService.gI().applyRangeStat(skill, Math.max(160, skill.dx)));
+        int verticalRange = Math.max(45,
+                SkillMasteryService.gI().applyRangeStat(skill, Math.max(45, skill.dy)));
+        int rawLength = requestedX - startX;
+        byte direction = (byte) (rawLength < 0 ? -1 : 1);
+        if (rawLength == 0) {
+            direction = (byte) (player.location.x > requestedX ? -1 : 1);
+        }
+        int travelLength = Math.max(80, Math.min(horizontalRange, Math.abs(rawLength)));
+        int endX = startX + direction * travelLength;
+        int endY = Math.max(startY - verticalRange,
+                Math.min(startY + verticalRange, requestedY - 24));
+        int travelTime = Math.max(260, Math.min(620,
+                260 + travelLength * 360 / Math.max(1, horizontalRange)));
+        KienzanCast cast = new KienzanCast(player, skill, startX, startY, endX, endY,
+                direction, verticalRange);
+        sendKhiNguyenTram(cast, KHI_NGUYEN_TRAM_CHARGE_TIME);
+        KHI_NGUYEN_TRAM_SCHEDULER.schedule(() -> {
+            if (cast.caster.isDie() || cast.caster.zone != cast.zone) {
+                return;
+            }
+            sendKhiNguyenTramFlight(cast, travelTime);
+            KHI_NGUYEN_TRAM_SCHEDULER.schedule(() -> resolveKhiNguyenTram(cast),
+                    travelTime, TimeUnit.MILLISECONDS);
+        }, KHI_NGUYEN_TRAM_CHARGE_TIME, TimeUnit.MILLISECONDS);
+        return true;
+    }
+
+    private void sendKhiNguyenTram(KienzanCast cast, int chargeTime) {
+        Message message = null;
+        try {
+            message = new Message(-45);
+            // Charge only. Status 21 below supplies the destination and releases
+            // the client from stt == 0; HP packets alone cannot end this pose.
+            message.writer().writeByte(20);
+            message.writer().writeInt((int) cast.caster.id);
+            message.writer().writeShort(Skill.KHI_NGUYEN_TRAM);
+            message.writer().writeByte(4);
+            message.writer().writeByte(cast.direction);
+            message.writer().writeShort(chargeTime);
+            message.writer().writeByte(0);
+            message.writer().writeByte(0);
+            message.writer().writeByte(0);
+            Service.gI().sendMessAllPlayerInMap(cast.caster, message);
+        } catch (IOException e) {
+            Logger.logException(SkillService.class, e, "Không gửi được hiệu ứng Khí Nguyên Trảm");
+        } finally {
+            if (message != null) {
+                message.cleanup();
+            }
+        }
+    }
+
+    private void sendKhiNguyenTramFlight(KienzanCast cast, int travelTime) {
+        Message message = null;
+        try {
+            message = new Message(-45);
+            message.writer().writeByte(21);
+            message.writer().writeInt((int) cast.caster.id);
+            message.writer().writeShort(Skill.KHI_NGUYEN_TRAM);
+            message.writer().writeShort(cast.endX);
+            message.writer().writeShort(cast.endY);
+            message.writer().writeShort(travelTime);
+            message.writer().writeShort(cast.verticalRange);
+            message.writer().writeByte(0); // typePaint
+            message.writer().writeByte(0); // No client-authoritative target list.
+            message.writer().writeByte(0); // typeItem
+            message.writer().writeByte(0); // level
+            Service.gI().sendMessAllPlayerInMap(cast.caster, message);
+        } catch (IOException e) {
+            Logger.logException(SkillService.class, e, "Không gửi được pha bay Khí Nguyên Trảm");
+        } finally {
+            if (message != null) {
+                message.cleanup();
+            }
+        }
+    }
+
+    private void resolveKhiNguyenTram(KienzanCast cast) {
+        Player caster = cast.caster;
+        if (caster == null || caster.isDie() || caster.zone != cast.zone
+                || caster.playerSkill == null || cast.skill == null) {
+            return;
+        }
+        List<KienzanTarget> targets = collectKhiNguyenTramTargets(cast);
+        if (targets.isEmpty()) {
+            return;
+        }
+        targets.sort(Comparator.comparingInt(target -> target.distance));
+        synchronized (caster.playerSkill) {
+            Skill previousSkill = caster.playerSkill.skillSelect;
+            caster.playerSkill.skillSelect = cast.skill;
+            try {
+                int targetCount = Math.min(KHI_NGUYEN_TRAM_MAX_TARGETS, targets.size());
+                for (int index = 0; index < targetCount; index++) {
+                    KienzanTarget target = targets.get(index);
+                    int damagePercent = 100 - index * 20;
+                    if (target.player != null) {
+                        playerAttackPlayer(caster, target.player, false, damagePercent);
+                    } else if (target.mob != null) {
+                        playerAttackMob(caster, target.mob, false, false, damagePercent, false);
+                    }
+                }
+            } finally {
+                caster.playerSkill.skillSelect = previousSkill;
+            }
+        }
+    }
+
+    private List<KienzanTarget> collectKhiNguyenTramTargets(KienzanCast cast) {
+        List<KienzanTarget> targets = new ArrayList<>();
+        Player caster = cast.caster;
+        List<Player> players = caster.isBoss ? cast.zone.getNotBosses() : cast.zone.getHumanoids();
+        for (Player target : new ArrayList<>(players)) {
+            if (target == null || target == caster || target.zone != cast.zone || target.isDie()
+                    || !canAttackPlayer(caster, target)
+                    || !isOnKhiNguyenTramPath(cast, target.location.x, target.location.y - 24)) {
+                continue;
+            }
+            targets.add(new KienzanTarget(target, distanceAlongKhiNguyenTram(cast, target.location.x)));
+        }
+        if (!caster.isBoss) {
+            for (Mob target : new ArrayList<>(cast.zone.mobs)) {
+                if (target == null || target.isDie() || target.zone != cast.zone
+                        || !isOnKhiNguyenTramPath(cast, target.location.x, target.location.y - 18)) {
+                    continue;
+                }
+                targets.add(new KienzanTarget(target, distanceAlongKhiNguyenTram(cast, target.location.x)));
+            }
+        }
+        return targets;
+    }
+
+    private boolean isOnKhiNguyenTramPath(KienzanCast cast, int x, int y) {
+        int distance = distanceAlongKhiNguyenTram(cast, x);
+        int length = Math.max(1, Math.abs(cast.endX - cast.startX));
+        if (distance < -28 || distance > length + 36) {
+            return false;
+        }
+        int expectedY = cast.startY + (cast.endY - cast.startY)
+                * Math.max(0, Math.min(length, distance)) / length;
+        return Math.abs(y - expectedY) <= cast.verticalRange;
+    }
+
+    private int distanceAlongKhiNguyenTram(KienzanCast cast, int x) {
+        return cast.direction == 1 ? x - cast.startX : cast.startX - x;
     }
 
     public void updateSkillSpecial(Player player) {
@@ -367,7 +608,13 @@ public class SkillService {
         }
     }
 
-    public void useSkillAttack(Player player, Player plTarget, Mob mobTarget) {
+    public boolean useSkillAttack(Player player, Player plTarget, Mob mobTarget) {
+        if (player == null || player.playerSkill == null || player.playerSkill.skillSelect == null) {
+            return false;
+        }
+        if (player.playerSkill.skillSelect.template.id == Skill.BARRIER_PRISON) {
+            return CustomSkillService.gI().castBarrierPrison(player, plTarget, mobTarget);
+        }
         if (player.effectSkill != null && player.effectSkill.useTroi) {
             EffectSkillService.gI().removeUseTroi(player);
         }
@@ -382,7 +629,7 @@ public class SkillService {
                     }
                 } else {
                     ((Pet) player).askPea();
-                    return;
+                    return false;
                 }
             } else {
                 if (player.nPoint.stamina > 0) {
@@ -396,7 +643,7 @@ public class SkillService {
                     }
                 } else {
                     Service.gI().sendThongBao(player, "Thể lực đã cạn kiệt, hãy nghỉ ngơi để lấy lại sức");
-                    return;
+                    return false;
                 }
             }
         }
@@ -616,9 +863,16 @@ public class SkillService {
             } else {
             }
         }
+        return true;
     }
 
-    public void useSkillAlone(Player player) {
+    public boolean useSkillAlone(Player player) {
+        if (player == null || player.playerSkill == null || player.playerSkill.skillSelect == null) {
+            return false;
+        }
+        if (player.playerSkill.skillSelect.template.id == Skill.ENERGY_ABSORPTION) {
+            return CustomSkillService.gI().activateEnergyAbsorption(player);
+        }
         List<Mob> mobs;
         List<Player> players;
         switch (player.playerSkill.skillSelect.template.id) {
@@ -737,7 +991,7 @@ public class SkillService {
                     if (!player.isBoss && !player.isPet && !Util.canDoWithTime(player.playerSkill.lastTimePrepareTuSat, 1500)) {
                         player.playerSkill.skillSelect.lastTimeUseThisSkill = System.currentTimeMillis();
                         player.playerSkill.prepareTuSat = false;
-                        return;
+                        return false;
                     }
                     if (player.isBoss || player.isPet) {
                         try {
@@ -793,6 +1047,7 @@ public class SkillService {
                 }
                 break;
         }
+        return true;
     }
 
     private void useSkillBuffToPlayer(Player player, Player plTarget) {
@@ -924,7 +1179,11 @@ public class SkillService {
         }
     }
 
-    private void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss) {
+    void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss) {
+        playerAttackPlayer(plAtt, plInjure, miss, 100);
+    }
+
+    void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss, int damagePercent) {
         if (plInjure.effectSkill.anTroi) {
             plAtt.nPoint.isCrit100 = true;
         }
@@ -938,6 +1197,7 @@ public class SkillService {
                 dameAttack /= 3;
             }
         }
+        dameAttack = dameAttack * Math.max(0, damagePercent) / 100L;
         int dameHit = plInjure.injured(plAtt, miss ? 0 : dameAttack, false, false);
         if (!miss && dameHit > 0) {
             EquipmentOptionService.gI().onSuccessfulAttack(plAtt, plInjure, null, isMeleeSkill(plAtt));
@@ -989,7 +1249,12 @@ public class SkillService {
         }
     }
 
-    private void playerAttackMob(Player plAtt, Mob mob, boolean miss, boolean dieWhenHpFull) {
+    void playerAttackMob(Player plAtt, Mob mob, boolean miss, boolean dieWhenHpFull) {
+        playerAttackMob(plAtt, mob, miss, dieWhenHpFull, 100, true);
+    }
+
+    void playerAttackMob(Player plAtt, Mob mob, boolean miss, boolean dieWhenHpFull,
+            int damagePercent, boolean sendNormalAnimation) {
         if (mob == null || mob.isDie() || plAtt == null || plAtt.nPoint == null || plAtt.playerSkill == null) {
             return;
         }
@@ -1032,10 +1297,13 @@ public class SkillService {
             dameHit = 0;
         }
 
+        dameHit = dameHit * Math.max(0, damagePercent) / 100L;
         dameHit = Math.min(dameHit, 2_147_483_647);
 
         hutHPMP(plAtt, dameHit, null, mob);
-        sendPlayerAttackMob(plAtt, mob);
+        if (sendNormalAnimation) {
+            sendPlayerAttackMob(plAtt, mob);
+        }
         int hpBefore = mob.point.gethp();
         mob.injured(plAtt, dameHit, dieWhenHpFull);
         if (!miss && hpBefore > mob.point.gethp()) {

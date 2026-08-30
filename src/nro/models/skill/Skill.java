@@ -36,6 +36,15 @@ public class Skill {
     public static final byte SUPER_KAME = 24;
     public static final byte LIEN_HOAN_CHUONG = 25;
     public static final byte MA_PHONG_BA = 26;
+    public static final byte KHI_NGUYEN_TRAM = 27;
+    /** Piccolo's delayed area barrage. */
+    public static final byte HELLZONE_GRENADE = 28;
+    /** A bounded energy prison that restricts movement without hard-stunning. */
+    public static final byte BARRIER_PRISON = 29;
+    /** Short defensive buff that converts energy damage into KI. */
+    public static final byte ENERGY_ABSORPTION = 30;
+    /** Homing ghost projectiles that detonate on contact. */
+    public static final byte SUPER_GHOST_KAMIKAZE = 31;
 
     public SkillTemplate template;
 

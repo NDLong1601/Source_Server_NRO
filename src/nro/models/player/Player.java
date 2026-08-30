@@ -33,6 +33,7 @@ import nro.models.task.TaskPlayer;
 import nro.models.network.Message;
 import nro.models.server.Client;
 import nro.models.services.EffectSkillService;
+import nro.models.services.CustomSkillService;
 import nro.models.services.FriendAndEnemyService;
 import nro.models.map.service.MapService;
 import nro.models.services.PetService;
@@ -43,6 +44,7 @@ import nro.models.combine.Combine;
 import nro.models.consts.ConstDailyGift;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
+import nro.models.utils.SkillUtil;
 import java.util.ArrayList;
 import lombok.Getter;
 import lombok.Setter;
@@ -1110,7 +1112,9 @@ public class Player implements Runnable {
 
             if (plAtt != null && plAtt.playerSkill.skillSelect != null && !plAtt.isBoss && MapService.gI().isMapMaBu(this.zone.map.mapId)) {
                 switch (plAtt.playerSkill.skillSelect.template.id) {
-                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN ->
+                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.KHI_NGUYEN_TRAM,
+                            Skill.HELLZONE_GRENADE, Skill.BARRIER_PRISON, Skill.SUPER_GHOST_KAMIKAZE,
+                            Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN ->
                         damage = damage > this.nPoint.hpMax / 20 ? this.nPoint.hpMax / 20 : damage;
                 }
             }
@@ -1178,14 +1182,18 @@ public class Player implements Runnable {
 
             if (plAtt != null && !isMobAttack && plAtt.playerSkill.skillSelect != null) {
                 switch (plAtt.playerSkill.skillSelect.template.id) {
-                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN, Skill.QUA_CAU_KENH_KHI, Skill.MAKANKOSAPPO, Skill.DICH_CHUYEN_TUC_THOI ->
+                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.KHI_NGUYEN_TRAM,
+                            Skill.HELLZONE_GRENADE, Skill.BARRIER_PRISON, Skill.SUPER_GHOST_KAMIKAZE,
+                            Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN,
+                            Skill.QUA_CAU_KENH_KHI, Skill.MAKANKOSAPPO, Skill.DICH_CHUYEN_TUC_THOI ->
                         tlNeDon -= plAtt.nPoint.tlchinhxac;
                     default ->
                         tlNeDon = 0;
                 }
 
                 switch (plAtt.playerSkill.skillSelect.template.id) {
-                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC -> {
+                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.KHI_NGUYEN_TRAM,
+                            Skill.HELLZONE_GRENADE, Skill.BARRIER_PRISON, Skill.SUPER_GHOST_KAMIKAZE -> {
                         if (tlGiap - plAtt.nPoint.tlxgc >= 0) {
                             tlGiap -= plAtt.nPoint.tlxgc;
                         } else {
@@ -1238,7 +1246,10 @@ public class Player implements Runnable {
             boolean isUseGX = false;
             if (!piercing && plAtt != null && plAtt.playerSkill.skillSelect != null) {
                 switch (plAtt.playerSkill.skillSelect.template.id) {
-                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.DRAGON, Skill.DEMON, Skill.GALICK, Skill.LIEN_HOAN, Skill.KAIOKEN, Skill.QUA_CAU_KENH_KHI, Skill.MAKANKOSAPPO, Skill.DICH_CHUYEN_TUC_THOI ->
+                    case Skill.KAMEJOKO, Skill.MASENKO, Skill.ANTOMIC, Skill.DRAGON, Skill.DEMON, Skill.GALICK,
+                            Skill.LIEN_HOAN, Skill.KAIOKEN, Skill.QUA_CAU_KENH_KHI, Skill.MAKANKOSAPPO,
+                            Skill.DICH_CHUYEN_TUC_THOI, Skill.HELLZONE_GRENADE, Skill.BARRIER_PRISON,
+                            Skill.SUPER_GHOST_KAMIKAZE ->
                         isUseGX = true;
                 }
             }
@@ -1249,6 +1260,15 @@ public class Player implements Runnable {
                 if (this.itemTime.isUseGiapXen2) {
                     damage = damage / 100 * 40;
                 }
+            }
+
+            // Energy Absorption is applied after armor/giap xen so the buff
+            // converts the actual damage that would reach HP.  The skill
+            // classification is centralized in SkillUtil and therefore also
+            // works for delayed custom projectiles.
+            if (!piercing && !isMobAttack && damage > 0 && plAtt != null
+                    && SkillUtil.isEnergySkill(plAtt)) {
+                damage = CustomSkillService.gI().absorbEnergyDamage(this, plAtt, damage);
             }
 
             if (!piercing && effectSkill.isShielding && !isMobAttack) {

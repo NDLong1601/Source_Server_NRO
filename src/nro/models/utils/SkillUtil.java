@@ -86,6 +86,30 @@ public class SkillUtil {
         return (skillId == Skill.KAMEJOKO || skillId == Skill.MASENKO || skillId == Skill.ANTOMIC);
     }
 
+    /**
+     * Skills whose hit should be eligible for Energy Absorption.  Keeping the
+     * classification in one place prevents delayed projectiles from being
+     * misclassified after the caster changes their selected skill.
+     */
+    public static boolean isEnergySkill(Player attacker) {
+        if (attacker == null || attacker.playerSkill == null
+                || attacker.playerSkill.skillSelect == null
+                || attacker.playerSkill.skillSelect.template == null) {
+            return false;
+        }
+        return isEnergySkill(attacker.playerSkill.skillSelect.template.id);
+    }
+
+    public static boolean isEnergySkill(int skillId) {
+        return skillId == Skill.KAMEJOKO || skillId == Skill.MASENKO || skillId == Skill.ANTOMIC
+                || skillId == Skill.QUA_CAU_KENH_KHI || skillId == Skill.MAKANKOSAPPO
+                || skillId == Skill.DICH_CHUYEN_TUC_THOI || skillId == Skill.SUPER_KAME
+                || skillId == Skill.LIEN_HOAN_CHUONG || skillId == Skill.MA_PHONG_BA
+                || skillId == Skill.KHI_NGUYEN_TRAM || skillId == Skill.BARRIER_PRISON
+                || skillId == Skill.HELLZONE_GRENADE
+                || skillId == Skill.SUPER_GHOST_KAMIKAZE;
+    }
+
     public static int getTimeMonkey(int level) { // thời gian tồn tại khỉ v
         return (level + 5) * 10000;
     }

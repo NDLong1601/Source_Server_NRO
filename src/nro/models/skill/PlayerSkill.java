@@ -71,6 +71,9 @@ public class PlayerSkill {
             case Skill.LIEN_HOAN_CHUONG:
             case Skill.SUPER_KAME:
             case Skill.MA_PHONG_BA:
+            case Skill.KHI_NGUYEN_TRAM:
+            case Skill.HELLZONE_GRENADE:
+            case Skill.SUPER_GHOST_KAMIKAZE:
                 return 4;
             default:
                 return 3;
