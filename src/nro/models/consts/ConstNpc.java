@@ -251,6 +251,7 @@ public class ConstNpc {
     public static final int MENU_CLAN_UP = 4;
     public static final int MENU_CLAN_TASK = 5;
     public static final int MENU_CLAN_TASK_REMOVE = 6;
+    public static final int MENU_CLAN_WEEKLY = 7;
 
     public static final int DANGKYDHVT_CONFIRM = 0;
 

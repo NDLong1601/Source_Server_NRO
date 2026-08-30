@@ -14,6 +14,7 @@ import nro.models.services.ClanService;
 import nro.models.map.service.NpcService;
 import nro.models.services.Service;
 import nro.models.services.TaskService;
+import nro.models.shop.ShopService;
 import nro.models.task.TaskConfig;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services_func.Input;
@@ -43,6 +44,8 @@ public class DrDrief extends Npc {
                     }
                     menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + TaskConfig.getMaxClanTask()
                             + "]");
+                    menu.add("Hợp đồng\ntuần");
+                    menu.add("Cửa Hàng\nBang hội");
                 }
                 menu.add("Đảo Kame");
                 menu.add("Từ chối");
@@ -77,7 +80,7 @@ public class DrDrief extends Npc {
                                     case 0 ->
                                         createOtherMenu(player, 1, "Tôi có thể giúp gì cho bang hội của bạn ?",
                                                 "Đổi tên\ntên bang\nviết tắt", "Chọn ngẫu nhiên tên bang viết tắt",
-                                                "Nâng cấp Bang hội", "Đóng");
+                                                "Nâng cấp Bang hội", "Tập hợp\nthành viên", "Đóng");
                                     case 1 -> {
                                         if (player.playerTask.clanTask.template != null) {
                                             if (player.playerTask.clanTask.isDone()) {
@@ -98,6 +101,11 @@ public class DrDrief extends Npc {
                                         }
                                     }
                                     case 2 ->
+                                        createOtherMenu(player, ConstNpc.MENU_CLAN_WEEKLY,
+                                                clan.getWeeklyContractStatus(), "Đóng");
+                                    case 3 ->
+                                        ShopService.gI().opendShop(player, "SHOP_CLAN", false);
+                                    case 4 ->
                                         ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
                                     default -> {
                                     }
@@ -124,6 +132,11 @@ public class DrDrief extends Npc {
                                         }
                                     }
                                     case 1 ->
+                                        createOtherMenu(player, ConstNpc.MENU_CLAN_WEEKLY,
+                                                clan.getWeeklyContractStatus(), "Đóng");
+                                    case 2 ->
+                                        ShopService.gI().opendShop(player, "SHOP_CLAN", false);
+                                    case 3 ->
                                         ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
                                     default -> {
                                     }
@@ -170,6 +183,7 @@ public class DrDrief extends Npc {
                                     }
                                 }
                             }
+                            case 3 -> ClanService.gI().rallyClan(player);
                             default -> {
                             }
                         }
@@ -184,21 +198,17 @@ public class DrDrief extends Npc {
                                 }
                                 int capsuleCan = ClanService.gI().capsule(clan);
                                 int capsuleBang = clan.capsuleClan;
-                                if (capsuleBang >= capsuleCan) {
-                                    clan.capsuleClan -= capsuleCan;
+                                if (clan.spendSharedCapsuleClan(player, capsuleCan, "nâng cấp bang hội")) {
                                     clan.level++;
                                     clan.maxMember++;
                                     Service.gI().sendThongBao(player,
                                             "Chúc mừng bang hội của bạn đã lên cấp " + (clan.level));
-                                    for (ClanMember cm : player.clan.getMembers()) {
-                                        Player pl = Client.gI().getPlayer(cm.id);
-                                        if (pl != null) {
-                                            ClanService.gI().sendMyClan(player);
-                                        }
-                                    }
+                                    clan.update();
+                                    clan.sendMyClanForAllMember();
                                 } else {
-                                    Service.gI().sendThongBao(player, "Không đủ capsule bang, cần "
-                                            + Util.formatNumber(capsuleCan - capsuleBang) + " capsule bang nữa.");
+                                    if (capsuleBang >= capsuleCan) {
+                                        Service.gI().sendThongBao(player, "Không thể thực hiện nâng cấp lúc này.");
+                                    }
                                 }
                             }
                         }
@@ -227,6 +237,9 @@ public class DrDrief extends Npc {
                                 TaskService.gI().removeClanTask(player);
                             }
                         }
+                    }
+                    case ConstNpc.MENU_CLAN_WEEKLY -> {
+                        // Tiến độ hợp đồng được cộng tự động khi thành viên hạ quái.
                     }
                     default -> {
                     }

@@ -1597,6 +1597,9 @@ public class TaskService {
     }
 
     public void checkDoneClanTaskKillMob(Player player, Mob mob) {
+        if (player != null && player.clan != null) {
+            player.clan.addWeeklyContractKill(player);
+        }
         if (player.playerTask != null && player.playerTask.clanTask.template != null) {
             if ((player.playerTask.clanTask.template.id == 0 && mob.tempId == ConstMob.KHUNG_LONG)
                     || (player.playerTask.clanTask.template.id == 1 && mob.tempId == ConstMob.LON_LOI)

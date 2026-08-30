@@ -1099,6 +1099,47 @@ public class ClanService {
         }
     }
 
+    /** Gửi lệnh tập hợp dùng lại kênh chat bang, không cần thêm packet client. */
+    public void rallyClan(Player player) {
+        Clan clan = player == null ? null : player.clan;
+        if (clan == null || !clan.canManageTreasury(player)) {
+            if (player != null) {
+                Service.gI().sendThongBao(player, "Chỉ bang chủ hoặc bang phó mới được phát lệnh tập hợp.");
+            }
+            return;
+        }
+        if (!Util.canDoWithTime(clan.lastTimeRally, 60_000)) {
+            Service.gI().sendThongBao(player, "Vui lòng đợi một phút trước khi phát lệnh tập hợp tiếp theo.");
+            return;
+        }
+        clan.lastTimeRally = System.currentTimeMillis();
+        String target;
+        if (clan.doanhTrai != null) {
+            target = "Doanh trại Độc Nhãn đang mở";
+        } else if (clan.BanDoKhoBau != null) {
+            target = "Bản đồ kho báu cấp " + clan.BanDoKhoBau.level + " đang mở";
+        } else if (clan.ConDuongRanDoc != null) {
+            target = "Con đường Rắn Độc cấp " + clan.ConDuongRanDoc.level + " đang mở";
+        } else if (clan.KhiGasHuyDiet != null) {
+            target = "Destron Gas cấp " + clan.KhiGasHuyDiet.level + " đang mở";
+        } else if (player.zone != null && player.zone.map != null) {
+            target = player.zone.map.mapName + " - khu " + player.zone.zoneId
+                    + " (X: " + player.location.x + ", Y: " + player.location.y + ")";
+        } else {
+            target = "Lãnh địa bang";
+        }
+        ClanMember member = clan.getClanMember((int) player.id);
+        ClanMessage message = new ClanMessage(clan);
+        message.type = CHAT;
+        message.playerId = member == null ? (int) player.id : member.id;
+        message.playerName = member == null ? player.name : member.name;
+        message.role = member == null ? Clan.MEMBER : member.role;
+        message.text = "[TẬP HỢP] " + message.playerName + " gọi mọi người đến " + target + ".";
+        message.color = ClanMessage.RED;
+        clan.addClanMessage(message);
+        clan.sendMessageClan(message);
+    }
+
     public void close() {
         PreparedStatement ps;
         try (Connection con = LocalManager.getConnection();) {
@@ -1136,7 +1177,7 @@ public class ClanService {
                 ps.setInt(6, clan.level);
                 ps.setString(7, member);
                 ps.setString(8, clan.name2);
-                ps.setString(9, "cc");
+                ps.setString(9, clan.getWeeklyStateForPersistence());
                 ps.setInt(10, clan.id);
                 ps.addBatch();
             }

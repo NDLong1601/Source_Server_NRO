@@ -6,6 +6,7 @@ import nro.models.radar.RadarCard;
 import nro.models.data.LocalManager;
 import nro.models.consts.ConstPlayer;
 import nro.models.consts.ConstMap;
+import nro.models.consts.ConstNpc;
 import nro.models.data.DataGame;
 import nro.models.database.ShopDAO;
 import nro.models.player_system.Template.*;
@@ -110,6 +111,16 @@ public final class Manager {
     public static List<Shop> SHOPS = new ArrayList<>();
     public static final List<Clan> CLANS = new ArrayList<>();
     public static final List<String> NOTIFY = new ArrayList<>();
+    private static final String CLAN_FEATURE_NOTIFY_NAME = "Bang hội - Cập nhật tính năng";
+    private static final String CLAN_FEATURE_NOTIFY_TEXT
+            = "Chào mừng bạn đến với các hoạt động bang hội!\n\n"
+            + "Bắt đầu bằng cách tạo hoặc gia nhập một bang để cùng đồng đội nhận nhiệm vụ và tích lũy Capsule Bang.\n\n"
+            + "- NPC Dr.Brief tại Lãnh địa Bang Hội: xem Nhiệm vụ Bang, Hợp đồng tuần và Cửa hàng Bang hội. Bang chủ có thêm các mục quản lý, nâng cấp và tập hợp thành viên.\n"
+            + "- NPC Giu-ma Đầu Bò: điểm danh nhận 1 Capsule Bang mỗi ngày; bang chủ có thể gọi Gấu Tướng Cướp khi có đủ đồng đội.\n"
+            + "- Tây Thánh địa: nơi tìm vật phẩm và mảnh hồn bông tai Porata.\n"
+            + "- Cùng hoàn thành nhiệm vụ và hợp đồng tuần để mang thêm Capsule Bang về cho bang.\n"
+            + "- Khi mua vật phẩm hoặc nâng cấp, điểm cá nhân được ưu tiên; bang chủ và bang phó có thể dùng quỹ chung của bang.\n\n"
+            + "Hãy rủ đồng đội cùng tham gia để bang hội phát triển nhanh hơn!";
     public static final List<BadgesTaskTemplate> TASKS_BADGES_TEMPLATE = new ArrayList<>();
     public static final List<BagesTemplate> BAGES_TEMPLATES = new ArrayList<>();
     public static final short[][] trangBiKichHoat = {{0, 6, 21, 27}, {1, 7, 22, 28}, {2, 8, 23, 29}};
@@ -146,6 +157,54 @@ public final class Manager {
         isTopSukien1Changed = false;
         isTopSukien2Changed = false;
         isTopWhisChanged = false;
+    }
+
+    private static void ensureClanFeatureNotify() {
+        String notifyPrefix = CLAN_FEATURE_NOTIFY_NAME + "<>";
+        String notifyText = notifyPrefix + CLAN_FEATURE_NOTIFY_TEXT;
+        for (int i = 0; i < NOTIFY.size(); i++) {
+            String notify = NOTIFY.get(i);
+            if (notify != null && notify.startsWith(notifyPrefix)) {
+                if (!notify.equals(notifyText)) {
+                    NOTIFY.set(i, notifyText);
+                }
+                return;
+            }
+        }
+        // Keep the update at the top when the database migration has not been run yet.
+        NOTIFY.add(0, notifyText);
+    }
+
+    private static void ensureClanHeadquartersNpc(MapTemplate mapTemplate) {
+        if (mapTemplate.id != 153) {
+            return;
+        }
+        for (int i = 0; i < mapTemplate.npcId.length; i++) {
+            if (mapTemplate.npcId[i] == ConstNpc.DR_DRIEF) {
+                mapTemplate.npcX[i] = 659;
+                mapTemplate.npcY[i] = 744;
+                return;
+            }
+        }
+
+        // Older databases only placed Giu-ma Đầu Bò in the guild headquarters.
+        // Add Dr Drief so the weekly contract and rally menus are reachable even
+        // before the map-data migration is applied.
+        int oldLength = mapTemplate.npcId.length;
+        mapTemplate.npcId = Arrays.copyOf(mapTemplate.npcId, oldLength + 1);
+        mapTemplate.npcX = Arrays.copyOf(mapTemplate.npcX, oldLength + 1);
+        mapTemplate.npcY = Arrays.copyOf(mapTemplate.npcY, oldLength + 1);
+        mapTemplate.npcId[oldLength] = ConstNpc.DR_DRIEF;
+        mapTemplate.npcX[oldLength] = 659;
+        mapTemplate.npcY[oldLength] = 744;
+    }
+
+    private static void ensureClanShopNpc() {
+        for (Shop shop : SHOPS) {
+            if (shop != null && "SHOP_CLAN".equals(shop.tagName)) {
+                shop.npcId = ConstNpc.DR_DRIEF;
+            }
+        }
     }
 
     public class MapBgDataManager {
@@ -404,6 +463,9 @@ public final class Manager {
                     clan.thoiGianHoanThanhBDKB = Long.parseLong(String.valueOf(dataArray.get(1)));
                 }
                 dataArray.clear();
+                // Các bản cũ dùng cột tops với giá trị "cc"; bản mới lưu state
+                // hợp đồng bang tuần và cooldown truy nã Gấu Tướng Cướp ở đây.
+                clan.loadWeeklyState(rs.getString("tops"));
                 CLANS.add(clan);
             }
 
@@ -702,6 +764,7 @@ public final class Manager {
 
             //load shop
             SHOPS = ShopDAO.getShops(ConnectionDatabase);
+            ensureClanShopNpc();
             Logger.success(Logger.RED + "Successfully loaded shop (" + SHOPS.size() + ")\n");
 
             //load notify
@@ -710,6 +773,7 @@ public final class Manager {
             while (rs.next()) {
                 NOTIFY.add(rs.getString("name") + "<>" + rs.getString("text"));
             }
+            ensureClanFeatureNotify();
             Logger.success(Logger.PURPLE + "Successfully loaded notify (" + NOTIFY.size() + ")\n");
 
             //load image by name
@@ -891,6 +955,7 @@ public final class Manager {
                         dtn.clear();
                     }
                     dataArray.clear();
+                    ensureClanHeadquartersNpc(mapTemplate);
                     MAP_TEMPLATES[i++] = mapTemplate;
                 }
                 Logger.success(Logger.RED + "Successfully loaded map template (" + MAP_TEMPLATES.length + ")\n");

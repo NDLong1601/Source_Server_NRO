@@ -123,6 +123,7 @@ public class BanDoKhoBau implements Runnable {
             this.lastTimeOpen = System.currentTimeMillis();
             this.clan = clan;
             this.clan.lastTimeOpenBanDoKhoBau = this.lastTimeOpen;
+            this.clan.timeOpenBanDoKhoBau = this.lastTimeOpen;
             this.clan.playerOpenBanDoKhoBau = plOpen;
             this.clan.BanDoKhoBau = this;
             this.kickoutbdkb = false;

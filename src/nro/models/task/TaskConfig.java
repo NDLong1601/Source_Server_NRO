@@ -121,6 +121,19 @@ public final class TaskConfig {
         return Math.max(0, level + 1) * perLevel;
     }
 
+    public static boolean isClanWeeklyEnabled() {
+        String value = values().getProperty("task.clan.weekly.enabled", "1").trim();
+        return "1".equals(value) || "true".equalsIgnoreCase(value);
+    }
+
+    public static int getClanWeeklyTarget() {
+        return getInt("task.clan.weekly.target", 1000, 1, 1_000_000);
+    }
+
+    public static int getClanWeeklyReward() {
+        return getInt("task.clan.weekly.reward", 500, 0, Integer.MAX_VALUE);
+    }
+
     private static String rewardKey(String type, int id, String field) {
         return "task.reward." + type + "." + id + "." + field;
     }

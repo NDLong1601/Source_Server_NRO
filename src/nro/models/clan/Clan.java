@@ -24,6 +24,9 @@ import org.json.simple.JSONObject;
 import nro.models.server.Manager;
 import nro.models.services.TaskService;
 import nro.models.utils.TimeUtil;
+import nro.models.task.TaskConfig;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 public class Clan {
 
@@ -78,6 +81,18 @@ public class Clan {
 
     public long timeUpdateClan;
 
+    /**
+     * Hợp đồng bang tuần. State này được lưu trong cột tops để không bắt buộc
+     * triển khai migration cho các server đang chạy schema cũ.
+     */
+    public long weeklyContractWeek;
+    public int weeklyContractProgress;
+    public int weeklyContractTarget;
+    public int weeklyContractReward;
+    public boolean weeklyContractRewarded;
+    public long lastTimeOpenGauTuongCuop;
+    public long lastTimeRally;
+
     public Clan() {
         this.id = NEXT_ID++;
         this.name = "";
@@ -89,6 +104,207 @@ public class Clan {
         this.members = new ArrayList<>();
         this.membersInGame = new ArrayList<>();
         this.clanMessages = new ArrayList<>();
+        this.weeklyContractTarget = TaskConfig.getClanWeeklyTarget();
+        this.weeklyContractReward = TaskConfig.getClanWeeklyReward();
+    }
+
+    private long currentContractWeek() {
+        return LocalDate.now(TimeUtil.VIETNAM_ZONE)
+                .with(DayOfWeek.MONDAY).toEpochDay();
+    }
+
+    public synchronized void ensureWeeklyContract() {
+        long currentWeek = currentContractWeek();
+        if (weeklyContractWeek != currentWeek) {
+            weeklyContractWeek = currentWeek;
+            weeklyContractProgress = 0;
+            weeklyContractTarget = TaskConfig.getClanWeeklyTarget();
+            weeklyContractReward = TaskConfig.getClanWeeklyReward();
+            weeklyContractRewarded = false;
+            weeklyContractWeek = currentWeek;
+        }
+        if (weeklyContractTarget <= 0) {
+            weeklyContractTarget = TaskConfig.getClanWeeklyTarget();
+        }
+        if (weeklyContractReward < 0) {
+            weeklyContractReward = TaskConfig.getClanWeeklyReward();
+        }
+    }
+
+    public synchronized void loadWeeklyState(String raw) {
+        try {
+            Object parsed = org.json.simple.JSONValue.parse(raw);
+            if (!(parsed instanceof JSONObject state)) {
+                return;
+            }
+            Object value = state.get("week");
+            if (value != null) {
+                weeklyContractWeek = Long.parseLong(value.toString());
+            }
+            value = state.get("progress");
+            if (value != null) {
+                weeklyContractProgress = Integer.parseInt(value.toString());
+            }
+            value = state.get("target");
+            if (value != null) {
+                weeklyContractTarget = Integer.parseInt(value.toString());
+            }
+            value = state.get("reward");
+            if (value != null) {
+                weeklyContractReward = Integer.parseInt(value.toString());
+            }
+            value = state.get("rewarded");
+            if (value != null) {
+                weeklyContractRewarded = Boolean.parseBoolean(value.toString());
+            }
+            value = state.get("lastGau");
+            if (value != null) {
+                lastTimeOpenGauTuongCuop = Long.parseLong(value.toString());
+            }
+        } catch (RuntimeException ignored) {
+            // Dữ liệu tops cũ (ví dụ "cc") không phải state hợp đồng.
+        }
+    }
+
+    public synchronized String getWeeklyStateForPersistence() {
+        ensureWeeklyContract();
+        JSONObject state = new JSONObject();
+        state.put("week", weeklyContractWeek);
+        state.put("progress", weeklyContractProgress);
+        state.put("target", weeklyContractTarget);
+        state.put("reward", weeklyContractReward);
+        state.put("rewarded", weeklyContractRewarded);
+        state.put("lastGau", lastTimeOpenGauTuongCuop);
+        return state.toJSONString();
+    }
+
+    /**
+     * Cộng tiến độ hợp đồng khi thành viên hạ quái. Chỉ thưởng một lần mỗi
+     * tuần và ghi lại vào quỹ bang, tránh phát thưởng theo từng thành viên.
+     */
+    public synchronized void addWeeklyContractKill(Player player) {
+        if (player == null || player.clan != this || !TaskConfig.isClanWeeklyEnabled()) {
+            return;
+        }
+        ensureWeeklyContract();
+        if (weeklyContractRewarded || weeklyContractProgress >= weeklyContractTarget) {
+            return;
+        }
+        weeklyContractProgress++;
+        int milestone = Math.max(1, weeklyContractTarget / 10);
+        boolean shouldPersist = weeklyContractProgress % milestone == 0;
+        if (weeklyContractProgress >= weeklyContractTarget) {
+            weeklyContractProgress = weeklyContractTarget;
+            weeklyContractRewarded = true;
+            capsuleClan += weeklyContractReward;
+            ClanMember leader = getLeader();
+            ClanMessage message = new ClanMessage(this);
+            message.type = 0;
+            message.playerId = leader.id;
+            message.playerName = leader.name;
+            message.role = leader.role;
+            message.text = "Hợp đồng bang tuần đã hoàn thành, quỹ bang nhận "
+                    + Util.numberToMoney(weeklyContractReward) + " Capsule Bang.";
+            message.color = ClanMessage.RED;
+            addClanMessage(message);
+            sendMessageClan(message);
+            shouldPersist = true;
+        } else if (shouldPersist) {
+            ClanMember member = getClanMember((int) player.id);
+            ClanMessage message = new ClanMessage(this);
+            message.type = 0;
+            message.playerId = member == null ? (int) player.id : member.id;
+            message.playerName = member == null ? player.name : member.name;
+            message.role = member == null ? MEMBER : member.role;
+            message.text = "Hợp đồng bang tuần: " + weeklyContractProgress + "/" + weeklyContractTarget;
+            message.color = 0;
+            addClanMessage(message);
+            sendMessageClan(message);
+        }
+        if (shouldPersist) {
+            update();
+            sendMyClanForAllMember();
+        }
+    }
+
+    public synchronized String getWeeklyContractStatus() {
+        ensureWeeklyContract();
+        if (!TaskConfig.isClanWeeklyEnabled()) {
+            return "Hợp đồng bang tuần đang tạm khóa.";
+        }
+        return "Hợp đồng tuần: hạ quái " + weeklyContractProgress + "/" + weeklyContractTarget
+                + "\nThưởng quỹ bang: " + Util.numberToMoney(weeklyContractReward) + " Capsule Bang"
+                + (weeklyContractRewarded ? "\nĐã hoàn thành." : "");
+    }
+
+    /** Dùng điểm cá nhân trước; chỉ bang chủ/phó mới được dùng quỹ chung. */
+    public synchronized boolean spendCapsuleClan(Player player, int amount, String reason) {
+        ClanMember member = player == null ? null : getClanMember((int) player.id);
+        if (player == null || player.clan != this || member == null || amount <= 0) {
+            return false;
+        }
+        String source;
+        if (member.memberPoint >= amount) {
+            member.memberPoint -= amount;
+            source = "điểm cá nhân";
+        } else {
+            if (!isLeader(player) && !isDeputy(player)) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ điểm cá nhân; chỉ bang chủ/phó được dùng quỹ bang.");
+                return false;
+            }
+            if (capsuleClan < amount) {
+                Service.gI().sendThongBao(player, "Bang hội không đủ điểm Capsule Bang để mua vật phẩm này!");
+                return false;
+            }
+            capsuleClan -= amount;
+            source = "quỹ bang";
+        }
+        ClanMessage message = new ClanMessage(this);
+        message.type = 0;
+        message.playerId = member.id;
+        message.playerName = member.name;
+        message.role = member.role;
+        message.text = member.name + " đã chi " + amount + " Capsule Bang từ " + source
+                + (reason == null || reason.isBlank() ? "" : " cho " + reason) + ".";
+        message.color = 0;
+        addClanMessage(message);
+        sendMessageClan(message);
+        update();
+        sendMyClanForAllMember();
+        return true;
+    }
+
+    /** Chi trực tiếp quỹ chung cho các nâng cấp bang, không đụng điểm cá nhân. */
+    public synchronized boolean spendSharedCapsuleClan(Player player, int amount, String reason) {
+        if (player == null || player.clan != this || !canManageTreasury(player) || amount <= 0) {
+            if (player != null) {
+                Service.gI().sendThongBao(player, "Chỉ bang chủ hoặc bang phó được sử dụng quỹ bang.");
+            }
+            return false;
+        }
+        if (capsuleClan < amount) {
+            Service.gI().sendThongBao(player, "Bang hội không đủ điểm Capsule Bang để thực hiện.");
+            return false;
+        }
+        capsuleClan -= amount;
+        ClanMember member = getClanMember((int) player.id);
+        ClanMessage message = new ClanMessage(this);
+        message.type = 0;
+        message.playerId = member == null ? (int) player.id : member.id;
+        message.playerName = member == null ? player.name : member.name;
+        message.role = member == null ? MEMBER : member.role;
+        message.text = message.playerName + " đã chi " + amount + " Capsule Bang từ quỹ bang"
+                + (reason == null || reason.isBlank() ? "" : " cho " + reason) + ".";
+        message.color = ClanMessage.RED;
+        addClanMessage(message);
+        sendMessageClan(message);
+        update();
+        sendMyClanForAllMember();
+        return true;
+    }
+
+    public boolean canManageTreasury(Player player) {
+        return player != null && player.clan == this && (isLeader(player) || isDeputy(player));
     }
 
     public boolean canUpdateClan(Player player) {
@@ -338,7 +554,7 @@ public class Clan {
         String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
                 + getLeader().body + "," + getLeader().leg + "]";
 
-        String top = dataArray.toJSONString();
+        String top = getWeeklyStateForPersistence();
 
         PreparedStatement ps = null;
         try (Connection con = LocalManager.getConnection();) {
@@ -414,7 +630,7 @@ public class Clan {
             ps.setInt(6, this.level);
             ps.setString(7, member);
             ps.setString(8, this.name2);
-            ps.setString(9, "cc");
+            ps.setString(9, getWeeklyStateForPersistence());
             ps.setString(10, topBanDoKhoBau);
             ps.setString(11, thongTinLeader);
             ps.setInt(12, this.id);
@@ -515,7 +731,7 @@ public class Clan {
         String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
                 + getLeader().body + "," + getLeader().leg + "]";
         try (Connection con = LocalManager.gI().getConnection();
-                PreparedStatement ps = con.prepareStatement("UPDATE clan SET thanhTichBDKB = ? WHERE id = ? LIMIT 1")) {
+                PreparedStatement ps = con.prepareStatement("UPDATE clan SET thongTinLeader = ? WHERE id = ? LIMIT 1")) {
             ps.setString(1, thongTinLeader);
             ps.setInt(2, clanId);
             ps.executeUpdate();

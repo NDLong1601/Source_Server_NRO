@@ -915,18 +915,15 @@ public class ShopService {
                 return;
             }
 
-            if (player.clan.capsuleClan < capsuleClanPointPrice) {
-                Service.gI().sendThongBao(player, "Bang hội không đủ điểm Capsule Bang để mua vật phẩm này!");
+            if (!player.clan.spendCapsuleClan(player, capsuleClanPointPrice, is.temp.name)) {
                 return;
             }
-
-            player.clan.capsuleClan -= capsuleClanPointPrice;
 
             Item item = ItemService.gI().createItemFromItemShop(is);
             InventoryService.gI().addItemBag(player, item);
             InventoryService.gI().sendItemBags(player);
 
-            Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + capsuleClanPointPrice + " điểm Capsule Bang của bang hội.");
+            Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + capsuleClanPointPrice + " điểm Capsule Bang.");
             return;
         }
 

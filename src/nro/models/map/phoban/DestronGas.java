@@ -27,7 +27,7 @@ public class DestronGas implements Runnable {
     public static final long POWER_CAN_GO_TO_KHI_GAS_HUY_DIET = 2000000000;
     public static final int AVAILABLE = 50;
     public static final int TIME_KHI_GAS_HUY_DIET = 1800000;
-    public static final int N_PLAYER_CLAN = 0;
+    public static final int N_PLAYER_CLAN = 5;
 
     public int id;
     public byte level;
