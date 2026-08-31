@@ -24,7 +24,7 @@ public class ItemData {
      * value) so every template, including all custom skill books, is present
      * without exceeding the command's unsigned-short length limit.
      */
-    private static final int MAX_WIRE_DESCRIPTION_BYTES = 140;
+    private static final int MAX_WIRE_DESCRIPTION_BYTES = 100;
     private static final String WIRE_DESCRIPTION_SUFFIX = "...";
 
     public static void updateItem(MySession session) {
@@ -51,31 +51,30 @@ public class ItemData {
     }
 
     /**
-     * Fits as many leading templates as possible in the reload packet.  This
-     * minimizes the trailing append packet while preserving the old client's
-     * required one-reload/one-append sequence.
+     * Finds a split where both legacy item-template packets fit. The client
+     * requires exactly one reload packet followed by one append packet.
      */
     private static int findReloadTemplateCount(int total) {
-        int payloadBytes = RELOAD_PACKET_OVERHEAD_BYTES;
-        int end = 0;
-        while (end < total) {
-            int templateBytes = templatePacketBytes(Manager.ITEM_TEMPLATES.get(end));
-            if (payloadBytes + templateBytes > MAX_PACKET_PAYLOAD_BYTES) {
-                break;
+        int totalTemplateBytes = 0;
+        for (int index = 0; index < total; index++) {
+            totalTemplateBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(index));
+        }
+
+        int reloadBytes = RELOAD_PACKET_OVERHEAD_BYTES;
+        for (int end = 1; end < total; end++) {
+            reloadBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(end - 1));
+            int appendBytes = APPEND_PACKET_OVERHEAD_BYTES
+                    + totalTemplateBytes - (reloadBytes - RELOAD_PACKET_OVERHEAD_BYTES);
+            if (reloadBytes <= MAX_PACKET_PAYLOAD_BYTES
+                    && appendBytes <= MAX_PACKET_PAYLOAD_BYTES) {
+                return end;
             }
-            payloadBytes += templateBytes;
-            end++;
         }
-        if (end == 0 && total > 0) {
-            throw new IllegalStateException("Item template 0 vượt giới hạn gói 65.535 byte.");
+        if (total > 0) {
+            throw new IllegalStateException("Không thể chia " + total
+                    + " item template thành hai gói không vượt 65.535 byte.");
         }
-        // The legacy client commits this data only after receiving subtype 2.
-        // Reserve the final template for the append packet even when all
-        // templates technically fit inside the reload packet.
-        if (end == total && total > 1) {
-            end--;
-        }
-        return end;
+        return 0;
     }
 
     private static void assertTemplatePacketFits(int start, int end, boolean append) {

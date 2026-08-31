@@ -2013,10 +2013,10 @@ public class UseItem {
         }
     }
 
-    /** Hellzone Grenade is a Namek-only seven-level custom skill. */
+    /** Lựu Đạn Địa Ngục là kỹ năng bảy cấp dành riêng cho Namếc. */
     private void learnHellzoneGrenade(Player pl, Item item) {
         if (pl.gender != ConstPlayer.NAMEC) {
-            Service.gI().sendThongBao(pl, "Chỉ người Namếc mới có thể lĩnh hội Hellzone Grenade.");
+            Service.gI().sendThongBao(pl, "Chỉ người Namếc mới có thể lĩnh hội Lựu Đạn Địa Ngục.");
             return;
         }
 
@@ -2025,20 +2025,20 @@ public class UseItem {
         int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
 
         if (currentLevel >= 7) {
-            Service.gI().sendThongBao(pl, "Hellzone Grenade đã đạt cấp tối đa.");
+            Service.gI().sendThongBao(pl, "Lựu Đạn Địa Ngục đã đạt cấp tối đa.");
             return;
         }
         if (requestedLevel != currentLevel + 1) {
             Service.gI().sendThongBao(pl,
-                    "Vui lòng học Hellzone Grenade cấp " + (currentLevel + 1) + " trước.");
+                    "Vui lòng học Lựu Đạn Địa Ngục cấp " + (currentLevel + 1) + " trước.");
             return;
         }
 
         Skill learnedSkill = SkillUtil.createSkill(Skill.HELLZONE_GRENADE, requestedLevel);
         if (learnedSkill == null) {
-            Logger.errorln("Không tìm thấy dữ liệu Hellzone Grenade cấp " + requestedLevel);
+            Logger.errorln("Không tìm thấy dữ liệu Lựu Đạn Địa Ngục cấp " + requestedLevel);
             Service.gI().sendThongBao(pl,
-                    "Dữ liệu Hellzone Grenade đang được cập nhật. Hãy thử lại sau.");
+                    "Dữ liệu Lựu Đạn Địa Ngục đang được cập nhật. Hãy thử lại sau.");
             return;
         }
         if (pl.nPoint.power < learnedSkill.powRequire) {
@@ -2061,17 +2061,17 @@ public class UseItem {
             pl.sendMessage(msg);
             msg.cleanup();
             Service.gI().sendThongBao(pl,
-                    "Đã học Hellzone Grenade cấp " + requestedLevel + ".");
+                    "Đã học Lựu Đạn Địa Ngục cấp " + requestedLevel + ".");
         } catch (Exception e) {
             Logger.logException(UseItem.class, e,
-                    "Không thể học Hellzone Grenade cấp " + requestedLevel);
+                    "Không thể học Lựu Đạn Địa Ngục cấp " + requestedLevel);
         }
     }
 
-    /** Barrier Prison is an Earth-only seven-level custom skill. */
+    /** Ngục Giam Lá Chắn là kỹ năng bảy cấp dành riêng cho Trái Đất. */
     private void learnBarrierPrison(Player pl, Item item) {
         if (pl.gender != ConstPlayer.TRAI_DAT) {
-            Service.gI().sendThongBao(pl, "Chỉ người Trái Đất mới có thể lĩnh hội Barrier Prison.");
+            Service.gI().sendThongBao(pl, "Chỉ người Trái Đất mới có thể lĩnh hội Ngục Giam Lá Chắn.");
             return;
         }
 
@@ -2080,20 +2080,20 @@ public class UseItem {
         int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
 
         if (currentLevel >= 7) {
-            Service.gI().sendThongBao(pl, "Barrier Prison đã đạt cấp tối đa.");
+            Service.gI().sendThongBao(pl, "Ngục Giam Lá Chắn đã đạt cấp tối đa.");
             return;
         }
         if (requestedLevel != currentLevel + 1) {
             Service.gI().sendThongBao(pl,
-                    "Vui lòng học Barrier Prison cấp " + (currentLevel + 1) + " trước.");
+                    "Vui lòng học Ngục Giam Lá Chắn cấp " + (currentLevel + 1) + " trước.");
             return;
         }
 
         Skill learnedSkill = SkillUtil.createSkill(Skill.BARRIER_PRISON, requestedLevel);
         if (learnedSkill == null) {
-            Logger.errorln("Không tìm thấy dữ liệu Barrier Prison cấp " + requestedLevel);
+            Logger.errorln("Không tìm thấy dữ liệu Ngục Giam Lá Chắn cấp " + requestedLevel);
             Service.gI().sendThongBao(pl,
-                    "Dữ liệu Barrier Prison đang được cập nhật. Hãy thử lại sau.");
+                    "Dữ liệu Ngục Giam Lá Chắn đang được cập nhật. Hãy thử lại sau.");
             return;
         }
         if (pl.nPoint.power < learnedSkill.powRequire) {
@@ -2115,10 +2115,10 @@ public class UseItem {
             msg.writer().writeShort(learnedSkill.skillId);
             pl.sendMessage(msg);
             msg.cleanup();
-            Service.gI().sendThongBao(pl, "Đã học Barrier Prison cấp " + requestedLevel + ".");
+            Service.gI().sendThongBao(pl, "Đã học Ngục Giam Lá Chắn cấp " + requestedLevel + ".");
         } catch (Exception e) {
             Logger.logException(UseItem.class, e,
-                    "Không thể học Barrier Prison cấp " + requestedLevel);
+                    "Không thể học Ngục Giam Lá Chắn cấp " + requestedLevel);
         }
     }
 

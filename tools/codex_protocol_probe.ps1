@@ -7,7 +7,9 @@ param(
     [int]$MobId = -1,
     [switch]$MapData,
     [int]$MapId = -1,
-    [int]$BgImageId = -1
+    [int]$BgImageId = -1,
+    [string]$IconManifest = '',
+    [string]$ItemIconManifest = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -231,6 +233,23 @@ try {
         }
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($IconManifest)) {
+        $versionPackets = @($packets | Where-Object { $_.Command -eq -77 })
+        if ($versionPackets.Count -ne 1) { throw 'Missing small-image version packet for manifest validation.' }
+        $versionData = $versionPackets[0].Data
+        $versionCount = ([int]$versionData[0] -shl 8) -bor [int]$versionData[1]
+        if ($versionCount + 2 -ne $versionData.Length) { throw 'Invalid small-image version packet length.' }
+        $entries = @(Import-Csv -LiteralPath $IconManifest | Where-Object { [int]$_.Zoom -eq $Zoom })
+        if ($entries.Count -eq 0) { throw 'The icon manifest has no entries for this zoom.' }
+        foreach ($entry in $entries) {
+            $id = [int]$entry.IconId
+            if ($id -lt 0 -or $id -ge $versionCount -or $versionData[$id + 2] -ne [int]$entry.NewVersion) {
+                throw "Stale server icon cache: id=$id zoom=$Zoom"
+            }
+        }
+        "iconVersionsVerified=$($entries.Count) zoom=$Zoom"
+    }
+
     if ($MobId -ge 0) {
         $mobPackets = @($packets | Where-Object { $_.Command -eq 11 })
         "mobPackets=$($mobPackets.Count)"
@@ -276,6 +295,23 @@ try {
         if ($iconPackets.Count -ne 1 -or $iconPackets[0].Data.Length -le 8) {
             throw 'The icon request did not return image data.'
         }
+        $data = $iconPackets[0].Data
+        $returnedId = Read-BigEndianInt32 $data 0
+        $imageLength = Read-BigEndianInt32 $data 4
+        if ($returnedId -ne $IconId -or $imageLength -le 8 -or 8 + $imageLength -ne $data.Length) {
+            throw 'The icon response has an invalid ID or image length.'
+        }
+        $actual = [byte[]]$data[8..($data.Length - 1)]
+        $expectedPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..')) "data\icon\x$Zoom\$IconId.png"
+        $expected = [IO.File]::ReadAllBytes($expectedPath)
+        if ((Get-Sha256Hex $actual) -ne (Get-Sha256Hex $expected)) {
+            throw 'The icon response does not match the deployed PNG file.'
+        }
+        Add-Type -AssemblyName System.Drawing
+        $imageStream = New-Object IO.MemoryStream(, $actual)
+        $image = [Drawing.Image]::FromStream($imageStream)
+        try { "iconId=$IconId zoom=$Zoom size=$($image.Width)x$($image.Height) sha256=$(Get-Sha256Hex $actual)" }
+        finally { $image.Dispose(); $imageStream.Dispose() }
     } elseif ($MapData) {
         $mapPackets = @($packets | Where-Object {
             $_.Command -eq -28 -and $_.Data.Length -ge 3 -and $_.Data[0] -eq 6
@@ -374,6 +410,45 @@ try {
         }
         if (($itemPackets | Where-Object { $_.Data.Length -gt 65535 }).Count -gt 0) {
             throw 'An item packet exceeded the protocol limit.'
+        }
+        if (-not [string]::IsNullOrWhiteSpace($ItemIconManifest)) {
+            $templates = @{}
+            foreach ($packet in @($reloadPackets[0], $appendPackets[0])) {
+                $data = $packet.Data
+                $version = [int]$data[1]
+                $start = 0
+                $end = ([int]$data[3] -shl 8) -bor [int]$data[4]
+                $offset = 5
+                if ($data[2] -eq 2) {
+                    $start = $end
+                    $end = ([int]$data[5] -shl 8) -bor [int]$data[6]
+                    $offset = 7
+                }
+                for ($id = $start; $id -lt $end; $id++) {
+                    $offset += 2 # type, gender
+                    $name = Read-Utf8 $data ([ref]$offset)
+                    $null = Read-Utf8 $data ([ref]$offset) # description
+                    $offset += 5 # level, power requirement
+                    if ($offset + 5 -gt $data.Length) { throw 'Truncated item template.' }
+                    $icon = ([int]$data[$offset] -shl 8) -bor [int]$data[$offset + 1]
+                    $offset += 5 # icon, part, upgrade flag
+                    if ($templates.ContainsKey($id)) { throw "Duplicate wire item $id" }
+                    $templates[$id] = [pscustomobject]@{IconId=$icon; Name=$name; Version=$version}
+                }
+                if ($offset -ne $data.Length) { throw 'Unexpected trailing item-template data.' }
+            }
+            $expectedItems = @(Import-Csv -LiteralPath $ItemIconManifest)
+            if ($expectedItems.Count -eq 0) { throw 'Empty item icon manifest.' }
+            foreach ($entry in $expectedItems) {
+                $id = [int]$entry.ItemId
+                if (-not $templates.ContainsKey($id) -or
+                    $templates[$id].IconId -ne [int]$entry.IconId -or
+                    $templates[$id].Version -ne [int]$entry.Version) {
+                    throw "Wrong wire item icon/version: item=$id expected=$($entry.IconId) version=$($entry.Version)"
+                }
+                "PASS wire item=$id icon=$($templates[$id].IconId) version=$($templates[$id].Version) name=$($templates[$id].Name)"
+            }
+            "itemIconMappingsVerified=$($expectedItems.Count) parsedTemplates=$($templates.Count)"
         }
     }
 } finally {
