@@ -225,7 +225,7 @@ try {
                 ($MobId -lt 0 -and $IconId -lt 0 -and -not $MapData -and $MapId -lt 0 -and $BgImageId -ge 0 -and
                     $packet.Command -eq -32) -or
                 ($MobId -lt 0 -and $IconId -lt 0 -and -not $MapData -and $MapId -lt 0 -and $BgImageId -lt 0 -and
-                    ($packets | Where-Object { $_.Command -eq -28 -and $_.Data.Length -ge 3 -and $_.Data[2] -eq 2 }).Count -ge 1)) {
+                    ($packets | Where-Object { $_.Command -eq -28 -and $_.Data.Length -ge 5 -and $_.Data[2] -eq 3 }).Count -ge 1)) {
                 break
             }
         } catch [System.IO.IOException] {
@@ -404,16 +404,36 @@ try {
         $itemPackets = @($packets | Where-Object { $_.Command -eq -28 })
         $reloadPackets = @($itemPackets | Where-Object { $_.Data.Length -ge 3 -and $_.Data[2] -eq 1 })
         $appendPackets = @($itemPackets | Where-Object { $_.Data.Length -ge 3 -and $_.Data[2] -eq 2 })
-        "itemPackets=$($itemPackets.Count) reloadPackets=$($reloadPackets.Count) appendPackets=$($appendPackets.Count)"
-        if ($reloadPackets.Count -ne 1 -or $appendPackets.Count -ne 1) {
-            throw 'Item template update did not use exactly one reload and one append packet.'
+        $completionPackets = @($itemPackets | Where-Object { $_.Data.Length -ge 5 -and $_.Data[2] -eq 3 })
+        "itemPackets=$($itemPackets.Count) reloadPackets=$($reloadPackets.Count) appendPackets=$($appendPackets.Count) completionPackets=$($completionPackets.Count)"
+        if ($reloadPackets.Count -ne 1 -or $appendPackets.Count -lt 1 -or $completionPackets.Count -ne 1) {
+            throw 'Item template update must use one reload, one or more append packets, and one completion packet.'
         }
         if (($itemPackets | Where-Object { $_.Data.Length -gt 65535 }).Count -gt 0) {
             throw 'An item packet exceeded the protocol limit.'
         }
+
+        $reloadData = $reloadPackets[0].Data
+        $nextTemplateId = ([int]$reloadData[3] -shl 8) -bor [int]$reloadData[4]
+        foreach ($appendPacket in $appendPackets) {
+            $appendData = $appendPacket.Data
+            $appendStart = ([int]$appendData[3] -shl 8) -bor [int]$appendData[4]
+            $appendEnd = ([int]$appendData[5] -shl 8) -bor [int]$appendData[6]
+            if ($appendStart -ne $nextTemplateId -or $appendEnd -lt $appendStart) {
+                throw "Non-contiguous item append range $appendStart..$appendEnd; expected $nextTemplateId."
+            }
+            $nextTemplateId = $appendEnd
+        }
+        $completionData = $completionPackets[0].Data
+        $completedTemplateCount = ([int]$completionData[3] -shl 8) -bor [int]$completionData[4]
+        if ($completedTemplateCount -ne $nextTemplateId) {
+            throw "Item completion count $completedTemplateCount does not match appended count $nextTemplateId."
+        }
+        "itemTemplateCount=$completedTemplateCount appendRanges=contiguous"
+
         if (-not [string]::IsNullOrWhiteSpace($ItemIconManifest)) {
             $templates = @{}
-            foreach ($packet in @($reloadPackets[0], $appendPackets[0])) {
+            foreach ($packet in @($reloadPackets[0]) + $appendPackets) {
                 $data = $packet.Data
                 $version = [int]$data[1]
                 $start = 0

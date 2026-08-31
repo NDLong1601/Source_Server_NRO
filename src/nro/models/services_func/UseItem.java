@@ -102,6 +102,8 @@ public class UseItem {
     private static final int HELLZONE_GRENADE_BOOK_LEVEL_7 = 2232;
     private static final int BARRIER_PRISON_BOOK_LEVEL_1 = 2233;
     private static final int BARRIER_PRISON_BOOK_LEVEL_7 = 2239;
+    private static final int SUPER_GHOST_KAMIKAZE_BOOK_LEVEL_1 = 2240;
+    private static final int SUPER_GHOST_KAMIKAZE_BOOK_LEVEL_7 = 2246;
 
     private UseItem() {
 
@@ -320,6 +322,8 @@ public class UseItem {
                             learnHellzoneGrenade(pl, item);
                         } else if (isBarrierPrisonBook(item.template.id)) {
                             learnBarrierPrison(pl, item);
+                        } else if (isSuperGhostKamikazeBook(item.template.id)) {
+                            learnSuperGhostKamikaze(pl, item);
                         } else {
                             learnSkill(pl, item);
                         }
@@ -1959,6 +1963,15 @@ public class UseItem {
         return itemId - BARRIER_PRISON_BOOK_LEVEL_1 + 1;
     }
 
+    private boolean isSuperGhostKamikazeBook(int itemId) {
+        return itemId >= SUPER_GHOST_KAMIKAZE_BOOK_LEVEL_1
+                && itemId <= SUPER_GHOST_KAMIKAZE_BOOK_LEVEL_7;
+    }
+
+    private int getSuperGhostKamikazeBookLevel(int itemId) {
+        return itemId - SUPER_GHOST_KAMIKAZE_BOOK_LEVEL_1 + 1;
+    }
+
     /**
      * Khí Nguyên Trảm is an Earth-only custom skill. Unlike the legacy book flow,
      * a new character might not have a level-0 placeholder for template 27 yet,
@@ -2119,6 +2132,60 @@ public class UseItem {
         } catch (Exception e) {
             Logger.logException(UseItem.class, e,
                     "Không thể học Ngục Giam Lá Chắn cấp " + requestedLevel);
+        }
+    }
+
+    /** Siêu Ma Cảm Tử là kỹ năng bảy cấp dành riêng cho Xayda. */
+    private void learnSuperGhostKamikaze(Player pl, Item item) {
+        if (pl.gender != ConstPlayer.XAYDA) {
+            Service.gI().sendThongBao(pl, "Chỉ người Xayda mới có thể lĩnh hội Siêu Ma Cảm Tử.");
+            return;
+        }
+
+        int requestedLevel = getSuperGhostKamikazeBookLevel(item.template.id);
+        Skill currentSkill = SkillUtil.getSkillbyId(pl, Skill.SUPER_GHOST_KAMIKAZE);
+        int currentLevel = currentSkill != null && currentSkill.skillId != -1 ? currentSkill.point : 0;
+
+        if (currentLevel >= 7) {
+            Service.gI().sendThongBao(pl, "Siêu Ma Cảm Tử đã đạt cấp tối đa.");
+            return;
+        }
+        if (requestedLevel != currentLevel + 1) {
+            Service.gI().sendThongBao(pl,
+                    "Vui lòng học Siêu Ma Cảm Tử cấp " + (currentLevel + 1) + " trước.");
+            return;
+        }
+
+        Skill learnedSkill = SkillUtil.createSkill(Skill.SUPER_GHOST_KAMIKAZE, requestedLevel);
+        if (learnedSkill == null) {
+            Logger.errorln("Không tìm thấy dữ liệu Siêu Ma Cảm Tử cấp " + requestedLevel);
+            Service.gI().sendThongBao(pl,
+                    "Dữ liệu Siêu Ma Cảm Tử đang được cập nhật. Hãy thử lại sau.");
+            return;
+        }
+        if (pl.nPoint.power < learnedSkill.powRequire) {
+            Service.gI().sendThongBao(pl,
+                    "Cần đạt " + Util.numberToMoney(learnedSkill.powRequire)
+                    + " sức mạnh để học cấp này.");
+            return;
+        }
+
+        try {
+            SkillUtil.setSkill(pl, learnedSkill);
+            if (requestedLevel > 1) {
+                pl.BoughtSkill.add((int) item.template.id);
+            }
+            InventoryService.gI().subQuantityItemsBag(pl, item, 1);
+            InventoryService.gI().sendItemBags(pl);
+
+            Message msg = Service.gI().messageSubCommand((byte) (requestedLevel == 1 ? 23 : 62));
+            msg.writer().writeShort(learnedSkill.skillId);
+            pl.sendMessage(msg);
+            msg.cleanup();
+            Service.gI().sendThongBao(pl, "Đã học Siêu Ma Cảm Tử cấp " + requestedLevel + ".");
+        } catch (Exception e) {
+            Logger.logException(UseItem.class, e,
+                    "Không thể học Siêu Ma Cảm Tử cấp " + requestedLevel);
         }
     }
 

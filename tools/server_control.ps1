@@ -439,6 +439,24 @@ try {
             if ($classFiles.Count -eq 0) {
                 throw "Thu muc build khong co class: $classesRoot"
             }
+            $compiledEntries = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+            foreach ($classFile in $classFiles) {
+                $entryName = $classFile.FullName.Substring($classesRoot.Length + 1).Replace("\", "/")
+                [void]$compiledEntries.Add($entryName)
+            }
+            # A full compile owns the entire inner-class family of each rebuilt
+            # outer class. Drop obsolete members, but preserve bundled libraries
+            # and legacy classes whose outer class is not part of this build.
+            foreach ($entry in @($archive.Entries)) {
+                $innerSeparator = $entry.FullName.IndexOf('$')
+                if ($innerSeparator -lt 0 -or -not $entry.FullName.EndsWith('.class')) {
+                    continue
+                }
+                $outerEntry = $entry.FullName.Substring(0, $innerSeparator) + '.class'
+                if ($compiledEntries.Contains($outerEntry) -and -not $compiledEntries.Contains($entry.FullName)) {
+                    $entry.Delete()
+                }
+            }
             foreach ($classFile in $classFiles) {
                 $entryName = $classFile.FullName.Substring($classesRoot.Length + 1).Replace("\", "/")
                 $oldEntry = $archive.GetEntry($entryName)
@@ -476,6 +494,23 @@ try {
         } finally {
             $archive.Dispose()
         }
+    }
+
+    function Publish-RuntimeJarClasses {
+        param([string]$TargetJar, [string]$ClassesDirectory, [string]$BackupJar)
+
+        # JDT/indexers may memory-map the current JAR on Windows. Updating its
+        # ZIP in place then fails at SetLength, even after the server is stopped.
+        # Build and validate a sibling first, then atomically replace the file;
+        # readers can finish using the old mapping without blocking publication.
+        $stagedJar = "$TargetJar.pending-build-$PID"
+        Copy-Item -LiteralPath $TargetJar -Destination $stagedJar -Force
+        $updatedCount = Update-RuntimeJarClasses -TargetJar $stagedJar -ClassesDirectory $ClassesDirectory
+        if (-not (Test-RuntimeJar -TargetJar $stagedJar)) {
+            throw "JAR staging sau build thieu class runtime bat buoc: $stagedJar"
+        }
+        [System.IO.File]::Replace($stagedJar, $TargetJar, $BackupJar)
+        return $updatedCount
     }
 
     function Build-Server {
@@ -522,14 +557,10 @@ try {
                 $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
                 Copy-Item -Path $targetJar -Destination $backup -Force
                 try {
-                    $updatedCount = Update-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $builtClasses
-                    if (-not (Test-RuntimeJar -TargetJar $targetJar)) {
-                        throw "JAR sau build thieu class runtime bat buoc."
-                    }
+                    $updatedCount = Publish-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $builtClasses -BackupJar $backup
                 } catch {
-                    Copy-Item -Path $backup -Destination $targetJar -Force
-                    Write-ControlLog "Cap nhat class vao 20.jar that bai; da khoi phuc backup: $($_.Exception.Message)"
-                    return
+                    Write-ControlLog "Dong goi staging that bai; 20.jar cu duoc giu nguyen: $($_.Exception.Message)"
+                    throw
                 }
                 Write-ControlLog "Build hoan tat! Da cap nhat $updatedCount class vao JAR runtime va tao backup $([System.IO.Path]::GetFileName($backup))."
                 return
@@ -573,14 +604,10 @@ try {
             $backup = Join-Path $Root ("20.jar.bak_{0}" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
             Copy-Item -Path $targetJar -Destination $backup -Force
             try {
-                $updatedCount = Update-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $tempClasses
-                if (-not (Test-RuntimeJar -TargetJar $targetJar)) {
-                    throw "JAR sau build thieu class runtime bat buoc."
-                }
+                $updatedCount = Publish-RuntimeJarClasses -TargetJar $targetJar -ClassesDirectory $tempClasses -BackupJar $backup
             } catch {
-                Copy-Item -Path $backup -Destination $targetJar -Force
-                Write-ControlLog "Cap nhat 20.jar that bai; da khoi phuc backup: $($_.Exception.Message)"
-                return
+                Write-ControlLog "Dong goi staging that bai; 20.jar cu duoc giu nguyen: $($_.Exception.Message)"
+                throw
             }
             Write-ControlLog "Build javac hoan tat! Da cap nhat $updatedCount class vao 20.jar va tao backup $([System.IO.Path]::GetFileName($backup))."
         }

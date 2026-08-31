@@ -10,6 +10,10 @@
 # Server JAR backups and staging files
 /20.jar.bak_*
 /20.jar.pending
+/20.jar.pending-build-*
+
+# Local rollback snapshots for Super Ghost Kamikaze (not release assets)
+/backups/super_ghost_v2_20260831/
 
 # Costume tool scratch output
 /costume-tools/backups/

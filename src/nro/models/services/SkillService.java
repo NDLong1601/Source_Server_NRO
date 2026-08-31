@@ -116,6 +116,9 @@ public class SkillService {
         byte dir = -1;
         Short x = -1;
         Short y = -1;
+        int ghostCastId = -1;
+        int ghostTargetType = 0;
+        int ghostTargetId = -1;
         if (status == 20) {
             try {
                 skillId = msg.reader().readByte();
@@ -124,7 +127,13 @@ public class SkillService {
                 dir = msg.reader().readByte();
                 x = msg.reader().readShort();
                 y = msg.reader().readShort();
+                if (skillId == Skill.SUPER_GHOST_KAMIKAZE) {
+                    ghostCastId = msg.reader().readInt();
+                    ghostTargetType = msg.reader().readUnsignedByte();
+                    ghostTargetId = msg.reader().readInt();
+                }
             } catch (IOException e) {
+                if (skillId == Skill.SUPER_GHOST_KAMIKAZE) return false;
             }
         }
         if (player.effectSkill != null && player.effectSkill.isHaveEffectSkill()) {
@@ -132,6 +141,32 @@ public class SkillService {
         }
         if (player.playerSkill == null) {
             return false;
+        }
+        // Siêu Ma Cảm Tử has two explicit commands on the normal special-skill
+        // packet: the first creates the orbiting ghosts, the next one supplies
+        // the player's chosen target.  Do this before the normal cooldown gate
+        // because launching an already-created group costs neither KI nor a
+        // second cooldown.
+        if (status == 20 && skillId == Skill.SUPER_GHOST_KAMIKAZE) {
+            if (player.playerSkill.skillSelect == null || player.playerSkill.skillSelect.template == null
+                    || player.playerSkill.skillSelect.template.id != skillId) {
+                selectSkill(player, skillId);
+                return false;
+            }
+            if (CustomSkillService.gI().hasSuperGhostKamikaze(player)) {
+                return CustomSkillService.gI().launchSuperGhostKamikaze(player,
+                        ghostCastId, ghostTargetType, ghostTargetId);
+            }
+            // An order for an expired formation must never summon a fresh one.
+            if (ghostCastId != 0) return false;
+            if (!canUseSkillWithMana(player) || !canUseSkillWithCooldown(player)) {
+                return false;
+            }
+            boolean started = CustomSkillService.gI().startSuperGhostKamikaze(player);
+            if (started) {
+                affterUseSkill(player, Skill.SUPER_GHOST_KAMIKAZE, false);
+            }
+            return started;
         }
         if (player.playerSkill.skillSelect.template.type == 2 && canUseSkillWithMana(player) && canUseSkillWithCooldown(player)) {
             useSkillBuffToPlayer(player, plTarget);
@@ -205,7 +240,9 @@ public class SkillService {
                 }
                 case Skill.KHI_NGUYEN_TRAM -> started = startKhiNguyenTram(player, x, y);
                 case Skill.HELLZONE_GRENADE -> started = CustomSkillService.gI().startHellzoneGrenade(player, x, y);
-                case Skill.SUPER_GHOST_KAMIKAZE -> started = CustomSkillService.gI().startSuperGhostKamikaze(player, x, y);
+                // Siêu Ma Cảm Tử is handled before the generic TYPE=4 branch so
+                // a second click can launch an existing group during cooldown.
+                case Skill.SUPER_GHOST_KAMIKAZE -> started = false;
             }
             if (started) {
                 affterUseSkill(player, player.playerSkill.skillSelect.template.id,

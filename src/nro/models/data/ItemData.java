@@ -10,10 +10,9 @@ import nro.models.player_system.Template;
 public class ItemData {
 
     /*
-     * The legacy client finalizes its item cache after the first subtype-2
-     * append packet. Keep exactly one reload packet and one append packet.
-     * The template text is data-dependent, so calculate the split instead of
-     * relying on a fixed item count that can overflow after a content update.
+     * Message -28 uses an unsigned-short payload length. Item template text
+     * now exceeds two such packets, so the paired Unity client accepts any
+     * number of subtype-2 append packets and one subtype-3 completion packet.
      */
     private static final int MAX_PACKET_PAYLOAD_BYTES = 65_535;
     private static final int RELOAD_PACKET_OVERHEAD_BYTES = 5;
@@ -31,13 +30,16 @@ public class ItemData {
         updateItemOptionItemplate(session);
         updateItemArrHead2FTemplate(session);
         int total = getWireTemplateCount();
-        int firstChunk = findReloadTemplateCount(total);
-        assertTemplatePacketFits(0, firstChunk, false);
-        updateItemTemplate(session, firstChunk);
-        if (firstChunk < total) {
-            assertTemplatePacketFits(firstChunk, total, true);
-            updateItemTemplate(session, firstChunk, total);
+        int start = 0;
+        int end = findChunkEnd(start, total, false);
+        updateItemTemplate(session, end);
+        start = end;
+        while (start < total) {
+            end = findChunkEnd(start, total, true);
+            updateItemTemplate(session, start, end);
+            start = end;
         }
+        updateItemTemplateComplete(session, total);
     }
 
     private static int getWireTemplateCount() {
@@ -50,31 +52,23 @@ public class ItemData {
         return total;
     }
 
-    /**
-     * Finds a split where both legacy item-template packets fit. The client
-     * requires exactly one reload packet followed by one append packet.
-     */
-    private static int findReloadTemplateCount(int total) {
-        int totalTemplateBytes = 0;
-        for (int index = 0; index < total; index++) {
-            totalTemplateBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(index));
-        }
-
-        int reloadBytes = RELOAD_PACKET_OVERHEAD_BYTES;
-        for (int end = 1; end < total; end++) {
-            reloadBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(end - 1));
-            int appendBytes = APPEND_PACKET_OVERHEAD_BYTES
-                    + totalTemplateBytes - (reloadBytes - RELOAD_PACKET_OVERHEAD_BYTES);
-            if (reloadBytes <= MAX_PACKET_PAYLOAD_BYTES
-                    && appendBytes <= MAX_PACKET_PAYLOAD_BYTES) {
-                return end;
+    /** Finds the largest contiguous range that fits in one item-template packet. */
+    private static int findChunkEnd(int start, int total, boolean append) {
+        int payloadBytes = append ? APPEND_PACKET_OVERHEAD_BYTES : RELOAD_PACKET_OVERHEAD_BYTES;
+        int end = start;
+        while (end < total) {
+            int itemBytes = templatePacketBytes(Manager.ITEM_TEMPLATES.get(end));
+            if (payloadBytes + itemBytes > MAX_PACKET_PAYLOAD_BYTES) {
+                break;
             }
+            payloadBytes += itemBytes;
+            end++;
         }
-        if (total > 0) {
-            throw new IllegalStateException("Không thể chia " + total
-                    + " item template thành hai gói không vượt 65.535 byte.");
+        if (end == start && start < total) {
+            throw new IllegalStateException("Item template " + start
+                    + " vượt giới hạn 65.535 byte của một gói dữ liệu.");
         }
-        return 0;
+        return end;
     }
 
     private static void assertTemplatePacketFits(int start, int end, boolean append) {
@@ -201,6 +195,25 @@ public class ItemData {
             msg.cleanup();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /** Marks that every subtype-2 append range has been received by the client. */
+    private static void updateItemTemplateComplete(MySession session, int total) {
+        Message msg = null;
+        try {
+            msg = new Message(-28);
+            msg.writer().writeByte(8);
+            msg.writer().writeByte(DataGame.vsItem);
+            msg.writer().writeByte(3); // complete multi-packet itemtemplate refresh
+            msg.writer().writeShort(total);
+            session.doSendMessage(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 

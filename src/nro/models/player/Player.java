@@ -1793,6 +1793,7 @@ public class Player implements Runnable {
     }
 
     public void dispose() {
+        CustomSkillService.gI().cancelSuperGhostKamikaze(this);
         if (itemsTradeWVP != null) {
             if (!itemsTradeWVP.isEmpty()) {
                 for (Item item : itemsTradeWVP) {

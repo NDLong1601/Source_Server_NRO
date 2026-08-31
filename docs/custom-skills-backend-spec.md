@@ -9,7 +9,7 @@ Tài liệu này mô tả bốn skill đã được chọn để phát triển t
 | Hellzone Grenade | Namếc | 28 | 4 | 193–199 | Backend đã có, client VFX chưa gắn |
 | Barrier Prison | Trái Đất | 29 | 1 | 200–206 | Backend đã có, client VFX chưa gắn |
 | Energy Absorption | Trái Đất/Namếc/Xayda | 30 | 3 | 207–213 | Backend đã có, client VFX chưa gắn |
-| Super Ghost Kamikaze | Xayda | 31 | 4 | 214–220 | Backend đã có, client VFX chưa gắn |
+| Super Ghost Kamikaze | Xayda | 31 | 4 | 214–220 | Backend và client VFX đã gắn |
 
 Dữ liệu được triển khai bởi [`20260830_add_custom_skills_backend.sql`](../sql/migrations/20260830_add_custom_skills_backend.sql). Các điểm vào logic tập trung trong [`CustomSkillService.java`](../src/nro/models/services/CustomSkillService.java), còn sát thương và luồng thi triển đi qua [`SkillService.java`](../src/nro/models/services/SkillService.java).
 
@@ -216,54 +216,79 @@ Skill được tạo cho cả ba `nclass_id`, cùng bộ ID cấp độ. Cơ ch�
 
 ### 7.1. Ý tưởng gameplay
 
-Gotenks triệu hồi nhiều hồn ma năng lượng bay tới mục tiêu gần nhất và phát nổ khi chạm. Mỗi hồn ma có thể chọn mục tiêu riêng; vụ nổ có sát thương chính lên mục tiêu chạm và sát thương lan thấp hơn lên mục tiêu xung quanh.
+Gotenks triệu hồi nhiều hồn ma năng lượng bay quanh người. Lần dùng tiếp theo khóa đúng mục tiêu đang chọn. Hồn ma bay **lần lượt từng con**, chờ va chạm trước khi phóng con tiếp theo. Khi mục tiêu chết, các hồn chưa dùng vẫn bay quanh caster và có thể nhận lệnh tấn công mục tiêu khác.
 
 ### 7.2. Cấu hình cấp độ
 
-| Cấp | Skill ID | ST gốc (%) | Tầm chọn `dx` | Bán kính nổ `dy` | Số hồn ma | KI (%) | Cooldown (ms) |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 214 | 180 | 280 | 70 | 1 | 12 | 38.000 |
-| 2 | 215 | 220 | 310 | 75 | 2 | 12 | 36.000 |
-| 3 | 216 | 260 | 340 | 80 | 2 | 11 | 34.000 |
-| 4 | 217 | 310 | 370 | 85 | 3 | 11 | 32.000 |
-| 5 | 218 | 360 | 400 | 90 | 3 | 10 | 30.000 |
-| 6 | 219 | 410 | 430 | 95 | 4 | 9 | 28.000 |
-| 7 | 220 | 460 | 460 | 100 | 5 | 8 | 26.000 |
+| Cấp | Skill ID | ST gốc (%) | Tầm chọn `dx` | Bán kính nổ `dy` | Số hồn ma | Tồn tại (giây) | KI (%) | Cooldown (ms) |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 214 | 180 | 280 | 70 | 1 | 20 | 12 | 38.000 |
+| 2 | 215 | 220 | 310 | 75 | 2 | 25 | 12 | 36.000 |
+| 3 | 216 | 260 | 340 | 80 | 3 | 30 | 11 | 34.000 |
+| 4 | 217 | 310 | 370 | 85 | 4 | 35 | 11 | 32.000 |
+| 5 | 218 | 360 | 400 | 90 | 5 | 40 | 10 | 30.000 |
+| 6 | 219 | 410 | 430 | 95 | 6 | 45 | 9 | 28.000 |
+| 7 | 220 | 460 | 460 | 100 | 7 | 50 | 8 | 26.000 |
 
-`damage` là phần trăm sức đánh gốc của caster. Runtime chia damage chính theo số hồn ma (`100 / max_fight`), sau đó dùng 35% phần đó cho mục tiêu phụ trong vùng nổ.
+`damage` là phần trăm sức đánh gốc của caster. Ngân sách damage chia cố định lúc triệu hồi, phân bổ phần dư để tổng bằng 100% (cấp 7: 15/15/14/14/14/14/14). Không chia lại theo số hồn còn sống. Mục tiêu phụ nhận 35% phần damage của hồn đó, có làm tròn số nguyên như hệ thống chiến đấu hiện tại.
+
+Thời gian tồn tại do `SuperGhostFormation.lifetimeForLevel()` quản lý: `20.000 + (cấp - 1) * 5.000 ms`. Bắt đầu tính sau khi mọi hồn chạy xong ba frame triệu hồi; nhận lệnh, đổi mục tiêu và nhận snapshot không gia hạn. Không cần migration DB riêng cho timer này; giữ nguyên KI/cooldown hiện tại.
 
 ### 7.3. Cơ chế backend
 
-- Skill đi qua nhánh `TYPE=4`; tọa độ đích phải nằm trong `dx`.
-- Server tạo `GhostCast`, sinh `max_fight` projectile tại vị trí caster và chạy tick mỗi 100 ms.
-- Mỗi tick, hồn ma tìm mục tiêu hợp lệ gần vị trí hiện tại, di chuyển tối đa 42 px và dừng sau 4 giây.
-- Khi khoảng cách còn tối đa 36 px, hồn ma phát nổ một lần rồi đánh mục tiêu chính.
-- Player có thể nhận tối đa hai hit chính từ cùng một cast; mục tiêu phụ vẫn nhận sát thương lan theo vùng.
-- Nếu không tìm thấy mục tiêu, hồn ma bay về tọa độ đã chọn rồi tự biến mất khi hết lifetime.
+- Skill đi qua nhánh `TYPE=4`: lần bấm đầu triệu hồi, lần bấm tiếp theo chọn mục tiêu trong `dx` và ra lệnh tấn công.
+- `GhostCast` là adapter chiến đấu/network; `SuperGhostFormation` giữ state độc lập và có unit test. Tick mỗi 100 ms.
+- Mỗi hồn có index ổn định, trạng thái `SUMMONING → ORBITING → FLYING → SPENT`; nhánh hủy mục tiêu là `FLYING → RETURNING → ORBITING`.
+- Ba frame triệu hồi, mỗi frame 180 ms; từng hồn xuất hiện lệch nhau 55 ms. Lệnh trong lúc triệu hồi được xếp chờ.
+- Chỉ một hồn được phóng tại một thời điểm. Chờ hit được server xử lý, nghỉ tối thiểu 180 ms rồi mới phóng tiếp; tốc độ 420 px/s, tối đa 42 px mỗi tick.
+- Quỹ đạo theo **số hồn đang ở vòng**, không theo cấp ban đầu: bán kính ngang 42/50/58/66/74/82/90 px, bán kính dọc 18/22/26/30/34/38/42 px; tâm vòng nâng dần. Các hồn còn lại được xếp đều và chuyển đội hình êm trong 250 ms khi số lượng thay đổi.
+- Kiểm tra va chạm bằng quãng đường đi trong tick cộng ngưỡng 12 px; phát nổ tại thân mục tiêu. Đánh dấu hồn đã tiêu hao trước callback damage để không nổ lặp.
+- Mục tiêu chết sau 2 hit của 7 hồn: dừng lệnh, giữ 5 hồn; lần bấm tiếp có thể chọn player hoặc mob khác. Không tự chọn mục tiêu mới.
+- Nếu mục tiêu chết do nguồn khác, rời zone hoặc không còn hợp lệ khi đang bay: hồn đó quay lại vòng, không tiêu hao. Nếu bay quá 4 giây chưa tới mục tiêu thì cũng thu hồi.
 - Mastery ghi một lần ở lần nổ đầu tiên thực sự có mục tiêu.
 
 ### 7.4. Quy tắc và trường hợp biên
 
-- Mục tiêu chết, rời zone hoặc không còn hợp lệ sẽ bị bỏ qua ở tick tiếp theo.
+- Chỉ lần triệu hồi trừ KI và bắt đầu cooldown. Ra lệnh cho đội hình đang tồn tại không trừ thêm KI/cooldown, kể cả cooldown cũ chưa kết thúc.
+- Lệnh có `castId` và `targetType/targetId`; không chọn lại mục tiêu gần tọa độ chuột. Lệnh của cast đã hết hạn không được biến thành lần triệu hồi mới.
+- Chặn spam/đổi mục tiêu trong khi chuỗi tấn công hoặc thu hồi chưa hoàn tất. Sau khi mục tiêu chết và hồn bay đã về, được ra lệnh mới.
 - Hồn ma không đánh caster và không đánh player không vượt qua `canAttackPlayer`.
-- Scheduler dùng thread daemon, tự hủy future khi cast hoàn tất hoặc có exception.
-- Logic vị trí hiện là server authoritative; chưa phát packet sprite nên client chưa thấy hồn ma cho tới bước VFX.
+- Kiểm tra lại trạng thái PvP, zone, chết/hồi sinh trước khi đánh. Caster chết, đổi map hoặc disconnect thì toàn bộ đội hình bị hủy, không có damage trễ.
+- Scheduler dùng thread daemon, tự hủy future khi hết thời gian/hết hồn, caster rời map, dispose hoặc có exception.
+- Logic chiến đấu và số hồn còn lại do server quyết định; client không tự gây damage hay tự tiêu hao hồn.
 - Không cho phép một hồn ma nổ lặp lại hoặc vượt số hit đã cấu hình.
 
-### 7.5. Asset/client cần bổ sung sau
+### 7.5. Asset/client
 
-- Sprite hồn ma bay, trail, frame đổi hướng và frame phát nổ.
-- Packet spawn/update/despawn hoặc một protocol effect đủ để các client thấy cùng vị trí.
-- Icon template placeholder 722 và sách cấp 1–7.
-- Âm thanh tiếng cười/nổ; giới hạn số sprite để không gây quá tải ở cấp 7.
+- Client Game1/Game2 dùng cùng logic. Bộ nguồn chính xác tại `assets/super_ghost_kamikaze_v2/`; dựng lại bằng `tools/build_super_ghost_assets.ps1` (mặc định dùng bộ nguồn trong repo, có thể truyền `-SourceDirectory` và `-ClientRoot`). Preview sinh vào `output/super_ghost_kamikaze/frames_preview.png`, không đưa vào Git. Giữ alpha, cắt lề trong suốt, thống nhất scale và pivot khuôn mặt; không vẽ lại ảnh gốc.
+
+| Frame | File nguồn | Vai trò |
+|---:|---|---|
+| 0–2 | `Triệu hồi 1.png` / `Triệu hồi 2.png` / `Triệu hồi 3.png` | Chạy lần lượt khi khởi tạo |
+| 3 | `Hoàn chỉnh sau triệu hồi.png` | Đứng chờ, bay vòng |
+| 4–6 | `Bay tấn công 1.png` / `Bay tấn công 2.png` / `Bay tấn công 3.png` | Server chọn ngẫu nhiên một kiểu mỗi lượt phóng |
+| 7 | `Vụ nổ.png` | Va chạm, hiển thị 450 ms |
+
+- Texture x4: frame 0–6 là 264×264, frame 7 là 288×288. Client vẽ bằng kích thước logic 66×66 và 72×72, không phóng to theo kích thước PNG thô; alpha bật, mipmap tắt, không nén mất nét.
+- Sprite bay lật theo vị trí mục tiêu hiện tại; tọa độ lấy từ server và nội suy 90 ms giữa các tick. Pivot giữ nguyên vị trí khi mirror, tránh bay ngược hoặc nhảy hình lúc chuyển frame.
+- Protocol v2 `-45/25`, template 31: `SPAWN=10, LAUNCH=11, IMPACT=12, RECALL=13, END=14, SNAPSHOT=15, MOVE=16, READY=17`. Không dùng lại payload legacy 0–3.
+- Payload đầy đủ: casterId, templateId, event, castId, sequence, count, summonMs, lifetimeMs, elapsedMs, remainingMs, ownerXY, targetType/Id/XY, changedIndex và state/variant/XY/stateAge cho từng hồn. Các timer dài dùng **int32**, tránh tràn 32.767 ms. Tổng payload `45 + count × 10` byte.
+- Snapshot khi vào map chứa đúng hồn còn lại và thời gian còn lại; client bỏ packet cũ/trùng sequence và không chạy lại cooldown. Server và client v2 phải cập nhật cùng nhau.
+- Icon skill dùng template ảnh `26554`; sách cấp 1–7 dùng dải icon `26547–26553`.
+- Số sprite bị giới hạn tối đa bảy, đúng theo cấp skill.
 
 ### 7.6. Tiêu chí kiểm thử
 
-- Cấp 1 sinh một hồn ma; cấp 7 sinh năm hồn ma.
-- Hồn ma tự đổi mục tiêu khi mục tiêu cũ chết hoặc rời zone.
-- Mỗi hồn ma chỉ gây một vụ nổ; player không nhận quá hai hit chính/cast.
+- Cấp 1–7 sinh đúng 1–7 hồn, tồn tại 20–50 giây sau khi triệu hồi; thử cả biên vượt 32.767 ms.
+- 7 hồn, mục tiêu thứ nhất chết sau 2 hit: còn đúng 5 hồn; đổi mục tiêu phía đối diện dùng được 5 hồn còn lại, không gia hạn thời gian.
+- Tối đa một hồn bay; đủ ba kiểu bay, đúng hướng trái/phải, hiệu ứng nổ đúng mục tiêu.
+- Mục tiêu chết do nguồn khác trước va chạm: thu hồi, không có damage hoặc tiêu hao. Từ chối lệnh trùng/không hợp lệ.
+- Mỗi hồn ma chỉ gây một vụ nổ.
 - Mục tiêu phụ trong `dy` nhận khoảng 35% damage chính.
 - Caster chết hoặc đổi map thì scheduler dừng và không có damage trễ.
+- Late observer thấy đúng số hồn còn lại, không làm sống lại hồn đã nổ. Game1/Game2 và hai caster độc lập.
+- Test tự động: `SuperGhostFormationTest.java`, `SuperGhostWireFixture.java` (serializer thật) và `tools/tests/ghost-client/` (replay qua hai file effect C# thật).
+- Trước phát hành: test trực tiếp Unity hai tài khoản cùng map, A → logout → B cùng cửa sổ, zoom x1–x4, PvP/PvE/di chuyển mục tiêu và hết thời gian trong lúc bay.
 
 ---
 
@@ -276,4 +301,3 @@ Gotenks triệu hồi nhiều hồn ma năng lượng bay tới mục tiêu gầ
 - [ ] Thêm packet timer/trạng thái cho Barrier Prison và Energy Absorption nếu UI cần.
 - [ ] Test hai client trong cùng map để xác nhận animation không lệch vị trí server.
 - [ ] Chạy regression cho skill cũ: Kamehameha, Ma phong ba, Khiên năng lượng, Khí Nguyên Trảm.
-

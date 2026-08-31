@@ -14,6 +14,7 @@ import nro.models.boss.luyen_tap_tu_dong.TrainingBoss;
 import nro.models.consts.ConstMob;
 import nro.models.map.service.ItemMapService;
 import nro.models.services.ItemService;
+import nro.models.services.CustomSkillService;
 import nro.models.map.service.MapService;
 import nro.models.services.PlayerService;
 import nro.models.services.Service;
@@ -258,6 +259,7 @@ public class Zone {
     }
 
     public void removePlayer(Player player) {
+        CustomSkillService.gI().cancelSuperGhostKamikaze(player);
         this.nonInteractiveNPCs.remove(player);
         this.humanoids.remove(player);
         this.notBosses.remove(player);

@@ -1,22 +1,25 @@
 package nro.models.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import nro.models.map.Zone;
 import nro.models.mob.Mob;
 import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
+import nro.models.skill.SuperGhostFormation;
+import nro.models.skill.SuperGhostPacket;
 import nro.models.utils.Logger;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
-import nro.models.map.Zone;
 
 /**
  * Server-authoritative mechanics for the four techniques added after the
@@ -32,14 +35,14 @@ public final class CustomSkillService {
     private static final int BARRIER_PULSE_MS = 1_000;
     private static final int HELLZONE_CAST_DURATION_MS = 1_600;
     private static final int GHOST_TICK_MS = 100;
-    private static final int GHOST_LIFETIME_MS = 4_000;
-    private static final int GHOST_SPEED_PER_TICK = 42;
+    private final AtomicInteger ghostCastSequence = new AtomicInteger();
 
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2, runnable -> {
         Thread thread = new Thread(runnable, "custom-skill-runtime");
         thread.setDaemon(true);
         return thread;
     });
+    private final Map<Long, GhostCast> ghostCasts = new ConcurrentHashMap<>();
 
     private CustomSkillService() {
         scheduler.setRemoveOnCancelPolicy(true);
@@ -447,118 +450,166 @@ public final class CustomSkillService {
         SkillMasteryService.gI().recordValidUse(caster, cast.skill);
     }
 
-    public boolean startSuperGhostKamikaze(Player caster, Short requestedX, Short requestedY) {
-        if (caster == null || caster.zone == null || caster.isDie() || requestedX == null
-                || requestedY == null || caster.playerSkill == null
-                || caster.playerSkill.skillSelect == null) {
-            return false;
-        }
+    /**
+     * Begins the summon.  A target is deliberately not required here: ghosts
+     * circle their owner until the player explicitly orders the attack.
+     */
+    public boolean startSuperGhostKamikaze(Player caster) {
+        if (caster == null || caster.zone == null || caster.isDie() || caster.playerSkill == null
+                || caster.playerSkill.skillSelect == null) return false;
         Skill skill = caster.playerSkill.skillSelect;
-        if (skill.template == null || skill.template.id != Skill.SUPER_GHOST_KAMIKAZE) {
-            return false;
-        }
-        int range = Math.max(160, skill.dx);
-        if (Util.getDistance(caster.location.x, caster.location.y, requestedX, requestedY) > range) {
-            return false;
-        }
-        GhostCast cast = new GhostCast(caster, new Skill(skill), caster.zone,
-                requestedX, requestedY);
+        if (skill.template == null || skill.template.id != Skill.SUPER_GHOST_KAMIKAZE) return false;
+        GhostCast cast = new GhostCast(caster, new Skill(skill), caster.zone);
+        if (ghostCasts.putIfAbsent(caster.id, cast) != null) return false;
+        cast.event(SuperGhostFormation.SPAWN, -1, System.currentTimeMillis());
         cast.future = scheduler.scheduleAtFixedRate(cast::tick, 0, GHOST_TICK_MS, TimeUnit.MILLISECONDS);
         return true;
     }
 
-    private final class GhostCast {
+    public boolean hasSuperGhostKamikaze(Player caster) {
+        return caster != null && ghostCasts.containsKey(caster.id);
+    }
 
+    public boolean launchSuperGhostKamikaze(Player caster, int castId, int targetType, int targetId) {
+        GhostCast cast = caster == null ? null : ghostCasts.get(caster.id);
+        return cast != null && cast.castId == castId && cast.requestLaunch(targetType, targetId);
+    }
+
+    public void cancelSuperGhostKamikaze(Player caster) {
+        GhostCast cast = caster == null ? null : ghostCasts.get(caster.id);
+        if (cast != null) cast.cancel();
+    }
+
+    /** Called after the joining client has received the map's characters/mobs. */
+    public void syncSuperGhostKamikaze(Player viewer) {
+        if (viewer == null || viewer.zone == null) return;
+        for (GhostCast cast : ghostCasts.values()) {
+            if (cast.zone == viewer.zone) cast.snapshot(viewer);
+        }
+    }
+
+    private final class GhostCast implements SuperGhostFormation.Listener {
         private final Player caster;
         private final Skill skill;
         private final Zone zone;
-        private final int targetX;
-        private final int targetY;
-        private final List<GhostProjectile> ghosts = new ArrayList<>();
-        private final Map<Player, Integer> playerHits = new HashMap<>();
-        private final long startedAt = System.currentTimeMillis();
+        private final int castId = ghostCastSequence.incrementAndGet();
+        private final SuperGhostFormation formation;
         private ScheduledFuture<?> future;
+        private int sequence;
         private boolean masteryRecorded;
 
-        private GhostCast(Player caster, Skill skill, Zone zone, int targetX, int targetY) {
+        private GhostCast(Player caster, Skill skill, Zone zone) {
             this.caster = caster;
             this.skill = skill;
             this.zone = zone;
-            this.targetX = targetX;
-            this.targetY = targetY;
-            int count = Math.max(1, skill.maxFight);
-            for (int i = 0; i < count; i++) {
-                ghosts.add(new GhostProjectile(caster.location.x, caster.location.y));
+            formation = new SuperGhostFormation(skill.point, skill.maxFight, System.currentTimeMillis(),
+                    caster.location.x, caster.location.y,
+                    () -> java.util.concurrent.ThreadLocalRandom.current().nextInt(3), this);
+        }
+
+        private boolean validCaster() {
+            return caster.zone == zone && caster.nPoint != null && caster.playerSkill != null
+                    && !caster.isDie() && (!caster.isPl()
+                    || (caster.getSession() != null && caster.getSession().isConnected()));
+        }
+
+        private synchronized boolean requestLaunch(int targetType, int targetId) {
+            if (!validCaster()) return false;
+            CustomTarget selected = null;
+            // Resolve the exact entity selected by the player, not the nearest
+            // entity to the cursor (which can silently select an overlapping mob).
+            if (targetType == 1) {
+                for (Mob mob : zone.mobs) {
+                    if (mob != null && mob.id == targetId) {
+                        selected = new CustomTarget(mob, 0);
+                        break;
+                    }
+                }
+            } else if (targetType == 2) {
+                for (Player player : new ArrayList<>(zone.getHumanoids())) {
+                    if (player != null && player.id == targetId) {
+                        selected = new CustomTarget(player, 0);
+                        break;
+                    }
+                }
             }
+            if (selected == null || Util.getDistance(caster.location.x, caster.location.y,
+                    selected.x(), selected.y()) > Math.max(160, skill.dx)) return false;
+            return formation.command(new GhostTarget(selected), System.currentTimeMillis());
         }
 
         private synchronized void tick() {
             try {
-                if (caster == null || caster.isDie() || caster.zone != zone
-                        || System.currentTimeMillis() - startedAt >= GHOST_LIFETIME_MS) {
-                    cancel();
-                    return;
-                }
-                boolean active = false;
-                for (GhostProjectile ghost : ghosts) {
-                    if (ghost.detonated) {
-                        continue;
-                    }
-                    active = true;
-                    CustomTarget target = findNearestTarget(ghost.x, ghost.y);
-                    int aimX = target == null ? targetX : target.x();
-                    int aimY = target == null ? targetY : target.y();
-                    int offsetX = aimX - ghost.x;
-                    int offsetY = aimY - ghost.y;
-                    double distance = Math.sqrt((double) offsetX * offsetX + (double) offsetY * offsetY);
-                    if (distance <= 36 || distance == 0) {
-                        if (target != null) {
-                            detonate(ghost, target);
-                        } else {
-                            ghost.detonated = true;
-                        }
-                        continue;
-                    }
-                    int step = Math.min(GHOST_SPEED_PER_TICK, (int) Math.ceil(distance));
-                    ghost.x += (int) Math.round(offsetX * step / distance);
-                    ghost.y += (int) Math.round(offsetY * step / distance);
-                }
-                if (!active) {
-                    cancel();
+                if (!validCaster()) {
+                    formation.end(System.currentTimeMillis());
+                } else {
+                    formation.tick(System.currentTimeMillis(), caster.location.x, caster.location.y);
                 }
             } catch (Exception e) {
                 Logger.logException(CustomSkillService.class, e, "Lỗi cập nhật Super Ghost Kamikaze");
-                cancel();
+                formation.end(System.currentTimeMillis());
+            }
+            if (formation.ended) {
+                ghostCasts.remove(caster.id, this);
+                if (future != null) future.cancel(false);
             }
         }
 
-        private CustomTarget findNearestTarget(int x, int y) {
-            List<CustomTarget> targets = collectTargets(caster, zone, x, y,
-                    Math.max(80, skill.dx), false);
-            targets.removeIf(target -> target.player != null
-                    && playerHits.getOrDefault(target.player, 0) >= 2);
-            return targets.stream().min(Comparator.comparingInt(target -> target.distance)).orElse(null);
+        private synchronized void cancel() {
+            formation.end(System.currentTimeMillis());
+            ghostCasts.remove(caster.id, this);
+            if (future != null) future.cancel(false);
         }
 
-        private void detonate(GhostProjectile ghost, CustomTarget primary) {
-            ghost.detonated = true;
-            int count = Math.max(1, skill.maxFight);
-            int damageShare = Math.max(1, 100 / count);
+        private synchronized void snapshot(Player viewer) {
+            if (validCaster() && !formation.ended) {
+                sendState(SuperGhostFormation.SNAPSHOT, -1, System.currentTimeMillis(), viewer);
+            }
+        }
+
+        @Override
+        public void event(int event, int ghostIndex, long now) {
+            sendState(event, ghostIndex, now, null);
+        }
+
+        private void sendState(int event, int ghostIndex, long now, Player viewer) {
+            Message message = null;
+            try {
+                message = new Message(-45);
+                GhostTarget selected = formation.target instanceof GhostTarget
+                        ? (GhostTarget) formation.target : null;
+                SuperGhostPacket.write(message.writer(), (int) caster.id, castId,
+                        ++sequence, formation, event, ghostIndex, now, caster.location.x, caster.location.y,
+                        selected == null ? 0 : selected.type(), selected == null ? -1 : selected.id());
+                if (viewer != null) viewer.sendMessage(message);
+                else if (caster.zone == zone) Service.gI().sendMessAllPlayerInMap(caster, message);
+                else Service.gI().sendMessAllPlayerInMap(zone, message);
+            } catch (IOException e) {
+                Logger.logException(CustomSkillService.class, e, "Không gửi được hiệu ứng Siêu Ma Cảm Tử");
+            } finally {
+                if (message != null) message.cleanup();
+            }
+        }
+
+        @Override
+        public void hit(SuperGhostFormation.Ghost ghost, SuperGhostFormation.Target target) {
+            CustomTarget primary = ((GhostTarget) target).entity;
+            // The initial allocation is immutable: five remaining ghosts must
+            // not suddenly be scaled from 1/7 to 1/5 of the total skill damage.
+            int damageShare = ghost.damageShare;
+            int hitX = primary.x(), hitY = primary.y();
             synchronized (caster.playerSkill) {
                 Skill previous = caster.playerSkill.skillSelect;
                 caster.playerSkill.skillSelect = skill;
                 try {
                     if (primary.player != null) {
                         SkillService.gI().playerAttackPlayer(caster, primary.player, false, damageShare);
-                        playerHits.put(primary.player, playerHits.getOrDefault(primary.player, 0) + 1);
                     } else {
                         SkillService.gI().playerAttackMob(caster, primary.mob, false, false, damageShare, false);
                     }
-                    for (CustomTarget secondary : collectTargets(caster, zone, primary.x(), primary.y(),
+                    for (CustomTarget secondary : collectTargets(caster, zone, hitX, hitY,
                             Math.max(40, skill.dy), false)) {
-                        if (sameTarget(primary, secondary)) {
-                            continue;
-                        }
+                        if (sameTarget(primary, secondary)) continue;
                         if (secondary.player != null) {
                             SkillService.gI().playerAttackPlayer(caster, secondary.player, false,
                                     Math.max(1, damageShare * 35 / 100));
@@ -581,22 +632,27 @@ public final class CustomSkillService {
             return first.player != null ? first.player == second.player : first.mob == second.mob;
         }
 
-        private void cancel() {
-            if (future != null) {
-                future.cancel(false);
+        private final class GhostTarget implements SuperGhostFormation.Target {
+            private final CustomTarget entity;
+            private final long revivedAt;
+            private GhostTarget(CustomTarget entity) {
+                this.entity = entity;
+                revivedAt = entity.player == null ? 0 : entity.player.lastTimeRevived;
             }
-        }
-    }
-
-    private static final class GhostProjectile {
-
-        private int x;
-        private int y;
-        private boolean detonated;
-
-        private GhostProjectile(int x, int y) {
-            this.x = x;
-            this.y = y;
+            public int type() { return entity.player == null ? 1 : 2; }
+            public int id() { return entity.player == null ? entity.mob.id : (int) entity.player.id; }
+            @Override public int x() { return entity.x(); }
+            @Override public int y() { return entity.y() - 18; }
+            @Override public boolean valid() {
+                if (entity.player != null) {
+                    Player victim = entity.player;
+                    return victim != caster && victim.zone == zone && victim.nPoint != null
+                            && !victim.isDie() && victim.lastTimeRevived == revivedAt
+                            && Util.canDoWithTime(victim.lastTimeRevived, 1500)
+                            && SkillService.gI().canAttackPlayer(caster, victim);
+                }
+                return entity.mob != null && entity.mob.zone == zone && !entity.mob.isDie();
+            }
         }
     }
 

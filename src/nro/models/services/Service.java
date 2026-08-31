@@ -2170,6 +2170,7 @@ public class Service {
     }
 
     public void sendEffAllPlayerMapToMe(Player pl) {
+        CustomSkillService.gI().syncSuperGhostKamikaze(pl);
         try {
             for (Player plM : pl.zone.getPlayers()) {
                 if (plM.isPl() && plM.inventory.itemsBody.size() >= 10) {

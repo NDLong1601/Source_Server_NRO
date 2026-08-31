@@ -122,7 +122,7 @@ Build hợp lệ phải thực hiện đầy đủ:
 3. nạp dependency và Lombok đúng cách;
 4. kiểm tra exit code compiler;
 5. tạo backup `20.jar` có timestamp;
-6. cập nhật toàn bộ class vào archive bằng ZIP API an toàn;
+6. cập nhật toàn bộ class vào archive bằng ZIP API an toàn; loại inner class cũ của outer class vừa compile, giữ nguyên dependency/resource không thuộc bản build;
 7. kiểm tra JAR sau cập nhật;
 8. tự rollback nếu đóng gói hoặc kiểm tra thất bại;
 9. dọn thư mục build tạm.
@@ -161,15 +161,11 @@ Các payload được ghi với độ dài 16-bit phải nhỏ hơn hoặc bằn
 Luồng item-template hiện tại phải có:
 
 - đúng 1 packet reload;
-- tiếp theo đúng 1 packet append;
+- tiếp theo là một hoặc nhiều packet append có range liên tục;
+- kết thúc bằng đúng 1 packet completion xác nhận tổng số template;
 - mỗi packet không vượt `65535` byte.
 
-Kích thước tham chiếu của bản đã sửa là khoảng:
-
-- reload: `63848` byte;
-- append: `55125` byte.
-
-Kích thước có thể thay đổi khi thêm dữ liệu, nhưng không được vượt giới hạn và không được thay đổi thứ tự.
+Kích thước và số packet có thể thay đổi khi thêm dữ liệu, nhưng không được vượt giới hạn, trùng range, bỏ hổng ID hoặc thay đổi thứ tự.
 
 ### 6.2 Protocol probe
 
@@ -182,7 +178,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\codex_protocol_probe
 Kiểm tra reconnect khi client không gửi lại loại/phiên bản theo nhánh cũ:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\codex_protocol_probe.ps1 -SkipClientType -IconId 16187
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\codex_protocol_probe.ps1 -SkipClientType -Zoom 1 -IconId 16187
 ```
 
 Probe phải xác nhận packet item, thứ tự reload/append và khả năng lấy icon. Nếu probe lỗi, không bàn giao JAR dù server vẫn mở cổng.

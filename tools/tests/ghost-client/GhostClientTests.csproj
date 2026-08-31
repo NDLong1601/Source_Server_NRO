@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ClientRoot Condition="'$(ClientRoot)' == ''">C:/Users/PC/Music/PRJ_2Tab_550K</ClientRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="StubsGame1.cs" />
+    <Compile Include="StubsGame2.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="$(ClientRoot)/Assets/Scripts/Assembly-CSharp/Game1/SuperGhostKamikazeEffect.cs" />
+    <Compile Include="$(ClientRoot)/Assets/Scripts/Assembly-CSharp/Game2/SuperGhostKamikazeEffect.cs" />
+  </ItemGroup>
+</Project>

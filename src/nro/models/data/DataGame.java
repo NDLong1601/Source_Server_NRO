@@ -48,10 +48,11 @@ public class DataGame {
     // 70 removes the retired Tomioka Giyuu split-part frame mappings.
     public static byte vsData = 70;
     public static byte vsMap = loadMapVersion();
-    // 7 localizes Lựu Đạn Địa Ngục and Ngục Giam Lá Chắn in the skill cache.
-    public static byte vsSkill = 7;
-    // 57 refreshes the corrected Egg / Teleport book icon mappings from the server.
-    public static byte vsItem = 57;
+    // 11 refreshes Siêu Ma Cảm Tử after aligning ghost count with skill level.
+    public static byte vsSkill = 11;
+    // 60 removes the unsupported 256th option-template entry and refreshes
+    // every client cache that received the malformed one-byte option count.
+    public static byte vsItem = 60;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -433,7 +434,7 @@ public class DataGame {
             case Skill.HELLZONE_GRENADE -> "Triệu hồi nhiều quả cầu năng lượng bao vây mục tiêu rồi hội tụ, gây sát thương diện rộng.";
             case Skill.BARRIER_PRISON -> "Tạo ngục giam bằng lá chắn năng lượng, hạn chế di chuyển và gây sát thương theo nhịp.";
             case Skill.ENERGY_ABSORPTION -> "Hấp thụ một phần sát thương năng lượng để hồi KI trong thời gian ngắn.";
-            case Skill.SUPER_GHOST_KAMIKAZE -> "Triệu hồi các hồn ma tự tìm mục tiêu và phát nổ khi chạm vào.";
+            case Skill.SUPER_GHOST_KAMIKAZE -> "Triệu hồi số hồn ma đúng bằng cấp kỹ năng. Hồn ma bay quanh bạn 5 giây và chỉ tấn công khi bạn chọn mục tiêu rồi ra lệnh đánh.";
             default -> "";
         };
     }
