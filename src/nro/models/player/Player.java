@@ -71,6 +71,7 @@ import nro.models.minigame.ChonAiDay_Gold;
 import nro.models.npc.DuaHauEgg;
 import nro.models.player_badges.Badges;
 import nro.models.player_badges.BadgesData;
+import nro.models.player_badges.BadgesService;
 import nro.models.services.ItemTimeService;
 import nro.models.services.ItemService;
 import nro.models.services.EquipmentOptionService;
@@ -647,21 +648,18 @@ public class Player implements Runnable {
     }
 
     public void autoSendBadges() {
-        Iterator<BadgesData> iterator = dataBadges.iterator();
-        while (iterator.hasNext()) {
-            BadgesData data = iterator.next();
-            if (System.currentTimeMillis() >= data.timeofUseBadges) {
-                iterator.remove();
-            } else if (data.isUse) {
-                badges.idBadges = data.idBadGes;
-            }
+        int previousBadgeId = badges.idBadges;
+        boolean badgesChanged = BadgesService.normalize(this);
+        badges.idBadges = BadgesService.getActiveBadgeId(this);
+
+        if (badgesChanged || previousBadgeId != badges.idBadges) {
+            this.nPoint.calPoint();
+            Service.gI().point(this);
         }
 
         if (badges.idBadges != -1 && Util.canDoWithTime(badges.lastTimeSendBadges, 10000)) {
             Service.gI().sendBadgesPlayer(this, 5, badges.idBadges);
             badges.lastTimeSendBadges = System.currentTimeMillis();
-            this.nPoint.update();
-            Service.gI().point(this);
         }
     }
 

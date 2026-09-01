@@ -1018,13 +1018,16 @@ INSERT INTO `data_badges` (`id`, `idEffect`, `idItem`, `NAME`, `Options`) VALUES
 (7, 224, 1295, 'Ông thần ve chai', '[{\"param\":3,\"id\":108},{\"param\":30,\"id\":93}]'),
 (8, 225, 1296, 'Bị móc sạch túi', '[{\"param\":5,\"id\":108},{\"param\":5,\"id\":77},{\"param\":5,\"id\":103},{\"param\":30,\"id\":93}]'),
 (9, 228, 1299, 'Fan cứng', '[{\"param\":3,\"id\":50},{\"param\":3,\"id\":77},{\"param\":3,\"id\":103},{\"param\":30,\"id\":93}]'),
+(10, 215, 1286, 'Kẻ thao túng sói', '[{\"param\":30,\"id\":93}]'),
+(11, 216, 1287, 'Nước anh bao', '[{\"param\":30,\"id\":93}]'),
 (12, 242, 1392, 'Gõ đầu trẻ', '[{\"param\":10,\"id\":77},{\"param\":10,\"id\":103},{\"param\":10,\"id\":5},{\"param\":30,\"id\":93}]'),
 (13, 243, 1393, 'Gõ đầu trẻ', '[{\"param\":10,\"id\":77},{\"param\":10,\"id\":103},{\"param\":10,\"id\":5},{\"param\":30,\"id\":93}]'),
 (14, 240, 1394, 'Gõ đầu trẻ', '[{\"param\":10,\"id\":77},{\"param\":10,\"id\":103},{\"param\":10,\"id\":5},{\"param\":30,\"id\":93}]'),
 (15, 247, 1457, 'X-mas', '[{\"param\":12,\"id\":50},{\"param\":12,\"id\":77},{\"param\":12,\"id\":103},{\"param\":30,\"id\":93}]'),
 (16, 253, 1514, 'Em xinh, em đẹp', '[{\"param\":11,\"id\":50},{\"param\":11,\"id\":77},{\"param\":11,\"id\":103},{\"param\":5,\"id\":117},{\"param\":30,\"id\":93}]'),
 (17, 256, 1790, 'Mẹ Rồng', '[{\"param\":13,\"id\":50},{\"param\":13,\"id\":77},{\"param\":7,\"id\":5},{\"param\":30,\"id\":93}]'),
-(18, 226, 1297, 'KOL', '[{\"param\":10,\"id\":50},{\"param\":10,\"id\":77},{\"param\":103,\"id\":10},{\"param\":30,\"id\":93}]');
+(18, 226, 1297, 'KOL', '[{\"param\":10,\"id\":50},{\"param\":10,\"id\":77},{\"param\":103,\"id\":10},{\"param\":30,\"id\":93}]'),
+(19, 229, 1300, 'Thánh ở dơ', '[{\"param\":30,\"id\":93}]');
 
 -- --------------------------------------------------------
 
@@ -11340,12 +11343,12 @@ INSERT INTO `task_badges_template` (`id`, `NAME`, `maxCount`, `idBadgesReward`) 
 (3, 'Hạ Gục Cumber, Black Goku, Cooler, Xên ( 300 Lần )', 300, 220),
 (4, 'Đập 5 Trang Bị +7 Trong Ngày', 5, 221),
 (5, 'Top 1 Đại Hội Võ Đài Siêu Hạng', 1, 222),
-(6, 'Hoàn Thành 10 Nhiệm Vụ Siêu Khó Tại Bò Mộng', 10, 223),
-(7, 'Đánh Bại, Hoặc Cho Xương Sói 20 Lần', 20, 1286),
-(8, 'Hoàn Thành Nhiệm Vụ 5 Lần Cho Xinbato Nước', 5, 1287),
+(6, 'Hoàn thành 10 nhiệm vụ địa ngục tại Bò Mộng', 10, 223),
+(7, 'Đánh bại hoặc cho Sói Hẹc Quyn ăn xương 20 lần', 20, 215),
+(8, 'Đánh bại Xinbatô Nước 5 lần', 5, 216),
 (9, 'Nhặt Đồ Trong Ngày 500 Lần', 500, 224),
 (10, 'Tiêu diệt 30 Boss Ăn Trộm', 30, 225),
-(11, 'Tiêu Diệt 30 Boss Ở Dơ', 30, 1300),
+(11, 'Tiêu diệt 30 Boss Ở Dơ', 30, 229),
 (12, 'Mở Rương Gỗ Cấp 12', 10, 240),
 (13, 'Mở Rương Gỗ Cấp 12', 20, 242),
 (14, 'Mở Rương Gỗ Cấp 12', 30, 243),

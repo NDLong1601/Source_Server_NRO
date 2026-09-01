@@ -987,6 +987,10 @@ public class ShopService {
 
     private void buyDanhHieu(Player pl, ItemShop is) {
         int idEffect = BagesTemplate.fineIdEffectbyIdItem(is.temp.id);
+        if (idEffect < 0) {
+            Service.gI().sendThongBao(pl, "Danh hiệu này chưa được cấu hình");
+            return;
+        }
         int percent = BadgesTaskService.sendPercenBadgesTask(pl, idEffect);
 
         if (percent < 100) {
@@ -994,15 +998,10 @@ public class ShopService {
             return;
         }
 
-        for (BadgesData badge : pl.dataBadges) {
-            if (badge.idBadGes == idEffect) {
-                Service.gI().sendThongBao(pl, "Bạn đã sở hữu danh hiệu này rồi");
-                return;
-            }
+        if (!BadgesService.grantBadge(pl, idEffect, BadgesService.DEFAULT_BADGE_DURATION_DAYS)) {
+            Service.gI().sendThongBao(pl, "Bạn đã sở hữu danh hiệu này rồi");
+            return;
         }
-
-        BadgesData danhHieu = new BadgesData(pl, idEffect, 30);
-        pl.dataBadges.add(danhHieu);
 
         BagesTemplate template = BagesTemplate.fineBadgesbyIdItem(is.temp.id);
         String badgeName = template != null ? template.NAME : "không rõ";
@@ -1020,7 +1019,10 @@ public class ShopService {
             pl.lastTimeChangeBadges = System.currentTimeMillis() + 3000;
             return;
         }
-        BadgesService.turnOnBadges(pl, BagesTemplate.fineIdEffectbyIdItem(is.temp.id));
+        if (!BadgesService.turnOnBadges(pl, BagesTemplate.fineIdEffectbyIdItem(is.temp.id))) {
+            Service.gI().sendThongBao(pl, "Bạn chưa sở hữu danh hiệu này");
+            return;
+        }
         Service.gI().sendThongBao(pl, "Đã đổi danh hiệu sang " + is.temp.name);
         pl.lastTimeChangeBadges = System.currentTimeMillis() + 3000;
         pl.nPoint.calPoint();

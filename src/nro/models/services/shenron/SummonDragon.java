@@ -181,6 +181,9 @@ public class SummonDragon {
                     InventoryService.gI().sendItemBags(pl);
                     sendNotifyShenronAppear();
                     activeShenron(pl, true, SummonDragon.DRAGON_SHENRON);
+                    if (dragonStar == 1) {
+                        BadgesTaskService.updateCountBagesTask(pl, ConstTaskBadges.TRUM_UOC_RONG, 1);
+                    }
                     sendBlackGokuhesShenron(pl);
                 } else {
                     int timeLeft = (int) ((timeResummonShenron - (System.currentTimeMillis() - lastTimeShenronAppeared)) / 1000);
@@ -224,7 +227,6 @@ public class SummonDragon {
             msg = new Message(-83);
             msg.writer().writeByte(appear ? 0 : (byte) 1);
             if (appear) {
-                BadgesTaskService.updateCountBagesTask(pl, ConstTaskBadges.TRUM_UOC_RONG, 1);
                 msg.writer().writeShort(pl.zone.map.mapId);
                 msg.writer().writeShort(pl.zone.map.bgId);
                 msg.writer().writeByte(pl.zone.zoneId);

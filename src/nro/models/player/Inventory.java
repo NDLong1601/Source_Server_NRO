@@ -121,6 +121,9 @@ public class Inventory {
     }
 
     public void checkAndUpdateMeRongBadges(Player player) {
+        if (player == null) {
+            return;
+        }
         Set<Integer> checkedItemIds = new HashSet<>();
 
         List<List<Item>> inventories = Arrays.asList(
@@ -130,16 +133,19 @@ public class Inventory {
         );
 
         for (List<Item> inventory : inventories) {
+            if (inventory == null) {
+                continue;
+            }
             for (Item item : inventory) {
-                if (item != null && isPermanent(item)) {
+                if (item != null && item.template != null && isPermanent(item)) {
                     int itemId = item.template.id;
                     if (itemId >= 1765 && itemId <= 1771 && !checkedItemIds.contains(itemId)) {
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.ME_RONG, 1);
                         checkedItemIds.add(itemId);
                     }
                 }
             }
         }
+        BadgesTaskService.setCountBadgesTask(player, ConstTaskBadges.ME_RONG, checkedItemIds.size());
     }
 
     private boolean isPermanent(Item item) {

@@ -51,6 +51,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import nro.models.player_badges.BadgesData;
+import nro.models.player_badges.BadgesService;
 import nro.models.services.PlayerService;
 import nro.models.task.BadgesTask;
 import nro.models.task.BadgesTaskService;
@@ -1462,6 +1463,8 @@ public class MrFinn {
             }
 
             PlayerService.gI().dailyLogin(player);// RESET DATA KHI QUA 12H ĐÊM
+            BadgesService.normalize(player);
+            player.inventory.checkAndUpdateMeRongBadges(player);
             if (player.getSession() != null && player.getSession().actived && player.getSession().vnd < 0) {
                 player.getSession().actived = false;
                 player.getSession().vnd = 0;

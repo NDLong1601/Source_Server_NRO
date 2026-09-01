@@ -2,7 +2,8 @@ package nro.models.player;
 
 import lombok.Getter;
 import lombok.Setter;
-import nro.models.player.Player;
+import nro.models.consts.ConstTaskBadges;
+import nro.models.task.BadgesTaskService;
 
 /**
  * @author By Mr Blue
@@ -20,12 +21,13 @@ public class PlayerEvent {
     }
     
     public void addEventPoint(int num) {
-        eventPoint += num;
+        grantEventPoint(num);
     }
 
     public void grantEventPoint(int num) {
         if (num > 0) {
             eventPoint += num;
+            BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.XSMAX, num);
         }
     }
     

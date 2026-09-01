@@ -1332,7 +1332,9 @@ public class TaskService {
                 long activityReceivedTime = player.playerTask.sideTask.receivedTime;
                 if (TaskConfig.isCustomRewardEnabled("side", templateId)) {
                     if (TaskRewardService.grant(player, "side", templateId)) {
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
+                        if (activityLevel == ConstTask.HELL) {
+                            BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
+                        }
                         player.playerTask.sideTask.reset();
                         recordCompletedSideTask(player, activityLevel, templateId,
                                 activityLeftTask, activityReceivedTime);
@@ -1344,22 +1346,18 @@ public class TaskService {
                 int cayThong = -1;
                 switch (player.playerTask.sideTask.level) {
                     case ConstTask.EASY:
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         goldReward = TaskConfig.getSideGoldReward(ConstTask.EASY);
                         ngocBi = TaskConfig.getSideItemReward(ConstTask.EASY);
                         break;
                     case ConstTask.NORMAL:
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         goldReward = TaskConfig.getSideGoldReward(ConstTask.NORMAL);
                         ngocBi = TaskConfig.getSideItemReward(ConstTask.NORMAL);
                         break;
                     case ConstTask.HARD:
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         goldReward = TaskConfig.getSideGoldReward(ConstTask.HARD);
                         ngocBi = TaskConfig.getSideItemReward(ConstTask.HARD);
                         break;
                     case ConstTask.VERY_HARD:
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         goldReward = TaskConfig.getSideGoldReward(ConstTask.VERY_HARD);
                         ngocBi = TaskConfig.getSideItemReward(ConstTask.VERY_HARD);
                         break;
@@ -1384,19 +1382,16 @@ public class TaskService {
                         cT.itemOptions.add(new Item.ItemOption(110, Util.nextInt(118, 126)));
                         cT.itemOptions.add(new Item.ItemOption(110, Util.nextInt(110, 113)));
                         cT.itemOptions.add(new Item.ItemOption(93, 30));
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         InventoryService.gI().addItemBag(player, cT);
                         Service.gI().sendThongBao(player, "Bạn nhận được " + cT.template.name);
                     } else {
                         Item bi = ItemService.gI().createNewItem((short) ngocBi);
                         bi.itemOptions.add(new Item.ItemOption(93, 30));
                         InventoryService.gI().addItemBag(player, bi);
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         Service.gI().sendThongBao(player, "Bạn nhận được " + bi.template.name);
                     }
                     InventoryService.gI().sendItemBags(player);
                     player.inventory.addGold(goldReward);
-                    BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                     Service.gI().sendMoney(player);
                     Service.gI().sendThongBao(player, "Bạn nhận được "
                             + Util.numberToMoney(goldReward) + " vàng");

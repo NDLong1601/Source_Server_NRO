@@ -1,10 +1,10 @@
 package nro.models.task;
 
-import nro.models.task.BadgesTask;
 import nro.models.player.Player;
 import nro.models.player_badges.BadgesData;
+import nro.models.player_badges.BagesTemplate;
+import nro.models.player_badges.BadgesService;
 import nro.models.server.Manager;
-import nro.models.task.BadgesTaskTemplate;
 
 public class BadgesTaskService {
 
@@ -23,23 +23,26 @@ public class BadgesTaskService {
     public static void updateDoneTask(Player player) {
         for (BadgesTask data : player.dataTaskBadges) {
             if (data.isDone()) {
-                for (BadgesData bg : player.dataBadges) {
-                    if (bg.idBadGes == data.idBadgesReward) {
-                        return;
-                    }
+                int rewardId = normalizeRewardId(data);
+                if (BadgesService.hasBadge(player, rewardId)) {
+                    continue;
                 }
                 if (TaskConfig.isCustomRewardEnabled("badges", data.id)
                         && !TaskRewardService.grant(player, "badges", data.id)) {
-                    return;
+                    continue;
                 }
-                BadgesData danhHieu = new BadgesData(player, data.idBadgesReward, 30);
-                player.dataBadges.add(danhHieu);
-                data.count = 0;
+                if (BadgesService.grantBadge(player, rewardId,
+                        BadgesService.DEFAULT_BADGE_DURATION_DAYS)) {
+                    data.count = 0;
+                }
             }
         }
     }
 
     public static void updateCountBagesTask(Player player, int id, int amount) {
+        if (player == null || player.dataTaskBadges == null || amount <= 0) {
+            return;
+        }
         for (BadgesTask data : player.dataTaskBadges) {
             if (data.id == id) {
                 data.count += amount;
@@ -51,9 +54,21 @@ public class BadgesTaskService {
         }
     }
 
+    public static void setCountBadgesTask(Player player, int id, int count) {
+        if (player == null || player.dataTaskBadges == null) {
+            return;
+        }
+        for (BadgesTask data : player.dataTaskBadges) {
+            if (data.id == id) {
+                data.count = Math.max(0, Math.min(count, data.countMax));
+                return;
+            }
+        }
+    }
+
     public static int sendPercenBadgesTask(Player player, int idBadgesReward) {
         for (BadgesTask data : player.dataTaskBadges) {
-            if (data.idBadgesReward == idBadgesReward) {
+            if (normalizeRewardId(data) == idBadgesReward) {
                 if (data.getPercentProcess() > 0) {
                     return data.getPercentProcess();
                 } else {
@@ -64,11 +79,22 @@ public class BadgesTaskService {
         return 0;
     }
 
+    private static int normalizeRewardId(BadgesTask data) {
+        int normalizedId = BagesTemplate.normalizeEffectId(data.idBadgesReward);
+        if (normalizedId != data.idBadgesReward) {
+            data.idBadgesReward = normalizedId;
+        }
+        return normalizedId;
+    }
+
     public static int sendDay(Player player, int id) {
         for (BadgesData data : player.dataBadges) {
             if (data.idBadGes == id) {
                 long timeDifference = data.timeofUseBadges - System.currentTimeMillis();
-                return (int) (timeDifference / (24 * 60 * 60 * 1000L));
+                if (timeDifference <= 0) {
+                    return 0;
+                }
+                return (int) Math.ceil(timeDifference / (24D * 60 * 60 * 1000));
             }
         }
         return 0;

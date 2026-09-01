@@ -1132,9 +1132,6 @@ public class UseItem {
     }
 
     public void openRuongGo(Player player) {
-        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE, 1);
-        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE1, 1);
-        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE2, 1);
         Item ruongGo = InventoryService.gI().findItemBag(player, 570);
         if (ruongGo != null) {
             int level = InventoryService.gI().getParam(player, 72, 570);
@@ -1231,6 +1228,11 @@ public class UseItem {
 
                 // Trừ 1 rương gỗ
                 InventoryService.gI().subQuantityItemsBag(player, ruongGo, 1);
+                if (level == 12) {
+                    BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE, 1);
+                    BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE1, 1);
+                    BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.GO_DAU_TRE2, 1);
+                }
                 InventoryService.gI().sendItemBags(player);
 
                 // Thêm các phần thưởng vào hành trang
@@ -1525,7 +1527,6 @@ public class UseItem {
     }
 
     private void PhaoBong(Player pl, Item item) {
-        BadgesTaskService.updateCountBagesTask(pl, ConstTaskBadges.XSMAX, 1);
         int[][] gold = {{5000, 20000}};
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
@@ -1552,7 +1553,6 @@ public class UseItem {
     }
 
     private void PhaoBongVip(Player pl, Item item) {
-        BadgesTaskService.updateCountBagesTask(pl, ConstTaskBadges.XSMAX, 1);
         int[][] gold = {{500000, 2000000}};
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
@@ -1583,7 +1583,6 @@ public class UseItem {
     }
 
     private void KemTraiCay(Player player, Item item) {
-        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.XSMAX, 1);
         if (InventoryService.gI().getCountEmptyBag(player) > 4) {
             Item itemused = InventoryService.gI().findItemBag(player, 1609);
 
@@ -1627,7 +1626,6 @@ public class UseItem {
     }
 
     private void QuaThieuNhi(Player player, Item item) {
-        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.XSMAX, 1);
         if (InventoryService.gI().getCountEmptyBag(player) >= 0) {
             Item itemused = InventoryService.gI().findItemBag(player, 1608);
             if (itemused == null || itemused.quantity < 1) {

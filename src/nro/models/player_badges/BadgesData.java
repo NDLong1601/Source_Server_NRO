@@ -1,7 +1,5 @@
 package nro.models.player_badges;
 
-import nro.models.player.Player;
-
 public class BadgesData {
 
     public int idBadGes; // id danh hiệu
@@ -20,16 +18,8 @@ public class BadgesData {
         isUse = isuse;
     }
 
-    public BadgesData(Player player, int id, int days) {
-        idBadGes = id;
-        timeofUseBadges = System.currentTimeMillis() + days * 24 * 60 * 60 * 1000L;
-        if (player.dataBadges != null) {
-            for (BadgesData data2 : player.dataBadges) {
-                data2.isUse = false;
-            }
-        }
-        isUse = true;
-        player.dataBadges.add(this);
+    public BadgesData(int id, int days) {
+        this(id, System.currentTimeMillis() + Math.max(1, days) * 24L * 60 * 60 * 1000, true);
     }
 
     @Override

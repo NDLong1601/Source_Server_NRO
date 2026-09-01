@@ -20,10 +20,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import nro.models.consts.ConstTaskBadges;
 import nro.models.services_dungeon.BlackBallWarService;
 import nro.models.map.service.ItemMapService;
-import nro.models.task.BadgesTaskService;
 import nro.models.utils.Util;
 
 public class InventoryService {
@@ -1026,21 +1024,15 @@ public class InventoryService {
                 return false;
             }
         }
-        // Check item rồng nhí vĩnh viễn
-        if (item.template.id >= 1765 && item.template.id <= 1771) {
-            boolean check_options = false;
-            for (Item.ItemOption op : item.itemOptions) {
-                if (op.optionTemplate != null && op.optionTemplate.id == 93) {
-                    check_options = true;
-                    break;
-                }
-            }
-            if (!check_options) {
-                BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.ME_RONG, 1);
-            }
-        }
+        boolean isPermanentDragonChild = item.template != null
+                && item.template.id >= 1765
+                && item.template.id <= 1771
+                && item.getOptionById(93) == null;
         boolean added = addItemList(player.inventory.itemsBag, item);
         if (added) {
+            if (isPermanentDragonChild) {
+                player.inventory.checkAndUpdateMeRongBadges(player);
+            }
             CostumeCollectionService.gI().recordOwnership(player, item);
         }
         return added;
