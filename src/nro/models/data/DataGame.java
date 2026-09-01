@@ -45,14 +45,15 @@ public class DataGame {
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
-    // 70 removes the retired Tomioka Giyuu split-part frame mappings.
-    public static byte vsData = 70;
+    // 72 lowers Levi's idle frame onto the NRO ground baseline and refreshes its profile art.
+    public static byte vsData = 72;
     public static byte vsMap = loadMapVersion();
     // 11 refreshes Siêu Ma Cảm Tử after aligning ghost count with skill level.
     public static byte vsSkill = 11;
-    // 60 removes the unsupported 256th option-template entry and refreshes
-    // every client cache that received the malformed one-byte option count.
-    public static byte vsItem = 60;
+    // 62 refreshes the Levi Ackerman inventory icon while preserving its template ID.
+    // Bump the item version so connected clients request the new templates
+    // and refresh their small-image cache.
+    public static byte vsItem = 62;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 

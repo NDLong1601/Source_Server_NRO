@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "Hộp quà Levi Ackerman",
+  "box": {
+    "templateId": 2248,
+    "type": 29,
+    "gender": 3,
+    "iconId": 26575,
+    "minEmptySlots": 1,
+    "consumeQuantity": 1,
+    "drawCount": 1
+  },
+  "reward": {
+    "templateId": 2247,
+    "name": "Cải trang Levi Ackerman",
+    "quantity": 1,
+    "permanent": true,
+    "random": false
+  },
+  "testGiftCode": {
+    "code": "LEVIA7Q9T2",
+    "countLeft": 1,
+    "expiresAt": "2026-09-08 23:59:59"
+  },
+  "sourceIcon": "source/19024-reference.png",
+  "runtimeIconId": 26575
+}

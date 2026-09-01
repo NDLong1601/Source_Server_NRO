@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "status": "deployed-chibi-v2-alignment-profile-icon-needs-client-review",
+  "mode": "full-body",
+  "slug": "levi-ackerman",
+  "name": "Cải trang Levi Ackerman",
+  "description": "Cải trang Levi Ackerman theo ảnh tham chiếu",
+  "baseline": {
+    "path": "../source-v2-chibi/idle-chroma.png",
+    "sourceFacing": "RIGHT",
+    "identityLock": "identity-lock.md"
+  },
+  "generation": {
+    "provider": "built-in-image-gen",
+    "chromaKey": "#ff00ff",
+    "maximumCellsPerSheet": 6,
+    "rule": "Generate every pose from the shared baseline; regenerate visual failures rather than warping them.",
+    "sourcePreparation": "Chibi v2 was regenerated against a known-good NRO costume proportion. Flat magenta backgrounds are converted with source/key_magenta_to_alpha.py; accepted poses are normalized without stretching and compiled from source-v2-chibi."
+  },
+  "sourceDirectory": "source-v2-chibi",
+  "sheets": [
+    {
+      "key": "guard",
+      "file": "guard.png",
+      "columns": 2,
+      "rows": 2
+    },
+    {
+      "key": "idle",
+      "file": "idle.png",
+      "columns": 1,
+      "rows": 1
+    },
+    {
+      "key": "air",
+      "file": "air.png",
+      "columns": 2,
+      "rows": 2
+    },
+    {
+      "key": "run",
+      "file": "run.png",
+      "columns": 3,
+      "rows": 2
+    },
+    {
+      "key": "skill",
+      "file": "skill.png",
+      "columns": 3,
+      "rows": 2
+    }
+  ],
+  "bodySlots": [
+    {
+      "slot": 0,
+      "sheet": "guard",
+      "sourceIndex": 0,
+      "observed": "Guard, hit, or compact recoil",
+      "suggestedGroup": "Đỡ / chịu đòn",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 1,
+      "sheet": "idle",
+      "sourceIndex": 0,
+      "observed": "Neutral side-facing standing pose",
+      "suggestedGroup": "Đứng yên",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 2,
+      "sheet": "air",
+      "sourceIndex": 0,
+      "observed": "Airborne, jump, or recoil",
+      "suggestedGroup": "Bay / nhảy",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 3,
+      "sheet": "run",
+      "sourceIndex": 0,
+      "observed": "Movement beat 1",
+      "suggestedGroup": "Chạy 1",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 4,
+      "sheet": "run",
+      "sourceIndex": 1,
+      "observed": "Movement beat 2",
+      "suggestedGroup": "Chạy 2",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 5,
+      "sheet": "run",
+      "sourceIndex": 2,
+      "observed": "Movement beat 3",
+      "suggestedGroup": "Chạy 3",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 6,
+      "sheet": "run",
+      "sourceIndex": 3,
+      "observed": "Movement beat 4",
+      "suggestedGroup": "Chạy 4",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 7,
+      "sheet": "air",
+      "sourceIndex": 1,
+      "observed": "Horizontal flight; confirm in the client",
+      "suggestedGroup": "Bay thực tế BODY[7] cần xác nhận",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 8,
+      "sheet": "skill",
+      "sourceIndex": 0,
+      "observed": "Charge, landing, or skill preparation",
+      "suggestedGroup": "Tụ lực / đáp đất",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 9,
+      "sheet": "skill",
+      "sourceIndex": 1,
+      "observed": "Skill pose",
+      "suggestedGroup": "Kỹ năng",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 10,
+      "sheet": "skill",
+      "sourceIndex": 2,
+      "observed": "Attack or skill pose 1",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 11,
+      "sheet": "skill",
+      "sourceIndex": 3,
+      "observed": "Attack or skill pose 2",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 12,
+      "sheet": "skill",
+      "sourceIndex": 4,
+      "observed": "Attack or skill pose 3",
+      "suggestedGroup": "Đánh / kỹ năng",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 13,
+      "sheet": "air",
+      "sourceIndex": 2,
+      "observed": "Fall, knockback, or alternate flight",
+      "suggestedGroup": "Ngã / bay thay thế",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 14,
+      "sheet": "skill",
+      "sourceIndex": 5,
+      "observed": "Large skill or finisher",
+      "suggestedGroup": "Kỹ năng lớn",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 15,
+      "sheet": "guard",
+      "sourceIndex": 1,
+      "observed": "Defensive impact or block",
+      "suggestedGroup": "Phòng thủ",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    },
+    {
+      "slot": 16,
+      "sheet": "run",
+      "sourceIndex": 4,
+      "observed": "Dash or motion blur",
+      "suggestedGroup": "Motion blur / dash",
+      "horizontalFlip": false,
+      "status": "visual-draft-passed-needs-client-review"
+    }
+  ],
+  "head": {
+    "mode": "transparent-placeholder",
+    "slotCount": 3
+  },
+  "leg": {
+    "mode": "transparent-placeholder",
+    "slotCount": 14
+  },
+  "requiredCompanionSources": [
+    "source-v2-chibi/item-icon-user.png",
+    "source-v2-chibi/profile-user.png"
+  ],
+  "deployment": {
+    "state": "deployed-needs-client-review",
+    "requires": [
+      "client-slot-review"
+    ]
+  }
+}

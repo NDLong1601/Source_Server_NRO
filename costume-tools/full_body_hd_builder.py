@@ -46,10 +46,11 @@ class CostumeConfig:
     sheets: tuple[SheetConfig, ...]
     body_mapping: tuple[BodyFrameConfig, ...]
     description: str
+    source_directory: str = "source"
     body_image_ids_override: tuple[int, ...] | None = None
-    shop_id: int = 112
-    tab_id: int = 1120
-    shop_cost: int = 2000
+    shop_id: int | None = None
+    tab_id: int | None = None
+    shop_cost: int | None = None
     global_body_offset_adjustment: tuple[int, int] = (0, 0)
 
     @property
@@ -68,6 +69,7 @@ class Frame:
     edge_touches: list[str] = field(default_factory=list)
     kept_components: int = 0
     dropped_components: int = 0
+    is_empty: bool = False
 
 
 def mirror_frame(frame: Frame) -> Frame:
@@ -85,6 +87,7 @@ def mirror_frame(frame: Frame) -> Frame:
         ],
         kept_components=frame.kept_components,
         dropped_components=frame.dropped_components,
+        is_empty=frame.is_empty,
     )
 
 
@@ -155,7 +158,15 @@ def _isolate_cell(cell: Image.Image, source_label: str) -> Frame:
     binary = np.where(alpha >= ALPHA_THRESHOLD, 255, 0).astype(np.uint8)
     count, labels, stats, centroids = cv2.connectedComponentsWithStats(binary, connectivity=8)
     if count <= 1:
-        raise ValueError(f"No sprite content found in {source_label}")
+        # A generated contact sheet may intentionally reserve blank cells. Preserve
+        # the cell index for the mapping, then reject it only if a BODY slot uses it.
+        return Frame(
+            image=Image.new("RGBA", (1, 1), (0, 0, 0, 0)),
+            bbox_in_cell=(0, 0, 0, 0),
+            cell_size=cell.size,
+            source_path=source_label,
+            is_empty=True,
+        )
 
     areas = stats[1:, cv2.CC_STAT_AREA]
     largest_area = int(areas.max())
@@ -420,7 +431,7 @@ def _write_standalone_scales(
     write_output: bool = True,
     vertical_align: str = "center",
 ) -> dict:
-    source_path = config.project_dir / "source" / source_name
+    source_path = config.project_dir / config.source_directory / source_name
     if not source_path.is_file():
         raise FileNotFoundError(f"Missing standalone source: {source_path}")
     scales: dict[str, dict] = {}
@@ -614,6 +625,43 @@ def _write_install_files(config: CostumeConfig, manifest: dict) -> None:
     escaped_description = config.description.replace("'", "''")
     install_sql = f"""-- Install {config.name}; IDs were allocated contiguously from the live team2026 database.\nSTART TRANSACTION;\n\nDELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});\nINSERT INTO part (id, `TYPE`, `DATA`) VALUES\n({head_id}, 0, '{head_data}'),\n({body_id}, 1, '{body_data}'),\n({leg_id}, 2, '{leg_data}');\n\nDELETE FROM head_avatar WHERE head_id = {head_id};\nINSERT INTO head_avatar (head_id, avatar_id) VALUES ({head_id}, {config.profile_icon_id});\n\nINSERT INTO item_template\n(id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)\nVALUES\n({config.item_id}, 5, 3, '{escaped_name}', '{escaped_description}', 1, {config.item_icon_id}, -1, 0, 0, 0, 0, {head_id}, {body_id}, {leg_id})\nON DUPLICATE KEY UPDATE\n`TYPE`=VALUES(`TYPE`), gender=VALUES(gender), `NAME`=VALUES(`NAME`),\ndescription=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id),\npart=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require),\ngold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);\n\nDELETE FROM item_default_option WHERE item_template_id = {config.item_id};\n\nINSERT INTO item_shop\n(tab_id, temp_id, is_new, is_sell, type_sell, cost, icon_spec, option_mode, create_time)\nSELECT {config.tab_id}, {config.item_id}, 1, 1, 1, {config.shop_cost}, 0, 0, NOW()\nWHERE EXISTS (SELECT 1 FROM tab_shop WHERE id = {config.tab_id} AND shop_id = {config.shop_id})\n  AND NOT EXISTS (SELECT 1 FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id});\n\nCOMMIT;\n"""
     rollback_sql = f"""-- Remove only the rows installed for {config.name}.\nSTART TRANSACTION;\n\nDELETE FROM item_shop_option WHERE item_shop_id IN\n    (SELECT id FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id});\nDELETE FROM item_shop WHERE tab_id = {config.tab_id} AND temp_id = {config.item_id};\nDELETE FROM item_default_option WHERE item_template_id = {config.item_id};\nDELETE FROM head_avatar WHERE head_id = {head_id} AND avatar_id = {config.profile_icon_id};\nDELETE FROM item_template WHERE id = {config.item_id}\n    AND head = {head_id} AND body = {body_id} AND leg = {leg_id};\nDELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});\n\nCOMMIT;\n"""
+    if config.shop_id is None:
+        install_sql = f"""-- Install {config.name}; no item_shop row was requested.
+START TRANSACTION;
+
+DELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});
+INSERT INTO part (id, `TYPE`, `DATA`) VALUES
+({head_id}, 0, '{head_data}'),
+({body_id}, 1, '{body_data}'),
+({leg_id}, 2, '{leg_data}');
+
+DELETE FROM head_avatar WHERE head_id = {head_id};
+INSERT INTO head_avatar (head_id, avatar_id) VALUES ({head_id}, {config.profile_icon_id});
+
+INSERT INTO item_template
+(id, `TYPE`, gender, `NAME`, description, level, icon_id, part, is_up_to_up, power_require, gold, gem, head, body, leg)
+VALUES
+({config.item_id}, 5, 3, '{escaped_name}', '{escaped_description}', 1, {config.item_icon_id}, -1, 0, 0, 0, 0, {head_id}, {body_id}, {leg_id})
+ON DUPLICATE KEY UPDATE
+`TYPE`=VALUES(`TYPE`), gender=VALUES(gender), `NAME`=VALUES(`NAME`),
+description=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id), part=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require),
+gold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);
+
+DELETE FROM item_default_option WHERE item_template_id = {config.item_id};
+-- Add an item_shop/admin/gift distribution separately when requested.
+COMMIT;
+"""
+        rollback_sql = f"""-- Remove only the rows installed for {config.name}; no item_shop row was created.
+START TRANSACTION;
+
+DELETE FROM item_default_option WHERE item_template_id = {config.item_id};
+DELETE FROM head_avatar WHERE head_id = {head_id} AND avatar_id = {config.profile_icon_id};
+DELETE FROM item_template WHERE id = {config.item_id}
+    AND head = {head_id} AND body = {body_id} AND leg = {leg_id};
+DELETE FROM part WHERE id IN ({head_id}, {body_id}, {leg_id});
+
+COMMIT;
+"""
     (config.project_dir / "install.sql").write_text(install_sql, encoding="utf-8")
     (config.project_dir / "rollback.sql").write_text(rollback_sql, encoding="utf-8")
 
@@ -630,7 +678,11 @@ def _write_readme(config: CostumeConfig, manifest: dict) -> None:
         "",
         f"- Item: `{config.item_id}`; parts HEAD/BODY/LEG: `{config.part_ids[0]}/{config.part_ids[1]}/{config.part_ids[2]}`.",
         f"- Icon hành trang: `{config.item_icon_id}`; avatar profile: `{config.profile_icon_id}`.",
-        f"- Shop Kanao: shop `{config.shop_id}`, tab `{config.tab_id}`, giá `{config.shop_cost}`.",
+        (
+            f"- Shop: shop `{config.shop_id}`, tab `{config.tab_id}`, giá `{config.shop_cost}`."
+            if config.shop_id is not None
+            else "- Nơi nhận: chưa cấu hình; `install.sql` không thêm `item_shop`."
+        ),
         "- Không thêm option mặc định.",
         "",
         "## DATA",
@@ -670,6 +722,7 @@ def build(
     contacts_only: bool = False,
     selected_slots: set[int] | None = None,
     write_profile: bool = False,
+    write_item_icon: bool = False,
 ) -> None:
     if len(config.body_mapping) != 17:
         raise ValueError(f"BODY mapping must contain exactly 17 slots, got {len(config.body_mapping)}")
@@ -679,6 +732,9 @@ def build(
         raise ValueError(f"BODY image IDs must contain 17 unique values: {config.body_image_ids}")
     if config.part_ids != tuple(range(config.part_ids[0], config.part_ids[0] + 3)):
         raise ValueError(f"Part IDs are not contiguous: {config.part_ids}")
+    shop_values = (config.shop_id, config.tab_id, config.shop_cost)
+    if any(value is None for value in shop_values) and any(value is not None for value in shop_values):
+        raise ValueError("shop_id, tab_id, and shop_cost must either all be set or all be None")
     reserved_image_ids = {
         config.profile_icon_id,
         config.transparent_image_id,
@@ -688,7 +744,7 @@ def build(
     if overlapping_ids:
         raise ValueError(f"BODY image IDs overlap reserved image IDs: {overlapping_ids}")
 
-    source_dir = config.project_dir / "source"
+    source_dir = config.project_dir / config.source_directory
     all_cells: dict[str, list[Frame]] = {}
     sheets_qa: dict[str, dict] = {}
     for sheet in config.sheets:
@@ -706,6 +762,8 @@ def build(
             frame = all_cells[mapping.sheet][mapping.source_index]
         except (KeyError, IndexError) as error:
             raise ValueError(f"Invalid mapping at BODY[{slot}]: {mapping}") from error
+        if frame.is_empty:
+            raise ValueError(f"BODY[{slot}] references an intentionally blank cell: {mapping}")
         if mapping.horizontal_flip:
             frame = mirror_frame(frame)
         combined_offset_adjustment = (
@@ -748,7 +806,7 @@ def build(
         config.item_icon_file_name,
         config.item_icon_id,
         X1_ITEM_ICON_CANVAS,
-        write_output=selected_slots is None,
+        write_output=selected_slots is None or write_item_icon,
     )
     _build_selected_preview(config, selected_previews)
     _build_selected_x1_preview(config, frame_exports)
@@ -775,7 +833,11 @@ def build(
         "body": frame_exports,
         "leg": [[config.transparent_image_id, 0, 0] for _ in range(14)],
         "defaultOptions": [],
-        "shop": {"shopId": config.shop_id, "tabId": config.tab_id, "npc": "Kanao", "tab": "Cải trang", "cost": config.shop_cost},
+        "shop": (
+            {"shopId": config.shop_id, "tabId": config.tab_id, "cost": config.shop_cost}
+            if config.shop_id is not None
+            else None
+        ),
     }
     (config.project_dir / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -817,6 +879,11 @@ def run(config: CostumeConfig) -> None:
         action="store_true",
         help="Rewrite the bottom-aligned profile image even during a partial BODY build.",
     )
+    parser.add_argument(
+        "--item-icon",
+        action="store_true",
+        help="Rewrite the inventory item icon even during a partial BODY build.",
+    )
     args = parser.parse_args()
     selected_slots = None if args.slots is None else set(args.slots)
     build(
@@ -824,4 +891,5 @@ def run(config: CostumeConfig) -> None:
         contacts_only=args.contacts_only,
         selected_slots=selected_slots,
         write_profile=args.profile,
+        write_item_icon=args.item_icon,
     )
