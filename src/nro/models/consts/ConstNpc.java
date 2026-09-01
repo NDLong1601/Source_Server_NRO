@@ -313,6 +313,10 @@ public class ConstNpc {
     //index menu bò mộng
     public static final int MENU_OPTION_LEVEL_SIDE_TASK = 500;
     public static final int MENU_OPTION_PAY_SIDE_TASK = 501;
+    // Activity Points: separate from the reused 500-series menu ids above.
+    public static final int MENU_ACTIVITY_OVERVIEW = 31073001;
+    public static final int MENU_ACTIVITY_DAILY_TIER = 31073002;
+    public static final int MENU_ACTIVITY_WEEKLY_TIER = 31073003;
     public static final int event3 = 3333;
     public static final int event3_1 = 3334;
 

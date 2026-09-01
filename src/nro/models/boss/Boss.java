@@ -63,8 +63,13 @@ import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;
 import nro.models.interfaces.IBoss;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 public class Boss extends Player implements IBoss {
+
+    private static final AtomicLong NEXT_ACTIVITY_SPAWN_ID = new AtomicLong(System.currentTimeMillis());
 
     public int currentLevel = -1;
     public final BossData[] data;
@@ -106,6 +111,8 @@ public class Boss extends Player implements IBoss {
 
     public boolean isNotifyDisabled;
     public boolean isZone01SpawnDisabled;
+    /** Changes on every respawn; template id alone is not safe for dedupe. */
+    private long activitySpawnId = NEXT_ACTIVITY_SPAWN_ID.incrementAndGet();
 
     public Boss(int id, boolean isNotifyDisabled, boolean isZone01SpawnDisabled, BossData... data) throws Exception {
         this(id, data);
@@ -422,6 +429,7 @@ public class Boss extends Player implements IBoss {
 
     @Override
     public void respawn() {
+        activitySpawnId = NEXT_ACTIVITY_SPAWN_ID.incrementAndGet();
         this.currentLevel++;
         if (this.currentLevel >= this.data.length) {
             this.currentLevel = 0;
@@ -672,6 +680,10 @@ public class Boss extends Player implements IBoss {
                 Service.gI().dropItemMap(this.zone, item);
             }
         }
+        // This base hook covers normal server bosses. Dungeon finale classes
+        // have their own completion hook so timeout cleanup cannot be counted.
+        ActivityService.gI().awardUnique(plKill, ActivityType.BOSS_KILL,
+                "boss:" + activitySpawnId);
     }
 
     @Override

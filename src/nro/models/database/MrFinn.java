@@ -57,6 +57,7 @@ import nro.models.task.BadgesTaskService;
 import nro.models.data.LocalResultSet;
 import nro.models.npc.DuaHauEgg;
 import nro.models.player.KOLProgressData;
+import nro.models.activity.ActivityService;
 
 public class MrFinn {
 
@@ -191,6 +192,10 @@ public class MrFinn {
             JSONArray dataArray;
 
             player = new Player();
+            // dailyLogin() runs at the end of this loader. Mark a real login
+            // before that point so Activity Points can accept DAILY_LOGIN,
+            // while offline admin loads remain ineligible for activity hooks.
+            player.isPlayer = !isOffline;
 
             // base info
             player.id = rs.getInt("id");
@@ -325,7 +330,11 @@ public class MrFinn {
             player.nPoint.defg = Integer.parseInt(String.valueOf(dataArray.get(8)));
             player.nPoint.critg = Byte.parseByte(String.valueOf(dataArray.get(9)));
             player.nPoint.critdragon = Byte.parseByte(String.valueOf(dataArray.get(10)));
-            dataArray.get(11); // ** Năng động
+            int legacyActivityPoints = 0;
+            if (dataArray.size() > 11 && dataArray.get(11) != null) {
+                legacyActivityPoints = Math.max(0, Integer.parseInt(String.valueOf(dataArray.get(11))));
+            }
+            ActivityService.gI().loadState(player, rs.getString("data_activity"), legacyActivityPoints);
             plHp = Integer.parseInt(String.valueOf(dataArray.get(12)));
             plMp = Integer.parseInt(String.valueOf(dataArray.get(13)));
             if (dataArray.size() > 14 && dataArray.get(14) != null) {

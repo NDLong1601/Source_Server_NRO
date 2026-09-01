@@ -50,6 +50,7 @@ import nro.models.npc.Npc;
 import nro.models.npc_list.DuaHau;
 import nro.models.player_system.Template.Part;
 import nro.models.server.Manager;
+import nro.models.activity.ActivityService;
 
 public class Service {
 
@@ -1946,10 +1947,13 @@ public class Service {
     }
 
     public void sendNangDong(Player player) {
+        if (player == null) {
+            return;
+        }
         Message msg;
         try {
             msg = new Message(-97);
-            msg.writer().writeInt(0);
+            msg.writer().writeInt(ActivityService.gI().getDailyPoints(player));
             player.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {

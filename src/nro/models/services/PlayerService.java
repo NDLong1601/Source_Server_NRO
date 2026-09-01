@@ -24,6 +24,7 @@ import nro.models.services.TaskService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
+import nro.models.activity.ActivityService;
 
 public class PlayerService {
 
@@ -343,6 +344,7 @@ public class PlayerService {
     }
 
     public void dailyLogin(Player player) {
+        ActivityService.gI().ensureCurrentPeriod(player, false, true);
         if (Util.compareDay(Date.from(Instant.now()), player.firstTimeLogin)) {
             player.firstTimeLogin = Date.from(Instant.now());
             BadgesTaskService.createAndResetTask(player);
@@ -361,6 +363,10 @@ public class PlayerService {
                     player.vipPurchaseCount = 0;
                 }
             }
+            // The daily reset succeeded; this is the only login path that
+            // represents a new activity day for the player.
+            ActivityService.gI().awardUnique(player, nro.models.activity.ActivityType.DAILY_LOGIN,
+                    "daily-login");
         }
     }
 }

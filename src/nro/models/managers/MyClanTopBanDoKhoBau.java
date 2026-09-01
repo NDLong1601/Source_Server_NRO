@@ -88,7 +88,8 @@ public class MyClanTopBanDoKhoBau {
     private void extractDataPoint(String dataPoint, Player player) {
         JSONValue jv = new JSONValue();
         JSONArray dataArray = (JSONArray) jv.parse(dataPoint);
-        player.nPoint.power = Long.parseLong(dataArray.get(11).toString());
+        // data_point[1] is power; index 11 is reserved for Activity Points.
+        player.nPoint.power = Long.parseLong(dataArray.get(1).toString());
         dataArray.clear();
     }
 

@@ -22,6 +22,8 @@ import lombok.Data;
 import nro.models.server.Maintenance;
 import nro.models.map.service.ItemMapService;
 import nro.models.utils.TimeUtil;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 @Data
 public class SnakeWay implements Runnable {
@@ -43,6 +45,7 @@ public class SnakeWay implements Runnable {
     public List<Boss> bosses = new ArrayList<>();
     public boolean endCDRD;
     public boolean allMobsDead;
+    private boolean activityCompletionReported;
 
     public void addZone(Zone zone) {
         this.zones.add(zone);
@@ -113,6 +116,7 @@ public class SnakeWay implements Runnable {
             this.clan.playerOpenConDuongRanDoc = plOpen;
             this.clan.ConDuongRanDoc = this;
             this.isOpened = true;
+            this.activityCompletionReported = false;
             this.init();
             sendTextConDuongRanDoc();
         } catch (Exception e) {
@@ -200,11 +204,19 @@ public class SnakeWay implements Runnable {
     }
 
     public void finish() {
+        boolean completed = this.endCDRD && !this.activityCompletionReported;
+        if (completed) {
+            this.activityCompletionReported = true;
+        }
         for (Zone zone : zones) {
             for (int i = zone.getPlayers().size() - 1; i >= 0; i--) {
                 if (i < zone.getPlayers().size()) {
                     Player pl = zone.getPlayers().get(i);
                     sendThanhTichCDRD(pl);
+                    if (completed) {
+                        ActivityService.gI().awardUnique(pl, ActivityType.DUNGEON_CLEAR,
+                                "dungeon:CDRD:" + this.id + ":" + this.lastTimeOpen);
+                    }
                     kickOutOfCDRD(pl);
                 }
             }

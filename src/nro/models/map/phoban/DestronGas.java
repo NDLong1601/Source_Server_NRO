@@ -20,6 +20,8 @@ import lombok.Data;
 import nro.models.server.Maintenance;
 import nro.models.map.service.ItemMapService;
 import nro.models.utils.TimeUtil;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 @Data
 public class DestronGas implements Runnable {
@@ -42,6 +44,7 @@ public class DestronGas implements Runnable {
     public List<Boss> bosses = new ArrayList<>();
     private boolean callBoss;
     public boolean hatchiyatchDead;
+    private boolean activityCompletionReported;
 
     public DestronGas(int id) {
         this.id = id;
@@ -130,6 +133,7 @@ public class DestronGas implements Runnable {
             this.clan.KhiGasHuyDiet = this;
             this.callBoss = false;
             this.isOpened = true;
+            this.activityCompletionReported = false;
             this.init();
             sendTextKhiGasHuyDiet();
         } catch (Exception e) {
@@ -196,11 +200,19 @@ public class DestronGas implements Runnable {
 
     //kết thúc khí gas hủy diệt
     public void finish() {
+        boolean completed = this.hatchiyatchDead && !this.activityCompletionReported;
+        if (completed) {
+            this.activityCompletionReported = true;
+        }
         for (Zone zone : zones) {
             for (int i = zone.getPlayers().size() - 1; i >= 0; i--) {
                 if (i < zone.getPlayers().size()) {
                     Player pl = zone.getPlayers().get(i);
                     sendThanhTichKhiGas(pl);
+                    if (completed) {
+                        ActivityService.gI().awardUnique(pl, ActivityType.DUNGEON_CLEAR,
+                                "dungeon:KGHD:" + this.id + ":" + this.lastTimeOpen);
+                    }
                     kickOutOfKGHD(pl);
                 }
             }

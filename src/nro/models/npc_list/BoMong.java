@@ -2,6 +2,14 @@ package nro.models.npc_list;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import nro.models.activity.ActivityClaimResult;
+import nro.models.activity.ActivityConfig;
+import nro.models.activity.ActivityConfigService;
+import nro.models.activity.ActivityPeriodType;
+import nro.models.activity.ActivityRewardService;
+import nro.models.activity.ActivityRewardService.TierStatus;
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.task.TaskConfig;
@@ -32,7 +40,9 @@ public class BoMong extends Npc {
             if (canOpenNpc(player)) {
                 if (this.mapId == 47 || this.mapId == 84) {
                     this.createOtherMenu(player, ConstNpc.BASE_MENU,
-                            "Ngươi muốn có thêm ngọc thì chịu khó làm vài nhiệm vụ sẽ được ngọc thưởng", "Nhiệm vụ\nhàng ngày", "Nhiệm vụ\nthành tích", "Nạp Ngọc", "Điểm danh", "Từ chối");
+                            "Ngươi muốn có thêm ngọc thì chịu khó làm vài nhiệm vụ sẽ được ngọc thưởng",
+                            "Nhiệm vụ\nhàng ngày", "Nhiệm vụ\nthành tích", "Nạp Ngọc", "Điểm danh",
+                            "Năng động\nNhận quà", "Từ chối");
                 }
             }
         }
@@ -87,6 +97,7 @@ public class BoMong extends Npc {
 
                             Service.gI().sendThongBao(player, "Điểm danh thành công! Bạn nhận được 10.000 ngọc và 100 thỏi vàng.");
                         }
+                        case 4 -> openActivityOverview(player);
 
                     }
                 } else if (player.idMark.getIndexMenu() == ConstNpc.MENU_OPTION_LEVEL_SIDE_TASK) {
@@ -101,8 +112,70 @@ public class BoMong extends Npc {
                         case 1 ->
                             TaskService.gI().removeSideTask(player);
                     }
+                } else if (player.idMark.getIndexMenu() == ConstNpc.MENU_ACTIVITY_OVERVIEW) {
+                    if (select == 0) {
+                        openActivityTiers(player, ActivityPeriodType.DAILY);
+                    } else if (select == 1) {
+                        openActivityTiers(player, ActivityPeriodType.WEEKLY);
+                    }
+                } else if (player.idMark.getIndexMenu() == ConstNpc.MENU_ACTIVITY_DAILY_TIER) {
+                    claimActivityTier(player, ActivityPeriodType.DAILY, select);
+                } else if (player.idMark.getIndexMenu() == ConstNpc.MENU_ACTIVITY_WEEKLY_TIER) {
+                    claimActivityTier(player, ActivityPeriodType.WEEKLY, select);
                 }
             }
         }
+    }
+
+    private void openActivityOverview(Player player) {
+        ActivityConfig config = ActivityConfigService.gI().getCurrent();
+        List<TierStatus> daily = ActivityRewardService.gI().getTierStatuses(player, ActivityPeriodType.DAILY);
+        List<TierStatus> weekly = ActivityRewardService.gI().getTierStatuses(player, ActivityPeriodType.WEEKLY);
+        int dailyPoints = daily.isEmpty() ? 0 : daily.get(0).getCurrentPoints();
+        int weeklyPoints = weekly.isEmpty() ? 0 : weekly.get(0).getCurrentPoints();
+        int qualifiedDays = weekly.isEmpty() ? 0 : weekly.get(0).getQualifiedDays();
+        String status = (!config.isEnabled()) ? "\nNăng động đang tạm khóa."
+                : (!config.isRewardsEnabled() || config.isShadowMode())
+                        ? "\nQuà đang được khóa trong giai đoạn theo dõi."
+                        : "\nBạn có thể nhận các mốc đủ điều kiện.";
+        this.createOtherMenu(player, ConstNpc.MENU_ACTIVITY_OVERVIEW,
+                "Năng động hôm nay: " + dailyPoints + "/" + config.getDailyMax()
+                + "\nNăng động tuần: " + weeklyPoints
+                + "\nNgày đạt chuẩn: " + qualifiedDays + "/7" + status,
+                "Mốc ngày", "Mốc tuần", "Đóng");
+    }
+
+    private void openActivityTiers(Player player, ActivityPeriodType period) {
+        List<TierStatus> statuses = ActivityRewardService.gI().getTierStatuses(player, period);
+        List<String> menus = new ArrayList<>();
+        StringBuilder text = new StringBuilder(period == ActivityPeriodType.DAILY
+                ? "Chọn mốc ngày để xem trạng thái hoặc nhận quà:"
+                : "Chọn mốc tuần để xem trạng thái hoặc nhận quà:");
+        for (TierStatus status : statuses) {
+            String prefix = status.isClaimed() ? "[Đã nhận] "
+                    : status.isEligible() ? "[Nhận] " : "[Chưa đủ] ";
+            menus.add(prefix + status.getTier().getThreshold() + " điểm");
+            text.append("\n").append(status.getTier().getThreshold()).append(" điểm: ")
+                    .append(ActivityRewardService.describeRewards(status.getTier()));
+            if (period == ActivityPeriodType.WEEKLY && status.getTier().getMinQualifiedDays() > 0) {
+                text.append(" (cần ").append(status.getTier().getMinQualifiedDays()).append(" ngày đạt chuẩn)");
+            }
+        }
+        menus.add("Đóng");
+        int menuId = period == ActivityPeriodType.DAILY
+                ? ConstNpc.MENU_ACTIVITY_DAILY_TIER : ConstNpc.MENU_ACTIVITY_WEEKLY_TIER;
+        this.createOtherMenu(player, menuId, text.toString(), menus.toArray(String[]::new));
+    }
+
+    private void claimActivityTier(Player player, ActivityPeriodType period, int select) {
+        List<TierStatus> statuses = ActivityRewardService.gI().getTierStatuses(player, period);
+        if (select < 0 || select >= statuses.size()) {
+            return;
+        }
+        ActivityClaimResult result = period == ActivityPeriodType.DAILY
+                ? ActivityRewardService.gI().claimDaily(player, statuses.get(select).getTier().getId())
+                : ActivityRewardService.gI().claimWeekly(player, statuses.get(select).getTier().getId());
+        Service.gI().sendThongBao(player, result.getMessage());
+        openActivityTiers(player, period);
     }
 }

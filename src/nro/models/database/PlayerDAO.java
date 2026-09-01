@@ -30,6 +30,9 @@ import nro.models.player.KOLProgressData;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 import com.google.gson.Gson;
+import nro.models.activity.ActivityRepository;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityState;
 
 public class PlayerDAO {
 
@@ -83,6 +86,7 @@ public class PlayerDAO {
             dataArray.add(0); //công đức
             String point = dataArray.toJSONString();
             dataArray.clear();
+            String activityData = ActivityRepository.write(new ActivityState());
 
             dataArray.add(1); //level
             dataArray.add(5); //curent pea
@@ -354,11 +358,11 @@ public class PlayerDAO {
 
             LocalManager.executeUpdate("insert into player"
                     + "(account_id, name, head, gender, have_tennis_space_ship, clan_id, "
-                    + "data_inventory, data_location, data_point, data_magic_tree, items_body, "
+                    + "data_inventory, data_location, data_point, data_activity, data_magic_tree, items_body, "
                     + "items_bag, items_box, items_box_lucky_round, items_daban, friends, enemies, data_intrinsic, data_item_time,"
                     + "data_task, data_mabu_egg, data_charm, skills, skills_shortcut, pet,"
                     + "data_black_ball, data_side_task, BoughtSkill, dailyGift, masterDoesNotAttack, data_luyentap, data_achievement, giftcode, total_damage_maydam, data_duahau_egg, nhiem_vu_kol) "
-                    + "values ()", userId, name, hair, gender, 0, -1, inventory, location, point, magicTree,
+                    + "values ()", userId, name, hair, gender, 0, -1, inventory, location, point, activityData, magicTree,
                     itemsBody, itemsBag, itemsBox, itemsBoxLuckyRound, itemsDaBan, friends, enemies, intrinsic,
                     itemTime, task, mabuEgg, charms, skills, skillsShortcut, petData, dataBlackBall, dataSideTask, dataBoughtSkill, dailyGift, 0, luyenTapData, achievementData, giftCode, 0, DuaHauEgg, dataKol);
             Logger.success(Logger.PURPLE + "Tạo player mới thành công!\n");
@@ -410,6 +414,8 @@ public class PlayerDAO {
                 dataArray.add(y);
                 String location = dataArray.toJSONString();
                 dataArray.clear();
+                ActivityService.gI().prepareForSave(player);
+
                 //data chỉ số
                 dataArray.add(player.nPoint.limitPower);
                 dataArray.add(player.nPoint.power);
@@ -422,12 +428,13 @@ public class PlayerDAO {
                 dataArray.add(player.nPoint.defg);
                 dataArray.add(player.nPoint.critg);
                 dataArray.add(player.nPoint.critdragon);
-                dataArray.add(0);
+                dataArray.add(ActivityService.gI().getDailyPoints(player));
                 dataArray.add(hp);
                 dataArray.add(mp);
                 dataArray.add(Math.max(0, Math.min(9999, player.congDuc)));
                 String point = dataArray.toJSONString();
                 dataArray.clear();
+                String dataActivity = ActivityRepository.write(player.activityState);
 
                 //data đậu thần
                 dataArray.add(player.magicTree.level);
@@ -1049,7 +1056,7 @@ public class PlayerDAO {
 
                 String dataDailyGift = JSONValue.toJSONString(player.dailyGiftData);
                 String query = "update player set head = ?, have_tennis_space_ship = ?, "
-                        + "clan_id = ?, data_inventory = ?, data_location = ?, data_point = ?, data_magic_tree = ?, "
+                        + "clan_id = ?, data_inventory = ?, data_location = ?, data_point = ?, data_activity = ?, data_magic_tree = ?, "
                         + "items_body = ?, items_bag = ?, items_box = ?, items_box_lucky_round = ?, items_daban = ?, friends = ?, "
                         + "enemies = ?, data_intrinsic = ?, data_item_time = ?, data_task = ?, data_mabu_egg = ?, pet = ?, "
                         + "data_black_ball = ?, data_side_task = ?, data_charm = ?, skills = ?, skills_shortcut = ?, notify = ?, "
@@ -1064,6 +1071,7 @@ public class PlayerDAO {
                         inventory,
                         location,
                         point,
+                        dataActivity,
                         magicTree,
                         itemsBody,
                         itemsBag,

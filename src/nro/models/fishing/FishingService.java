@@ -18,6 +18,8 @@ import nro.models.services.ItemService;
 import nro.models.services.ItemTimeService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 /**
  * Server-authoritative core for the Fishing Event.
@@ -526,6 +528,10 @@ public final class FishingService {
             return false;
         }
         FishingProgressService.gI().recordCatch(player, fish.itemId, session.giant);
+        // grant() has already placed the fish in the bag. Junk, special loot,
+        // cancelled sessions and a full bag never enter this branch.
+        ActivityService.gI().awardUnique(player, ActivityType.FISH_CATCH,
+                "fish:" + session.biteAt + ":" + caughtItemId);
         player.itemEvent.fishingCombo = Math.min(20, player.itemEvent.fishingCombo + 1);
         String giantLabel = session.giant ? " Khổng Lồ" : "";
         Service.gI().sendThongBao(player, "Bạn đã câu được " + fish.name + giantLabel

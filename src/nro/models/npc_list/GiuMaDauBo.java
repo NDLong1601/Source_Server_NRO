@@ -13,6 +13,8 @@ import nro.models.server.Client;
 import nro.models.services.ClanService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 /**
  *
@@ -151,6 +153,9 @@ public class GiuMaDauBo extends Npc {
             }
         }
         player.event.luotNhanCapsuleBang = 0;
+        // This is after all state mutations, so opening/retrying the NPC menu
+        // cannot create an Activity event unless the clan check-in succeeded.
+        ActivityService.gI().awardUnique(player, ActivityType.CLAN_CHECKIN, "clan-checkin");
         Service.gI().sendThongBao(player, "Bạn đã điểm danh và nhận được 1 Capsule Bang.");
         for (ClanMember cm : player.clan.getMembers()) {
             Player pl = Client.gI().getPlayer(cm.id);

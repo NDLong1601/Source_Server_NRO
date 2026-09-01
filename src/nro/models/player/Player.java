@@ -76,6 +76,8 @@ import nro.models.services.ItemService;
 import nro.models.services.EquipmentOptionService;
 import nro.models.task.BadgesTask;
 import nro.models.task.BadgesTaskService;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityState;
 
 /**
  *
@@ -209,6 +211,8 @@ public class Player implements Runnable {
     public Charms charms;
     public EffectSkin effectSkin;
     public NPoint nPoint;
+    /** Daily/weekly Activity Points state persisted in player.data_activity. */
+    public ActivityState activityState = new ActivityState();
     public RewardBlackBall rewardBlackBall;
     public FightMabu fightMabu;
     public NewSkill newSkill;
@@ -445,6 +449,9 @@ public class Player implements Runnable {
     public void update() {
         if (!this.beforeDispose) {
             try {
+                if (this.isPl()) {
+                    ActivityService.gI().ensureCurrentPeriod(this);
+                }
                 // Option 62 must track equipped time everywhere, including a
                 // home map where the ordinary combat-point update is paused.
                 if (this.isPl() && this.nPoint != null) {

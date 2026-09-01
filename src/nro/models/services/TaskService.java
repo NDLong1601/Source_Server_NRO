@@ -31,6 +31,8 @@ import nro.models.task.BadgesTaskService;
 import nro.models.task.ClanTaskTemplate;
 import nro.models.task.TaskConfig;
 import nro.models.task.TaskRewardService;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 public class TaskService {
 
@@ -1325,10 +1327,15 @@ public class TaskService {
         if (player.playerTask.sideTask.template != null) {
             if (player.playerTask.sideTask.isDone()) {
                 int templateId = player.playerTask.sideTask.template.id;
+                int activityLevel = player.playerTask.sideTask.level;
+                int activityLeftTask = player.playerTask.sideTask.leftTask;
+                long activityReceivedTime = player.playerTask.sideTask.receivedTime;
                 if (TaskConfig.isCustomRewardEnabled("side", templateId)) {
                     if (TaskRewardService.grant(player, "side", templateId)) {
                         BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.NONG_DAN_CHAM_CHI, 1);
                         player.playerTask.sideTask.reset();
+                        recordCompletedSideTask(player, activityLevel, templateId,
+                                activityLeftTask, activityReceivedTime);
                     }
                     return;
                 }
@@ -1394,6 +1401,8 @@ public class TaskService {
                     Service.gI().sendThongBao(player, "Bạn nhận được "
                             + Util.numberToMoney(goldReward) + " vàng");
                     player.playerTask.sideTask.reset();
+                    recordCompletedSideTask(player, activityLevel, templateId,
+                            activityLeftTask, activityReceivedTime);
                 } else {
                     Service.gI().sendThongBao(player, "Hành trang không đủ chỗ trống.");
                 }
@@ -1401,6 +1410,26 @@ public class TaskService {
                 Service.gI().sendThongBao(player, "Bạn chưa hoàn thành nhiệm vụ");
             }
         }
+    }
+
+    private void recordCompletedSideTask(Player player, int level, int templateId,
+            int remainingTasks, long receivedTime) {
+        ActivityType type = switch (level) {
+            case ConstTask.EASY -> ActivityType.SIDE_TASK_EASY;
+            case ConstTask.NORMAL -> ActivityType.SIDE_TASK_NORMAL;
+            case ConstTask.HARD -> ActivityType.SIDE_TASK_HARD;
+            case ConstTask.VERY_HARD -> ActivityType.SIDE_TASK_VERY_HARD;
+            case ConstTask.HELL -> ActivityType.SIDE_TASK_SPECIAL;
+            default -> null;
+        };
+        if (type == null) {
+            return;
+        }
+        // The task template can repeat in a day. The remaining-task slot and
+        // issue timestamp identify this completed assignment, rather than
+        // suppressing every later task of the same template.
+        String dedupeKey = "side:" + templateId + ":" + remainingTasks + ":" + receivedTime;
+        ActivityService.gI().awardUnique(player, type, dedupeKey);
     }
 
     public void checkDoneSideTaskKillMob(Player player, Mob mob) {

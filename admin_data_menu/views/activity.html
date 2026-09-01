@@ -1,0 +1,116 @@
+<div id="panelActivity" class="panel">
+  <div id="activityRuntimeStrip" class="activity-runtime-strip">Đang tải trạng thái Năng Động...</div>
+  <div class="activity-section-tabs">
+    <button type="button" id="activitySectionOverview" class="activity-section-button active" onclick="ActivityShowSection('overview')">Tổng quan</button>
+    <button type="button" id="activitySectionSources" class="activity-section-button" onclick="ActivityShowSection('sources')">Nguồn điểm</button>
+    <button type="button" id="activitySectionDaily" class="activity-section-button" onclick="ActivityShowSection('daily')">Mốc ngày</button>
+    <button type="button" id="activitySectionWeekly" class="activity-section-button" onclick="ActivityShowSection('weekly')">Mốc tuần</button>
+    <button type="button" id="activitySectionPlayers" class="activity-section-button" onclick="ActivityShowSection('players')">Người chơi</button>
+    <button type="button" id="activitySectionReleases" class="activity-section-button" onclick="ActivityShowSection('releases')">Phát hành &amp; lịch sử</button>
+  </div>
+
+  <div class="columns activity-columns">
+    <div class="left-pane activity-left-pane">
+      <div id="activityLeftOverview" class="activity-left-section">
+        <div class="toolbar activity-toolbar"><button type="button" onclick="ActivityLoadOverview()">Nạp lại runtime</button><button type="button" onclick="ActivityLoadDraft()">Nạp draft</button><button type="button" onclick="ActivityShowDiff()">So sánh thay đổi</button></div>
+        <div id="activityOverviewSummary" class="activity-list-wrap"></div>
+      </div>
+      <div id="activityLeftSources" class="activity-left-section activity-initial-hidden">
+        <div class="toolbar activity-toolbar"><input type="text" id="activitySourceSearch" placeholder="Tìm mã, nhóm hoặc loại hoạt động" onkeyup="ActivityRenderSources()"><button type="button" onclick="ActivityRenderSources()">Lọc</button></div>
+        <div class="activity-list-wrap"><table id="activitySourcesTable"></table></div>
+      </div>
+      <div id="activityLeftTiers" class="activity-left-section activity-initial-hidden">
+        <div class="toolbar activity-toolbar"><button type="button" onclick="ActivityAddTier()">Thêm mốc</button><button type="button" onclick="ActivityRenderTiers()">Làm mới danh sách</button></div>
+        <div class="activity-list-wrap"><table id="activityTiersTable"></table></div>
+      </div>
+      <div id="activityLeftPlayers" class="activity-left-section activity-initial-hidden">
+        <div class="toolbar activity-toolbar"><input type="text" id="activityPlayerSearch" placeholder="Tên hoặc ID player" onkeyup="ActivityPlayerSearchKey(event)"><button type="button" onclick="ActivityLoadPlayers()">Tìm</button></div>
+        <div class="activity-list-wrap"><table id="activityPlayersTable"></table></div>
+      </div>
+      <div id="activityLeftReleases" class="activity-left-section activity-initial-hidden">
+        <div class="toolbar activity-toolbar"><button type="button" onclick="ActivityLoadVersions()">Nạp version</button><button type="button" onclick="ActivityLoadLogs()">Nạp audit</button></div>
+        <div class="activity-list-wrap"><table id="activityVersionsTable"></table></div>
+      </div>
+    </div>
+
+    <div class="right-pane activity-right-pane">
+      <div id="activityRightOverview" class="activity-right-section">
+        <div class="section-title">Cấu hình bản đang sửa <span id="activityConfigOrigin" class="activity-origin">Chưa nạp</span></div>
+        <div class="activity-safety-note">Mở quà production yêu cầu tắt Shadow mode trong cùng draft và nhập xác nhận <code>ENABLE_ACTIVITY_REWARDS</code> khi publish. Emergency disable phải đang tắt.</div>
+        <div class="row">
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityEnabled" onchange="ActivitySyncGlobalFromForm()"><span>Bật hệ thống</span></label></div>
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityShadowMode" onchange="ActivitySyncGlobalFromForm()"><span>Shadow mode</span></label></div>
+          <div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityRewardEnabled" onchange="ActivitySyncGlobalFromForm()"><span>Cho phép phát quà</span></label></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Múi giờ</label><input type="text" id="activityTimezone" readonly></div>
+          <div class="cell"><label>Giờ reset ngày</label><input type="text" id="activityDailyResetHour" onchange="ActivitySyncGlobalFromForm()"></div>
+          <div class="cell"><label>Ngày reset tuần</label><select id="activityWeeklyResetDay" onchange="ActivitySyncGlobalFromForm()"><option value="MONDAY">Thứ Hai</option><option value="TUESDAY">Thứ Ba</option><option value="WEDNESDAY">Thứ Tư</option><option value="THURSDAY">Thứ Năm</option><option value="FRIDAY">Thứ Sáu</option><option value="SATURDAY">Thứ Bảy</option><option value="SUNDAY">Chủ Nhật</option></select></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label>Trần điểm ngày</label><input type="text" id="activityDailyMax" onchange="ActivitySyncGlobalFromForm()"></div>
+          <div class="cell"><label>Điểm ngày đủ chuẩn</label><input type="text" id="activityQualifiedDailyPoints" onchange="ActivitySyncGlobalFromForm()"></div>
+          <div class="cell"><label>Số category diversity</label><input type="text" id="activityDiversityCategoryCount" onchange="ActivitySyncGlobalFromForm()"></div>
+          <div class="cell"><label>Điểm diversity bonus</label><input type="text" id="activityDiversityBonus" onchange="ActivitySyncGlobalFromForm()"></div>
+        </div>
+        <label>Lý do thao tác (bắt buộc khi ghi)</label><textarea id="activityReason" placeholder="Ví dụ: Điều chỉnh theo ticket CS-1024"></textarea>
+        <div class="actions">
+          <button type="button" onclick="ActivityValidateConfig()">Kiểm tra</button>
+          <button type="button" class="primary" onclick="ActivitySaveDraft()">Lưu bản nháp</button>
+          <button type="button" class="primary" onclick="ActivityPublishDraft()">Publish draft</button>
+          <button type="button" onclick="ActivityShowDiff()">So sánh</button>
+          <button type="button" class="danger" onclick="ActivityToggleEmergency()">Tắt / mở khẩn cấp</button>
+        </div>
+        <div id="activityDiffOutput" class="activity-diff-output"></div>
+      </div>
+
+      <div id="activityRightSources" class="activity-right-section activity-initial-hidden">
+        <div class="section-title">Nguồn điểm <span id="activitySourceEditorTitle" class="activity-origin">Chưa chọn</span></div>
+        <div class="row"><div class="cell"><label>Mã source bất biến</label><input type="text" id="activitySourceKey" readonly></div><div class="cell"><label>Dedupe policy bất biến</label><input type="text" id="activitySourceDedupe" readonly></div></div>
+        <div class="row"><div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activitySourceEnabled" onchange="ActivityUpdateSourceFromForm()"><span>Bật source</span></label></div><div class="cell"><label>Category</label><select id="activitySourceCategory" onchange="ActivityUpdateSourceFromForm()"><option value="LOGIN">LOGIN</option><option value="PVE">PVE</option><option value="PVP">PVP</option><option value="SOCIAL">SOCIAL</option><option value="LIFE">LIFE</option><option value="BONUS">BONUS</option></select></div></div>
+        <div class="row"><div class="cell"><label>Điểm/lần</label><input type="text" id="activitySourcePoints" onchange="ActivityUpdateSourceFromForm()"></div><div class="cell"><label>Cap source/ngày</label><input type="text" id="activitySourceDailyCap" onchange="ActivityUpdateSourceFromForm()"></div><div class="cell"><label>Nhóm cap chung</label><input type="text" id="activitySourceGroupKey" onchange="ActivityUpdateSourceFromForm()"></div><div class="cell"><label>Cap nhóm/ngày</label><input type="text" id="activitySourceGroupDailyCap" onchange="ActivityUpdateSourceFromForm()"></div></div>
+        <div id="activitySourceMath" class="activity-source-math">Chọn một source để xem giới hạn.</div>
+      </div>
+
+      <div id="activityRightTiers" class="activity-right-section activity-initial-hidden">
+        <div class="section-title">Mốc <span id="activityTierEditorTitle" class="activity-origin">Chưa chọn</span></div>
+        <div class="row"><div class="cell"><label>Tier ID</label><input type="text" id="activityTierId" onchange="ActivityUpdateTierFromForm()"></div><div class="cell"><label>Claim bit</label><input type="text" id="activityTierClaimBit" onchange="ActivityUpdateTierFromForm()"></div><div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityTierEnabled" onchange="ActivityUpdateTierFromForm()"><span>Bật mốc</span></label></div></div>
+        <div class="row"><div class="cell"><label>Ngưỡng điểm</label><input type="text" id="activityTierThreshold" onchange="ActivityUpdateTierFromForm()"></div><div class="cell"><label>Ngày đủ chuẩn tối thiểu</label><input type="text" id="activityTierQualifiedDays" onchange="ActivityUpdateTierFromForm()"></div></div>
+        <div class="section-title activity-inline-title">Bundle phần thưởng</div>
+        <div class="actions"><button type="button" onclick="ActivityAddReward()">Thêm reward</button><button type="button" class="danger" onclick="ActivityRemoveReward()">Bỏ reward đang chọn</button></div>
+        <div class="activity-reward-table-wrap"><table id="activityRewardsTable"></table></div>
+        <div id="activityRewardEditor" class="activity-reward-editor activity-initial-hidden">
+          <div class="section-title" id="activityRewardEditorTitle">Reward</div>
+          <div class="row"><div class="cell"><label>Loại</label><select id="activityRewardKind" onchange="ActivityUpdateRewardFromForm()"><option value="ITEM">ITEM</option><option value="GOLD">GOLD</option><option value="GEM">GEM</option><option value="RUBY">RUBY</option></select></div><div class="cell"><label>Item ID</label><input type="text" id="activityRewardItemId" onchange="ActivityUpdateRewardFromForm()"></div><div class="cell"><label>Giới tính (-1/0/1/2/3)</label><input type="text" id="activityRewardGender" onchange="ActivityUpdateRewardFromForm()"></div><div class="cell"><label>Bind</label><select id="activityRewardBindMode" onchange="ActivityUpdateRewardFromForm()"><option value="BOUND">BOUND</option><option value="UNBOUND">UNBOUND</option></select></div></div>
+          <div id="activityRewardItemPreview" class="activity-item-preview"></div>
+          <div class="row"><div class="cell"><label>Số lượng min</label><input type="text" id="activityRewardQtyMin" onchange="ActivityUpdateRewardFromForm()"></div><div class="cell"><label>Số lượng max</label><input type="text" id="activityRewardQtyMax" onchange="ActivityUpdateRewardFromForm()"></div><div class="cell"><label>HSD ngày min (0=vĩnh viễn)</label><input type="text" id="activityRewardExpiryMin" onchange="ActivityUpdateRewardFromForm()"></div><div class="cell"><label>HSD ngày max</label><input type="text" id="activityRewardExpiryMax" onchange="ActivityUpdateRewardFromForm()"></div></div>
+          <div class="row"><div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityRewardInitBase" onchange="ActivityUpdateRewardFromForm()"><span>Khởi tạo option gốc</span></label></div><div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityRewardUseDefault" onchange="ActivityUpdateRewardFromForm()"><span>Dùng option mặc định</span></label></div></div>
+          <div id="activityRewardOptionBlock"><label>Option riêng</label><input type="text" id="activityRewardOptionSearch" placeholder="Tìm ID hoặc tên option" onkeyup="ActivityRenderRewardOptions()"><div id="activityRewardOptionList" class="option-picker-list activity-option-list"></div></div>
+        </div>
+      </div>
+
+      <div id="activityRightPlayers" class="activity-right-section activity-initial-hidden">
+        <div class="section-title">Hỗ trợ player <span id="activityPlayerOnlineBadge" class="player-state">Chưa chọn</span></div>
+        <div id="activityPlayerOverview" class="activity-player-overview">Chọn player từ danh sách bên trái.</div>
+        <div id="activityPlayerCounters" class="activity-player-counters"></div>
+        <label>Lý do hỗ trợ (bắt buộc)</label><textarea id="activityPlayerReason" placeholder="Ticket CS-1024: mô tả nguyên nhân"></textarea>
+        <div class="section-title activity-inline-title">Điều chỉnh điểm</div>
+        <div class="row"><div class="cell"><label>Phạm vi</label><select id="activityPlayerAdjustScope"><option value="DAILY">DAILY</option><option value="WEEKLY">WEEKLY</option></select></div><div class="cell"><label>Điểm cộng/trừ</label><input type="text" id="activityPlayerDelta" value="0"></div><div class="cell activity-button-cell"><button type="button" class="primary" id="activityPlayerAdjustButton" onclick="ActivityAdjustPlayer()">Điều chỉnh</button></div></div>
+        <div class="section-title activity-inline-title">Reset có xác nhận</div>
+        <div class="row"><div class="cell"><label>Phạm vi reset</label><select id="activityPlayerResetScope" onchange="ActivityUpdatePlayerResetFields()"><option value="DAILY">DAILY</option><option value="WEEKLY">WEEKLY</option><option value="SOURCE">SOURCE counter</option></select></div><div class="cell"><label>Source counter</label><select id="activityPlayerSourceKey"></select></div><div class="cell activity-button-cell"><button type="button" class="danger" id="activityPlayerResetButton" onclick="ActivityResetPlayer()">Reset</button></div></div>
+        <div class="section-title activity-inline-title">Trạng thái nhận mốc</div>
+        <div class="row"><div class="cell"><label>Chu kỳ</label><select id="activityPlayerClaimPeriod" onchange="ActivityRenderPlayerClaimTiers()"><option value="DAILY">DAILY</option><option value="WEEKLY">WEEKLY</option></select></div><div class="cell"><label>Tier</label><select id="activityPlayerClaimTier"></select></div><div class="cell"><label class="option-default-toggle"><input type="checkbox" id="activityPlayerClaimed"><span>Đánh dấu đã nhận</span></label></div><div class="cell activity-button-cell"><button type="button" id="activityPlayerClaimButton" onclick="ActivitySetPlayerClaim()">Lưu claim</button></div></div>
+        <div class="activity-safety-note">Player ONLINE hoặc ONLINE? chỉ được xem. Các thao tác reset/claim cần xác nhận thêm và backend kiểm tra lại trạng thái trước khi ghi.</div>
+      </div>
+
+      <div id="activityRightReleases" class="activity-right-section activity-initial-hidden">
+        <div class="section-title">Version <span id="activityVersionEditorTitle" class="activity-origin">Chưa chọn</span></div>
+        <div id="activityVersionDetail" class="activity-version-detail">Chọn một version để xem snapshot.</div>
+        <div class="actions"><button type="button" onclick="ActivityUseSelectedVersion()">Dùng làm bản đang sửa</button><button type="button" class="primary" onclick="ActivitySaveDraft()">Clone thành draft</button><button type="button" class="danger" onclick="ActivityRollbackSelectedVersion()">Rollback version này</button></div>
+        <div class="section-title activity-inline-title">Audit Năng Động gần đây</div>
+        <div id="activityLogsList" class="activity-logs-list">Chưa nạp audit.</div>
+      </div>
+      <div id="activityMessage" class="message"></div>
+    </div>
+  </div>
+</div>

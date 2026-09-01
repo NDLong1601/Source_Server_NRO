@@ -39,6 +39,7 @@ import nro.models.radar.Card;
 import nro.models.services.RadarService;
 import nro.models.services.PKHistoryService;
 import nro.models.services.CostumeCollectionService;
+import nro.models.activity.ActivityClientService;
 import nro.models.map.service.NpcManager;
 import nro.models.player.Player;
 import nro.models.matches.PVPService;
@@ -272,6 +273,11 @@ public class Controller implements IMessageHandler {
                             return;
                         }
                         PVPService.gI().controllerThachDau(player, _msg);
+                    }
+                    break;
+                case ActivityClientService.COMMAND:
+                    if (player != null) {
+                        ActivityClientService.gI().handleRequest(player, _msg);
                     }
                     break;
                 case -86:

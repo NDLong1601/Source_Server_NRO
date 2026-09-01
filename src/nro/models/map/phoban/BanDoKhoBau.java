@@ -20,6 +20,8 @@ import lombok.Data;
 import nro.models.server.Maintenance;
 import nro.models.map.service.ItemMapService;
 import nro.models.utils.TimeUtil;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 @Data
 public class BanDoKhoBau implements Runnable {
@@ -38,6 +40,7 @@ public class BanDoKhoBau implements Runnable {
     private Boss boss;
     private long lastTimeSendNotify;
     private boolean allCharactersDead;
+    private boolean activityCompletionReported;
 
     public void addZone(Zone zone) {
         this.zones.add(zone);
@@ -129,6 +132,7 @@ public class BanDoKhoBau implements Runnable {
             this.kickoutbdkb = false;
             this.isOpened = true;
             this.allCharactersDead = false;
+            this.activityCompletionReported = false;
             this.init();
             ChangeMapService.gI().goToDBKB(plOpen);
             sendTextBanDoKhoBau();
@@ -212,11 +216,19 @@ public class BanDoKhoBau implements Runnable {
     }
 
     public void finish() {
+        boolean completed = this.allCharactersDead && !this.activityCompletionReported;
+        if (completed) {
+            this.activityCompletionReported = true;
+        }
         for (Zone zone : zones) {
             List<Player> playersSnapshot = new ArrayList<>(zone.getPlayers());
             for (Player pl : playersSnapshot) {
                 if (pl != null && pl.clan != null && pl.clan.BanDoKhoBau == this) {
                     sendThanhTichBanDoKhoBau(pl);
+                    if (completed) {
+                        ActivityService.gI().awardUnique(pl, ActivityType.DUNGEON_CLEAR,
+                                "dungeon:BDKB:" + this.id + ":" + this.lastTimeOpen);
+                    }
                 }
                 kickOutOfBDKB(pl);
             }

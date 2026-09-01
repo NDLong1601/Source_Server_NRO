@@ -11,6 +11,8 @@ import nro.models.services.ItemService;
 import nro.models.services.PlayerService;
 import nro.models.services.InventoryService;
 import nro.models.utils.Logger;
+import nro.models.activity.ActivityService;
+import nro.models.activity.ActivityType;
 
 public class MagicTree {
 
@@ -174,6 +176,10 @@ public class MagicTree {
             } catch (Exception e) {
                 Logger.logException(MagicTree.class, e);
             }
+            // Only an actual pea decrement is a harvest. The early return
+            // above excludes an empty or not-yet-ready tree.
+            ActivityService.gI().awardUnique(player, ActivityType.PEA_HARVEST,
+                    "pea:" + this.lastTimeHarvest);
         }
     }
 

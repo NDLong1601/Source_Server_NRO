@@ -190,6 +190,9 @@ foreach ($paramName in @(
 }
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$ActivityAdminBackendPath = Join-Path $PSScriptRoot "activity_admin_backend.ps1"
+if (-not (Test-Path -LiteralPath $ActivityAdminBackendPath)) { throw "Thiếu backend Admin Năng động: $ActivityAdminBackendPath" }
+. $ActivityAdminBackendPath
 $NpcNameLiftMarker = -32000
 $NpcLayerOrderNative = "NATIVE"
 $NpcLayerOrderHeadTop = "LEG_BODY_HEAD"
@@ -6174,6 +6177,13 @@ function Get-AuditSummary {
         "resettaskconfig" { "Khoi phuc cau hinh nhiem vu $ConfigKey ve mac dinh" }
         "saveplayercore" { "Cập nhật chỉ số, tài sản và sức chứa Player ID $Id" }
         "rescueplayer" { "Cứu hộ Player ID $Id về map nhà" }
+        "saveactivitydraft" { "Lưu bản nháp cấu hình Năng động" }
+        "publishactivityconfig" { "Publish cấu hình Năng động" }
+        "rollbackactivityconfig" { "Rollback cấu hình Năng động" }
+        "disableactivityemergency" { "Đổi cờ dừng khẩn cấp Năng động" }
+        "adjustactivityplayer" { "Điều chỉnh điểm Năng động player" }
+        "resetactivityplayer" { "Reset trạng thái Năng động player" }
+        "setactivityclaim" { "Đặt trạng thái nhận quà Năng động player" }
         default { $ActionName }
     }
 }
@@ -6456,6 +6466,7 @@ function Record-ManualAuditEntry {
 }
 
 $actionLower = $Action.ToLowerInvariant()
+$activityMutationActions = @("saveactivitydraft", "publishactivityconfig", "rollbackactivityconfig", "disableactivityemergency", "adjustactivityplayer", "resetactivityplayer", "setactivityclaim")
 $mutationActions = @(
     "saveitem", "installauraitems", "saveauraitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
     "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savegiftbox", "deletegiftbox",
@@ -6466,9 +6477,11 @@ $mutationActions = @(
     "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
     "saveskillmasterygeneral", "resetskillmasterygeneral", "saveskillmasteryskill", "resetskillmasteryskill",
     "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem",
-    "savetaskreward", "savekanaotaskconfig"
+    "savetaskreward", "savekanaotaskconfig",
+    "saveactivitydraft", "publishactivityconfig", "rollbackactivityconfig", "disableactivityemergency", "adjustactivityplayer", "resetactivityplayer", "setactivityclaim"
 )
-$isAuditedMutation = $mutationActions -contains $actionLower
+# Năng động có audit versioned riêng (`activity_admin_audit`) để tránh undo mù dữ liệu player.
+$isAuditedMutation = ($mutationActions -contains $actionLower) -and ($activityMutationActions -notcontains $actionLower)
 $auditContext = $null
 
 try {
@@ -6599,6 +6612,21 @@ try {
         "getplayerdetail" { Get-PlayerDetail }
         "saveplayercore" { Save-PlayerCore }
         "rescueplayer" { Rescue-Player }
+        "getactivityoverview" { Get-ActivityOverview }
+        "getactivitydraft" { Get-ActivityDraft }
+        "listactivityversions" { List-ActivityVersions }
+        "getactivityversion" { (Get-ActivityVersionByNumber ([long](Get-ActivityInteger $Id 'Id' 1 2147483647))) | ConvertTo-Json -Depth 35 }
+        "validateactivityconfig" { Validate-ActivityConfigRequest }
+        "saveactivitydraft" { Save-ActivityDraft }
+        "publishactivityconfig" { Publish-ActivityConfig }
+        "rollbackactivityconfig" { Rollback-ActivityConfig }
+        "disableactivityemergency" { Set-ActivityEmergencyDisable }
+        "listactivityplayers" { List-ActivityPlayers }
+        "getactivityplayer" { Get-ActivityPlayer }
+        "adjustactivityplayer" { Adjust-ActivityPlayer }
+        "resetactivityplayer" { Reset-ActivityPlayer }
+        "setactivityclaim" { Set-ActivityClaim }
+        "listactivitylogs" { List-ActivityLogs }
         "listnpccreator" { List-NpcCreator }
         "getnpccreator" { Get-NpcCreatorDetail }
         "savenpccreator" { Save-NpcCreator }

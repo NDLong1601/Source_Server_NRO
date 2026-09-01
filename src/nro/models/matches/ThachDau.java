@@ -9,6 +9,7 @@ import nro.models.player.Player;
 import nro.models.server.Client;
 import nro.models.services.Service;
 import nro.models.utils.Util;
+import nro.models.activity.ActivityService;
 
 public class ThachDau extends PVP {
 
@@ -67,6 +68,9 @@ public class ThachDau extends PVP {
             Service.gI().sendThongBao(p1.equals(plLose) ? p2 : p1, "Đối thủ đã kiệt sức, bạn thắng được " + Util.numberToMoney(this.goldReward) + " vàng");
             Service.gI().sendThongBao(p1.equals(plLose) ? p1 : p2, "Bạn đã thua vì đã kiệt sức");
             (p1.equals(plLose) ? p1 : p2).inventory.gold -= this.goldThachDau;
+            // A real defeat is the sole eligible PvP outcome. RUNS_AWAY and
+            // future timeout/draw results intentionally never reach here.
+            ActivityService.gI().awardPvpWin(plWin, plLose.id, this.activityMatchId);
         }
         Service.gI().sendMoney(p1.equals(plLose) ? p1 : p2);
         if (!p1.equals(plLose)) {

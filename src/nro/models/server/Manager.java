@@ -63,6 +63,9 @@ import nro.models.task.ClanTaskTemplate;
 import nro.models.utils.FileIO;
 import nro.models.utils.Util;
 import nro.models.admin.GiftBoxConfigService;
+import nro.models.activity.ActivityConfigService;
+import nro.models.activity.ActivityClaimAuditService;
+import nro.models.activity.ActivityMetricsService;
 
 /**
  *
@@ -259,6 +262,17 @@ public final class Manager {
             map.initNpc(mapTemp.npcId, mapTemp.npcX, mapTemp.npcY);
         }
         new NonInteractiveNPC().initNonInteractiveNPC();
+
+        // Activity config is versioned in the database. Poll it independently
+        // of player updates so a publish is applied within its promised window
+        // even when the server currently has no connected players.
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                ActivityConfigService.gI().getCurrent();
+            } catch (Exception e) {
+                Logger.error("Cannot refresh Activity Points runtime config.\n");
+            }
+        }, 1, 1, TimeUnit.SECONDS);
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
@@ -761,6 +775,9 @@ public final class Manager {
 
             loadDefaultItemOptions(ConnectionDatabase);
             GiftBoxConfigService.gI().load(ConnectionDatabase);
+            ActivityConfigService.gI().load(ConnectionDatabase);
+            ActivityClaimAuditService.gI().ensureSchema(ConnectionDatabase);
+            ActivityMetricsService.gI().start(ConnectionDatabase);
 
             //load shop
             SHOPS = ShopDAO.getShops(ConnectionDatabase);

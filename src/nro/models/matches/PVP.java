@@ -1,4 +1,5 @@
 package nro.models.matches;
+import java.util.concurrent.atomic.AtomicLong;
 import nro.models.consts.ConstPlayer;
 import nro.models.interfaces.IPVP;
 import nro.models.managers.PVPManager;
@@ -7,6 +8,8 @@ import nro.models.services.PlayerService;
 
 public abstract class PVP implements IPVP {
 
+    private static final AtomicLong NEXT_ACTIVITY_MATCH_ID = new AtomicLong(System.currentTimeMillis());
+
     public TYPE_PVP typePVP;
 
     public Player p1;
@@ -14,6 +17,8 @@ public abstract class PVP implements IPVP {
 
     public long lastTimeStart;
     public boolean started;
+    /** Monotonic server-runtime identifier used by Activity Points dedupe. */
+    public final long activityMatchId;
 
     public PVP(TYPE_PVP type, Player p1, Player p2) {
         this.typePVP = type;
@@ -22,6 +27,7 @@ public abstract class PVP implements IPVP {
         p1.pvp = this;
         p2.pvp = this;
         this.lastTimeStart = System.currentTimeMillis();
+        this.activityMatchId = NEXT_ACTIVITY_MATCH_ID.incrementAndGet();
         this.start();
         PVPManager.gI().addPVP(this);
     }
