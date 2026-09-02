@@ -23,7 +23,7 @@ public class ItemData {
      * value) so every template, including all custom skill books, is present
      * without exceeding the command's unsigned-short length limit.
      */
-    private static final int MAX_WIRE_DESCRIPTION_BYTES = 100;
+    private static final int MAX_WIRE_DESCRIPTION_BYTES = 128;
     private static final String WIRE_DESCRIPTION_SUFFIX = "...";
 
     public static void updateItem(MySession session) {

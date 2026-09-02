@@ -50,10 +50,8 @@ public class DataGame {
     public static byte vsMap = loadMapVersion();
     // 11 refreshes Siêu Ma Cảm Tử after aligning ghost count with skill level.
     public static byte vsSkill = 11;
-    // 62 refreshes the Levi Ackerman inventory icon while preserving its template ID.
-    // Bump the item version so connected clients request the new templates
-    // and refresh their small-image cache.
-    public static byte vsItem = 62;
+    // 65 refreshes all named aura templates after assigning their dedicated inventory icons.
+    public static byte vsItem = 65;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -63,6 +61,26 @@ public class DataGame {
 
     public static String LINK_IP_PORT = "Ngọc Rồng Online:36.50.134.190:14445:0";
     public static Map<Object, Object> MAP_MOUNT_NUM = new HashMap<>();
+    /**
+     * Shared power milestones for both the local player's client-side level
+     * calculation and the level byte sent to nearby players.
+     */
+    private static final long[] POWER_LEVEL_THRESHOLDS = {
+        1_000L, 3_000L, 15_000L, 40_000L, 90_000L, 170_000L, 340_000L, 700_000L,
+        1_500_000L, 15_000_000L, 150_000_000L, 1_500_000_000L, 5_000_000_000L,
+        10_000_000_000L, 40_000_000_000L, 50_010_000_000L, 60_010_000_000L,
+        70_010_000_000L, 80_010_000_000L, 90_010_000_000L, 1_000_010_000_000L,
+        10_000_010_000_000L
+    };
+
+    public static int getPowerLevel(long power) {
+        for (int level = POWER_LEVEL_THRESHOLDS.length - 1; level >= 0; level--) {
+            if (power >= POWER_LEVEL_THRESHOLDS[level]) {
+                return level;
+            }
+        }
+        return 0;
+    }
 
     public static void sendVersionGame(MySession session) {
         Message msg;
@@ -74,12 +92,9 @@ public class DataGame {
             msg.writer().writeByte(vsItem);
             msg.writer().writeByte(0);
 
-            long[] smtieuchuan = {1000L, 3000L, 15000L, 40000L, 90000L, 170000L, 340000L, 700000L,
-                1500000L, 15000000L, 150000000L, 1500000000L, 5000000000L, 10000000000L, 40000000000L,
-                50010000000L, 60010000000L, 70010000000L, 80010000000L, 100010000000L, 1000010000000L, 10000010000000L};
-            msg.writer().writeByte(smtieuchuan.length);
-            for (int i = 0; i < smtieuchuan.length; i++) {
-                msg.writer().writeLong(smtieuchuan[i]);
+            msg.writer().writeByte(POWER_LEVEL_THRESHOLDS.length);
+            for (long threshold : POWER_LEVEL_THRESHOLDS) {
+                msg.writer().writeLong(threshold);
             }
             session.sendMessage(msg);
             msg.cleanup();

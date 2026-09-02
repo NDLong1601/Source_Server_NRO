@@ -4433,6 +4433,7 @@ function Get-AuraDefinitions {
         $assetId = [int]$assetIds[$index]
         $definitions += [pscustomobject]@{
             ItemId = 2154 + $index
+            IconId = 26576 + $index
             Number = $index + 1
             AuraId = $assetId
             Frame0 = if ($assetId -in @(3, 4)) { 8 } else { 4 }
@@ -4525,7 +4526,7 @@ function Install-AuraItems {
         Test-AuraAssets -AuraValue $definition.AuraId
         $name = "Hào Quang $($definition.Number)"
         $description = "Trang bị để đổi thành hào quang $($definition.Number) (asset $($definition.AuraId))."
-        [void]$sql.AppendLine((Get-AuraItemTemplateEnsureSql -ItemId $definition.ItemId -ItemName $name -ItemDescription $description -IconValue 11239 -AuraValue $definition.AuraId))
+        [void]$sql.AppendLine((Get-AuraItemTemplateEnsureSql -ItemId $definition.ItemId -ItemName $name -ItemDescription $description -IconValue $definition.IconId -AuraValue $definition.AuraId))
         [void]$sql.AppendLine((Get-AuraImageEnsureSql -ImageName "aura_$($definition.AuraId)_0" -FrameCount $definition.Frame0))
         [void]$sql.AppendLine((Get-AuraImageEnsureSql -ImageName "aura_$($definition.AuraId)_1" -FrameCount $definition.Frame1))
     }
@@ -4554,7 +4555,7 @@ function Save-AuraItem {
     if ([string]::IsNullOrWhiteSpace($itemDescription)) {
         $itemDescription = "Trang bị để đổi hào quang asset $auraValue."
     }
-    $iconValue = SqlInt $IconId 11239
+    $iconValue = SqlInt $IconId (26576 + $itemId - 2154)
     if ($iconValue -lt 0) { throw "Icon ID không hợp lệ." }
     $sql = New-Object System.Text.StringBuilder
     [void]$sql.AppendLine("START TRANSACTION;")

@@ -1859,16 +1859,6 @@ tr:hover td.gift-status-waiting {
   white-space: nowrap;
 }
 
-.item-aura-cell {
-  width: 52px;
-  text-align: center;
-}
-
-.item-aura-empty {
-  color: #cbd5e1;
-  font-size: 15px;
-}
-
 .appearance-category-head .section-title {
   margin-bottom: 4px;
 }

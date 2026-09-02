@@ -615,14 +615,14 @@ public class InventoryService {
             sendItemBags(player);
             sendItemBody(player);
             Service.gI().point(player);
-            Service.gI().Send_Caitrang(player);
-            if (isAura && player.zone != null) {
-                // The costume packet does not include idauraeff. Re-send the
-                // regular player/map data so the wearer and nearby players
-                // receive the new aura immediately instead of on map change.
-                Service.gI().player(player);
-                player.zone.load_Me_To_Another(player);
-                player.zone.load_Another_To_Me(player);
+            if (isAura) {
+                // Aura equipment lives in its own slot and must not refresh
+                // HEAD/BODY/LEG. During fusion those values describe the
+                // fusion model, so a costume refresh would hide an equipped
+                // costume even though it is still present in slot 5.
+                RadarService.gI().sendAura(player, player.getAura(), player.getEffFront());
+            } else {
+                Service.gI().Send_Caitrang(player);
             }
         }
     }
@@ -630,6 +630,7 @@ public class InventoryService {
     public void itemBodyToBag(Player player, int index) {
         Item item = player.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
+            boolean isAura = index == PLAYER_AURA_SLOT && isAuraItem(item);
             if (index == PLAYER_FOLLOW_PET_SLOT && !player.isPet && item.template.type != 25) {
                 if (player.newPet != null) {
                     ChangeMapService.gI().exitMap(player.newPet);
@@ -640,10 +641,14 @@ public class InventoryService {
             player.inventory.itemsBody.set(index, putItemBag(player, item));
             sendItemBags(player);
             sendItemBody(player);
-            Service.gI().player(player);
-            player.zone.load_Me_To_Another(player);
-            player.zone.load_Another_To_Me(player);
-            Service.gI().Send_Caitrang(player);
+            if (isAura) {
+                RadarService.gI().sendAura(player, player.getAura(), player.getEffFront());
+            } else {
+                Service.gI().player(player);
+                player.zone.load_Me_To_Another(player);
+                player.zone.load_Another_To_Me(player);
+                Service.gI().Send_Caitrang(player);
+            }
             Service.gI().sendFlagBag(player);
             Service.gI().point(player);
         }

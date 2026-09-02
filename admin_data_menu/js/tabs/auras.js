@@ -21,10 +21,99 @@ function AuraNumberText(value) {
   return value < 10 ? "0" + value : "" + value;
 }
 
-function AuraSpriteMarkup(auraId, layer, sizeClass) {
+function AuraFrameCount(value) {
+  value = parseInt(value, 10);
+  return isNaN(value) || value < 1 ? 1 : value;
+}
+
+function AuraSpriteSource(auraId, layer) {
+  return "data/img_by_name/x4/aura_" + auraId + "_" + layer + ".png";
+}
+
+function ResetAuraSpriteImage(image) {
+  image.style.display = "block";
+  image.style.visibility = "hidden";
+  image.style.width = "";
+  image.style.height = "";
+  image.style.left = "0";
+  image.style.top = "0";
+}
+
+function UseAuraSpriteFallback(image, auraId, fallbackLayer, fallbackFrames) {
+  if (fallbackLayer < 0 || image._auraFallbackUsed) return false;
+  image._auraFallbackUsed = true;
+  image._auraCurrentFrames = AuraFrameCount(fallbackFrames);
+  ResetAuraSpriteImage(image);
+  image.title = "Aura asset " + auraId + ", layer _" + fallbackLayer;
+  image.src = AuraSpriteSource(auraId, fallbackLayer);
+  return true;
+}
+
+function HideAuraSpriteImage(image, showMissing) {
+  var container = image ? image.parentNode : null;
+  if (container && showMissing) {
+    if (container.className.indexOf("aura-sprite-missing") < 0) {
+      container.className += " aura-sprite-missing";
+    }
+    container.innerHTML = "?";
+  } else if (image) {
+    image.style.display = "none";
+  }
+}
+
+function FitAuraSpriteFrame(image, frameCount) {
+  var sourceWidth = image.naturalWidth || image.width;
+  var sourceHeight = image.naturalHeight || image.height;
+  var frameHeight = Math.max(1, Math.floor(sourceHeight / AuraFrameCount(frameCount)));
+  var container = image.parentNode;
+  var boxWidth = container.clientWidth || container.offsetWidth;
+  var boxHeight = container.clientHeight || container.offsetHeight;
+  var scale = Math.min(boxWidth / sourceWidth, boxHeight / frameHeight);
+  var displayWidth = Math.max(1, Math.round(sourceWidth * scale));
+  var displayHeight = Math.max(1, Math.round(sourceHeight * scale));
+  var displayedFrameHeight = frameHeight * scale;
+
+  image.style.width = displayWidth + "px";
+  image.style.height = displayHeight + "px";
+  image.style.left = Math.round((boxWidth - displayWidth) / 2) + "px";
+  image.style.top = Math.round((boxHeight - displayedFrameHeight) / 2) + "px";
+  image.style.visibility = "visible";
+}
+
+function HandleAuraSpriteLoad(image, auraId, layer, frameCount, fallbackLayer, fallbackFrames, showMissing) {
+  var sourceWidth = image.naturalWidth || image.width;
+  var sourceHeight = image.naturalHeight || image.height;
+  if (sourceWidth <= 4 && sourceHeight <= 4) {
+    if (!UseAuraSpriteFallback(image, auraId, fallbackLayer, fallbackFrames)) {
+      HideAuraSpriteImage(image, showMissing);
+    }
+    return;
+  }
+  FitAuraSpriteFrame(image, image._auraCurrentFrames || frameCount);
+}
+
+function HandleAuraSpriteError(image, auraId, fallbackLayer, fallbackFrames, showMissing) {
+  if (!UseAuraSpriteFallback(image, auraId, fallbackLayer, fallbackFrames)) {
+    HideAuraSpriteImage(image, showMissing);
+  }
+}
+
+function AuraSpriteMarkup(auraId, layer, sizeClass, frameCount, fallbackLayer, fallbackFrames, showMissing) {
   var value = parseInt(auraId, 10);
-  if (isNaN(value) || value < 0) return '<span class="aura-sprite ' + sizeClass + ' aura-sprite-missing">?</span>';
-  return '<span class="aura-sprite ' + sizeClass + '" title="Aura asset ' + value + ', layer ' + layer + '"><img src="data/img_by_name/x4/aura_' + value + '_' + layer + '.png" alt="Aura ' + value + '"></span>';
+  if (isNaN(value) || value < 0) {
+    return showMissing ? '<span class="aura-sprite ' + sizeClass + ' aura-sprite-missing">?</span>' : "";
+  }
+  layer = parseInt(layer, 10);
+  fallbackLayer = parseInt(fallbackLayer, 10);
+  if (isNaN(fallbackLayer)) fallbackLayer = -1;
+  frameCount = AuraFrameCount(frameCount);
+  fallbackFrames = AuraFrameCount(fallbackFrames);
+  showMissing = showMissing ? 1 : 0;
+  var title = "Aura asset " + value + ", layer _" + layer;
+  return '<span class="aura-sprite ' + sizeClass + '" title="' + title + '">'
+    + '<img src="' + AuraSpriteSource(value, layer) + '" alt="" title="' + title + '"'
+    + ' onload="HandleAuraSpriteLoad(this,' + value + ',' + layer + ',' + frameCount + ',' + fallbackLayer + ',' + fallbackFrames + ',' + showMissing + ')"'
+    + ' onerror="HandleAuraSpriteError(this,' + value + ',' + fallbackLayer + ',' + fallbackFrames + ',' + showMissing + ')"></span>';
 }
 
 function AuraBadgeMarkup(value, toneClass, extraClass) {
@@ -43,8 +132,8 @@ function RenderAuraPreview(row) {
   preview.className = "aura-preview " + tone;
   preview.innerHTML = '<div class="aura-preview-stage">'
     + '<div class="aura-preview-ring"></div>'
-    + '<div class="aura-preview-layer aura-preview-layer-0">' + AuraSpriteMarkup(row[5], 0, "aura-sprite-preview") + '</div>'
-    + '<div class="aura-preview-layer aura-preview-layer-1">' + AuraSpriteMarkup(row[5], 1, "aura-sprite-preview") + '</div>'
+    + '<div class="aura-preview-layer aura-preview-layer-0">' + AuraSpriteMarkup(row[5], 0, "aura-sprite-preview", row[6], -1, 1, 0) + '</div>'
+    + '<div class="aura-preview-layer aura-preview-layer-1">' + AuraSpriteMarkup(row[5], 1, "aura-sprite-preview", row[7], -1, 1, 0) + '</div>'
     + '</div>'
     + '<div class="aura-preview-copy">'
     + '<div class="aura-preview-overline">AURA ĐANG CHỌN</div>'
@@ -75,7 +164,7 @@ function RenderAuraItems() {
     rowsHtml += '<tr class="aura-row ' + tone + active + '" onclick="PickAuraItem(' + i + ')">';
     rowsHtml += '<td class="aura-check-cell"><label class="aura-check-control"><input type="checkbox"' + checked + ' onclick="ToggleAuraItem(' + row[0] + ', this.checked); event.cancelBubble = true;"><span class="aura-check-mark"></span></label></td>';
     rowsHtml += '<td class="aura-number-cell">' + AuraBadgeMarkup(AuraNumberText(row[1]), tone, "aura-number-badge") + '</td>';
-    rowsHtml += '<td class="aura-thumb-cell">' + AuraSpriteMarkup(row[5], 0, "aura-sprite-list") + '</td>';
+    rowsHtml += '<td class="aura-thumb-cell">' + AuraSpriteMarkup(row[5], 0, "aura-sprite-list", row[6], 1, row[7], 1) + '</td>';
     rowsHtml += '<td class="aura-id-cell">' + Html(row[0]) + '</td><td class="aura-name-cell">' + Html(row[2]) + '</td>';
     rowsHtml += '<td>' + AuraBadgeMarkup("#" + row[5], tone, "") + '</td>';
     rowsHtml += '<td>' + AuraBadgeMarkup(row[6] + "/" + row[7], "aura-badge-cyan", "") + '</td>';
@@ -140,7 +229,6 @@ function PickAuraItem(index) {
   Set("auraFrame0", row[6]);
   Set("auraFrame1", row[7]);
   Set("auraShopCount", row[8]);
-  if (!AuraItemSelected(row[0])) auraSelectedItemIds.push("" + row[0]);
   RenderAuraPreview(row);
   RenderAuraItems();
 }

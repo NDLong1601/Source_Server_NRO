@@ -1086,47 +1086,7 @@ public class Service {
         if (pl.nPoint == null) {
             return 0;
         }
-        long sucmanh = pl.nPoint.power;
-        if (sucmanh < 3000) {
-            return 0;
-        } else if (sucmanh < 15000) {
-            return 1;
-        } else if (sucmanh < 40000) {
-            return 2;
-        } else if (sucmanh < 90000) {
-            return 3;
-        } else if (sucmanh < 170000) {
-            return 4;
-        } else if (sucmanh < 340000) {
-            return 5;
-        } else if (sucmanh < 700000) {
-            return 6;
-        } else if (sucmanh < 1500000) {
-            return 7;
-        } else if (sucmanh < 15000000) {
-            return 8;
-        } else if (sucmanh < 150000000) {
-            return 9;
-        } else if (sucmanh < 1500000000) {
-            return 10;
-        } else if (sucmanh < 5000000000L) {
-            return 11;
-        } else if (sucmanh < 10000000000L) {
-            return 12;
-        } else if (sucmanh < 40000000000L) {
-            return 13;
-        } else if (sucmanh < 50010000000L) {
-            return 14;
-        } else if (sucmanh < 60010000000L) {
-            return 15;
-        } else if (sucmanh < 70010000000L) {
-            return 16;
-        } else if (sucmanh < 80010000000L) {
-            return 17;
-        } else if (sucmanh < 90010000000L) {
-            return 18;
-        }
-        return 19;
+        return DataGame.getPowerLevel(pl.nPoint.power);
     }
 
     public void hsChar(Player pl, int hp, int mp) {
