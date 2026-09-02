@@ -46,6 +46,7 @@ import nro.models.services.RewardService;
 import nro.models.admin.GiftBoxConfigService;
 import nro.models.services.PlayerService;
 import nro.models.services.TaskService;
+import nro.models.services.AutoQuestService;
 import nro.models.services.InventoryService;
 import nro.models.map.service.MapService;
 import nro.models.services_dungeon.NgocRongNamecService;
@@ -90,6 +91,8 @@ public class UseItem {
     private static final int UBU_DISCIPLE_EGG_ITEM_ID = 2014;
     private static final int KID_JIREN_DISCIPLE_EGG_ITEM_ID = 2015;
     private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
+    private static final int MAIN_QUEST_SKIP_TICKET_ITEM_ID = 2249;
+    private static final int AUTO_QUEST_DELEGATION_ITEM_ID = 2250;
     private static final short FISHING_ROD_CRUDE_ITEM_ID = FishingItems.ROD_CRUDE;
     private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_1 = 2219;
     private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_2 = 2220;
@@ -211,6 +214,23 @@ public class UseItem {
                                     msg.writer().writeByte(where);
                                     msg.writer().writeByte(index);
                                     msg.writer().writeUTF("Bạn chắc muốn mở\n" + player.inventory.itemsBag.get(index).template.name + " ?");
+                                    player.sendMessage(msg);
+                                } else if (item.template.id == MAIN_QUEST_SKIP_TICKET_ITEM_ID) {
+                                    msg = new Message(-43);
+                                    msg.writer().writeByte(type);
+                                    msg.writer().writeByte(where);
+                                    msg.writer().writeByte(index);
+                                    msg.writer().writeUTF("Bạn chắc chắn muốn dùng " + item.template.name
+                                            + "?\nNhiệm vụ hiện tại sẽ bị bỏ qua và không nhận phần thưởng.");
+                                    player.sendMessage(msg);
+                                } else if (item.template.id == AUTO_QUEST_DELEGATION_ITEM_ID) {
+                                    msg = new Message(-43);
+                                    msg.writer().writeByte(type);
+                                    msg.writer().writeByte(where);
+                                    msg.writer().writeByte(index);
+                                    msg.writer().writeUTF(AutoQuestService.gI().isActive(player)
+                                            ? "Bạn muốn tắt Ủy Thác Nhiệm Vụ?"
+                                            : "Dùng Ủy Thác Nhiệm Vụ trong 30 phút?\nNhân vật phải luôn online. Hệ thống không dùng vàng, ngọc hay capsule.");
                                     player.sendMessage(msg);
                                 } else if (item.template.type == 22) {
                                     if (player.zone.items.stream().filter(it -> it != null && it.itemTemplate.type == 22).count() > 2) {
@@ -364,6 +384,16 @@ public class UseItem {
                         break;
                     default:
                         switch (item.template.id) {
+                            case MAIN_QUEST_SKIP_TICKET_ITEM_ID:
+                                if (!useMainQuestSkipTicket(pl, item)) {
+                                    return;
+                                }
+                                break;
+                            case AUTO_QUEST_DELEGATION_ITEM_ID:
+                                if (!useAutoQuestDelegation(pl, item)) {
+                                    return;
+                                }
+                                break;
                             case 992: // Nhan thoi khong
                                 pl.type = 2;
                                 pl.maxTime = 5;
@@ -2407,6 +2437,27 @@ public class UseItem {
         }
         InventoryService.gI().subQuantityItemsBag(pl, item, 1);
         Service.gI().sendThongBao(pl, "Bạn đã nhận được đệ tử " + petName + "!");
+        return true;
+    }
+
+    private boolean useMainQuestSkipTicket(Player player, Item item) {
+        if (!TaskService.gI().skipCurrentMainTask(player)) {
+            return false;
+        }
+        InventoryService.gI().subQuantityItemsBag(player, item, 1);
+        return true;
+    }
+
+    private boolean useAutoQuestDelegation(Player player, Item item) {
+        AutoQuestService autoQuestService = AutoQuestService.gI();
+        if (autoQuestService.isActive(player)) {
+            autoQuestService.deactivate(player, "Đã tắt Ủy Thác Nhiệm Vụ.");
+            return true;
+        }
+        if (!autoQuestService.activate(player)) {
+            return false;
+        }
+        InventoryService.gI().subQuantityItemsBag(player, item, 1);
         return true;
     }
 

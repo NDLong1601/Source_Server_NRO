@@ -50,8 +50,8 @@ public class DataGame {
     public static byte vsMap = loadMapVersion();
     // 11 refreshes Siêu Ma Cảm Tử after aligning ghost count with skill level.
     public static byte vsSkill = 11;
-    // 65 refreshes all named aura templates after assigning their dedicated inventory icons.
-    public static byte vsItem = 65;
+    // 68 refreshes the delegation item after adding auto travel and power training.
+    public static byte vsItem = 68;
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 

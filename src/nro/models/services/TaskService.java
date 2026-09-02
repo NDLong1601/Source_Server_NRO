@@ -36,6 +36,11 @@ import nro.models.activity.ActivityType;
 
 public class TaskService {
 
+    private enum MainTaskAdvanceReason {
+        COMPLETED,
+        SKIPPED
+    }
+
     /**
      * Làm cùng số người trong bang
      */
@@ -130,27 +135,68 @@ public class TaskService {
     }
 
     public void sendNextTaskMain(Player player) {
-        if (!rewardDoneTask(player)) {
-            player.playerTask.taskMain.index = player.playerTask.taskMain.subTasks.size() - 1;
-            sendTaskMain(player);
-            return;
+        advanceMainTask(player, MainTaskAdvanceReason.COMPLETED);
+    }
+
+    public boolean skipCurrentMainTask(Player player) {
+        return advanceMainTask(player, MainTaskAdvanceReason.SKIPPED);
+    }
+
+    private boolean advanceMainTask(Player player, MainTaskAdvanceReason reason) {
+        if (player == null || player.playerTask == null || player.playerTask.taskMain == null) {
+            if (reason == MainTaskAdvanceReason.SKIPPED && player != null) {
+                Service.gI().sendThongBao(player, "Không tìm thấy nhiệm vụ chính hiện tại.");
+            }
+            return false;
         }
-        switch (player.playerTask.taskMain.id) {
+
+        TaskMain currentTask = player.playerTask.taskMain;
+        TaskMain nextTask = createTaskMain(player, getNextMainTaskId(player, currentTask.id));
+        if (nextTask == null || nextTask.subTasks == null || nextTask.subTasks.isEmpty()
+                || nextTask.id == currentTask.id) {
+            if (reason == MainTaskAdvanceReason.COMPLETED) {
+                if (currentTask.subTasks != null && !currentTask.subTasks.isEmpty()) {
+                    currentTask.index = currentTask.subTasks.size() - 1;
+                    sendTaskMain(player);
+                }
+                Logger.warningln("Không tìm thấy nhiệm vụ kế tiếp sau task id " + currentTask.id);
+            } else {
+                Service.gI().sendThongBao(player, "Nhiệm vụ hiện tại không thể bỏ qua.");
+            }
+            return false;
+        }
+
+        if (reason == MainTaskAdvanceReason.COMPLETED && !rewardDoneTask(player)) {
+            currentTask.index = currentTask.subTasks.size() - 1;
+            sendTaskMain(player);
+            return false;
+        }
+
+        int skippedTaskId = currentTask.id;
+        player.playerTask.taskMain = nextTask;
+        sendTaskMain(player);
+        if (reason == MainTaskAdvanceReason.SKIPPED) {
+            Service.gI().sendThongBao(player, "Đã bỏ qua nhiệm vụ ID " + skippedTaskId
+                    + ". Nhiệm vụ tiếp theo của bạn là "
+                    + nextTask.subTasks.get(nextTask.index).name);
+        } else {
+            Service.gI().sendThongBao(player, "Nhiệm vụ tiếp theo của bạn là "
+                    + nextTask.subTasks.get(nextTask.index).name);
+        }
+        return true;
+    }
+
+    private int getNextMainTaskId(Player player, int currentTaskId) {
+        switch (currentTaskId) {
             case 3:
-                player.playerTask.taskMain = TaskService.gI().getTaskMainById(player, player.gender + 4);
-                break;
+                return player.gender + 4;
             case 4:
             case 5:
             case 6:
-                player.playerTask.taskMain = TaskService.gI().getTaskMainById(player, 7);
-                break;
+                return 7;
             default:
-                player.playerTask.taskMain = TaskService.gI().getTaskMainById(player, player.playerTask.taskMain.id + 1);
-                break;
+                return currentTaskId + 1;
         }
-        sendTaskMain(player);
-        Service.gI().sendThongBao(player, "Nhiệm vụ tiếp theo của bạn là "
-                + player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).name);
     }
 
     public void sendUpdateCountSubTask(Player player) {

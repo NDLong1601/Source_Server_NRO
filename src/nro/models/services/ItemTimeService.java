@@ -186,7 +186,13 @@ public class ItemTimeService {
         Message msg;
         try {
             msg = new Message(-116);
-            msg.writer().writeByte(player.itemTime.isUseTDLT ? 1 : 0);
+            // Auto quest temporarily reuses the client auto-training
+            // controller while a power gate is being trained. Keep that
+            // runtime flag independent from a paid TDLT timer so neither
+            // feature can consume, extend, or turn off the other one.
+            boolean canAutoPlay = (player.itemTime != null && player.itemTime.isUseTDLT)
+                    || player.autoQuestClientAutoPlay;
+            msg.writer().writeByte(canAutoPlay ? 1 : 0);
             player.sendMessage(msg);
         } catch (IOException e) {
             Logger.logException(ItemTimeService.class, e);

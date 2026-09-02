@@ -12219,13 +12219,15 @@ ON DUPLICATE KEY UPDATE `avatar_id`=VALUES(`avatar_id`);
 INSERT INTO `item_template`
 (`id`,`TYPE`,`gender`,`NAME`,`description`,`level`,`icon_id`,`part`,`is_up_to_up`,`power_require`,`gold`,`gem`,`head`,`body`,`leg`) VALUES
 (2247,5,3,'Cải trang Levi Ackerman','Cải trang Levi Ackerman theo ảnh tham chiếu',1,26573,-1,0,0,0,0,2198,2199,2200),
-(2248,29,3,'Hộp quà Levi Ackerman','Mở ra nhận Cải trang Levi Ackerman vĩnh viễn.',1,26575,-1,0,0,0,0,-1,-1,-1)
+(2248,29,3,'Hộp quà Levi Ackerman','Mở ra nhận Cải trang Levi Ackerman vĩnh viễn.',1,26575,-1,0,0,0,0,-1,-1,-1),
+(2249,29,3,'Vé Chuyển Chương','Dùng để bỏ qua nhiệm vụ chính hiện tại. Không nhận phần thưởng của nhiệm vụ bị bỏ qua.',1,26640,-1,1,0,0,0,-1,-1,-1),
+(2250,29,3,'Ủy Thác Nhiệm Vụ','Tự di chuyển map, train sức mạnh, đánh quái, nhặt vật phẩm và báo cáo NPC cho nhóm nhiệm vụ đầu trong 30 phút. Chỉ hoạt động khi online. Dùng lại để tắt.',1,26641,-1,1,0,0,0,-1,-1,-1)
 ON DUPLICATE KEY UPDATE
 `TYPE`=VALUES(`TYPE`),`gender`=VALUES(`gender`),`NAME`=VALUES(`NAME`),`description`=VALUES(`description`),
 `level`=VALUES(`level`),`icon_id`=VALUES(`icon_id`),`part`=VALUES(`part`),`is_up_to_up`=VALUES(`is_up_to_up`),
 `power_require`=VALUES(`power_require`),`gold`=VALUES(`gold`),`gem`=VALUES(`gem`),`head`=VALUES(`head`),`body`=VALUES(`body`),`leg`=VALUES(`leg`);
 
-DELETE FROM `item_default_option` WHERE `item_template_id` IN (2247,2248);
+DELETE FROM `item_default_option` WHERE `item_template_id` IN (2247,2248,2249,2250);
 
 INSERT INTO `gift_box_config`
 (`box_template_id`,`enabled`,`min_empty_slots`,`consume_quantity`,`draw_count`,`config_json`) VALUES

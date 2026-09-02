@@ -39,6 +39,7 @@ import nro.models.map.service.MapService;
 import nro.models.services.PetService;
 import nro.models.services.PlayerService;
 import nro.models.services.TaskService;
+import nro.models.services.AutoQuestService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.combine.Combine;
 import nro.models.consts.ConstDailyGift;
@@ -332,6 +333,16 @@ public class Player implements Runnable {
     public List<BadgesTask> dataTaskBadges = new ArrayList<>();
     public long lastTimeChangeBadges;
     public int autoTrainState = 0;
+    // Runtime-only state: delegation is intentionally online-only and ends on logout.
+    public long autoQuestEndTime;
+    public long autoQuestLastActionTime;
+    public int autoQuestTargetMapId = -1;
+    public int autoQuestRouteFailureCount;
+    public String autoQuestStatus = "";
+    // Enables the existing client-side auto-training controller only while
+    // delegation is satisfying a power requirement. This is runtime-only and
+    // deliberately separate from the player's own TDLT item timer.
+    public boolean autoQuestClientAutoPlay;
     public List<Integer> BoughtSkill = new ArrayList<>();
     public LearnSkill LearnSkill;
     public List<DailyGiftData> dailyGiftData = new ArrayList<>();
@@ -478,6 +489,9 @@ public class Player implements Runnable {
                     if (this.isPl() && this.zone != null && this.zone.map.mapId == this.gender + 21 && (TaskService.gI().getIdTask(this) == ConstTask.TASK_0_0 || TaskService.gI().getIdTask(this) == ConstTask.TASK_0_1)) {
                         this.playerTask.taskMain.index = 2;
                         TaskService.gI().sendTaskMain(this);
+                    }
+                    if (this.isPl() && this.zone != null) {
+                        AutoQuestService.gI().update(this);
                     }
                 }
                 if ((this.zone != null && !MapService.gI().isHome(this.zone.map.mapId)) || (!this.isPl() && this.zone == null)) {
