@@ -5,10 +5,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import nro.models.player.Player;
+import nro.models.network.Message;
+import nro.models.services.Service;
 
 public class BadgesService {
 
     public static final int DEFAULT_BADGE_DURATION_DAYS = 30;
+    public static final byte VISIBILITY_COMMAND = -48;
 
     private BadgesService() {
     }
@@ -74,6 +77,48 @@ public class BadgesService {
             }
         }
         return -1;
+    }
+
+    /**
+     * Changes only the visual state of the title. It never changes isUse, so
+     * all title options continue to be included in the player's stats.
+     */
+    public static void setVisualHidden(Player player, boolean hidden) {
+        if (player == null) {
+            return;
+        }
+        player.hideBadges = hidden;
+        sendVisualHiddenState(player);
+
+        int activeBadgeId = getActiveBadgeId(player);
+        if (hidden) {
+            // Tell all clients in the map to discard the currently displayed banner.
+            Service.gI().sendBadgesPlayer(player, 0, -1);
+        } else if (activeBadgeId != -1) {
+            // Restore the title immediately instead of waiting for the next 10-second refresh.
+            Service.gI().sendBadgesPlayer(player, 5, activeBadgeId);
+            player.badges.lastTimeSendBadges = System.currentTimeMillis();
+        }
+    }
+
+    /** Sends the persisted setting to the owner after login and after a change. */
+    public static void sendVisualHiddenState(Player player) {
+        if (player == null) {
+            return;
+        }
+        Message msg = null;
+        try {
+            msg = new Message(24);
+            msg.writer().writeByte(5);
+            msg.writer().writeByte(player.hideBadges ? 1 : 0);
+            player.sendMessage(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
+        }
     }
 
     /**

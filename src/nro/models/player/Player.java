@@ -327,6 +327,8 @@ public class Player implements Runnable {
     public boolean checkTopReward3;
     private String lastChatMessage;
     public List<BadgesData> dataBadges = new ArrayList<>();
+    /** Only hides the title effect; the selected title and its options remain active. */
+    public boolean hideBadges;
     public List<BadgesTask> dataTaskBadges = new ArrayList<>();
     public long lastTimeChangeBadges;
     public int autoTrainState = 0;
@@ -657,7 +659,7 @@ public class Player implements Runnable {
             Service.gI().point(this);
         }
 
-        if (badges.idBadges != -1 && Util.canDoWithTime(badges.lastTimeSendBadges, 10000)) {
+        if (!hideBadges && badges.idBadges != -1 && Util.canDoWithTime(badges.lastTimeSendBadges, 10000)) {
             Service.gI().sendBadgesPlayer(this, 5, badges.idBadges);
             badges.lastTimeSendBadges = System.currentTimeMillis();
         }

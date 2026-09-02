@@ -9509,6 +9509,7 @@ CREATE TABLE `player` (
   `event_point` int(11) NOT NULL DEFAULT 0,
   `data_event` text DEFAULT NULL,
   `dataBadges` text DEFAULT NULL,
+  `hide_badges` tinyint(1) NOT NULL DEFAULT 0,
   `dataTaskBadges` text DEFAULT NULL,
   `firstTimeLogin` timestamp NOT NULL DEFAULT current_timestamp(),
   `BoughtSkill` text DEFAULT NULL,

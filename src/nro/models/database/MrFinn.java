@@ -1376,6 +1376,11 @@ public class MrFinn {
                 Logger.log(e.toString());
             }
             try {
+                player.hideBadges = rs.getBoolean("hide_badges");
+            } catch (Exception ignored) {
+                player.hideBadges = false;
+            }
+            try {
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("dataBadges"));
 
                 for (int i = 0; i < dataArray.size(); i++) {

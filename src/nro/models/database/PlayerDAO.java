@@ -1062,7 +1062,7 @@ public class PlayerDAO {
                         + "data_black_ball = ?, data_side_task = ?, data_charm = ?, skills = ?, skills_shortcut = ?, notify = ?, "
                         + "baovetaikhoan = ?, data_card = ?, lasttimepkcommeson = ?, bandokhobau = ?, doanhtrai = ?, conduongrandoc = ?, masterDoesNotAttack = ?, "
                         + "nhanthoivang = ?, ruonggo = ?, sieuthanthuy = ?, vodaisinhtu = ?, rongxuong = ?, data_item_event = ?, data_luyentap = ?, data_clan_task = ?, data_vip = ?, "
-                        + "rank = ?, data_achievement = ?, giftcode = ?, event_point = ?, data_event = ?, dataBadges = ?, dataTaskBadges = ?, BoughtSkill = ?, LearnSkill = ?, "
+                        + "rank = ?, data_achievement = ?, giftcode = ?, event_point = ?, data_event = ?, dataBadges = ?, hide_badges = ?, dataTaskBadges = ?, BoughtSkill = ?, LearnSkill = ?, "
                         + "firstTimeLogin = ?,  dailyGift = ?, point_sukien = ?, thachdauwhis = ?, point_sukien1 = ?, point_maydam = ?, total_damage_maydam = ?, data_duahau_egg = ?, checkNhanQua = ?, nhiem_vu_kol = ?, point_sukien2 = ? where id = ?";
                 LocalManager.executeUpdate(query,
                         player.head,
@@ -1113,6 +1113,7 @@ public class PlayerDAO {
                         player.event.getEventPoint(),
                         dataEvent, // Thêm data_event vào đây
                         dataBadges,
+                        player.hideBadges,
                         dataTaskBadges,
                         BoughtSkill,
                         LearnSkill,

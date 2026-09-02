@@ -42,6 +42,7 @@ import nro.models.services.CostumeCollectionService;
 import nro.models.activity.ActivityClientService;
 import nro.models.map.service.NpcManager;
 import nro.models.player.Player;
+import nro.models.player_badges.BadgesService;
 import nro.models.matches.PVPService;
 import nro.models.services.AchievementService;
 import nro.models.shop.ShopService;
@@ -741,6 +742,11 @@ public class Controller implements IMessageHandler {
                 case -76:
                     AchievementService.gI().confirmAchievement(player, _msg.reader().readByte());
                     break;
+                case BadgesService.VISIBILITY_COMMAND:
+                    if (player != null && player.isPl()) {
+                        BadgesService.setVisualHidden(player, _msg.reader().readByte() == 1);
+                    }
+                    break;
                 default:
                     // Logger.log(Logger.YELLOW, "CMD: " + cmd + "\n");
                     break;
@@ -814,6 +820,7 @@ public class Controller implements IMessageHandler {
                             DataGame.preloadPlayerItemIconsWithRetry(player);
                             Service.gI().player(player);
                             Service.gI().Send_Caitrang(player);
+                            BadgesService.sendVisualHiddenState(player);
 
                             // -64 my flag bag
                             Service.gI().sendFlagBag(player);
