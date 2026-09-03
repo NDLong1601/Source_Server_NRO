@@ -1948,7 +1948,8 @@ ON DUPLICATE KEY UPDATE
 TYPE=VALUES(TYPE), gender=VALUES(gender), NAME=VALUES(NAME), description=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id), part=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require), gold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);
 "@
     Invoke-MySql $sql | Out-Null
-    "OK`tĐã lưu vật phẩm ID $itemId. Restart server để client/server nhận template mới."
+    $itemCacheVersion = Bump-ItemTemplateVersion
+    "OK`tĐã lưu vật phẩm ID $itemId. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải template mới."
 }
 
 function Assert-RadarOptionsJson {
@@ -2087,7 +2088,8 @@ function Save-ItemDefaultOptions {
     if ($values.Count -gt 0) { [void]$sql.AppendLine("INSERT INTO item_default_option (item_template_id,option_id,param,sort_order) VALUES $($values -join ',');") }
     [void]$sql.AppendLine("COMMIT;")
     Invoke-MySql $sql.ToString() | Out-Null
-    "OK`tĐã lưu $($values.Count) option mặc định cho vật phẩm ID $itemId. Restart server để áp dụng cache."
+    $itemCacheVersion = Bump-ItemTemplateVersion
+    "OK`tĐã lưu $($values.Count) option mặc định cho vật phẩm ID $itemId. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải dữ liệu mới."
 }
 
 function Save-ItemDefaultOptionsBulk {
@@ -2109,7 +2111,8 @@ function Save-ItemDefaultOptionsBulk {
     }
     [void]$sql.AppendLine("COMMIT;")
     Invoke-MySql $sql.ToString() | Out-Null
-    "OK`tĐã lưu option mặc định cho $($ids.Count) vật phẩm. Restart server để áp dụng cache."
+    $itemCacheVersion = Bump-ItemTemplateVersion
+    "OK`tĐã lưu option mặc định cho $($ids.Count) vật phẩm. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải dữ liệu mới."
 }
 
 function Assert-RadarMilestonesJson {
@@ -2707,13 +2710,52 @@ function Resolve-NpcRenderLayerOrder {
     if ($IsFullBody) { return $NpcLayerOrderNative }
     $value = if ($null -eq $RequestedOrder) { "" } else { $RequestedOrder.Trim().ToUpperInvariant() }
     if ([string]::IsNullOrWhiteSpace($value)) {
-        if ($IsCreateNew) { return $NpcLayerOrderHeadTop }
+        # Giữ mapping native cho NPC mới: mỗi part luôn đi cùng anchor animation
+        # gốc của client. LEG_BODY_HEAD hoán đổi part giữa các anchor nên sẽ làm
+        # Thân đứng yên còn Head/Leg rung theo frame khác.
+        if ($IsCreateNew) { return $NpcLayerOrderNative }
         return Get-NpcRenderLayerOrder $NpcId
     }
     if ($value -ne $NpcLayerOrderNative -and $value -ne $NpcLayerOrderHeadTop) {
         throw "Thứ tự lớp NPC không hợp lệ: $RequestedOrder"
     }
     return $value
+}
+
+function Bump-NpcPartDataVersion {
+    # Client chỉ tải lại NR_part khi vsData khác cache cục bộ. Dùng version 1..127
+    # để tương thích byte có dấu của client NRO và lưu bền qua lần restart server.
+    $versionPath = Join-Path $Root "data\update_data\version"
+    $currentVersion = 72
+    if (Test-Path -LiteralPath $versionPath) {
+        try {
+            $parsed = 0
+            if ([int]::TryParse(([IO.File]::ReadAllText($versionPath).Trim()), [ref]$parsed) -and $parsed -ge 1 -and $parsed -le 127) {
+                $currentVersion = $parsed
+            }
+        } catch {}
+    }
+    $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
+    [IO.File]::WriteAllText($versionPath, [string]$nextVersion + [Environment]::NewLine, $Utf8NoBom)
+    return $nextVersion
+}
+
+function Bump-ItemTemplateVersion {
+    # vsItem được client dùng để quyết định có tải lại NRitem hay dùng cache cũ.
+    # Dùng version 1..127 để tương thích byte có dấu và tránh tái sử dụng version 0.
+    $versionPath = Join-Path $Root "data\update_data\item_version"
+    $currentVersion = 69
+    if (Test-Path -LiteralPath $versionPath) {
+        try {
+            $parsed = 0
+            if ([int]::TryParse(([IO.File]::ReadAllText($versionPath).Trim()), [ref]$parsed) -and $parsed -ge 1 -and $parsed -le 127) {
+                $currentVersion = $parsed
+            }
+        } catch {}
+    }
+    $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
+    [IO.File]::WriteAllText($versionPath, [string]$nextVersion + [Environment]::NewLine, $Utf8NoBom)
+    return $nextVersion
 }
 
 function Get-IconImageSize {
@@ -2774,6 +2816,55 @@ function Ensure-NpcFullBodyNameProxy {
         }
     }
     return $proxyIconId
+}
+
+function Ensure-NpcFullBodyDummyLeg {
+    # Fullbody dùng Icon 25001 cho Leg Part (TYPE 2). Tạo ảnh trong suốt x1-x4
+    # để client NRO không bị lỗi thiếu file asset khi tải sprite NPC toàn thân.
+    $dummyIconId = 25001
+    for ($scale = 1; $scale -le 4; $scale++) {
+        $width = 18 * $scale
+        $height = 20 * $scale
+        $dir = Join-Path $Root ("data\icon\x{0}" -f $scale)
+        if (-not (Test-Path -LiteralPath $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        }
+        $path = Join-Path $dir ("{0}.png" -f $dummyIconId)
+        if (Test-Path -LiteralPath $path) {
+            continue
+        }
+
+        $bitmap = [System.Drawing.Bitmap]::new($width, $height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        try {
+            $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+            try {
+                $graphics.Clear([System.Drawing.Color]::Transparent)
+            } finally {
+                $graphics.Dispose()
+            }
+            $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+        } finally {
+            $bitmap.Dispose()
+        }
+    }
+    return $dummyIconId
+}
+
+function Get-NpcIconInfoAction {
+    $targetId = SqlInt $IconId 0
+    if ($targetId -le 0) { throw "Icon ID không hợp lệ: $IconId" }
+    $s1 = Get-IconImageSize $targetId 1
+    $s4 = Get-IconImageSize $targetId 4
+    if ($s4.Width -le 0 -or $s4.Height -le 0) {
+        throw "Không tìm thấy file ảnh cho Icon ID $targetId trong data/icon."
+    }
+    return (ConvertTo-Json @{
+        IconId = $targetId
+        Width1 = $s1.Width
+        Height1 = $s1.Height
+        Width4 = $s4.Width
+        Height4 = $s4.Height
+    } -Compress)
 }
 
 function Get-NpcIconScaleInfo {
@@ -3379,9 +3470,10 @@ function Save-NpcCreator {
         $bDy = Assert-NpcPartOffset $bDy "FullBody DATA dy"
         
         $nameProxyIcon = Ensure-NpcFullBodyNameProxy
+        $dummyLegIcon = Ensure-NpcFullBodyDummyLeg
         $headDataJson = "[[{0},0,0],[{0},0,0],[{0},0,0]]" -f $nameProxyIcon
         $bodyDataJson = "[[0,0,0],[{0},{1},{2}],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $fbIcon, $bDx, $bDy
-        $legDataJson = "[[0,0,0],[25001,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]"
+        $legDataJson = "[[0,0,0],[{0},0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]" -f $dummyLegIcon
     } else {
         $hW = Get-NpcValidatedInteger $HeadW "Head W" 1 4096
         $hH = Get-NpcValidatedInteger $HeadH "Head H" 1 4096
@@ -3527,6 +3619,7 @@ function Save-NpcCreator {
     Invoke-MySql ($sqlQueries -join [Environment]::NewLine) | Out-Null
     
     Export-BinaryPartData (Join-Path $Root "data\update_data\part")
+    $partDataVersion = Bump-NpcPartDataVersion
     
     $mapIdNum = SqlInt $MapId -1
     $posX = SqlInt $SpawnX 0
@@ -3637,7 +3730,7 @@ function Save-NpcCreator {
     }
     
     $placementMessage = if ($keepNpcOnOtherMaps) { "; đã giữ nguyên các vị trí ở map khác" } else { "" }
-    return "OK`tĐã lưu và kiểm tra lại NPC '$Name' (ID: $npcId), ba Part, Icon x1-x4 và Map thành công$placementMessage.`tNPC_ID=$npcId"
+    return "OK`tĐã lưu và kiểm tra lại NPC '$Name' (ID: $npcId), ba Part, Icon x1-x4 và Map thành công$placementMessage. Version part mới: $partDataVersion; restart server để client tải lại.`tNPC_ID=$npcId"
 }
 
 function Delete-NpcCreator {
@@ -6630,6 +6723,7 @@ try {
         "listactivitylogs" { List-ActivityLogs }
         "listnpccreator" { List-NpcCreator }
         "getnpccreator" { Get-NpcCreatorDetail }
+        "getnpciconinfo" { Get-NpcIconInfoAction }
         "savenpccreator" { Save-NpcCreator }
         "deletenpccreator" { Delete-NpcCreator }
         "listmapcatalog" { List-MapCatalog }

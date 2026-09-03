@@ -1233,6 +1233,7 @@ public class ConstItem {
     public static final int HAC_VO_THUONG = 1401;
     public static final int BACH_VO_THUONG = 1402;
     public static final int GIAP_TAP_LUYEN_CAP_4 = 1716;
+    public static final int VE_DOANH_TRAI = 2251;
 //    public static final int[] LIST_ITEM_NLSK_TET_2023 = {2027, 2028, 2029, 2030, 2030, 2037, 2038};
     public static final int[][][] LIST_ITEM_CLOTHES = {
         {{0, 33, 3, 34, 136, 137, 138, 139, 230, 231, 232, 233, 555}, {6, 35, 9, 36, 140, 141, 142, 143, 242, 243, 244, 245, 556}, {21, 24, 37, 38, 144, 145, 146, 147, 254, 255, 256, 257, 562}, {27, 30, 39, 40, 148, 149, 150, 151, 266, 267, 268, 269, 563}, {12, 57, 58, 59, 184, 185, 186, 187, 278, 279, 280, 281, 561}},

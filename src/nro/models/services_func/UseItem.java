@@ -93,6 +93,7 @@ public class UseItem {
     private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
     private static final int MAIN_QUEST_SKIP_TICKET_ITEM_ID = 2249;
     private static final int AUTO_QUEST_DELEGATION_ITEM_ID = 2250;
+    private static final int VE_DOANH_TRAI_ITEM_ID = ConstItem.VE_DOANH_TRAI;
     private static final short FISHING_ROD_CRUDE_ITEM_ID = FishingItems.ROD_CRUDE;
     private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_1 = 2219;
     private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_2 = 2220;
@@ -231,6 +232,14 @@ public class UseItem {
                                     msg.writer().writeUTF(AutoQuestService.gI().isActive(player)
                                             ? "Bạn muốn tắt Ủy Thác Nhiệm Vụ?"
                                             : "Dùng Ủy Thác Nhiệm Vụ trong 30 phút?\nNhân vật phải luôn online. Hệ thống không dùng vàng, ngọc hay capsule.");
+                                    player.sendMessage(msg);
+                                } else if (item.template.id == VE_DOANH_TRAI_ITEM_ID) {
+                                    msg = new Message(-43);
+                                    msg.writer().writeByte(type);
+                                    msg.writer().writeByte(where);
+                                    msg.writer().writeByte(index);
+                                    msg.writer().writeUTF("Bạn chắc chắn muốn dùng " + item.template.name
+                                            + " để mở thêm 1 lượt đi Doanh Trại Độc Nhãn cho bang hội?");
                                     player.sendMessage(msg);
                                 } else if (item.template.type == 22) {
                                     if (player.zone.items.stream().filter(it -> it != null && it.itemTemplate.type == 22).count() > 2) {
@@ -391,6 +400,11 @@ public class UseItem {
                                 break;
                             case AUTO_QUEST_DELEGATION_ITEM_ID:
                                 if (!useAutoQuestDelegation(pl, item)) {
+                                    return;
+                                }
+                                break;
+                            case VE_DOANH_TRAI_ITEM_ID:
+                                if (!useVeDoanhTrai(pl, item)) {
                                     return;
                                 }
                                 break;
@@ -2458,6 +2472,45 @@ public class UseItem {
             return false;
         }
         InventoryService.gI().subQuantityItemsBag(player, item, 1);
+        return true;
+    }
+
+    private boolean useVeDoanhTrai(Player player, Item item) {
+        if (player.clan == null) {
+            Service.gI().sendThongBao(player, "Bạn chưa có bang hội, không thể sử dụng vật phẩm này");
+            return false;
+        }
+        if (player.clanMember == null || player.clanMember.getNumDateFromJoinTimeToToday() < 1) {
+            Service.gI().sendThongBao(player, "Gia nhập bang hội trên 1 ngày mới có thể sử dụng");
+            return false;
+        }
+        if (player.clan.doanhTrai != null) {
+            Service.gI().sendThongBao(player, "Doanh trại của bang hội đang mở, không thể sử dụng vé lúc này");
+            return false;
+        }
+        if (!player.clan.haveGoneDoanhTrai || Util.isAfterMidnight(player.clan.lastTimeOpenDoanhTrai)) {
+            Service.gI().sendThongBao(player, "Hôm nay bang hội của bạn vẫn còn lượt đi miễn phí, chưa cần dùng vé");
+            return false;
+        }
+        InventoryService.gI().subQuantityItemsBag(player, item, 1);
+        InventoryService.gI().sendItemBags(player);
+
+        player.clan.haveGoneDoanhTrai = false;
+        player.clan.lastTimeOpenDoanhTrai = 0;
+        player.lastTimeJoinDT = 0;
+
+        if (player.clan.membersInGame != null) {
+            for (Player mPl : player.clan.membersInGame) {
+                if (mPl != null) {
+                    mPl.lastTimeJoinDT = 0;
+                    if (!mPl.equals(player)) {
+                        Service.gI().sendThongBao(mPl, player.name + " đã dùng Vé Doanh Trại mở thêm 1 lượt đi cho bang hội!");
+                    }
+                }
+            }
+        }
+
+        Service.gI().sendThongBao(player, "Mở thêm lượt đi Doanh Trại thành công cho bang hội!");
         return true;
     }
 

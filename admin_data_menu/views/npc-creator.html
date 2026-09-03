@@ -37,10 +37,10 @@
         <div class="cell">
           <label>Thứ tự xếp lớp</label>
           <select id="npcCreatorLayerOrder" onchange="UpdateNpcCreatorPreview()">
-            <option value="LEG_BODY_HEAD" selected>Leg → Body → Head (mặc định mới)</option>
-            <option value="NATIVE">Head → Leg → Body (NPC cũ)</option>
+            <option value="NATIVE" selected>Head → Leg → Body (chuẩn hoạt ảnh client)</option>
+            <option value="LEG_BODY_HEAD">Leg → Body → Head (ưu tiên lớp, đổi anchor hoạt ảnh)</option>
           </select>
-          <small>NPC tạo mới mặc định đưa Head lên cao nhất. Các ô Head/Body/Leg vẫn giữ đúng nghĩa.</small>
+          <small>Dùng chuẩn hoạt ảnh client để Head/Body/Leg chuyển động đồng bộ. Chế độ ưu tiên lớp chỉ dành cho sprite cần Head phủ lên trên.</small>
         </div>
         <div class="cell">
           <div class="inline-check">
@@ -49,7 +49,7 @@
           </div>
           <small>Dùng cho NPC cổng/nhiệm vụ xuất hiện đồng thời ở nhiều map, như Kanao map 0 và 187.</small>
         </div>
-        <div class="cell" style="flex: 2;">
+        <div class="cell npc-placement-cell">
           <label>Các vị trí hiện tại</label>
           <div id="npcCreatorMapPlacements" class="npc-placement-summary">Chưa đặt vào map.</div>
         </div>
@@ -98,7 +98,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon ID có sẵn</label>
-                    <input type="text" id="npcCreatorFullBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorFullBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('fullbody', this.value)">
                   </div>
                 </div>
                 <div class="row">
@@ -155,7 +155,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon Avatar có sẵn</label>
-                    <input type="text" id="npcCreatorFbAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorFbAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('avatar', this.value)">
                   </div>
                 </div>
               </div>
@@ -176,7 +176,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon ID có sẵn</label>
-                    <input type="text" id="npcCreatorHeadIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorHeadIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('head', this.value)">
                   </div>
                 </div>
                 <div class="row">
@@ -188,6 +188,7 @@
                       <input type="text" id="npcCreatorHeadDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
                       <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', 1)">+1</button>
                       <button type="button" class="compact" onclick="AdjustNpcOffset('head', 'x', 5)">+5</button>
+                      <button type="button" class="compact" onclick="AutoCenterNpcMultipart()">Căn giữa</button>
                     </div>
                   </div>
                 </div>
@@ -231,7 +232,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon ID có sẵn</label>
-                    <input type="text" id="npcCreatorBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorBodyIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('body', this.value)">
                   </div>
                 </div>
                 <div class="row">
@@ -243,6 +244,7 @@
                       <input type="text" id="npcCreatorBodyDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
                       <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', 1)">+1</button>
                       <button type="button" class="compact" onclick="AdjustNpcOffset('body', 'x', 5)">+5</button>
+                      <button type="button" class="compact" onclick="AutoCenterNpcMultipart()">Căn giữa</button>
                     </div>
                   </div>
                 </div>
@@ -286,7 +288,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon ID có sẵn</label>
-                    <input type="text" id="npcCreatorLegIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorLegIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('leg', this.value)">
                   </div>
                 </div>
                 <div class="row">
@@ -298,6 +300,7 @@
                       <input type="text" id="npcCreatorLegDx" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
                       <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', 1)">+1</button>
                       <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'x', 5)">+5</button>
+                      <button type="button" class="compact" onclick="AutoCenterNpcMultipart()">Căn giữa</button>
                     </div>
                   </div>
                 </div>
@@ -310,6 +313,7 @@
                       <input type="text" id="npcCreatorLegDy" value="0" class="npc-offset-input" onkeyup="UpdateNpcCreatorPreview()">
                       <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', 1)">+1</button>
                       <button type="button" class="compact" onclick="AdjustNpcOffset('leg', 'y', 5)">+5</button>
+                      <button type="button" class="compact" onclick="GroundNpcLegs()">Chạm đất</button>
                     </div>
                   </div>
                 </div>
@@ -341,7 +345,7 @@
                   </div>
                   <div class="cell">
                     <label>Hoặc Icon Avatar có sẵn</label>
-                    <input type="text" id="npcCreatorAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()">
+                    <input type="text" id="npcCreatorAvatarIcon" value="0" onkeyup="UpdateNpcCreatorPreview()" onchange="OnNpcIconInputChange('avatar', this.value)">
                   </div>
                 </div>
                 <div class="row">
@@ -390,6 +394,8 @@
               <button type="button" class="compact" id="btnNpcGrid" onclick="ToggleNpcPreviewGrid()">Bật/Tắt lưới</button>
               <button type="button" class="compact" onclick="ResetNpcOffsets()">Reset Offset</button>
               <button type="button" class="compact" onclick="NormalizeNpcActiveDimensions()">Chuẩn hóa x1-x4</button>
+              <button type="button" class="compact" id="btnAutoCenter" onclick="AutoCenterNpcMultipart()">Căn giữa tâm</button>
+              <button type="button" class="compact" id="btnGroundLegs" onclick="GroundNpcLegs()">Chạm đất</button>
               <button type="button" class="compact primary" id="btnAutoSnap" onclick="AutoSnapJoints()">Khép khít khớp</button>
               <button type="button" class="compact" id="btnPresetAll" onclick="ApplyNpcPreset('all')">Chuẩn NRO gốc</button>
             </div>

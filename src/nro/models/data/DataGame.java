@@ -23,6 +23,7 @@ import nro.models.player_system.Template.SkillTemplate;
 import java.io.ByteArrayOutputStream;
 import nro.models.network.Message;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -37,6 +38,7 @@ import nro.models.player_system.Template.BgItem;
 
 public class DataGame {
 
+    private static final byte DEFAULT_DATA_VERSION = 72;
     private static final byte DEFAULT_MAP_VERSION = 10;
     private static final int MAX_SIGNED_TEMPLATE_COUNT = 127;
     private static final int MAX_PRELOADED_PLAYER_ICONS = 192;
@@ -45,13 +47,13 @@ public class DataGame {
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
-    // 72 lowers Levi's idle frame onto the NRO ground baseline and refreshes its profile art.
-    public static byte vsData = 72;
+    // Phiên bản được admin tăng sau mỗi lần build part; client dùng nó để bỏ NR_part cũ.
+    public static byte vsData = loadDataVersion();
     public static byte vsMap = loadMapVersion();
     // 11 refreshes Siêu Ma Cảm Tử after aligning ghost count with skill level.
     public static byte vsSkill = 11;
-    // 68 refreshes the delegation item after adding auto travel and power training.
-    public static byte vsItem = 68;
+    // Admin increments the persisted version after item-template/default-option saves.
+    public static byte vsItem = loadItemVersion();
     public static int vsRes = 1;
     public static short maxSmallVersion = 32767;
 
@@ -80,6 +82,32 @@ public class DataGame {
             }
         }
         return 0;
+    }
+
+    private static byte loadDataVersion() {
+        try {
+            String rawVersion = Files.readString(new File("data/update_data/version").toPath(), StandardCharsets.UTF_8).trim();
+            int version = Integer.parseInt(rawVersion);
+            if (version >= 1 && version <= 127) {
+                return (byte) version;
+            }
+        } catch (Exception ignored) {
+            // Server cũ chưa có file version vẫn tương thích bằng mốc 72.
+        }
+        return DEFAULT_DATA_VERSION;
+    }
+
+    private static byte loadItemVersion() {
+        try {
+            String rawVersion = Files.readString(new File("data/update_data/item_version").toPath(), StandardCharsets.UTF_8).trim();
+            int version = Integer.parseInt(rawVersion);
+            if (version >= 1 && version <= 127) {
+                return (byte) version;
+            }
+        } catch (Exception ignored) {
+            // Existing deployments without the file retain the current item-cache version.
+        }
+        return 69;
     }
 
     public static void sendVersionGame(MySession session) {
