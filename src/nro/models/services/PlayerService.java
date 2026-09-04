@@ -252,6 +252,11 @@ public class PlayerService {
 
     public void changeTypePK(Player player, int type) {
         player.typePk = (byte) type;
+        // HP/KI clan bonuses are halved in PvP. Recalculate immediately when
+        // entering or leaving a PvP mode so the displayed maximum matches it.
+        if (player.nPoint != null && player.isPl()) {
+            Service.gI().point(player);
+        }
     }
 
     public void sendTypePk(Player player) {

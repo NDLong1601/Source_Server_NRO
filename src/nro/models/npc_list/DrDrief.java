@@ -2,6 +2,7 @@ package nro.models.npc_list;
 
 import nro.models.utils.Functions;
 import nro.models.clan.Clan;
+import nro.models.clan.ClanProgressionService;
 import nro.models.clan.ClanMember;
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
@@ -167,18 +168,13 @@ public class DrDrief extends Npc {
                                 if (clan != null) {
                                     int level = clan.level;
                                     if (clan.isLeader(player)) {
-                                        if (level > 10) {
-                                            Service.gI().sendThongBao(player, "Đang ở cấp độ cao nhất.");
-                                            return;
-                                        }
-                                        String npcSay = "Cần " + Util.formatNumber(ClanService.gI().capsule(clan))
-                                                + " capsule bang [đang có " + Util.formatNumber(clan.capsuleClan)
-                                                + " capsule bang] để nâng cấp bang hội lên cấp " + (level + 1);
-                                        npcSay += "\n+1 tối đa số lượng thành viên";
-                                        if (level > 1) {
-                                            npcSay += "\n+1 ô trống tối đa rương bang.";
-                                        }
-                                        npcSay += "\n+Mở bán bùa bang cấp " + (level + 1);
+                                        ClanProgressionService progression = ClanProgressionService.gI();
+                                        String npcSay = "Nâng bang hội lên cấp " + (level + 1) + " cần:"
+                                                + "\n- " + Util.formatNumber(progression.expRequired(level)) + " Clan EXP"
+                                                + "\n- " + Util.formatNumber(progression.capsuleRequired(level)) + " Capsule Bang"
+                                                + "\n- " + Util.formatNumber(progression.goldRequired(level)) + " Vàng bang"
+                                                + "\n- " + Util.formatNumber(progression.gemRequired(level)) + " Ngọc bang"
+                                                + "\nNhận 5 Điểm tiềm năng bang.";
                                         createOtherMenu(player, ConstNpc.MENU_CLAN_UP, npcSay, "Đồng ý", "Từ chối");
                                     }
                                 }
@@ -189,28 +185,8 @@ public class DrDrief extends Npc {
                         }
                     }
                     case ConstNpc.MENU_CLAN_UP -> {
-                        Clan clan = player.clan;
-                        if (clan != null) {
-                            if (clan.isLeader(player)) {
-                                if (clan.level > 10) {
-                                    Service.gI().sendThongBao(player, "Đang ở cấp độ cao nhất.");
-                                    return;
-                                }
-                                int capsuleCan = ClanService.gI().capsule(clan);
-                                int capsuleBang = clan.capsuleClan;
-                                if (clan.spendSharedCapsuleClan(player, capsuleCan, "nâng cấp bang hội")) {
-                                    clan.level++;
-                                    clan.maxMember = Math.min(Clan.MAX_MEMBER_LIMIT, clan.maxMember + 1);
-                                    Service.gI().sendThongBao(player,
-                                            "Chúc mừng bang hội của bạn đã lên cấp " + (clan.level));
-                                    clan.update();
-                                    clan.sendMyClanForAllMember();
-                                } else {
-                                    if (capsuleBang >= capsuleCan) {
-                                        Service.gI().sendThongBao(player, "Không thể thực hiện nâng cấp lúc này.");
-                                    }
-                                }
-                            }
+                        if (select == 0) {
+                            ClanProgressionService.gI().requestUpgrade(player);
                         }
                     }
                     case ConstNpc.MENU_CLAN_TASK -> {

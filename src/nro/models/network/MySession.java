@@ -3,6 +3,8 @@ package nro.models.network;
 import java.net.Socket;
 
 import nro.models.player.Player;
+import nro.models.clan.ClanTerritoryService;
+import nro.models.clan.ClanTreeService;
 import nro.models.server.Controller;
 import nro.models.data.DataGame;
 import nro.models.database.MrFinn;
@@ -214,6 +216,13 @@ public class MySession extends Session {
                     DataGame.sendVersionGame(this);
                     DataGame.sendDataItemBG(this);
                     Controller.gI().sendInfo(this);
+                    // Logging back in while the saved location is map 153 does not
+                    // pass through ClanTerritoryService.enterTerritory(). Send the
+                    // snapshot only after sendMyClan so the client can associate it
+                    // with the clan before drawing the shared tree.
+                    if (ClanTerritoryService.gI().isTerritoryFor(pl, pl.zone)) {
+                        ClanTreeService.gI().sendSnapshot(pl);
+                    }
                     Logger.warning("[" + TimeUtil.getCurrHour() + ":" + TimeUtil.getCurrMin() + "] - Player Login: "
                             + this.player.name + ": " + (System.currentTimeMillis() - st) + " ms\n");
                     if (this.player.notify != null && !this.player.notify.equals("null")

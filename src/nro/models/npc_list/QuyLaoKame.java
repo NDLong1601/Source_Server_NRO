@@ -16,6 +16,7 @@ import nro.models.shop.ShopService;
 import nro.models.services.TaskService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services_func.Input;
+import nro.models.clan.ClanTerritoryService;
 import nro.models.services.PlayerService;
 import nro.models.skill.Skill;
 import nro.models.utils.Logger;
@@ -294,7 +295,7 @@ public class QuyLaoKame extends Npc {
 
     private void handleClanMapChange(Player player) {
         if (player.clan != null) {
-            ChangeMapService.gI().changeMapNonSpaceship(player, 153, Util.nextInt(100, 200), 432);
+            ClanTerritoryService.gI().enterTerritory(player, 480, 720);
         } else {
             Service.gI().sendThongBao(player, "Bạn cần có bang hội để thực hiện chức năng này.");
         }

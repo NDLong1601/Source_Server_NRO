@@ -28,6 +28,7 @@ import nro.models.services_dungeon.BlackBallWarService;
 import nro.models.server.Manager;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
+import nro.models.clan.ClanTerritoryService;
 import nro.models.services_dungeon.NgocRongNamecService;
 
 public class ChangeMapService {
@@ -118,6 +119,10 @@ public class ChangeMapService {
             return;
         }
         if (!pl.isAdmin()) {
+            if (pl.zone.map.mapId == ClanTerritoryService.CLAN_TERRITORY_MAP_ID) {
+                Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong lãnh địa bang");
+                return;
+            }
             if (MapService.gI().isMapOffline(pl.zone.map.mapId)) {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
                 return;
@@ -168,6 +173,10 @@ public class ChangeMapService {
             return;
         }
         if (!pl.isAdmin() && !pl.isBoss) {
+            if (pl.zone.map.mapId == ClanTerritoryService.CLAN_TERRITORY_MAP_ID) {
+                NpcService.gI().createTutorial(pl, -1, "Không thể đổi khu vực trong lãnh địa bang");
+                return;
+            }
             if (MapService.gI().isMapOffline(pl.zone.map.mapId)) {
                 NpcService.gI().createTutorial(pl, -1, "Không thể đến khu vực này");
                 return;

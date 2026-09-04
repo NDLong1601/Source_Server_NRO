@@ -11,6 +11,7 @@ import nro.models.consts.ConstMob;
 import nro.models.consts.ConstTask;
 import nro.models.item.Item;
 import nro.models.map.ItemMap;
+import nro.models.clan.ClanProgressionService;
 import java.util.List;
 import nro.models.map.Zone;
 import nro.models.player.Location;
@@ -643,6 +644,15 @@ public class Mob {
             return list;
         }
         int mapid = player.zone.map.mapId;
+        // Cây bang: nguồn vật liệu được giới hạn theo map, mỗi quái có một
+        // roll độc lập 5-10% như cấu hình gameplay giai đoạn 2.
+        if ((mapid == 5 || mapid == 29 || mapid == 13 || mapid == 33) && Util.isTrue(7, 100)) {
+            list.add(new ItemMap(zone, 456, 1, x, yEnd, player.id));
+        }
+        if ((mapid == 19 || mapid == 20 || (mapid >= 63 && mapid <= 80)
+                || MapService.gI().isMapCold(mapid)) && Util.isTrue(6, 100)) {
+            list.add(new ItemMap(zone, 1094, 1, x, yEnd, player.id));
+        }
         //========================Capsul Kì Bí========================
         if (player.itemTime.isUseMayDo
                 && (Util.isTrue(20, 100))
@@ -1026,10 +1036,14 @@ public class Mob {
      * deliberately outside this path.
      */
     private int getGoldDropAmount(Player player, int baseGold) {
-        if (player == null || player.nPoint == null || player.nPoint.tlGold <= 0) {
+        if (player == null || player.nPoint == null) {
             return baseGold;
         }
-        long scaledGold = Math.round(baseGold * (100.0d + player.nPoint.tlGold) / 100.0d);
+        int clanBonus = ClanProgressionService.gI().mobGoldBasisPoints(player);
+        if (player.nPoint.tlGold <= 0 && clanBonus <= 0) {
+            return baseGold;
+        }
+        long scaledGold = Math.round(baseGold * (10_000.0d + player.nPoint.tlGold * 100.0d + clanBonus) / 10_000.0d);
         return (int) Math.min(Integer.MAX_VALUE, Math.max(baseGold, scaledGold));
     }
 

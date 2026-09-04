@@ -4,6 +4,7 @@ import nro.models.consts.ConstMap;
 import nro.models.map.Map;
 import nro.models.map.WayPoint;
 import nro.models.map.Zone;
+import nro.models.clan.ClanTerritoryService;
 import nro.models.mob.Mob;
 import nro.models.player.Player;
 import nro.models.server.Manager;
@@ -95,6 +96,9 @@ public class MapService {
     }
 
     public Zone getMapCanJoin(Player player, int mapId, int zoneId) {
+        if (mapId == ClanTerritoryService.CLAN_TERRITORY_MAP_ID) {
+            return ClanTerritoryService.gI().getOrCreateTerritory(player);
+        }
         if (isMapOffline(mapId)) {
             return getMapById(mapId).zones.get(0);
         }

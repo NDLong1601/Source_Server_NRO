@@ -31,6 +31,7 @@ import nro.models.Bot.BotAttackplayer;
 import nro.models.mob_bigboss.GauTuongCuop;
 import nro.models.npc.*;
 import nro.models.player.Pet;
+import nro.models.clan.ClanTerritoryService;
 
 public class Zone {
 
@@ -42,6 +43,9 @@ public class Zone {
     public Map map;
     public int zoneId;
     public int maxPlayer;
+    /** Non-negative only for a dynamically allocated private map-153 clan territory. */
+    public volatile int territoryClanId = -1;
+    public volatile long territoryLastActiveAt;
     public int shenronType = -1;
 
     @Getter
@@ -182,6 +186,7 @@ public class Zone {
     }
 
     public void update() {
+        ClanTerritoryService.gI().enforceMembership(this);
         udMob();
         udItem();
         udPlayer();
@@ -223,6 +228,7 @@ public class Zone {
 
     public void addPlayer(Player player) {
         if (player != null) {
+            ClanTerritoryService.gI().markActive(this);
             if (!this.humanoids.contains(player)) {
                 this.humanoids.add(player);
             }
@@ -259,6 +265,7 @@ public class Zone {
     }
 
     public void removePlayer(Player player) {
+        ClanTerritoryService.gI().markActive(this);
         CustomSkillService.gI().cancelSuperGhostKamikaze(player);
         this.nonInteractiveNPCs.remove(player);
         this.humanoids.remove(player);

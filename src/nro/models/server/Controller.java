@@ -7,6 +7,9 @@ import nro.models.boss.Boss;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.consts.ConstAchievement;
 import nro.models.services.ClanService;
+import nro.models.clan.ClanTreasuryService;
+import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanProgressionService;
 import nro.models.services.DayNightService;
 import nro.models.services.ChatGlobalService;
 import nro.models.services.SubMenuService;
@@ -142,6 +145,27 @@ public class Controller implements IMessageHandler {
                     if (player != null) {
                         byte actionRadar = _msg.reader().readByte();
                         switch (actionRadar) {
+                            case ClanTreasuryService.REQUEST_VIEW:
+                            case ClanTreasuryService.REQUEST_DEPOSIT_GOLD:
+                            case ClanTreasuryService.REQUEST_DEPOSIT_GEM:
+                            case ClanTreasuryService.REQUEST_LEDGER_PAGE:
+                                ClanTreasuryService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
+                            case ClanTreeService.REQUEST_VIEW:
+                            case ClanTreeService.REQUEST_WATER:
+                            case ClanTreeService.REQUEST_FERTILIZE:
+                            case ClanTreeService.REQUEST_HARVEST:
+                            case ClanTreeService.REQUEST_ASK_HELP:
+                            case ClanTreeService.REQUEST_HELP_WATER:
+                            case ClanTreeService.REQUEST_COMPLETE_UPGRADE:
+                            case ClanTreeService.REQUEST_START_UPGRADE:
+                                ClanTreeService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
+                            case ClanProgressionService.REQUEST_VIEW:
+                            case ClanProgressionService.REQUEST_UPGRADE:
+                            case ClanProgressionService.REQUEST_ALLOCATE:
+                                ClanProgressionService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
                             case 0:
                                 RadarService.gI().sendRadar(player, player.Cards);
                                 break;

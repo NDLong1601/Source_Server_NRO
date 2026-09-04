@@ -30,6 +30,7 @@ import nro.models.mob.Mob;
 import nro.models.player_badges.BagesTemplate;
 import static nro.models.player_badges.BagesTemplate.sendListItemOption;
 import nro.models.utils.TimeUtil;
+import nro.models.clan.ClanProgressionService;
 
 /**
  *
@@ -329,7 +330,11 @@ public class NPoint {
         if (this.player.isFly) {
             bonusPercent += flyingMobDamagePercent;
         }
-        return applyDestructionDamage(addTargetDamageBonus(damage, bonusPercent));
+        long result = addTargetDamageBonus(damage, bonusPercent);
+        int clanBonus = ClanProgressionService.gI().statBasisPoints(player,
+                ClanProgressionService.Branch.ATTACK, false);
+        result += result * clanBonus / 10_000L;
+        return applyDestructionDamage(result);
     }
 
     /** Applies options 45-46 and 197 against the matching player race. */
@@ -348,7 +353,11 @@ public class NPoint {
         } else if (target.gender == ConstPlayer.XAYDA) {
             bonusPercent += tlDameTocXayda;
         }
-        return applyDestructionDamage(addTargetDamageBonus(damage, bonusPercent));
+        long result = addTargetDamageBonus(damage, bonusPercent);
+        int clanBonus = ClanProgressionService.gI().statBasisPoints(player,
+                ClanProgressionService.Branch.ATTACK, true);
+        result += result * clanBonus / 10_000L;
+        return applyDestructionDamage(result);
     }
 
     /** Final damage reduction against a player whose race is known. */
@@ -1428,6 +1437,10 @@ public class NPoint {
 
         hpMax = applyVipEquipmentStatBonus(hpMax);
 
+        int clanHpBonus = ClanProgressionService.gI().statBasisPoints(player,
+                ClanProgressionService.Branch.HP, ClanProgressionService.gI().isPvpMode(player));
+        hpMax += hpMax * clanHpBonus / 10_000L;
+
         if (hpMax > 2_147_483_647) {
             hpMax = 2_147_483_647;
         }
@@ -1515,6 +1528,10 @@ public class NPoint {
         }
 
         mpMax = applyVipEquipmentStatBonus(mpMax);
+
+        int clanKiBonus = ClanProgressionService.gI().statBasisPoints(player,
+                ClanProgressionService.Branch.KI, ClanProgressionService.gI().isPvpMode(player));
+        mpMax += mpMax * clanKiBonus / 10_000L;
 
         if (mpMax
                 > 2_147_483_647) {

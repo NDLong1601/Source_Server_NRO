@@ -12,6 +12,9 @@ import nro.models.database.ShopDAO;
 import nro.models.player_system.Template.*;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
+import nro.models.clan.ClanTreasuryService;
+import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanProgressionService;
 import static nro.models.data.DataGame.MAP_MOUNT_NUM;
 import nro.models.player_system.GiftCode;
 import nro.models.managers.GiftCodeManager;
@@ -430,6 +433,11 @@ public final class Manager {
             }
             Logger.success(Logger.PURPLE + "Successfully loaded arr head 2 frames (" + ARR_HEAD_2_FRAMES.size() + ")\n");
 
+            // Giai đoạn 1: đảm bảo kho bang có schema trước khi đọc các clan.
+            ClanTreasuryService.gI().ensureSchema(ConnectionDatabase);
+            ClanTreeService.gI().ensureSchema(ConnectionDatabase);
+            ClanProgressionService.gI().ensureSchema(ConnectionDatabase);
+
             //load clan
             ps = ConnectionDatabase.prepareStatement("select * from clan");
             rs = ps.executeQuery();
@@ -444,6 +452,9 @@ public final class Manager {
                 clan.maxMember = Clan.normalizeMaxMember(rs.getInt("max_member"));
                 clan.capsuleClan = rs.getInt("clan_point");
                 clan.level = Clan.normalizeLevel(rs.getInt("level"));
+                clan.clanGold = rs.getLong("clan_gold");
+                clan.clanGem = rs.getLong("clan_gem");
+                clan.treasuryVersion = rs.getLong("treasury_version");
                 clan.createTime = (int) (rs.getTimestamp("create_time").getTime() / 1000);
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("members"));
                 for (int i = 0; i < dataArray.size(); i++) {
@@ -478,6 +489,15 @@ public final class Manager {
                 // hợp đồng bang tuần và cooldown truy nã Gấu Tướng Cướp ở đây.
                 clan.loadWeeklyState(rs.getString("tops"));
                 CLANS.add(clan);
+            }
+
+            // Query progression only after the clan result set is exhausted;
+            // several JDBC drivers close an active ResultSet when another statement is issued.
+            for (Clan clan : CLANS) {
+                // Backfill clans that were created before Cây bang existed.
+                // INSERT IGNORE means a pre-existing tree is never reset or overwritten.
+                ClanTreeService.gI().initializeClan(ConnectionDatabase, clan);
+                ClanProgressionService.gI().loadForClan(ConnectionDatabase, clan);
             }
 
             ps = ConnectionDatabase.prepareStatement("select id from clan order by id desc limit 1");

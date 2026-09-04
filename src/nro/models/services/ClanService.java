@@ -12,6 +12,9 @@ import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
 import nro.models.clan.ClanMessage;
 import nro.models.clan.ClanProfileV2;
+import nro.models.clan.ClanTreasuryService;
+import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanProgressionService;
 import nro.models.consts.ConstAchievement;
 import nro.models.player.Player;
 import nro.models.network.Message;
@@ -39,7 +42,6 @@ public class ClanService {
     private static final byte REQUEST_FLAGS_CHOOSE_CHANGE_CLAN = 3;
     private static final byte ACCEPT_CHANGE_INFO_CLAN = 4;
     private static final byte ACCEPT_CHANGE_NAME_CLAN = 5;
-    private static final int RENAME_CLAN_GEM_COST = 1000;
     private static final long SHARE_LOCATION_COOLDOWN_MS = 2 * 60 * 1000L;
     private static final int LEGACY_MAX_MEMBER = 0xFF;
     private static final int LEGACY_MAX_LEVEL = 0x7F;
@@ -156,7 +158,9 @@ public class ClanService {
                     changeInfoClan(player, imgId, slogan);
                     break;
                 case ACCEPT_CHANGE_NAME_CLAN:
-                    changeClanName(player, msg.reader().readUTF());
+                    msg.reader().readUTF();
+                    Service.gI().sendThongBao(player,
+                            "Chức năng đổi tên bang đang tạm khóa. Sẽ mở lại bằng Vé đổi tên bang.");
                     break;
             }
         } catch (Exception e) {
@@ -347,6 +351,9 @@ public class ClanService {
                     clan.addClanMember(player, Clan.MEMBER);
                     clan.addMemberOnline(player);
                     player.clan = clan;
+                    if (!player.isOffline && player.nPoint != null) {
+                        Service.gI().point(player);
+                    }
 
                     clan.sendMyClanForAllMember();
                     this.sendClanId(player);
@@ -405,6 +412,9 @@ public class ClanService {
                             clan.addClanMember(pl, Clan.MEMBER);
                             clan.addMemberOnline(pl);
                             pl.clan = player.clan;
+                            if (!pl.isOffline && pl.nPoint != null) {
+                                Service.gI().point(pl);
+                            }
 
                             cmg.text = "Chấp nhận " + pl.name + " vào bang.";
 
@@ -553,82 +563,6 @@ public class ClanService {
     }
 
     /**
-     * Đổi tên bang. Tên được chuẩn hóa và kiểm tra ở server để mọi client đều
-     * nhận cùng một dữ liệu hợp lệ, kể cả khi gói tin được gửi thủ công.
-     */
-    private void changeClanName(Player player, String requestedName) {
-        Clan clan = player.clan;
-        if (clan == null || !clan.isLeader(player)) {
-            Service.gI().sendThongBao(player, "Chỉ bang chủ mới có thể đổi tên bang");
-            return;
-        }
-
-        String newName = normalizeClanName(requestedName);
-        if (newName == null) {
-            Service.gI().sendThongBao(player, "Tên bang phải từ 3 đến 30 ký tự hợp lệ");
-            return;
-        }
-        if (clan.name.equalsIgnoreCase(newName)) {
-            Service.gI().sendThongBao(player, "Tên bang mới trùng với tên hiện tại");
-            return;
-        }
-        if (isClanNameTaken(clan, newName)) {
-            Service.gI().sendThongBao(player, "Tên bang này đã được sử dụng");
-            return;
-        }
-        if (player.inventory.gem < RENAME_CLAN_GEM_COST) {
-            Service.gI().sendThongBao(player, "Bạn cần 1.000 ngọc để đổi tên bang");
-            return;
-        }
-
-        String oldName = clan.name;
-        player.inventory.gem -= RENAME_CLAN_GEM_COST;
-        PlayerService.gI().sendInfoHpMpMoney(player);
-        clan.name = newName;
-        clan.updateName();
-        clan.sendMyClanForAllMember();
-
-        ClanMember leader = clan.getClanMember((int) player.id);
-        if (leader != null) {
-            ClanMessage message = new ClanMessage(clan);
-            message.type = CHAT;
-            message.playerId = leader.id;
-            message.playerName = leader.name;
-            message.role = leader.role;
-            message.text = "Đã đổi tên bang từ " + oldName + " thành " + newName;
-            message.color = ClanMessage.RED;
-            clan.addClanMessage(message);
-            clan.sendMessageClan(message);
-        }
-        Service.gI().sendThongBao(player, "Đã đổi tên bang thành " + newName);
-    }
-
-    private String normalizeClanName(String name) {
-        if (name == null) {
-            return null;
-        }
-        String normalized = name.trim().replaceAll("\\s+", " ");
-        if (normalized.length() < 3 || normalized.length() > 30) {
-            return null;
-        }
-        for (int i = 0; i < normalized.length(); i++) {
-            if (Character.isISOControl(normalized.charAt(i))) {
-                return null;
-            }
-        }
-        return normalized;
-    }
-
-    private boolean isClanNameTaken(Clan currentClan, String name) {
-        for (Clan clan : Manager.CLANS) {
-            if (clan != currentClan && clan.name != null && clan.name.equalsIgnoreCase(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Tạo clan mới
      */
     private void createClan(Player player, byte imgId, String name) {
@@ -668,6 +602,10 @@ public class ClanService {
                 clan.addClanMember(player, Clan.LEADER);
                 clan.addMemberOnline(player);
                 clan.insert();
+                // Cây và tiến trình phải xuất hiện ngay khi bang vừa được tạo,
+                // không chờ thành viên đầu tiên mở map lãnh địa.
+                ClanTreeService.gI().initializeClan(clan);
+                ClanProgressionService.gI().initializeClan(clan);
 
                 Service.gI().sendFlagBag(player);
                 sendMyClan(player);
@@ -711,6 +649,7 @@ public class ClanService {
                     msg = new Message(-50);
                     msg.writer().writeByte(clan.getCurrMembers());
                     for (ClanMember cm : clan.getMembers()) {
+                        refreshClanMemberAppearance(cm);
                         msg.writer().writeInt((int) cm.id);
                         msg.writer().writeShort(cm.head);
                         msg.writer().writeShort(-1);
@@ -755,10 +694,7 @@ public class ClanService {
                 msg.writer().writeInt((int) player.clan.capsuleClan);
                 msg.writer().writeByte(toLegacySignedByte(player.clan.level));
                 for (ClanMember cm : player.clan.getMembers()) {
-                    Player pl = Client.gI().getPlayer(cm.id);
-                    if (pl != null) {
-                        cm.powerPoint = pl.nPoint.power;
-                    }
+                    refreshClanMemberAppearance(cm);
                     msg.writer().writeInt(cm.id);
                     msg.writer().writeShort(cm.head);
                     msg.writer().writeShort(-1);
@@ -786,7 +722,7 @@ public class ClanService {
                     }
                     msg.writer().writeByte(cmg.role);
                     msg.writer().writeInt(cmg.time);
-                    if (cmg.type == 0) {
+                    if (cmg.type == 0 || cmg.type == 4) {
                         String text = cmg.text;
                         msg.writer().writeUTF(text == null ? "" : text);
                         msg.writer().writeByte(cmg.color);
@@ -797,13 +733,32 @@ public class ClanService {
                     }
                 }
                 ClanProfileV2.write(msg.writer(), player.clan.id, player.clan.level,
-                        player.clan.maxMember, player.clan.getCurrMembers());
+                        player.clan.maxMember, player.clan.getCurrMembers(),
+                        player.clan.clanGold, player.clan.clanGem, player.clan.treasuryVersion,
+                        ClanTreasuryService.gI().getContributionForPlayer(player.clan.id, player.id),
+                        ClanTreasuryService.gI().getRecentLedgerEntries(player.clan.id, 50));
             }
             player.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             Logger.logException(ClanService.class, e, "Lỗi send my clan " + player.clan.name + " - " + player.clan.id);
         }
+    }
+
+    /**
+     * ClanMember keeps the appearance captured when the player joined. Refresh
+     * online members before serializing so costume/head changes do not leave a
+     * stale or invalid avatar in the member list and treasury history.
+     */
+    private void refreshClanMemberAppearance(ClanMember clanMember) {
+        Player onlinePlayer = Client.gI().getPlayer(clanMember.id);
+        if (onlinePlayer == null) {
+            return;
+        }
+        clanMember.powerPoint = onlinePlayer.nPoint.power;
+        clanMember.head = onlinePlayer.getHead();
+        clanMember.body = onlinePlayer.getBody();
+        clanMember.leg = onlinePlayer.getLeg();
     }
 
     public void sendClanId(Player player) {
@@ -908,6 +863,9 @@ public class ClanService {
                 cm = null;
                 player.clan = null;
                 player.clanMember = null;
+                if (player.nPoint != null) {
+                    Service.gI().point(player);
+                }
                 ClanService.gI().sendMyClan(player);
                 ClanService.gI().sendClanId(player);
                 Service.gI().sendFlagBag(player);
@@ -969,6 +927,9 @@ public class ClanService {
             if (plKicked != null) {
                 plKicked.clan = null;
                 plKicked.clanMember = null;
+                if (!plKicked.isOffline && plKicked.nPoint != null) {
+                    Service.gI().point(plKicked);
+                }
                 ClanService.gI().sendMyClan(plKicked);
                 ClanService.gI().sendClanId(plKicked);
                 Service.gI().sendFlagBag(plKicked);

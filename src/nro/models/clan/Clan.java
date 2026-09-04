@@ -53,6 +53,14 @@ public class Clan {
     public int level;
     public boolean active;
     public int capsuleClan;
+    public long clanGold;
+    public long clanGem;
+    public long treasuryVersion;
+    /** Giai đoạn 3: EXP hoạt động và các điểm tiềm năng của cả bang. */
+    public long clanExp;
+    public int potentialTotal;
+    public int potentialUnspent;
+    public long progressionVersion;
 
     public long lastTimeOpenDoanhTrai;
     public boolean haveGoneDoanhTrai;
@@ -208,6 +216,7 @@ public class Clan {
             weeklyContractProgress = weeklyContractTarget;
             weeklyContractRewarded = true;
             capsuleClan += weeklyContractReward;
+            ClanProgressionService.gI().addExp(this, ClanProgressionService.gI().expWeeklyContract());
             ClanMember leader = getLeader();
             ClanMessage message = new ClanMessage(this);
             message.type = 0;
@@ -396,7 +405,7 @@ public class Clan {
             }
             msg.writer().writeByte(cmg.role);
             msg.writer().writeInt(cmg.time);
-            if (cmg.type == 0) {
+            if (cmg.type == 0 || cmg.type == 4) {
                 msg.writer().writeUTF(cmg.text);
                 msg.writer().writeByte(cmg.color);
             } else if (cmg.type == 1) {
@@ -632,7 +641,9 @@ public class Clan {
         try (Connection con = LocalManager.getConnection();) {
             ps = con.prepareStatement(
                     "update clan set slogan = ?, img_id = ?, power_point = ?, max_member = ?, clan_point = ?, "
-                            + "level = ?, members = ?, name_2 = ?, tops = ?, thanhTichBDKB = ?, thongTinLeader = ? where id = ? limit 1");
+                            + "level = ?, members = ?, name_2 = ?, tops = ?, thanhTichBDKB = ?, thongTinLeader = ?, "
+                            + "clan_gold = ?, clan_gem = ?, treasury_version = ?, clan_exp = ?, potential_total = ?, "
+                            + "potential_unspent = ?, progression_version = ? where id = ? limit 1");
             ps.setString(1, this.slogan);
             ps.setInt(2, this.imgId);
             ps.setLong(3, this.powerPoint);
@@ -644,7 +655,14 @@ public class Clan {
             ps.setString(9, getWeeklyStateForPersistence());
             ps.setString(10, topBanDoKhoBau);
             ps.setString(11, thongTinLeader);
-            ps.setInt(12, this.id);
+            ps.setLong(12, this.clanGold);
+            ps.setLong(13, this.clanGem);
+            ps.setLong(14, this.treasuryVersion);
+            ps.setLong(15, this.clanExp);
+            ps.setInt(16, this.potentialTotal);
+            ps.setInt(17, this.potentialUnspent);
+            ps.setLong(18, this.progressionVersion);
+            ps.setInt(19, this.id);
             ps.executeUpdate();
             ps.close();
         } catch (Exception e) {

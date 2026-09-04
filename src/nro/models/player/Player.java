@@ -22,6 +22,7 @@ import nro.models.npc.MabuEgg;
 import nro.models.mob.MobMe;
 import nro.models.data.DataGame;
 import nro.models.clan.ClanMember;
+import nro.models.clan.ClanProgressionService;
 import nro.models.consts.ConstAchievement;
 import nro.models.map.Zone;
 import nro.models.interfaces.IPVP;
@@ -1262,6 +1263,12 @@ public class Player implements Runnable {
 
             if (!piercing) {
                 damage = this.nPoint.subDameInjureWithDeff(damage);
+            }
+
+            // Nhánh phòng thủ bang chỉ có hiệu lực với sát thương do quái/boss gây ra.
+            if (isMobAttack && this.isPl()) {
+                int clanReduction = ClanProgressionService.gI().pveReductionBasisPoints(this);
+                damage -= damage * clanReduction / 10_000L;
             }
 
             boolean isUseGX = false;

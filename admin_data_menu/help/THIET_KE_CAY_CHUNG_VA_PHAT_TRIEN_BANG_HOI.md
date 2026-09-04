@@ -1,7 +1,7 @@
 # Tài liệu thiết kế Cây chung và hệ thống phát triển bang hội
 
-> Trạng thái: Bản thiết kế trước triển khai  
-> Phiên bản: 1.0  
+> Trạng thái: Giai đoạn 1, 2 và 3 đã triển khai; server khởi chạy lại ngày 04/09/2026
+> Phiên bản: 1.2
 > Phạm vi: Server Java tại C:/Users/PC/Music/Teamobi2026/SRC và client Unity tại C:/Users/PC/Music/PRJ_2Tab_550K  
 > Mục tiêu: Làm cơ sở thống nhất gameplay, dữ liệu, giao thức và tiêu chí kiểm thử trước khi sửa mã nguồn.
 
@@ -106,7 +106,7 @@ Thành viên làm nhiệm vụ/săn quái/boss
 Nhận Bình nước, Phân bón, Capsule và Phiếu quà
         |
         v
-Chăm Cây bang tại map 153 hoặc từ tab/chat
+Chăm Cây bang trực tiếp tại map 153; hỗ trợ tưới qua tin nhắn chat bang
         |
         +--> Điểm cống hiến cá nhân
         +--> Sinh trưởng và sản lượng cây
@@ -169,6 +169,8 @@ Cây Bang <Tên bang> - Cấp <cấp cây>
 
 Cây có sprite theo giai đoạn phát triển. Đối tượng hiển thị chỉ là đại diện; dữ liệu thật nằm ở ClanTree phía server.
 
+Từ bản triển khai hiện tại, bản ghi Cây bang cấp 1 được tạo ngay sau khi tạo bang thành công. Mỗi Zone Lãnh địa bang chỉ vẽ một cây ở tọa độ mặt đất cố định `x=900, y=192`; client nhận snapshot cây khi vào lãnh địa để hiển thị đúng cấp hiện tại.
+
 Không nên tái sử dụng trực tiếp MagicTree của cây đậu cá nhân vì:
 
 - MagicTree gắn với trạng thái từng Player.
@@ -227,7 +229,7 @@ Cây không có trạng thái DEAD. Cây không bị mất cấp và không mấ
 Người chơi có thể tưới theo hai cách:
 
 1. Đến Cây bang trong lãnh địa và chọn Tưới cây.
-2. Mở Bang hội > Cây bang hoặc bấm Giúp tưới trong chat.
+2. Bấm **Giúp tưới** trong tin nhắn kêu gọi của chat bang.
 
 Cả hai luồng gọi cùng một hàm server và cùng điều kiện:
 
@@ -259,7 +261,7 @@ Giới hạn mặc định:
 
 ### 7.4. Bón phân
 
-Bón phân có thể thực hiện tại cây hoặc tab Cây bang.
+Bón phân chỉ thực hiện qua menu tương tác trực tiếp tại cây ở map 153.
 
 Quy tắc đề xuất:
 
@@ -311,13 +313,29 @@ minimumClanLevel          = ceil(treeLevel / 2)
 
 Các con số phải nằm trong file cấu hình, không hard-code trong NPC.
 
-Luật đột phá:
+Luật nâng cấp đã chốt khi triển khai:
 
-- Cấp thường tự tăng khi đủ điều kiện.
-- Mỗi mốc cây 5, 10, 15, 20... chuyển sang READY_UPGRADE.
-- Bang chủ hoặc bang phó được ủy quyền xác nhận đột phá.
-- Đột phá có thể tiêu Capsule/Vàng bang và không tiêu Ngọc bang ở quá nhiều mốc.
-- Mọi lần đột phá được ghi vào lịch sử và chat bang.
+- Mọi cấp chỉ chuyển sang `UPGRADING` khi người chơi bấm **Nâng cấp** và server xác nhận đã đủ điều kiện, không tự bắt đầu hoặc tăng cấp ngay. Nếu còn thiếu, server trả đúng loại và số lượng còn thiếu. Trong thời gian chờ, cây không nhận thêm nước/phân cho cấp hiện tại để tránh tiêu hao nhầm; thành viên quay lại các map train để chuẩn bị tài nguyên cho cấp sau.
+- Khi hết thời gian, người chơi lại gần/chạm trực tiếp vào cây và chọn **Hoàn tất nâng cấp**. Server mới trừ bộ điều kiện của cấp cũ, tăng một cấp và đồng bộ cho toàn bang.
+- Thời gian được cấu hình tại `data/clan_tree.properties` theo cấp đích; lịch mặc định từ cấp 1 đến 20 cộng đúng 90 ngày:
+
+| Cấp đích | Ngày chờ mỗi cấp | Tổng ngày nhóm |
+|---|---:|---:|
+| 2–4 | 1 | 3 |
+| 5–7 | 2 | 6 |
+| 8–10 | 3 | 9 |
+| 11–12 | 4 | 8 |
+| 13–14 | 5 | 10 |
+| 15 | 6 | 6 |
+| 16 | 7 | 7 |
+| 17 | 8 | 8 |
+| 18 | 9 | 9 |
+| 19 | 11 | 11 |
+| 20 | 13 | 13 |
+| **Tổng** |  | **90** |
+
+- Sản lượng cây vẫn tích lũy trong thời gian nâng; người chơi vẫn có thể chọn **Nhận thưởng** tại cây.
+- Có thể đặt một hoặc nhiều giá trị về `0` ngày trong môi trường test, sau đó khởi động lại server; cấu hình phát hành phải khôi phục lịch 90 ngày.
 
 ### 7.7. Sản lượng cây
 
@@ -435,7 +453,7 @@ Không tăng maxMember ở mọi cấp. Dùng mốc:
 
 | Mốc cấp | Ví dụ mở khóa |
 |---|---|
-| 2 | Cây bang |
+| 2 | Mốc thưởng khởi đầu |
 | 3 | Kho bang |
 | 5 | Tiềm năng bang và +1 slot thành viên |
 | 10 | Tầng 2 cửa hàng, +1 slot |
@@ -444,6 +462,8 @@ Không tăng maxMember ở mọi cấp. Dùng mốc:
 | Mỗi 10 cấp sau đó | Tiện ích, shop, danh hiệu hoặc slot theo trần |
 
 Số thành viên phải dùng short/int trong model và có giới hạn cấu hình độc lập.
+
+Cây bang không bị khóa theo mốc cấp bang: mọi bang mới và bang cũ được backfill đều có cây cấp 1 ngay khi tính năng được nạp.
 
 ## 9. Điểm tiềm năng bang
 
@@ -700,36 +720,27 @@ Bang hội
 ├── Tổng quan
 ├── Thành viên
 ├── Chat bang
-├── Cây bang
 ├── Tiềm năng
 ├── Kho bang
 ├── Cửa hàng
 └── Lịch sử
 ~~~
 
-### 13.2. Màn hình Cây bang
+### 13.2. Tương tác trực tiếp với Cây bang
 
-Hiển thị:
+Theo quyết định UAT ngày 04/09/2026, không mở màn hình/tab Cây bang trong bảng Bang hội. Cây tại Lãnh địa bang là điểm tương tác duy nhất; cách này tránh vượt chiều ngang giao diện nhỏ và không che các chức năng bang cũ.
 
-- Tên và cấp cây.
-- Trạng thái.
-- Sinh trưởng hiện tại/yêu cầu.
-- Nước và phân hiện tại/yêu cầu.
-- Sức sống ngày.
-- Sản lượng mỗi giờ ước tính.
-- Kho chờ chung.
-- Lượt tưới cá nhân còn lại.
-- Điều kiện phần thưởng cá nhân.
+Trên map hiển thị tên bang, cấp cây và đếm ngược nâng cấp nếu có. Người chơi chạm cây hoặc dùng nút tương tác khi đứng gần để mở menu.
 
-Nút:
+Menu trực tiếp tại cây:
 
 - Tưới cây.
 - Bón phân.
-- Xin giúp.
-- Thu hoạch cho bang.
-- Nhận thưởng cá nhân.
-- Đi tới lãnh địa.
-- Nâng cấp/Đột phá, chỉ hiện đúng quyền.
+- Nâng cấp hoặc hoàn tất nâng cấp.
+- Nhận thưởng.
+- Kêu gọi chăm cây.
+
+Mọi tiến độ chi tiết và điều kiện thiếu do server trả qua thông báo thao tác; client không giữ một màn hình Cây bang riêng.
 
 ### 13.3. Màn hình Tiềm năng
 
@@ -1241,6 +1252,27 @@ Migration cần:
 - 5 lượt/ngày.
 - Sinh trưởng và nhận thưởng bằng nút.
 
+#### Kết quả triển khai — 04/09/2026
+
+- Hoàn tất `ClanTerritoryService`: map 153 tạo Zone riêng theo `clanId`, không cho đổi khu công khai, kiểm tra lại thành viên trong lúc ở map và hủy Zone trống sau 10 phút. Mỗi bang chỉ giữ tối đa một Zone động trong bộ nhớ.
+- Hoàn tất `ClanTreeService` và migration `20260904_add_clan_tree.sql`: trạng thái cây chung, tiến độ thành viên theo ngày, khóa đồng bộ, giới hạn 5 lượt tưới/ngày, cooldown 500 ms, bón phân, sinh trưởng, sản lượng tích lũy và nút nhận thưởng vào quỹ bang. Luồng tăng cấp đã đổi từ tăng ngay sang hai trạng thái thời gian `upgrade_started_at`/`upgrade_ready_at`; packet 127 action `104` đồng bộ hai mốc này và action `110` hoàn tất nâng cấp ở server.
+- Luồng thao tác chuẩn nay nằm ngay trên Cây bang ở `x=900, y=192`: khi đến gần client hiện nút tương tác; chạm cây từ xa sẽ tự chạy lại gần rồi mở menu **Tưới cây / Bón phân / Nâng cấp / Nhận thưởng / Kêu gọi chăm**. Khi đang chờ, menu thay các nút chăm bằng đếm ngược hoặc **Hoàn tất nâng cấp**. Toàn bộ mục và handler Cây bang trong NPC Dr. Drief đã được gỡ; màn hình/tab Cây bang trong bảng Bang hội cũng đã được loại bỏ khỏi Game1 và Game2.
+- Nhãn cây chỉ vẽ chữ, không nền và không viền: ban ngày dùng chữ vàng, ban đêm dùng chữ trắng, dựa trên chính trạng thái hiệu ứng ngày/đêm của client. Khi cây đang nâng, dòng đếm ngược riêng cũng chỉ hiển thị chữ ngay dưới tên.
+- Thời gian 19 lần nâng được tách sang `data/clan_tree.properties` với dãy cấp đích `1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,8,9,11,13`, tổng đúng 90 ngày. Trong lúc nâng server chặn tưới/bón để không mất vật phẩm nhưng vẫn tính sản lượng; hết giờ người chơi xác nhận tại cây để nhận cấp mới.
+- Chat bang có ClanMessage type 4 riêng với nút **Giúp tưới**; yêu cầu tồn tại 2 giờ và tạo lại sau 10 phút. Nút xác thực lại bang, hạn mức ngày, thời hạn và vật phẩm ở server.
+- Đã thêm 20 sprite `cay_lv_01` đến `cay_lv_20` vào `data/img_by_name/x1` đến `x4`, metadata ảnh `n_frame = 1`, hiển thị cho một cây duy nhất trong map 153 theo cấp hiện tại. Ngày 04/09/2026, toàn bộ 80 file theo bốn mức tài nguyên được thay bằng bộ nguồn `C:\Users\PC\Downloads\cay_tach_20_khong_lv`; checksum của từng file đích trùng file nguồn. Game1/Game2 dùng `IMAGE_SET_VERSION = 2` với khóa riêng để tự xóa đúng cache RMS của 20 ảnh cây cũ và tải lại bộ mới, không buộc người chơi xóa toàn bộ dữ liệu game.
+- Điều chỉnh theo quyết định sau giai đoạn 2: `ClanService.createClan` chỉ khởi tạo cây sau khi bản ghi bang đã được lưu, nên bang mới luôn có Cây bang cấp 1 ngay lập tức. Khi server khởi động, mọi bang cũ chưa có bản ghi `clan_tree` cũng được backfill cấp 1 bằng `INSERT IGNORE`; cây đã có tiến độ không bị reset. Khi vào lãnh địa, snapshot được gửi tự động và client chỉ vẽ một cây tại neo mặt đất `x=900, y=192`.
+- Vá luồng đăng nhập lại tại map 153: sau khi server gửi thông tin bang, server gửi tiếp snapshot Cây bang cho đúng Zone riêng của bang. Game1 và Game2 cũng tự yêu cầu lại snapshot (giới hạn một lần mỗi 2 giây) khi đang ở Lãnh địa bang nhưng chưa có dữ liệu cây, tránh mất hiển thị do thứ tự packet hoặc reconnect.
+- Vá theo UAT video `bandicam 2026-09-04 20-09-26-032.mp4`: hỗ trợ đầy đủ bang hợp lệ có `clan_id = 0` khi nhận diện, duy trì và kiểm tra Zone riêng. Trong map 153, Game1/Game2 hiển thị ngay cây cấp 1 làm fallback an toàn khi snapshot đến muộn; khi nhận snapshot sẽ chuyển sang đúng cấp server. Fallback chỉ tác động hiển thị, không thay đổi dữ liệu hay quyền thao tác.
+- Đã thêm drop độc lập phía server: Bình nước 7% ở map 5, 29, 13, 33; Phân bón 6% ở map 19, 20, toàn bộ map Fide 63–80 và Cooler 105–110. Các tỷ lệ đều nằm trong khoảng 5–10% được yêu cầu.
+- Đồng bộ source client cho cả Game1 và Game2: snapshot packet 127, vẽ cây/ảnh theo cấp ở map 153, menu tương tác trực tiếp và nút chat hỗ trợ.
+- Cải thiện theo UAT sau giai đoạn 3: server gửi snapshot trực tiếp cho người vừa tưới/bón rồi đồng bộ các thành viên online theo `clanId` thay vì phụ thuộc cùng tham chiếu đối tượng Clan. Client tự yêu cầu lại snapshot khi đang ở Lãnh địa bang nếu packet đến muộn.
+- Nâng cây chuyển sang thao tác chủ động bằng action `111`: nút **Nâng cấp** chỉ có trong menu tương tác trực tiếp tại cây. Nếu thiếu điều kiện, server liệt kê đúng số **Bình nước**, **Phân bón**, **Điểm sinh trưởng** và **cấp bang** còn thiếu; đủ điều kiện mới ghi mốc bắt đầu/kết thúc và chạy lịch chờ 90 ngày đã phân bổ.
+
+Xác minh triển khai: `tools/server_control.ps1 -Action build` biên dịch thành công (724 class cập nhật vào `20.jar`); server khởi chạy lại và đang nghe cổng 14445. Startup đã nạp 287 ảnh theo tên, gồm 20 ảnh Cây bang. Luồng login lại tại map 153 đã được vá ở server và có cơ chế tự yêu cầu lại snapshot ở source Game1/Game2. Cần thực hiện UAT hai nhân vật cho các tình huống đồng thời, rời bang trong map 153 và reset ngày trước khi phát hành rộng.
+
+Xác minh bổ sung cho luồng tương tác/thời gian nâng: toàn bộ source client Game1 và Game2 biên dịch bằng đúng response file Roslyn của Unity với mã thoát `0`; cấu hình có đúng 19 giá trị và tổng `90` ngày. Server build lại thành công 724 class, cập nhật `20.jar`, tự nâng schema hiện hữu không lỗi và khởi động lại trên cổng `14445`. UAT cần kiểm tra cả hai pha sáng/tối, chạm cây từ xa, nút tương tác khi đứng gần, chặn tưới/bón lúc đang nâng, đếm ngược và hoàn tất nhận cấp.
+
 ### Giai đoạn 3: Cấp và tiềm năng
 
 - Clan EXP.
@@ -1248,6 +1280,24 @@ Migration cần:
 - +5 điểm/cấp.
 - Bảng phân bổ.
 - Buff PvE/PvP có trần.
+
+#### Kết quả triển khai — 04/09/2026
+
+- Thêm `ClanProgressionService` và cấu hình tập trung `data/clan_progression.properties`. Công thức EXP/Capsule dùng lần lượt `round(baseExp × L^1.55)` và `round(baseCapsule × L^1.35)`; vàng bắt đầu từ cấp 5, ngọc tại lần nâng lên các mốc cấp 10. Tất cả giá trị kinh tế, rank tối đa và hiệu lực nhánh đều có thể đổi trong file cấu hình rồi khởi động lại server.
+- Migration `20260904_add_clan_progression.sql` cùng cơ chế tự tạo schema bổ sung `clan_exp`, `potential_total`, `potential_unspent`, `progression_version`, bảng `clan_potential` và `clan_potential_audit`. Bang cũ được backfill đúng `max(0, level - 1) × 5 - điểm đã dùng`, không phát trùng khi restart.
+- Clan EXP chỉ sinh từ hoạt động: tưới cây `10`, bón phân `30`, hoàn tất hợp đồng tuần `250` theo cấu hình; đóng góp vàng/ngọc không sinh EXP. Bang chủ nâng cấp qua transaction server, trừ đúng EXP/Capsule/Vàng/Ngọc và nhận đúng 5 điểm khi lên một cấp; slot thành viên chỉ tăng ở các mốc 5, 10, 20 và mỗi 10 cấp sau đó.
+- Sau mỗi lần tưới/bón thành công, thông báo hiển thị ngay lượng Clan EXP vừa cộng và tổng EXP hiện tại/EXP cần. `ClanProgressionService.addExp` tăng `progression_version` và phát snapshot mới cho thành viên online; tab Tiềm năng tự làm mới để hiển thị EXP mới.
+- Hoàn tất 6 nhánh phân bổ, mỗi nhánh mặc định tối đa 20 bậc và giá bậc `1 + floor(currentRank / 10)`: Tấn công tối đa 4%, HP 8%, KI 10%, giảm sát thương PvE 2%, vàng quái 5% và sản lượng cây 10%. Mỗi lần cộng điểm được lưu audit với người thao tác, bậc trước/sau, điểm trước/sau và chi phí.
+- Buff chỉ do server áp dụng cho nhân vật chính: Tấn công tính đủ khi đánh quái và 50% khi đánh người; HP/KI được tính lại ngay lúc vào/rời PvP để dùng 50%; giảm sát thương chỉ nhận từ quái/boss; vàng quái và sản lượng cây được cộng trong luồng drop/sản xuất tương ứng. Thành viên online được tính lại ngay khi bang chủ cộng điểm, thành viên offline nhận khi đăng nhập.
+- Đồng bộ Game1 và Game2: packet 127 action `112–115`, tab Tiềm năng hiển thị EXP, điểm còn lại, chi phí/nấc từng nhánh; bang chủ bấm dòng cấp bang để nâng và bấm một nhánh để cộng điểm. Server vẫn kiểm tra toàn bộ quyền, chi phí và giới hạn, không tin dữ liệu client.
+
+Xác minh triển khai: build thành công, cập nhật 724 class vào `20.jar`; `ClanProgressionFormulaTest` đạt PASS cho cấp 1/2/10/1000, giá bậc và mốc chi phí; kiểm tra cân bằng ngoặc cho cả Game1/Game2 đạt PASS. Server đã khởi động, nghe cổng 14445 và không có lỗi startup. Cần UAT trực tiếp bằng client Unity với bang chủ/thành viên để xác nhận thao tác màn hình, thời điểm vào/rời PvP và vị trí sprite theo map thực tế trước phát hành rộng.
+
+Xác minh bản vá UAT: server Java build lại thành công `724` class vào `20.jar`; source Game1/Game2 biên dịch bằng response file Roslyn của Unity với mã thoát `0`; server khởi động lại và nghe cổng `14445`, `server-error.log` trống. Database trước bản vá đã xác nhận dữ liệu thật không mất (`water=10`, `growth=250`, `clan_exp=110`); bản vá tập trung sửa đường đồng bộ/hiển thị và bổ sung thao tác nâng cấp có thông báo thiếu chi tiết.
+
+Điều chỉnh giao diện và hợp nhất luồng ngày 04/09/2026: bỏ tab Cây bang khỏi bảng Bang hội; các thao tác cây chỉ còn tại cây ở map 153 (riêng **Giúp tưới** vẫn đi từ tin nhắn kêu gọi). Luồng nâng cấp bang cũ của Dr. Drief đã chuyển sang gọi chung `ClanProgressionService`, nên luôn kiểm tra Clan EXP/quỹ và cộng đúng 5 Điểm tiềm năng khi cấp bang tăng. Lối đổi tên bang cũ đã ẩn ở client và action đổi tên trực tiếp bị server khóa tạm thời, chờ triển khai Vé đổi tên bang.
+
+Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/chuỗi/gửi packet đổi tên bang bằng 1.000 ngọc ở Game1 và Game2, xóa hàm xử lý đổi tên cũ phía server, đồng thời loại bỏ trạng thái/màn hình trung gian `isClanFunctions` không còn đường kích hoạt. Server vẫn giữ action legacy số 5 để từ chối client cũ an toàn. Không xóa `ClanTree`, `ClanProgression`, `ClanTreasury`, `ClanTerritory`, migration, cấu hình hoặc sprite vì đều còn được runtime/deployment tham chiếu. Hai mươi hai bản sao `20.jar.bak_*` cùng output biên dịch/kiểm thử tạm (191.000.485 byte) đã được chuyển khỏi workspace sang `C:\Users\PC\AppData\Local\Temp\Teamobi2026_phase_cleanup_20260904_2355` để có thể khôi phục. Sau dọn dẹp, client biên dịch `0` lỗi, `ClanProgressionFormulaTest` PASS, server build 724 class và đang nghe cổng 14445 với log lỗi trống.
 
 ### Giai đoạn 4: Cửa hàng và quà
 
