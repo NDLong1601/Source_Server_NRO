@@ -441,12 +441,9 @@ public final class Manager {
                 clan.slogan = rs.getString("slogan");
                 clan.imgId = rs.getByte("img_id");
                 clan.powerPoint = rs.getLong("power_point");
-                clan.maxMember = rs.getByte("max_member");
+                clan.maxMember = Clan.normalizeMaxMember(rs.getInt("max_member"));
                 clan.capsuleClan = rs.getInt("clan_point");
-                clan.level = rs.getByte("level");
-                if (clan.level < 1) {
-                    clan.level = 1;
-                }
+                clan.level = Clan.normalizeLevel(rs.getInt("level"));
                 clan.createTime = (int) (rs.getTimestamp("create_time").getTime() / 1000);
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("members"));
                 for (int i = 0; i < dataArray.size(); i++) {

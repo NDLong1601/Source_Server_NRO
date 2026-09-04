@@ -1,6 +1,7 @@
 package nro.models.boss.Boss_Manager;
 
 import nro.models.admin.AdminSpawnConfigService;
+import nro.models.admin.ManagedBoss;
 import nro.models.boss.Android.Android13;
 import nro.models.boss.Android.Android14;
 import nro.models.boss.Android.Android15;
@@ -385,6 +386,27 @@ public class BossManager implements Runnable {
         return null;
     }
 
+    public boolean isVisibleInBossList(Boss boss) {
+        if (boss == null || boss.data == null || boss.data.length == 0) {
+            return false;
+        }
+        // Boss tự tạo từ Admin Menu hoặc Boss có cấu hình override luôn luôn được hiển thị trong bảng boss
+        if (boss instanceof ManagedBoss || AdminSpawnConfigService.gI().hasBossOverride((int) boss.id)) {
+            return true;
+        }
+        int[] mapJoin = boss.data[0].getMapJoin();
+        if (mapJoin == null || mapJoin.length == 0) {
+            return false;
+        }
+        int mapId = mapJoin[0];
+        return !MapService.gI().isMapBossFinal(mapId)
+                && !MapService.gI().isMapHuyDiet(mapId)
+                && !MapService.gI().isMapCadic(mapId)
+                && !MapService.gI().isMapYardart(mapId)
+                && !MapService.gI().isMapMaBu(mapId)
+                && !MapService.gI().isMapBlackBallWar(mapId);
+    }
+
     public void showListBoss(Player player) {
         if (!player.isAdmin()) {
             return;
@@ -392,17 +414,24 @@ public class BossManager implements Runnable {
         player.idMark.setMenuType(3);
         Message msg;
         try {
+            record VisibleBoss(int index, Boss boss) {}
+            List<VisibleBoss> visibleBosses = new ArrayList<>();
+            for (int i = 0; i < this.bosses.size(); i++) {
+                Boss boss = this.bosses.get(i);
+                if (isVisibleInBossList(boss)) {
+                    visibleBosses.add(new VisibleBoss(i, boss));
+                }
+            }
+
             msg = new Message(-96);
             msg.writer().writeByte(0);
             msg.writer().writeUTF("Boss");
-            msg.writer().writeByte((int) bosses.stream().filter(boss -> !MapService.gI().isMapBossFinal(boss.data[0].getMapJoin()[0]) && !MapService.gI().isMapHuyDiet(boss.data[0].getMapJoin()[0]) && !MapService.gI().isMapCadic(boss.data[0].getMapJoin()[0]) && !MapService.gI().isMapYardart(boss.data[0].getMapJoin()[0]) && !MapService.gI().isMapMaBu(boss.data[0].getMapJoin()[0]) && !MapService.gI().isMapBlackBallWar(boss.data[0].getMapJoin()[0])).count());
-            for (int i = 0; i < bosses.size(); i++) {
-                Boss boss = this.bosses.get(i);
-                if (MapService.gI().isMapBossFinal(boss.data[0].getMapJoin()[0]) || MapService.gI().isMapCadic(boss.data[0].getMapJoin()[0]) || MapService.gI().isMapYardart(boss.data[0].getMapJoin()[0]) || MapService.gI().isMapHuyDiet(boss.data[0].getMapJoin()[0]) || MapService.gI().isMapMaBu(boss.data[0].getMapJoin()[0]) || MapService.gI().isMapBlackBallWar(boss.data[0].getMapJoin()[0])) {
-                    continue;
-                }
-                msg.writer().writeInt(i);
-                msg.writer().writeInt(i);
+            msg.writer().writeByte(Math.min(visibleBosses.size(), 127));
+            for (VisibleBoss entry : visibleBosses) {
+                int index = entry.index();
+                Boss boss = entry.boss();
+                msg.writer().writeInt(index);
+                msg.writer().writeInt(index);
                 msg.writer().writeShort(boss.data[0].getOutfit()[0]);
                 if (player.getSession().version >= 214) {
                     msg.writer().writeShort(-1);
@@ -421,6 +450,7 @@ public class BossManager implements Runnable {
             player.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
+            Logger.logException(BossManager.class, e);
         }
     }
 

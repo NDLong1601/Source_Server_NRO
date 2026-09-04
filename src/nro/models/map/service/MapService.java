@@ -468,7 +468,7 @@ public class MapService {
     }
     
     public boolean isMapCadic(int mapId) {
-        return mapId >= 165;
+        return mapId == 165 || mapId == 166;
     }
 
     public boolean isMapBossFinal(int mapId) {

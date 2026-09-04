@@ -11,6 +11,7 @@ import nro.models.player_system.Template.FlagBag;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
 import nro.models.clan.ClanMessage;
+import nro.models.clan.ClanProfileV2;
 import nro.models.consts.ConstAchievement;
 import nro.models.player.Player;
 import nro.models.network.Message;
@@ -40,6 +41,8 @@ public class ClanService {
     private static final byte ACCEPT_CHANGE_NAME_CLAN = 5;
     private static final int RENAME_CLAN_GEM_COST = 1000;
     private static final long SHARE_LOCATION_COOLDOWN_MS = 2 * 60 * 1000L;
+    private static final int LEGACY_MAX_MEMBER = 0xFF;
+    private static final int LEGACY_MAX_LEVEL = 0x7F;
 
     // clan message
     private static final byte CHAT = 0;
@@ -72,6 +75,14 @@ public class ClanService {
             instance = new ClanService();
         }
         return instance;
+    }
+
+    private static int toLegacyUnsignedByte(int value) {
+        return Math.max(0, Math.min(LEGACY_MAX_MEMBER, value));
+    }
+
+    private static int toLegacySignedByte(int value) {
+        return Math.max(0, Math.min(LEGACY_MAX_LEVEL, value));
     }
 
     public Clan getClanById(int id) throws Exception {
@@ -680,7 +691,7 @@ public class ClanService {
                 msg.writer().writeUTF(String.valueOf(clan.powerPoint));
                 msg.writer().writeUTF(clan.getLeader().name);
                 msg.writer().writeByte(clan.getCurrMembers());
-                msg.writer().writeByte(clan.maxMember);
+                msg.writer().writeByte(toLegacyUnsignedByte(clan.maxMember));
                 msg.writer().writeInt(clan.createTime);
             }
             player.sendMessage(msg);
@@ -739,10 +750,10 @@ public class ClanService {
                 msg.writer().writeUTF(String.valueOf(player.clan.powerPoint));
                 msg.writer().writeUTF(player.clan.getLeader().name);
                 msg.writer().writeByte(player.clan.getCurrMembers());
-                msg.writer().writeByte(player.clan.maxMember);
+                msg.writer().writeByte(toLegacyUnsignedByte(player.clan.maxMember));
                 msg.writer().writeByte(player.clan.getRole(player));
                 msg.writer().writeInt((int) player.clan.capsuleClan);
-                msg.writer().writeByte(player.clan.level);
+                msg.writer().writeByte(toLegacySignedByte(player.clan.level));
                 for (ClanMember cm : player.clan.getMembers()) {
                     Player pl = Client.gI().getPlayer(cm.id);
                     if (pl != null) {
@@ -785,6 +796,8 @@ public class ClanService {
                         msg.writer().writeByte(cmg.isNewMessage);
                     }
                 }
+                ClanProfileV2.write(msg.writer(), player.clan.id, player.clan.level,
+                        player.clan.maxMember, player.clan.getCurrMembers());
             }
             player.sendMessage(msg);
             msg.cleanup();
@@ -1172,7 +1185,7 @@ public class ClanService {
                 ps.setString(1, clan.slogan);
                 ps.setInt(2, clan.imgId);
                 ps.setLong(3, clan.powerPoint);
-                ps.setByte(4, clan.maxMember);
+                ps.setInt(4, clan.maxMember);
                 ps.setInt(5, clan.capsuleClan);
                 ps.setInt(6, clan.level);
                 ps.setString(7, member);

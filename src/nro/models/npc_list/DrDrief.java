@@ -200,7 +200,7 @@ public class DrDrief extends Npc {
                                 int capsuleBang = clan.capsuleClan;
                                 if (clan.spendSharedCapsuleClan(player, capsuleCan, "nâng cấp bang hội")) {
                                     clan.level++;
-                                    clan.maxMember++;
+                                    clan.maxMember = Math.min(Clan.MAX_MEMBER_LIMIT, clan.maxMember + 1);
                                     Service.gI().sendThongBao(player,
                                             "Chúc mừng bang hội của bạn đã lên cấp " + (clan.level));
                                     clan.update();

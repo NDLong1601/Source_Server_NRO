@@ -141,6 +141,10 @@ public final class AdminSpawnConfigService {
         return true;
     }
 
+    public boolean hasBossOverride(int bossId) {
+        return bossOverrides.containsKey(bossId);
+    }
+
     public boolean isServerBossEnabled(int bossId) {
         BossOverride override = bossOverrides.get(bossId);
         return override == null || override.enabled;

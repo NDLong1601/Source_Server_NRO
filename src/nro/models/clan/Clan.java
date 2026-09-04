@@ -38,6 +38,9 @@ public class Clan {
     public static final byte LEADER = 0;
     public static final byte DEPUTY = 1;
     public static final byte MEMBER = 2;
+    public static final int DEFAULT_MAX_MEMBER = 10;
+    public static final int MAX_MEMBER_LIMIT = 50;
+    public static final int TECHNICAL_MAX_LEVEL = 1_000;
 
     public int id;
     public int imgId;
@@ -46,7 +49,7 @@ public class Clan {
     public String slogan;
     public int createTime;
     public long powerPoint;
-    public byte maxMember;
+    public int maxMember;
     public int level;
     public boolean active;
     public int capsuleClan;
@@ -98,7 +101,7 @@ public class Clan {
         this.name = "";
         this.name2 = "";
         this.slogan = "";
-        this.maxMember = 10;
+        this.maxMember = DEFAULT_MAX_MEMBER;
         this.level = 1;
         this.createTime = (int) (System.currentTimeMillis() / 1000);
         this.members = new ArrayList<>();
@@ -106,6 +109,14 @@ public class Clan {
         this.clanMessages = new ArrayList<>();
         this.weeklyContractTarget = TaskConfig.getClanWeeklyTarget();
         this.weeklyContractReward = TaskConfig.getClanWeeklyReward();
+    }
+
+    public static int normalizeLevel(int level) {
+        return Math.max(1, Math.min(TECHNICAL_MAX_LEVEL, level));
+    }
+
+    public static int normalizeMaxMember(int maxMember) {
+        return Math.max(1, Math.min(MAX_MEMBER_LIMIT, maxMember));
     }
 
     private long currentContractWeek() {
@@ -567,7 +578,7 @@ public class Clan {
             ps.setString(4, this.slogan);
             ps.setInt(5, this.imgId);
             ps.setLong(6, this.powerPoint);
-            ps.setByte(7, this.maxMember);
+            ps.setInt(7, this.maxMember);
             ps.setInt(8, this.capsuleClan);
             ps.setInt(9, this.level);
             ps.setString(10, member);
@@ -625,7 +636,7 @@ public class Clan {
             ps.setString(1, this.slogan);
             ps.setInt(2, this.imgId);
             ps.setLong(3, this.powerPoint);
-            ps.setByte(4, this.maxMember);
+            ps.setInt(4, this.maxMember);
             ps.setInt(5, this.capsuleClan);
             ps.setInt(6, this.level);
             ps.setString(7, member);
