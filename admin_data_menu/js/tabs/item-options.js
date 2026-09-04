@@ -69,18 +69,40 @@ function SetDefaultOptionParam(id, value) {
   if (option) option.param = value;
 }
 
+function UpdateDefaultOptionVersionBadge() {
+  var badge = document.getElementById("defaultOptionVersionBadge");
+  if (!badge) return;
+  try {
+    var raw = RunAdmin("getitemversion", {});
+    var rows = ParseTsv(raw);
+    if (rows && rows.length > 1) {
+      var ver = rows[1][0];
+      var pending = rows[1][1] == "1";
+      var nextVer = rows[1][2];
+      badge.innerText = pending
+        ? "(Version: " + ver + " · Chờ reset lên " + nextVer + ")"
+        : "(Version: " + ver + ")";
+      badge.style.color = pending ? "#f59e0b" : "#94a3b8";
+    }
+  } catch (e) {}
+}
+
 function SaveDefaultOptions() {
   if (!defaultOptionSelectedId) { Msg("defaultOptionMessage", "Chọn vật phẩm trước khi lưu."); return; }
   var payload = [];
   for (var i = 0; i < defaultOptionValues.length; i++) payload.push({ id: defaultOptionValues[i].id, param: defaultOptionValues[i].param });
   var text = RunAdmin("saveitemdefaultoptions", { Id: defaultOptionSelectedId, PayloadJson: JSON.stringify(payload) });
   Msg("defaultOptionMessage", StatusText(text));
-  if (!IsAdminError(text)) { LoadDefaultOptionItems(); LoadDefaultOptions(); }
+  if (!IsAdminError(text)) {
+    LoadDefaultOptionItems();
+    LoadDefaultOptions();
+    UpdateDefaultOptionVersionBadge();
+  }
 }
 
 RegisterTab({
   id: "itemoptions", view: "item-options.html", panelId: "panelItemOptions", navId: "navItemOptions",
   title: "Option mặc định", subtitle: "Cấu hình option dùng chung cho vật phẩm, SHOP và nhiệm vụ",
-  onOpen: function () { LoadOptions(false); LoadDefaultOptionItems(); RenderDefaultOptionPicker(); },
-  onRefresh: function () { LoadDefaultOptionItems(); if (defaultOptionSelectedId) LoadDefaultOptions(); }
+  onOpen: function () { LoadOptions(false); LoadDefaultOptionItems(); RenderDefaultOptionPicker(); UpdateDefaultOptionVersionBadge(); },
+  onRefresh: function () { LoadDefaultOptionItems(); if (defaultOptionSelectedId) LoadDefaultOptions(); UpdateDefaultOptionVersionBadge(); }
 });

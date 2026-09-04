@@ -327,6 +327,25 @@ try {
             }
         }
 
+        $itemVersionPendingPath = Join-Path $Root "data\update_data\item_version.pending"
+        if (Test-Path -LiteralPath $itemVersionPendingPath) {
+            $itemVersionPath = Join-Path $Root "data\update_data\item_version"
+            $currentVer = 69
+            if (Test-Path -LiteralPath $itemVersionPath) {
+                try {
+                    $parsed = 0
+                    if ([int]::TryParse(([System.IO.File]::ReadAllText($itemVersionPath).Trim()), [ref]$parsed) -and $parsed -ge 1 -and $parsed -le 127) {
+                        $currentVer = $parsed
+                    }
+                } catch {}
+            }
+            $nextVer = if ($currentVer -ge 127) { 1 } else { $currentVer + 1 }
+            $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+            [System.IO.File]::WriteAllText($itemVersionPath, [string]$nextVer + [Environment]::NewLine, $utf8NoBom)
+            Remove-Item -LiteralPath $itemVersionPendingPath -Force -ErrorAction SilentlyContinue
+            Write-ControlLog "Phat hien thay doi vat pham trong admin. Da tang version item tu $currentVer len $nextVer truoc khi khoi dong server."
+        }
+
         $process = Start-Process -FilePath "java.exe" `
             -WorkingDirectory $Root `
             -ArgumentList @("-server", "-Dfile.encoding=UTF-8", "-Dsun.stdout.encoding=UTF-8", "-Dsun.stderr.encoding=UTF-8", "-jar", "20.jar") `

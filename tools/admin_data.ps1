@@ -1948,8 +1948,10 @@ ON DUPLICATE KEY UPDATE
 TYPE=VALUES(TYPE), gender=VALUES(gender), NAME=VALUES(NAME), description=VALUES(description), level=VALUES(level), icon_id=VALUES(icon_id), part=VALUES(part), is_up_to_up=VALUES(is_up_to_up), power_require=VALUES(power_require), gold=VALUES(gold), gem=VALUES(gem), head=VALUES(head), body=VALUES(body), leg=VALUES(leg);
 "@
     Invoke-MySql $sql | Out-Null
-    $itemCacheVersion = Bump-ItemTemplateVersion
-    "OK`tĐã lưu vật phẩm ID $itemId. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải template mới."
+    Mark-ItemTemplatePendingUpdate "Save-Item $itemId"
+    $currentVersion = Get-ItemTemplateVersion
+    $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
+    "OK`tĐã lưu vật phẩm ID $itemId. Đã ghi nhận thay đổi (version item hiện tại: $currentVersion, sẽ tự động tăng lên $nextVersion khi reset server)."
 }
 
 function Assert-RadarOptionsJson {
@@ -2088,8 +2090,10 @@ function Save-ItemDefaultOptions {
     if ($values.Count -gt 0) { [void]$sql.AppendLine("INSERT INTO item_default_option (item_template_id,option_id,param,sort_order) VALUES $($values -join ',');") }
     [void]$sql.AppendLine("COMMIT;")
     Invoke-MySql $sql.ToString() | Out-Null
-    $itemCacheVersion = Bump-ItemTemplateVersion
-    "OK`tĐã lưu $($values.Count) option mặc định cho vật phẩm ID $itemId. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải dữ liệu mới."
+    Mark-ItemTemplatePendingUpdate "Save-ItemDefaultOptions $itemId"
+    $currentVersion = Get-ItemTemplateVersion
+    $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
+    "OK`tĐã lưu $($values.Count) option mặc định cho vật phẩm ID $itemId. Đã ghi nhận thay đổi (version item hiện tại: $currentVersion, sẽ tự động tăng lên $nextVersion khi reset server)."
 }
 
 function Save-ItemDefaultOptionsBulk {
@@ -2111,8 +2115,10 @@ function Save-ItemDefaultOptionsBulk {
     }
     [void]$sql.AppendLine("COMMIT;")
     Invoke-MySql $sql.ToString() | Out-Null
-    $itemCacheVersion = Bump-ItemTemplateVersion
-    "OK`tĐã lưu option mặc định cho $($ids.Count) vật phẩm. Version item đã tăng lên $itemCacheVersion; restart server để client tự tải dữ liệu mới."
+    Mark-ItemTemplatePendingUpdate "Save-ItemDefaultOptionsBulk $($ids.Count) items"
+    $currentVersion = Get-ItemTemplateVersion
+    $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
+    "OK`tĐã lưu option mặc định cho $($ids.Count) vật phẩm. Đã ghi nhận thay đổi (version item hiện tại: $currentVersion, sẽ tự động tăng lên $nextVersion khi reset server)."
 }
 
 function Assert-RadarMilestonesJson {
@@ -2740,9 +2746,7 @@ function Bump-NpcPartDataVersion {
     return $nextVersion
 }
 
-function Bump-ItemTemplateVersion {
-    # vsItem được client dùng để quyết định có tải lại NRitem hay dùng cache cũ.
-    # Dùng version 1..127 để tương thích byte có dấu và tránh tái sử dụng version 0.
+function Get-ItemTemplateVersion {
     $versionPath = Join-Path $Root "data\update_data\item_version"
     $currentVersion = 69
     if (Test-Path -LiteralPath $versionPath) {
@@ -2753,8 +2757,37 @@ function Bump-ItemTemplateVersion {
             }
         } catch {}
     }
+    return $currentVersion
+}
+
+function Mark-ItemTemplatePendingUpdate {
+    param([string]$Reason = "")
+    $pendingPath = Join-Path $Root "data\update_data\item_version.pending"
+    $timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+    $content = "$timestamp`t$Reason"
+    [IO.File]::WriteAllText($pendingPath, $content + [Environment]::NewLine, $Utf8NoBom)
+}
+
+function Clear-ItemTemplatePendingUpdate {
+    $pendingPath = Join-Path $Root "data\update_data\item_version.pending"
+    if (Test-Path -LiteralPath $pendingPath) {
+        Remove-Item -LiteralPath $pendingPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-ItemTemplatePendingUpdate {
+    $pendingPath = Join-Path $Root "data\update_data\item_version.pending"
+    return (Test-Path -LiteralPath $pendingPath)
+}
+
+function Bump-ItemTemplateVersion {
+    # vsItem được client dùng để quyết định có tải lại NRitem hay dùng cache cũ.
+    # Dùng version 1..127 để tương thích byte có dấu và tránh tái sử dụng version 0.
+    $versionPath = Join-Path $Root "data\update_data\item_version"
+    $currentVersion = Get-ItemTemplateVersion
     $nextVersion = if ($currentVersion -ge 127) { 1 } else { $currentVersion + 1 }
     [IO.File]::WriteAllText($versionPath, [string]$nextVersion + [Environment]::NewLine, $Utf8NoBom)
+    Clear-ItemTemplatePendingUpdate
     return $nextVersion
 }
 
@@ -6622,6 +6655,25 @@ try {
         "listitemdefaultoptionitems" { List-ItemDefaultOptionItems }
         "saveitemdefaultoptions" { Save-ItemDefaultOptions }
         "saveitemdefaultoptionsbulk" { Save-ItemDefaultOptionsBulk }
+        "getitemversion" {
+            $cur = Get-ItemTemplateVersion
+            $isPending = Test-ItemTemplatePendingUpdate
+            $next = if ($cur -ge 127) { 1 } else { $cur + 1 }
+            "version`tpending`tnext_version`r`n$cur`t$(if ($isPending) {1} else {0})`t$next"
+        }
+        "bumpitemversion" {
+            $next = Bump-ItemTemplateVersion
+            "OK`tĐã tăng version item lên $next. Restart server để client tự tải dữ liệu mới."
+        }
+        "applypendingitemversion" {
+            if (Test-ItemTemplatePendingUpdate) {
+                $next = Bump-ItemTemplateVersion
+                "OK`tĐã áp dụng tăng version item lên $next."
+            } else {
+                $cur = Get-ItemTemplateVersion
+                "OK`tKhông có thay đổi item nào đang chờ. Version item giữ nguyên $cur."
+            }
+        }
         "listnpcs" { List-Npcs }
         "listshops" { List-Shops }
         "saveshop" { Save-Shop }

@@ -205,6 +205,24 @@ function UpdateItemInMemory() {
   ApplyItemFilters(false);
 }
 
+function UpdateItemVersionBadge() {
+  var badge = document.getElementById("itemVersionBadge");
+  if (!badge) return;
+  try {
+    var raw = RunAdmin("getitemversion", {});
+    var rows = ParseTsv(raw);
+    if (rows && rows.length > 1) {
+      var ver = rows[1][0];
+      var pending = rows[1][1] == "1";
+      var nextVer = rows[1][2];
+      badge.innerText = pending
+        ? "(Version: " + ver + " · Chờ reset lên " + nextVer + ")"
+        : "(Version: " + ver + ")";
+      badge.style.color = pending ? "#f59e0b" : "#94a3b8";
+    }
+  } catch (e) {}
+}
+
 function SaveItem() {
   if (!V("itemId")) { Msg("itemMessage", "Cần nhập ID vật phẩm."); return; }
   var text = RunAdmin("saveitem", {
@@ -214,12 +232,15 @@ function SaveItem() {
     Head: V("itemHead"), Body: V("itemBody"), Leg: V("itemLeg")
   });
   Msg("itemMessage", StatusText(text));
-  if (!IsAdminError(text)) UpdateItemInMemory();
+  if (!IsAdminError(text)) {
+    UpdateItemInMemory();
+    UpdateItemVersionBadge();
+  }
 }
 
 RegisterTab({
   id: "items", view: "items.html", panelId: "panelItems", navId: "navItems",
   title: "Vật phẩm", subtitle: "Lọc theo type, xem ảnh và sửa item template",
-  onOpen: function () { LoadItems(false); },
-  onRefresh: function () { LoadItems(true); }
+  onOpen: function () { LoadItems(false); UpdateItemVersionBadge(); },
+  onRefresh: function () { LoadItems(true); UpdateItemVersionBadge(); }
 });

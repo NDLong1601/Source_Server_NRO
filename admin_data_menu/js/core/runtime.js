@@ -36,6 +36,10 @@ function RestartServer() {
   if (window.confirm("Khởi động lại server để áp dụng dữ liệu mới?")) {
     RunAdmin("recordaudit", { Name: "restartserver", Description: "Yêu cầu Restart server từ NRO Admin Data" });
     RunBat("restart");
+    setTimeout(function () {
+      if (typeof UpdateItemVersionBadge === "function") UpdateItemVersionBadge();
+      if (typeof UpdateDefaultOptionVersionBadge === "function") UpdateDefaultOptionVersionBadge();
+    }, 4000);
   }
 }
 
