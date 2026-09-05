@@ -96,49 +96,124 @@ public class Client implements Runnable {
     }
 
     private void remove(Player player) {
-        this.players_id.remove(player.id);
-        this.players_name.remove(player.name);
-        this.players_userId.remove(player.getSession().userId);
-        this.players.remove(player);
-        removeAdminOnlinePlayer(player);
-        if (!player.beforeDispose) {
-            player.beforeDispose = true;
-            player.mapIdBeforeLogout = player.zone.map.mapId;
-            if (player.idNRNM != -1) {
-                ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1, player.location.x, player.location.y, -1);
-                Service.gI().dropItemMap(player.zone, itemMap);
-                NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
-                NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
-                player.idNRNM = -1;
-            }
-            ChangeMapService.gI().exitMap(player);
-            TransactionService.gI().cancelTrade(player);
-            if (player.clan != null) {
-                player.clan.removeMemberOnline(null, player);
-            }
-            if (SummonDragon.gI().playerSummonShenron != null
-                    && SummonDragon.gI().playerSummonShenron.id == player.id) {
-                SummonDragon.gI().isPlayerDisconnect = true;
-            }
-            if (SummonDragonNamek.gI().playerSummonShenron != null
-                    && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
-                SummonDragonNamek.gI().isPlayerDisconnect = true;
-            }
-            if (player.shenronEvent != null) {
-                player.shenronEvent.isPlayerDisconnect = true;
-            }
-            if (player.mobMe != null) {
-                player.mobMe.mobMeDie();
-            }
-            if (player.pet != null) {
-                if (player.pet.mobMe != null) {
-                    player.pet.mobMe.mobMeDie();
-                }
-                ChangeMapService.gI().exitMap(player.pet);
+        if (player == null) {
+            return;
+        }
+        executeRemovalLifecycle(player,
+                () -> removeFromRegistriesAndTeardown(player),
+                () -> saveRemovedPlayer(player));
+    }
+
+    /**
+     * Defines the disconnect lifecycle boundary used by production removal and
+     * deterministic regression tests. Claims are closed before cleanup starts,
+     * and persistence is attempted even when cleanup throws.
+     */
+    static void executeRemovalLifecycle(Player player, Runnable cleanup, Runnable save) {
+        if (player == null) {
+            return;
+        }
+        if (player.achievement != null) {
+            try {
+                player.achievement.closeClaims();
+            } catch (Exception e) {
+                Logger.error("[Client.remove] closeClaims failed for player=" + player.id + ": " + e);
             }
         }
-        PlayerDAO.updatePlayer(player);
+        try {
+            cleanup.run();
+        } catch (RuntimeException e) {
+            Logger.logException(Client.class, e,
+                    "Unexpected removal cleanup failure for player " + player.id);
+        } finally {
+            save.run();
+        }
     }
+
+    private void removeFromRegistriesAndTeardown(Player player) {
+        this.players_id.remove(player.id);
+        this.players_name.remove(player.name);
+        MySession playerSession = player.getSession();
+        if (playerSession != null) {
+            this.players_userId.remove(playerSession.userId);
+        }
+        this.players.remove(player);
+        removeAdminOnlinePlayer(player);
+
+        if (!player.beforeDispose) {
+            player.beforeDispose = true;
+            try {
+                player.mapIdBeforeLogout = player.zone.map.mapId;
+                if (player.idNRNM != -1) {
+                    ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1, player.location.x, player.location.y, -1);
+                    Service.gI().dropItemMap(player.zone, itemMap);
+                    NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
+                    NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
+                    player.idNRNM = -1;
+                }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] mapId/idNRNM cleanup failed for player=" + player.id + ": " + e);
+            }
+            try {
+                ChangeMapService.gI().exitMap(player);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] exitMap failed for player=" + player.id + ": " + e);
+            }
+            try {
+                TransactionService.gI().cancelTrade(player);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] cancelTrade failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.clan != null) {
+                    player.clan.removeMemberOnline(null, player);
+                }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] clan.removeMemberOnline failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (SummonDragon.gI().playerSummonShenron != null
+                        && SummonDragon.gI().playerSummonShenron.id == player.id) {
+                    SummonDragon.gI().isPlayerDisconnect = true;
+                }
+                if (SummonDragonNamek.gI().playerSummonShenron != null
+                        && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
+                    SummonDragonNamek.gI().isPlayerDisconnect = true;
+                }
+                if (player.shenronEvent != null) {
+                    player.shenronEvent.isPlayerDisconnect = true;
+                }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] dragon/shenron disconnect failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.mobMe != null) {
+                    player.mobMe.mobMeDie();
+                }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] mobMe.mobMeDie failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.pet != null) {
+                    if (player.pet.mobMe != null) {
+                        player.pet.mobMe.mobMeDie();
+                    }
+                    ChangeMapService.gI().exitMap(player.pet);
+                }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] pet teardown failed for player=" + player.id + ": " + e);
+            }
+        }
+    }
+
+    private void saveRemovedPlayer(Player player) {
+        try {
+            PlayerDAO.updatePlayer(player);
+        } catch (Exception e) {
+            Logger.error("[Client.remove] PlayerDAO.updatePlayer failed for player=" + player.id + ": " + e);
+        }
+    }
+
 
     public void kickSession(MySession session) {
         if (session != null) {

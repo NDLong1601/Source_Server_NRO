@@ -4,9 +4,11 @@ import nro.models.consts.ConstAchievement;
 import nro.models.mob.Mob;
 import nro.models.player_system.Template.AchievementTemplate;
 import nro.models.network.Message;
+import nro.models.player.Achievement;
 import nro.models.player.Player;
 import nro.models.server.Manager;
 import nro.models.skill.Skill;
+import nro.models.utils.Logger;
 import nro.models.utils.Util;
 
 /**
@@ -49,30 +51,49 @@ public class AchievementService {
     }
 
     public void confirmAchievement(Player player, byte select) {
-        if (player.achievement == null) {
+        confirmAchievement(player, (int) select);
+    }
+
+    public void confirmAchievement(Player player, int select) {
+        if (player == null || player.achievement == null) {
             return;
         }
-        if (InventoryService.gI().getCountEmptyBag(player) > 0) {
-            int money = Manager.ACHIEVEMENT_TEMPLATE.get(select).money;
-            player.achievement.reward(select);
-            player.inventory.gem += money;
-            InventoryService.gI().sendItemBags(player);
-            Service.gI().sendMoney(player);
-            Service.gI().sendThongBao(player, "Bạn vừa nhận được " + money + " ngọc.");
+        Achievement.ClaimResult result = player.achievement.claimReward(select, true);
+        if (result.isSuccess()) {
+            if (player.inventory != null) {
+                InventoryService.gI().sendItemBags(player);
+                Service.gI().sendMoney(player);
+            }
+            Service.gI().sendThongBao(player, "Bạn vừa nhận được " + result.getRewardGem() + " ngọc.");
+            Message msg = null;
+            try {
+                msg = new Message(-76);
+                msg.writer().writeByte(1);
+                msg.writer().writeByte(select);
+                player.sendMessage(msg);
+            } catch (Exception e) {
+                Logger.error("[AchievementService] Failed to send success packet for player=" + player.id + ", achievement=" + select + ", error=" + e.getClass().getName() + "\n");
+            } finally {
+                if (msg != null) {
+                    msg.cleanup();
+                }
+            }
         } else {
-            Service.gI().sendThongBao(player, "Cần tối thiểu 1 ô trống hành trang để nhận thưởng");
-            return;
-        }
-        Message msg = null;
-        try {
-            msg = new Message(-76);
-            msg.writer().writeByte(1);
-            msg.writer().writeByte(select);
-            player.sendMessage(msg);
-        } catch (Exception e) {
-        } finally {
-            if (msg != null) {
-                msg.cleanup();
+            switch (result.getStatus()) {
+                case BAG_FULL ->
+                    Service.gI().sendThongBao(player, "Cần tối thiểu 1 ô trống hành trang để nhận thưởng");
+                case ALREADY_CLAIMED ->
+                    Service.gI().sendThongBao(player, "Bạn đã nhận phần thưởng này rồi");
+                case NOT_COMPLETED ->
+                    Service.gI().sendThongBao(player, "Bạn chưa hoàn thành thành tựu này");
+                case GEM_LIMIT ->
+                    Service.gI().sendThongBao(player, "Hành trang ngọc đã đạt giới hạn, vui lòng dùng bớt ngọc");
+                case INVALID_BALANCE ->
+                    Service.gI().sendThongBao(player, "Số dư ngọc không hợp lệ, vui lòng liên hệ quản trị viên");
+                case PLAYER_UNAVAILABLE ->
+                    Service.gI().sendThongBao(player, "Không thể nhận thưởng lúc này");
+                case INVALID_INDEX, PLAYER_NULL -> {
+                }
             }
         }
     }

@@ -780,7 +780,10 @@ public class Controller implements IMessageHandler {
                     // short menuid
                     break;
                 case -76:
-                    AchievementService.gI().confirmAchievement(player, _msg.reader().readByte());
+                    if (player != null && _msg != null && _msg.reader() != null && _msg.reader().available() >= 1) {
+                        byte select = _msg.reader().readByte();
+                        AchievementService.gI().confirmAchievement(player, select);
+                    }
                     break;
                 case BadgesService.VISIBILITY_COMMAND:
                     if (player != null && player.isPl()) {

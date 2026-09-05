@@ -1012,7 +1012,7 @@ public class PlayerDAO {
                 dataArray.clear();
                 //data achievement
                 if (player.achievement != null) {
-                    for (Template.AchievementQuest aq : player.achievement.getAchievementList()) {
+                    for (Template.AchievementQuest aq : player.achievement.snapshotQuests()) {
                         JSONArray a = new JSONArray();
                         a.add(aq.completed);
                         a.add(aq.isRecieve);

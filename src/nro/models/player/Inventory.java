@@ -67,6 +67,78 @@ public class Inventory {
         this.gem -= num;
     }
 
+    private volatile boolean active = true;
+
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public enum GemCreditStatus {
+        SUCCESS,
+        GEM_LIMIT,
+        INVALID_AMOUNT,
+        INACTIVE,
+        // [H] Corrupt/negative gem balance – credit rejected, state unchanged.
+        INVALID_BALANCE
+    }
+
+    public static class GemCreditResult {
+        public final GemCreditStatus status;
+        public final int requestedAmount;
+        public final int creditedAmount;
+        public final int balanceBefore;
+        public final int balanceAfter;
+
+        public GemCreditResult(GemCreditStatus status, int requestedAmount, int creditedAmount, int balanceBefore, int balanceAfter) {
+            this.status = status;
+            this.requestedAmount = requestedAmount;
+            this.creditedAmount = creditedAmount;
+            this.balanceBefore = balanceBefore;
+            this.balanceAfter = balanceAfter;
+        }
+
+        public boolean isSuccess() {
+            return status == GemCreditStatus.SUCCESS;
+        }
+    }
+
+    public synchronized GemCreditResult tryCreditGemExact(int amount) {
+        if (!this.active) {
+            return new GemCreditResult(GemCreditStatus.INACTIVE, amount, 0, this.gem, this.gem);
+        }
+        if (amount <= 0) {
+            return new GemCreditResult(GemCreditStatus.INVALID_AMOUNT, amount, 0, this.gem, this.gem);
+        }
+        int max = PlayerConfig.getMaxGem();
+        if (this.gem < 0 || this.gem > max) {
+            nro.models.utils.Logger.error("[Inventory] Corrupt gem balance=" + this.gem
+                    + " for credit request=" + amount + " – rejecting with INVALID_BALANCE");
+            return new GemCreditResult(GemCreditStatus.INVALID_BALANCE, amount, 0, this.gem, this.gem);
+        }
+        long current = (long) this.gem;
+        long newBalance = current + (long) amount;
+        if (newBalance > max) {
+            return new GemCreditResult(GemCreditStatus.GEM_LIMIT, amount, 0, this.gem, this.gem);
+        }
+        int before = this.gem;
+        this.gem = (int) newBalance;
+        return new GemCreditResult(GemCreditStatus.SUCCESS, amount, amount, before, this.gem);
+    }
+
+    public synchronized void addGem(int gem) {
+        if (gem <= 0 || !this.active) {
+            return;
+        }
+        long max = PlayerConfig.getMaxGem();
+        if (this.gem < 0 || this.gem > max) {
+            nro.models.utils.Logger.error("[Inventory] Corrupt gem balance=" + this.gem
+                    + " for addGem request=" + gem + " – credit ignored");
+            return;
+        }
+        long updated = Math.min((long) this.gem + (long) gem, max);
+        this.gem = (int) updated;
+    }
+
     public void subGold(int num) {
         this.gold -= num;
     }
@@ -78,7 +150,10 @@ public class Inventory {
         }
     }
 
-    public void dispose() {
+    // [I] dispose() synchronized on same monitor as tryCreditGemExact/addGem so
+    //     active=false is visible to any concurrent credit attempt immediately.
+    public synchronized void dispose() {
+        this.active = false;
         if (this.trainArmor != null) {
             this.trainArmor.dispose();
         }
@@ -119,6 +194,7 @@ public class Inventory {
         this.itemsBoxCrackBall = null;
         this.itemsDaBan = null;
     }
+
 
     public void checkAndUpdateMeRongBadges(Player player) {
         if (player == null) {

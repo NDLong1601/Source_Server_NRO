@@ -1459,6 +1459,14 @@ public class Player implements Runnable {
     }
 
     public void dispose() {
+        // Close the lifecycle before any cleanup can fail or touch inventory state.
+        if (achievement != null) {
+            try {
+                achievement.closeClaims();
+            } catch (Exception e) {
+                nro.models.utils.Logger.error("[Player.dispose] achievement.closeClaims failed for id=" + id + ": " + e);
+            }
+        }
         CustomSkillService.gI().cancelSuperGhostKamikaze(this);
         if (itemsTradeWVP != null) {
             if (!itemsTradeWVP.isEmpty()) {
@@ -1533,6 +1541,15 @@ public class Player implements Runnable {
             playerIntrinsic.dispose();
             playerIntrinsic = null;
         }
+        // Dispose achievement before inventory after the lifecycle was closed above.
+        if (achievement != null) {
+            try {
+                achievement.dispose();
+            } catch (Exception e) {
+                nro.models.utils.Logger.error("[Player.dispose] achievement.dispose failed for id=" + id + ": " + e);
+            }
+            achievement = null;
+        }
         if (inventory != null) {
             inventory.dispose();
             inventory = null;
@@ -1580,10 +1597,8 @@ public class Player implements Runnable {
         if (satellite != null) {
             satellite = null;
         }
-        if (achievement != null) {
-            achievement.dispose();
-            achievement = null;
-        }
+        // achievement was already disposed above (before inventory).
+
         if (giftCode != null) {
             giftCode.dispose();
             giftCode = null;
