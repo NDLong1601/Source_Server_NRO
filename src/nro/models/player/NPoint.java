@@ -331,9 +331,6 @@ public class NPoint {
             bonusPercent += flyingMobDamagePercent;
         }
         long result = addTargetDamageBonus(damage, bonusPercent);
-        int clanBonus = ClanProgressionService.gI().statBasisPoints(player,
-                ClanProgressionService.Branch.ATTACK, false);
-        result += result * clanBonus / 10_000L;
         return applyDestructionDamage(result);
     }
 
@@ -354,9 +351,6 @@ public class NPoint {
             bonusPercent += tlDameTocXayda;
         }
         long result = addTargetDamageBonus(damage, bonusPercent);
-        int clanBonus = ClanProgressionService.gI().statBasisPoints(player,
-                ClanProgressionService.Branch.ATTACK, true);
-        result += result * clanBonus / 10_000L;
         return applyDestructionDamage(result);
     }
 
@@ -1698,6 +1692,12 @@ public class NPoint {
         }
 
         dame = applyVipEquipmentStatBonus(dame);
+
+        // Clan option 50 is part of the character's real attack stat so both
+        // cDamFull and every damage path use the same value immediately.
+        int clanAttackBonus = ClanProgressionService.gI().statBasisPoints(player,
+                ClanProgressionService.Branch.ATTACK, ClanProgressionService.gI().isPvpMode(player));
+        dame += dame * clanAttackBonus / 10_000L;
 
         if (this.player.effectSkill != null && this.player.effectSkill.isWeakAfterSleep) {
             dame -= dame * this.player.effectSkill.weakAfterSleepPercent / 100L;

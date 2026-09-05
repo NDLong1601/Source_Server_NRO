@@ -186,6 +186,12 @@ public class LocalManager {
         config.setMinimumIdle(MIN_CONN);
         config.setMaximumPoolSize(MAX_CONN);
         config.setMaxLifetime(MAX_LIFE_TIME);
+        // Hikari's default idle timeout (10 minutes) must not outlive a short
+        // configured connection lifetime, otherwise it disables idle cleanup
+        // and emits a warning during every server start.
+        if (MAX_LIFE_TIME > 0L) {
+            config.setIdleTimeout(Math.max(10_000L, Math.min(60_000L, MAX_LIFE_TIME / 2L)));
+        }
         config.setPoolName(poolName);
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");

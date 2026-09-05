@@ -1,0 +1,18 @@
+unit: server-bootstrap
+source_loc: src/nro/models/server/ServerManager.java:90
+side_effects:
+  - action: "Initialize Manager and clear transaction history"
+    must_preserve: true
+  - action: "Bind configured TCP port and start runtime services"
+    must_preserve: true
+branches:
+  - condition: "startup or runtime exception"
+    must_preserve: true
+    outcome: "log exception and keep failure visible"
+error_paths:
+  - condition: "exception during main/run"
+    contract: "Logger.logException receives the owning class and exception"
+    must_preserve: true
+concurrency:
+  model: "main thread plus named background threads and scheduled top updater"
+  tx_boundary: "DAO initialization and runtime startup must complete before gameplay services use registries"

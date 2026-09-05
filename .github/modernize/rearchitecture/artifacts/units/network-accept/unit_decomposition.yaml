@@ -1,0 +1,9 @@
+unit: network-accept
+commit: false
+candidate_splits:
+  - name: "socket accept loop"
+    drivers: [concurrency, protocol_boundary]
+    rationale: "Selector lifecycle and session construction have separate failure contracts."
+  - name: "session lifecycle"
+    drivers: [lifecycle, shared_state]
+    rationale: "SessionManager and MySession own state beyond socket acceptance."

@@ -1,0 +1,14 @@
+unit: gameplay-runtime
+bindings:
+  - framework: "JDBC/LocalManager"
+    source: "src/nro/models/database/*.java"
+    must_appear_in_target: "DAOs continue using the configured connection provider"
+  - framework: "NPC/service dispatch"
+    source: "src/nro/models/server/Controller.java"
+    must_appear_in_target: "Existing service entry points remain callable from packet and NPC flows"
+  - framework: "file-backed runtime data"
+    source: "data/ and src/nro/models/data/"
+    must_appear_in_target: "Template/asset loading preserves expected IDs and x1-x4 variants"
+runtime_config:
+  - source: "Config.properties and activity.properties"
+    must_appear_in_target: "External settings and fail-closed activity flags remain effective"

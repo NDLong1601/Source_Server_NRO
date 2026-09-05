@@ -5,6 +5,7 @@ import java.net.Socket;
 import nro.models.player.Player;
 import nro.models.clan.ClanTerritoryService;
 import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanGiftService;
 import nro.models.server.Controller;
 import nro.models.data.DataGame;
 import nro.models.database.MrFinn;
@@ -223,6 +224,7 @@ public class MySession extends Session {
                     if (ClanTerritoryService.gI().isTerritoryFor(pl, pl.zone)) {
                         ClanTreeService.gI().sendSnapshot(pl);
                     }
+                    ClanGiftService.gI().deliverPending(pl);
                     Logger.warning("[" + TimeUtil.getCurrHour() + ":" + TimeUtil.getCurrMin() + "] - Player Login: "
                             + this.player.name + ": " + (System.currentTimeMillis() - st) + " ms\n");
                     if (this.player.notify != null && !this.player.notify.equals("null")

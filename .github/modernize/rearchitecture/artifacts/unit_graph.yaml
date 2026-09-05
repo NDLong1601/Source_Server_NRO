@@ -1,0 +1,62 @@
+units:
+  - name: server-bootstrap
+    source_anchors:
+      - src/nro/models/server/ServerManager.java:90
+    exported_signature:
+      - "public static void main(String[] args)"
+      - "public void run()"
+    dynamic_entrypoints:
+      - "NetBeans main.class"
+      - "run.bat and dashboard launchers"
+    depends_on:
+      - "network-accept"
+      - "gameplay-runtime"
+    shared_refs:
+      - module: src/nro/models/server/Manager.java
+        used_fields: [MAPS, ITEM_TEMPLATES, MOB_TEMPLATES, NPC_TEMPLATES, CLANS]
+  - name: network-accept
+    source_anchors:
+      - src/nro/models/network/Network.java:17
+      - src/nro/models/network/SessionManager.java:1
+    exported_signature:
+      - "INetwork start(int port)"
+      - "void run()"
+    dynamic_entrypoints:
+      - "NIO selector thread"
+      - "SessionFactory session cloning"
+    depends_on:
+      - "protocol-dispatch"
+    shared_refs:
+      - module: src/nro/models/network/MySession.java
+        used_fields: [player, version, typeClient, zoomLevel]
+  - name: protocol-dispatch
+    source_anchors:
+      - src/nro/models/server/Controller.java:70
+      - src/nro/models/network/MySession.java:27
+    exported_signature:
+      - "void onMessage(ISession, Message)"
+      - "void sendMessage(Message)"
+    dynamic_entrypoints:
+      - "IMessageHandler implementation"
+      - "numeric packet command switch"
+    depends_on:
+      - "gameplay-runtime"
+    shared_refs:
+      - module: src/nro/models/player/Player.java
+        used_fields: [session, inventory, clan]
+  - name: gameplay-runtime
+    source_anchors:
+      - src/nro/models/player/Player.java:1
+      - src/nro/models/services/Service.java:1
+      - src/nro/models/clan/ClanService.java:1
+      - src/nro/models/database/PlayerDAO.java:1
+    exported_signature:
+      - "public gameplay services and DAO methods"
+    dynamic_entrypoints:
+      - "NPC/service dispatch"
+      - "boss/event manager threads"
+      - "DAO calls from runtime services"
+    depends_on: []
+    shared_refs:
+      - module: src/nro/models/data/LocalManager.java
+        used_fields: [connectionPool]

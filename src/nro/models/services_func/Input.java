@@ -2,6 +2,7 @@ package nro.models.services_func;
 
 import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
+import nro.models.clan.ClanShopService;
 import nro.models.data.LocalManager;
 import nro.models.consts.ConstNpc;
 import nro.models.database.PlayerDAO;
@@ -90,6 +91,7 @@ public class Input {
     public static final int BOTBOSS = 32;
     public static final int BOTATTACKPLAYER = 33;
     public static final int FIND_PLAYER_GIFT_RUBY = 34;
+    public static final int RENAME_CLAN_BY_TICKET = 35;
 
     private static Input intance;
 
@@ -543,6 +545,7 @@ public class Input {
                         }
                     }
                 }
+                case RENAME_CLAN_BY_TICKET -> ClanShopService.gI().renameClanByTicket(player, text.length == 0 ? "" : text[0]);
                 case DISSOLUTION_CLAN -> {
                     String xacNhan = text[0];
                     Clan clan;
@@ -877,6 +880,10 @@ public class Input {
 
     public void createFormChangeNameByItem(Player pl) {
         createForm(pl, CHANGE_NAME_BY_ITEM, "Đổi tên " + pl.name, new SubInput("Tên mới", ANY));
+    }
+
+    public void createFormClanRenameByTicket(Player pl) {
+        createForm(pl, RENAME_CLAN_BY_TICKET, "Đổi tên bang hội", new SubInput("Tên bang mới", ANY));
     }
 
     public void createFormChooseLevelBDKB(Player pl) {

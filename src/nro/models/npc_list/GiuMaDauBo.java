@@ -11,7 +11,11 @@ import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.server.Client;
 import nro.models.services.ClanService;
+import nro.models.services.InventoryService;
+import nro.models.services.ItemService;
 import nro.models.services.Service;
+import nro.models.item.Item;
+import nro.models.clan.ClanShopService;
 import nro.models.utils.Util;
 import nro.models.activity.ActivityService;
 import nro.models.activity.ActivityType;
@@ -37,7 +41,7 @@ public class GiuMaDauBo extends Npc {
             java.util.ArrayList<String> menus = new java.util.ArrayList<>();
             menus.add("Khiêu chiến\nBoss");
             if (shouldShowClanCheckIn(player)) {
-                menus.add("Điểm danh\n+1 Capsule\nBang");
+                menus.add("Điểm danh\n+1 Capsule\n+1 Phiếu quà");
             }
             menus.add("Đến\nTây Thánh địa");
             menus.add("Từ chối");
@@ -142,6 +146,13 @@ public class GiuMaDauBo extends Npc {
             return;
         }
 
+        Item giftTicket = ItemService.gI().createNewItem((short) ClanShopService.CLAN_GIFT_TICKET_ITEM_ID);
+        giftTicket.itemOptions.add(new Item.ItemOption(30, 0));
+        if (!InventoryService.gI().addItemBag(player, giftTicket)) {
+            Service.gI().sendThongBao(player, "Hành trang đã đầy, cần chỗ trống để nhận Phiếu quà bang.");
+            return;
+        }
+
         player.lastClanCheckIn = System.currentTimeMillis();
         player.clan.capsuleClan += 1;
 
@@ -153,10 +164,11 @@ public class GiuMaDauBo extends Npc {
             }
         }
         player.event.luotNhanCapsuleBang = 0;
+        InventoryService.gI().sendItemBags(player);
         // This is after all state mutations, so opening/retrying the NPC menu
         // cannot create an Activity event unless the clan check-in succeeded.
         ActivityService.gI().awardUnique(player, ActivityType.CLAN_CHECKIN, "clan-checkin");
-        Service.gI().sendThongBao(player, "Bạn đã điểm danh và nhận được 1 Capsule Bang.");
+        Service.gI().sendThongBao(player, "Bạn đã điểm danh và nhận được 1 Capsule Bang cùng 1 Phiếu quà bang.");
         for (ClanMember cm : player.clan.getMembers()) {
             Player pl = Client.gI().getPlayer(cm.id);
             if (pl != null) {

@@ -1,0 +1,21 @@
+unit: gameplay-runtime
+source_loc: src/nro/models/player/Player.java:1
+side_effects:
+  - action: "Mutate player, clan, item, map, event, and shop state"
+    must_preserve: true
+  - action: "Persist durable state through DAO/LocalManager"
+    must_preserve: true
+branches:
+  - condition: "feature-specific validation fails"
+    must_preserve: true
+    outcome: "do not partially consume currency/items and notify client"
+  - condition: "runtime data/template is missing"
+    must_preserve: true
+    outcome: "retain existing fail-closed or logged behavior"
+error_paths:
+  - condition: "JDBC failure"
+    contract: "close resources and surface/log failure without success-shaped fallback"
+    must_preserve: true
+concurrency:
+  model: "shared mutable registries plus feature/event worker threads"
+  tx_boundary: "player/clan mutations and corresponding SQL writes must remain atomic at existing service boundaries"

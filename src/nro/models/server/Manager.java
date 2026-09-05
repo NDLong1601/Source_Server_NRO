@@ -15,6 +15,10 @@ import nro.models.clan.ClanMember;
 import nro.models.clan.ClanTreasuryService;
 import nro.models.clan.ClanTreeService;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanShopService;
+import nro.models.clan.ClanItemStorageService;
+import nro.models.clan.ClanGiftService;
+import nro.models.clan.ClanBuffService;
 import static nro.models.data.DataGame.MAP_MOUNT_NUM;
 import nro.models.player_system.GiftCode;
 import nro.models.managers.GiftCodeManager;
@@ -437,6 +441,10 @@ public final class Manager {
             ClanTreasuryService.gI().ensureSchema(ConnectionDatabase);
             ClanTreeService.gI().ensureSchema(ConnectionDatabase);
             ClanProgressionService.gI().ensureSchema(ConnectionDatabase);
+            ClanShopService.gI().ensureSchema(ConnectionDatabase);
+            ClanGiftService.gI().ensureSchema(ConnectionDatabase);
+            ClanItemStorageService.gI().ensureSchema(ConnectionDatabase);
+            ClanBuffService.gI().ensureSchema(ConnectionDatabase);
 
             //load clan
             ps = ConnectionDatabase.prepareStatement("select * from clan");

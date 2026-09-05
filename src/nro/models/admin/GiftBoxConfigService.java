@@ -112,25 +112,43 @@ public final class GiftBoxConfigService {
         if (config == null) {
             return false;
         }
+        openConfigured(player, config, true);
+        return true;
+    }
+
+    /** Opens a configured box whose source is held in the shared clan storage. */
+    public boolean openFromClanStorage(Player player, int boxTemplateId) {
+        if (player == null) {
+            return false;
+        }
+        GiftBoxConfig config = configs.get(boxTemplateId);
+        if (config == null) {
+            Service.gI().sendThongBao(player, "Hộp quà bang chưa có cấu hình phần thưởng.");
+            return false;
+        }
+        return openConfigured(player, config, false);
+    }
+
+    private boolean openConfigured(Player player, GiftBoxConfig config, boolean consumeBagSource) {
         if (!config.enabled) {
             Service.gI().sendThongBao(player, "Hộp quà này đang tạm khóa.");
-            return true;
+            return false;
         }
 
         synchronized (player) {
-            Item source = findBagItem(player, box.template.id);
-            if (source == null || source.quantity < config.consumeQuantity) {
+            Item source = consumeBagSource ? findBagItem(player, config.boxTemplateId) : null;
+            if (consumeBagSource && (source == null || source.quantity < config.consumeQuantity)) {
                 Service.gI().sendThongBao(player, "Bạn không có đủ vật phẩm để mở hộp.");
-                return true;
+                return false;
             }
             int requiredSlots = config.minEmptySlots + Math.max(0, config.drawCount - 1);
             if (InventoryService.gI().getCountEmptyBag(player) < requiredSlots) {
                 Service.gI().sendThongBao(player, "Cần ít nhất " + requiredSlots + " ô trống trong hành trang.");
-                return true;
+                return false;
             }
             if (config.rewards == null || config.rewards.isEmpty()) {
                 Service.gI().sendThongBao(player, "Hộp quà này chưa có phần thưởng.");
-                return true;
+                return false;
             }
 
             List<Item> generated = new ArrayList<>();
@@ -138,12 +156,12 @@ public final class GiftBoxConfigService {
                 RewardConfig reward = chooseReward(config.rewards, player);
                 if (reward == null) {
                     Service.gI().sendThongBao(player, "Cấu hình phần thưởng hộp không hợp lệ.");
-                    return true;
+                    return false;
                 }
                 Item item = createReward(player, reward);
                 if (item == null) {
                     Service.gI().sendThongBao(player, "Không thể tạo vật phẩm phần thưởng.");
-                    return true;
+                    return false;
                 }
                 generated.add(item);
             }
@@ -161,11 +179,13 @@ public final class GiftBoxConfigService {
                         removeOne(player, rollback);
                     }
                     Service.gI().sendThongBao(player, "Hành trang không đủ chỗ cho phần thưởng.");
-                    return true;
+                    return false;
                 }
                 added.add(rollbackSnapshot);
             }
-            InventoryService.gI().subQuantityItemsBag(player, source, config.consumeQuantity);
+            if (consumeBagSource) {
+                InventoryService.gI().subQuantityItemsBag(player, source, config.consumeQuantity);
+            }
             StringBuilder rewardNames = new StringBuilder();
             for (Item reward : generated) {
                 if (rewardNames.length() > 0) {

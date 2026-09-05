@@ -1,0 +1,9 @@
+unit: protocol-dispatch
+commit: false
+candidate_splits:
+  - name: "account/session commands"
+    drivers: [protocol_boundary, cohesion]
+    rationale: "Authentication/session commands have different state rules from gameplay commands."
+  - name: "feature command routers"
+    drivers: [protocol_boundary, reference_cliff]
+    rationale: "The numeric switch currently couples clan, shop, item, map, and combat commands."

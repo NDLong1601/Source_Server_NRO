@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +30,8 @@ public final class ClanProgressionService {
     public static final byte REQUEST_UPGRADE = 113;
     public static final byte REQUEST_ALLOCATE = 114;
     public static final byte RESPONSE_SNAPSHOT = 115;
+    public static final byte RESPONSE_BUFF_SNAPSHOT = 124;
+    public static final byte REQUEST_BUFF_SNAPSHOT = 125;
 
     private static final ClanProgressionService INSTANCE = new ClanProgressionService();
     private final Map<Integer, ProgressState> states = new ConcurrentHashMap<>();
@@ -36,21 +39,23 @@ public final class ClanProgressionService {
     private volatile boolean schemaReady;
 
     public enum Branch {
-        ATTACK("ATTACK", "Tấn công", "attack"),
-        HP("HP", "Sinh lực", "hp"),
-        KI("KI", "Khí lực", "ki"),
-        PVE_REDUCTION("PVE_REDUCTION", "Phòng thủ PvE", "pve_reduction"),
-        MOB_GOLD("MOB_GOLD", "Vàng từ quái", "mob_gold"),
-        TREE_YIELD("TREE_YIELD", "Sản lượng cây", "tree_yield");
+        ATTACK("ATTACK", "Sức đánh", "attack", 50),
+        HP("HP", "HP", "hp", 77),
+        KI("KI", "KI", "ki", 103),
+        LUCK("LUCK", "May mắn", "luck", 236),
+        POWER("POWER", "Tiềm năng, sức mạnh", "power", 101),
+        MOB_GOLD("MOB_GOLD", "Vàng từ quái", "mob_gold", 100);
 
         final String key;
         final String display;
         final String configPrefix;
+        final int optionId;
 
-        Branch(String key, String display, String configPrefix) {
+        Branch(String key, String display, String configPrefix, int optionId) {
             this.key = key;
             this.display = display;
             this.configPrefix = configPrefix;
+            this.optionId = optionId;
         }
 
         static Branch fromWire(int index) {
@@ -88,7 +93,36 @@ public final class ClanProgressionService {
                     + "KEY idx_clan_potential_audit_clan (clan_id, id)) "
                     + "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         }
+        migrateBranch(connection, "PVE_REDUCTION", Branch.LUCK.key);
+        migrateBranch(connection, "TREE_YIELD", Branch.POWER.key);
         schemaReady = true;
+    }
+
+    private void migrateBranch(Connection connection, String oldKey, String newKey) throws SQLException {
+        try (PreparedStatement merge = connection.prepareStatement(
+                "UPDATE clan_potential current_value "
+                + "JOIN clan_potential legacy_value ON legacy_value.clan_id=current_value.clan_id "
+                + "SET current_value.rank_value=GREATEST(current_value.rank_value,legacy_value.rank_value) "
+                + "WHERE current_value.branch_key=? AND legacy_value.branch_key=?")) {
+            merge.setString(1, newKey);
+            merge.setString(2, oldKey);
+            merge.executeUpdate();
+        }
+        try (PreparedStatement copy = connection.prepareStatement(
+                "INSERT INTO clan_potential (clan_id,branch_key,rank_value) "
+                + "SELECT legacy_value.clan_id,?,legacy_value.rank_value FROM clan_potential legacy_value "
+                + "WHERE legacy_value.branch_key=? AND NOT EXISTS (SELECT 1 FROM clan_potential current_value "
+                + "WHERE current_value.clan_id=legacy_value.clan_id AND current_value.branch_key=?)")) {
+            copy.setString(1, newKey);
+            copy.setString(2, oldKey);
+            copy.setString(3, newKey);
+            copy.executeUpdate();
+        }
+        try (PreparedStatement delete = connection.prepareStatement(
+                "DELETE FROM clan_potential WHERE branch_key=?")) {
+            delete.setString(1, oldKey);
+            delete.executeUpdate();
+        }
     }
 
     private void ensureClanColumn(Connection connection, String columnName, String definition) throws SQLException {
@@ -165,21 +199,26 @@ public final class ClanProgressionService {
         int total = totalPointsForLevel(clan.level);
         int spent = spentPoints(state);
         int unspent = Math.max(0, total - spent);
-        if (clan.potentialTotal != total || clan.potentialUnspent != unspent) {
+        int maxMember = Math.max(clan.maxMember, memberSlotsForLevel(clan.level));
+        if (clan.potentialTotal != total || clan.potentialUnspent != unspent
+                || clan.maxMember != maxMember) {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "UPDATE clan SET potential_total=?, potential_unspent=? WHERE id=?")) {
+                    "UPDATE clan SET potential_total=?, potential_unspent=?, max_member=? WHERE id=?")) {
                 ps.setInt(1, total);
                 ps.setInt(2, unspent);
-                ps.setInt(3, clan.id);
+                ps.setInt(3, maxMember);
+                ps.setInt(4, clan.id);
                 ps.executeUpdate();
             }
         }
         clan.potentialTotal = total;
         clan.potentialUnspent = unspent;
+        clan.maxMember = maxMember;
     }
 
     public boolean isProgressionAction(byte action) {
-        return action >= REQUEST_VIEW && action <= REQUEST_ALLOCATE;
+        return (action >= REQUEST_VIEW && action <= REQUEST_ALLOCATE)
+                || action == REQUEST_BUFF_SNAPSHOT;
     }
 
     public void handleRequest(Player player, byte action, Message message) throws IOException {
@@ -187,6 +226,7 @@ public final class ClanProgressionService {
             case REQUEST_VIEW -> sendSnapshot(player);
             case REQUEST_UPGRADE -> upgrade(player);
             case REQUEST_ALLOCATE -> allocate(player, Branch.fromWire(message.reader().readUnsignedByte()));
+            case REQUEST_BUFF_SNAPSHOT -> sendBuffSnapshot(player);
             default -> {
             }
         }
@@ -194,6 +234,11 @@ public final class ClanProgressionService {
 
     /** Earned activity EXP. No currency deposit can call this method. */
     public boolean addExp(Clan clan, long amount) {
+        return addExp(clan, amount, null);
+    }
+
+    /** Earned activity EXP with an actor that must receive the refreshed snapshot. */
+    public boolean addExp(Clan clan, long amount, Player guaranteedRecipient) {
         if (clan == null || amount <= 0L) {
             return false;
         }
@@ -221,7 +266,7 @@ public final class ClanProgressionService {
             }
         }
         if (updated) {
-            broadcastSnapshot(clan);
+            broadcastSnapshot(clan, guaranteedRecipient);
         }
         return updated;
     }
@@ -245,8 +290,7 @@ public final class ClanProgressionService {
         }
         notify(player, "Bang đã lên cấp " + clan.level + ". Nhận 5 Điểm tiềm năng bang.");
         sendClanNotice(clan, player.name + " đã nâng bang lên cấp " + clan.level + ".");
-        refreshOnlineStats(clan);
-        broadcastSnapshot(clan);
+        refreshAndBroadcastStats(clan, player);
         clan.sendMyClanForAllMember();
     }
 
@@ -343,8 +387,7 @@ public final class ClanProgressionService {
             return;
         }
         notify(player, "Đã tăng " + branch.display + " lên bậc " + result.newRank + ".");
-        refreshOnlineStats(clan);
-        broadcastSnapshot(clan);
+        refreshAndBroadcastStats(clan, player);
     }
 
     private AllocationResult persistAllocation(Clan clan, Player player, Branch branch) {
@@ -426,18 +469,73 @@ public final class ClanProgressionService {
             for (Branch branch : Branch.values()) {
                 message.writer().writeByte(state.rank(branch));
             }
+            // Detail v1 carries only live character stats. Clan buffs use their own
+            // response packet so compatibility parsing cannot silently hide them.
+            message.writer().writeByte(1);
+            message.writer().writeInt(player.nPoint == null ? 0 : player.nPoint.hpMax);
+            message.writer().writeInt(player.nPoint == null ? 0 : player.nPoint.mpMax);
+            message.writer().writeInt(player.nPoint == null ? 0 : player.nPoint.dame);
+            message.writer().writeInt(player.nPoint == null ? 0 : player.nPoint.hp);
+            message.writer().writeInt(player.nPoint == null ? 0 : player.nPoint.mp);
             player.sendMessage(message);
             message.cleanup();
+            sendBuffSnapshot(player, clan);
         } catch (Exception e) {
             Logger.logException(ClanProgressionService.class, e, "Không gửi tiến trình bang");
         }
     }
 
+    /** Explicit endpoint used by the clan-info tab to refresh buffs independently. */
+    public void sendBuffSnapshot(Player player) {
+        if (!requireClan(player)) {
+            return;
+        }
+        sendBuffSnapshot(player, player.clan);
+    }
+
+    /** Independent packet so a progression-detail compatibility issue cannot hide clan buffs. */
+    private void sendBuffSnapshot(Player player, Clan clan) {
+        Message message = null;
+        try {
+            List<ClanBuffService.BuffView> buffStates = ClanBuffService.gI().buffSnapshot(clan.id);
+            long snapshotAt = System.currentTimeMillis();
+            message = new Message(127);
+            message.writer().writeByte(RESPONSE_BUFF_SNAPSHOT);
+            message.writer().writeInt(clan.id);
+            message.writer().writeByte(1);
+            message.writer().writeByte(buffStates.size());
+            for (ClanBuffService.BuffView buff : buffStates) {
+                message.writer().writeByte(buff.typeId());
+                message.writer().writeShort(buff.percent());
+                message.writer().writeLong(Math.max(0L, buff.expiresAt() - snapshotAt));
+            }
+            player.sendMessage(message);
+        } catch (Exception e) {
+            Logger.logException(ClanProgressionService.class, e, "Không gửi trạng thái buff bang");
+        } finally {
+            if (message != null) {
+                message.cleanup();
+            }
+        }
+    }
+
     private void broadcastSnapshot(Clan clan) {
+        broadcastSnapshot(clan, null);
+    }
+
+    private void broadcastSnapshot(Clan clan, Player guaranteedRecipient) {
+        boolean recipientIncluded = false;
         for (Player member : new ArrayList<>(clan.membersInGame)) {
             if (member != null && member.clan != null && member.clan.id == clan.id) {
                 sendSnapshot(member);
+                if (member == guaranteedRecipient) {
+                    recipientIncluded = true;
+                }
             }
+        }
+        if (!recipientIncluded && guaranteedRecipient != null
+                && guaranteedRecipient.clan != null && guaranteedRecipient.clan.id == clan.id) {
+            sendSnapshot(guaranteedRecipient);
         }
     }
 
@@ -451,11 +549,59 @@ public final class ClanProgressionService {
         return true;
     }
 
-    private void refreshOnlineStats(Clan clan) {
+    private void refreshAndBroadcastStats(Clan clan, Player guaranteedRecipient) {
+        ArrayList<Player> recipients = new ArrayList<>();
         for (Player member : new ArrayList<>(clan.membersInGame)) {
-            if (member != null && member.clan == clan && member.isPl() && member.nPoint != null) {
-                Service.gI().point(member);
+            if (isOnlineClanPlayer(member, clan) && !recipients.contains(member)) {
+                recipients.add(member);
             }
+        }
+        if (isOnlineClanPlayer(guaranteedRecipient, clan) && !recipients.contains(guaranteedRecipient)) {
+            recipients.add(guaranteedRecipient);
+        }
+
+        // Recalculate first, then send command 127 before the legacy point packet.
+        // A failure for one member must never prevent the actor receiving the new rank.
+        for (Player member : recipients) {
+            try {
+                recalculatePlayerStats(member);
+            } catch (Exception e) {
+                Logger.logException(ClanProgressionService.class, e,
+                        "Không tính lại chỉ số bang cho " + member.name);
+            }
+        }
+        for (Player member : recipients) {
+            sendSnapshot(member);
+        }
+        for (Player member : recipients) {
+            try {
+                Service.gI().sendPointSnapshot(member);
+            } catch (Exception e) {
+                Logger.logException(ClanProgressionService.class, e,
+                        "Không gửi chỉ số bang cho " + member.name);
+            }
+        }
+    }
+
+    private boolean isOnlineClanPlayer(Player player, Clan clan) {
+        return player != null && player.clan != null && player.clan.id == clan.id
+                && player.isPl() && player.nPoint != null;
+    }
+
+    private void recalculatePlayerStats(Player player) {
+        int oldHp = player.nPoint.hp;
+        int oldMp = player.nPoint.mp;
+        int oldHpMax = player.nPoint.hpMax;
+        int oldMpMax = player.nPoint.mpMax;
+        boolean hpWasFull = oldHpMax > 0 && oldHp >= oldHpMax;
+        boolean mpWasFull = oldMpMax > 0 && oldMp >= oldMpMax;
+
+        player.nPoint.calPoint();
+        if (hpWasFull && player.nPoint.hpMax > oldHpMax) {
+            player.nPoint.hp = player.nPoint.hpMax;
+        }
+        if (mpWasFull && player.nPoint.mpMax > oldMpMax) {
+            player.nPoint.mp = player.nPoint.mpMax;
         }
     }
 
@@ -466,16 +612,14 @@ public final class ClanProgressionService {
         return stateFor(clan).rank(branch);
     }
 
-    /** Basis points, 100 = 1%. Combat branches are halved only against players. */
+    /** Basis points, 100 = 1%. Option 50/77/103 gain 0.2% per point; the rest gain 1% per point. */
     public int statBasisPoints(Player player, Branch branch, boolean playerVersusPlayer) {
         if (player == null || !player.isPl() || player.clan == null || branch == null) {
             return 0;
         }
-        int result = rank(player.clan, branch) * config.perRankBasisPoints(branch);
-        if (playerVersusPlayer && (branch == Branch.ATTACK || branch == Branch.HP || branch == Branch.KI)) {
-            result /= 2;
-        }
-        return Math.max(0, Math.min(10_000, result));
+        int progression = effectBasisPoints(branch, rank(player.clan, branch));
+        int temporary = ClanBuffService.gI().basisPoints(player, branch);
+        return (int) Math.min(10_000L, (long) progression + temporary);
     }
 
     public int mobGoldBasisPoints(Player player) {
@@ -483,12 +627,19 @@ public final class ClanProgressionService {
     }
 
     public int treeYieldBasisPoints(int clanId) {
-        ProgressState state = states.get(clanId);
-        return state == null ? 0 : state.rank(Branch.TREE_YIELD) * config.perRankBasisPoints(Branch.TREE_YIELD);
+        return 0;
     }
 
     public int pveReductionBasisPoints(Player player) {
-        return statBasisPoints(player, Branch.PVE_REDUCTION, false);
+        return 0;
+    }
+
+    public int luckPercent(Player player) {
+        return statBasisPoints(player, Branch.LUCK, false) / 100;
+    }
+
+    public int powerGainBasisPoints(Player player) {
+        return statBasisPoints(player, Branch.POWER, false);
     }
 
     /** PvP modes use the 50% coefficient for static HP/KI clan bonuses too. */
@@ -506,25 +657,31 @@ public final class ClanProgressionService {
     public int capsuleRequired(int level) { return config.capsuleRequired(level); }
     public long goldRequired(int level) { return config.goldRequired(level); }
     public long gemRequired(int level) { return config.gemRequired(level); }
-    public int costForRank(int currentRank) { return 1 + Math.max(0, currentRank) / 10; }
+    public int costForRank(int currentRank) { return 1; }
     public int totalPointsForLevel(int level) { return Math.max(0, Clan.normalizeLevel(level) - 1) * 5; }
+
+    /** Returns the exact effect without discarding partial percentages (20 basis points = 0.2%). */
+    public int effectBasisPoints(Branch branch, int rank) {
+        if (branch == null) {
+            return 0;
+        }
+        int safeRank = Math.max(0, rank);
+        int basisPointsPerRank = branch == Branch.ATTACK || branch == Branch.HP || branch == Branch.KI
+                ? 20 : 100;
+        return (int) Math.min(10_000L, (long) safeRank * basisPointsPerRank);
+    }
 
     private int spentPoints(ProgressState state) {
         int spent = 0;
         for (Branch branch : Branch.values()) {
-            for (int rank = 0; rank < state.rank(branch); rank++) {
-                spent += costForRank(rank);
-            }
+            spent += state.rank(branch);
         }
         return spent;
     }
 
-    private int memberSlotsForLevel(int level) {
-        int slots = Clan.DEFAULT_MAX_MEMBER;
-        if (level >= 5) slots++;
-        if (level >= 10) slots++;
-        if (level >= 20) slots++;
-        if (level > 20) slots += (level - 20) / 10;
+    public int memberSlotsForLevel(int level) {
+        int normalizedLevel = Clan.normalizeLevel(level);
+        int slots = Clan.DEFAULT_MAX_MEMBER + normalizedLevel - 1;
         return Math.min(Clan.MAX_MEMBER_LIMIT, slots);
     }
 
@@ -614,8 +771,6 @@ public final class ClanProgressionService {
         int expFertilize() { return (int) bounded("exp_tree_fertilize", 30, 0, 1_000_000); }
         int expWeeklyContract() { return (int) bounded("exp_weekly_contract", 250, 0, 100_000_000); }
         int maxRank(Branch branch) { return (int) bounded(branch.configPrefix + "_max_rank", 20, 0, 100); }
-        int perRankBasisPoints(Branch branch) { return (int) bounded(branch.configPrefix + "_per_rank_bp", 0, 0, 10_000); }
-
         long expRequired(int level) {
             return scaled("base_exp", 100L, level, 1.55d, 1L, Long.MAX_VALUE);
         }

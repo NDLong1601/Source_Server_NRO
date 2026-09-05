@@ -1,0 +1,11 @@
+unit: network-accept
+bindings:
+  - framework: "Java NIO"
+    source: "src/nro/models/network/Network.java:6-8"
+    must_appear_in_target: "Selector and non-blocking accept semantics remain compatible"
+  - framework: "SessionFactory/ISessionAcceptHandler"
+    source: "src/nro/models/network/Network.java:131-133"
+    must_appear_in_target: "Session initialization and registration callbacks remain wired"
+runtime_config:
+  - source: "ServerManager.PORT"
+    must_appear_in_target: "The configured port reaches Network.start(int)"

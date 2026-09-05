@@ -44,6 +44,7 @@ import nro.models.services.ItemTimeService;
 import nro.models.services.PetService;
 import nro.models.services.RewardService;
 import nro.models.admin.GiftBoxConfigService;
+import nro.models.clan.ClanShopService;
 import nro.models.services.PlayerService;
 import nro.models.services.TaskService;
 import nro.models.services.AutoQuestService;
@@ -337,6 +338,9 @@ public class UseItem {
             int renameItemId = PlayerConfig.getInt("player.rename.itemId", 2218, 1, Short.MAX_VALUE);
             if (item.template.id == renameItemId) {
                 Input.gI().createFormChangeNameByItem(pl);
+                return;
+            }
+            if (ClanShopService.gI().useSupportItem(pl, item)) {
                 return;
             }
             if (item.template.strRequire <= pl.nPoint.power) {

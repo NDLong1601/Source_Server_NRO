@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "baselineId": "6000d5f314a34190aed91dcd1d32c916",
+  "capturedAt": "2026-09-05T13:09:01.2354668Z",
+  "capturedBy": null,
+  "elapsedSeconds": 0,
+  "fingerprint": {
+    "kind": "unavailable",
+    "value": ""
+  },
+  "scope": {
+    "kind": "solution",
+    "paths": [
+      "build.xml"
+    ]
+  },
+  "buildCommand": "ant -f C:\\Users\\PC\\Music\\Teamobi2026\\SRC\\build.xml clean jar",
+  "includedTests": false,
+  "verdict": "red",
+  "truncated": false,
+  "notes": [
+    "Apache Ant is not available on PATH; baseline build could not start."
+  ],
+  "units": [
+    {
+      "id": "build.xml",
+      "name": "NgocRongOnline",
+      "status": "failed",
+      "errors": 1,
+      "warnings": 0,
+      "codes": [
+        "ANT_NOT_FOUND"
+      ],
+      "summary": "Apache Ant command is not available on PATH"
+    }
+  ]
+}

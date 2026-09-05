@@ -4,10 +4,7 @@ import java.time.LocalDateTime;
 import nro.models.utils.Functions;
 import nro.models.npc.NonInteractiveNPC;
 import nro.models.radar.Card;
-import nro.models.radar.RadarCard;
-import nro.models.services.RadarService;
 import nro.models.services.InventoryService;
-import nro.models.server.Manager;
 import nro.models.services_dungeon.MajinBuuService;
 import nro.models.skill.PlayerSkill;
 import java.util.List;
@@ -20,9 +17,9 @@ import nro.models.consts.ConstPlayer;
 import nro.models.consts.ConstTask;
 import nro.models.npc.MabuEgg;
 import nro.models.mob.MobMe;
-import nro.models.data.DataGame;
 import nro.models.clan.ClanMember;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanBuffService;
 import nro.models.consts.ConstAchievement;
 import nro.models.map.Zone;
 import nro.models.interfaces.IPVP;
@@ -68,8 +65,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import nro.models.minigame.ChonAiDay_Gem;
-import nro.models.minigame.ChonAiDay_Gold;
 import nro.models.npc.DuaHauEgg;
 import nro.models.player_badges.Badges;
 import nro.models.player_badges.BadgesData;
@@ -91,6 +86,8 @@ public class Player implements Runnable {
 
     public long lastTimeEatPea;
     private long lastTimeItemExpirationCheck;
+    public long lastClanBuffRecoveryAt;
+    public int lastClanBuffMask = -1;
     public Map<Integer, Long> activeEffects = new HashMap<>();
     @Setter
     @Getter
@@ -466,6 +463,7 @@ public class Player implements Runnable {
             try {
                 if (this.isPl()) {
                     ActivityService.gI().ensureCurrentPeriod(this);
+                    ClanBuffService.gI().tick(this);
                 }
                 // Option 62 must track equipped time everywhere, including a
                 // home map where the ordinary combat-point update is paused.
@@ -680,7 +678,7 @@ public class Player implements Runnable {
         }
     }
 
-    private static final short[][] idOutfitFusion = {
+    static final short[][] idOutfitFusion = {
         {380, 381, 382},
         {383, 384, 385},
         {391, 392, 393},
@@ -718,407 +716,47 @@ public class Player implements Runnable {
     };
 
     public String percentGold(int type) {
-        try {
-            if (type == 0) {
-                double denominator = ChonAiDay_Gold.gI().goldNormar;
-                if (denominator != 0) {
-                    double percent = ((double) this.goldNormar / denominator) * 100;
-                    return String.valueOf(Math.ceil(percent));
-                } else {
-                    return "0";
-                }
-            } else if (type == 1) {
-                double denominator = ChonAiDay_Gold.gI().goldVip;
-                if (denominator != 0) {
-                    double percent = ((double) this.goldVIP / denominator) * 100;
-                    return String.valueOf(Math.ceil(percent));
-                } else {
-                    return "0";
-                }
-            }
-        } catch (ArithmeticException e) {
-            return "0";
-        }
-        return "0";
+        return PlayerAppearanceService.percentGold(this, type);
     }
 
     public String percentGem(int type) {
-        try {
-            if (type == 0) {
-                double denominator3 = ChonAiDay_Gem.gI().gemNormar;
-                if (denominator3 != 0) {
-                    double percent = ((double) this.gemNormar / denominator3) * 100;
-                    return String.valueOf(Math.ceil(percent));
-                } else {
-                    return "0";
-                }
-            } else if (type == 1) {
-                double denominator3 = ChonAiDay_Gem.gI().gemVip;
-                if (denominator3 != 0) {
-                    double percent = ((double) this.gemVIP / denominator3) * 100;
-                    return String.valueOf(Math.ceil(percent));
-                } else {
-                    return "0";
-                }
-            } else {
-                return "0";
-            }
-        } catch (ArithmeticException | NullPointerException e) {
-            // Xử lý nếu có lỗi
-            return "0";
-        }
+        return PlayerAppearanceService.percentGem(this, type);
     }
 
     public int getHat() {
-        return -1;
+        return PlayerAppearanceService.getHat(this);
     }
 
     public byte getAura() {
-        byte auraFromItem = getAuraFromEquippedItem();
-        if (auraFromItem >= 0) {
-            return auraFromItem;
-        }
-        if (!isPl() || this.Cards.isEmpty()) {
-            return -1;
-        }
-        for (Card card : this.Cards) {
-            if (card != null && (card.Id == 956 || card.Id == 1792 || card.Id == 1793 || card.Id == 1791 || card.Id == 1204 || card.Id == 1142) && card.Level > 1) {
-                RadarCard radarTemplate = RadarService.gI().RADAR_TEMPLATE.stream().filter(r -> r.Id == card.Id).findFirst().orElse(null);
-                if (radarTemplate != null) {
-                    return (byte) radarTemplate.AuraId;
-                }
-            }
-        }
-        return -1;
+        return PlayerAppearanceService.getAura(this);
     }
 
     private byte getAuraFromEquippedItem() {
-        if (!isPl() || this.inventory == null || this.inventory.itemsBody == null
-                || this.inventory.itemsBody.size() <= InventoryService.PLAYER_AURA_SLOT) {
-            return -1;
-        }
-        Item auraItem = this.inventory.itemsBody.get(InventoryService.PLAYER_AURA_SLOT);
-        int auraId = InventoryService.getAuraId(auraItem);
-        if (auraId < 0 || auraId > Byte.MAX_VALUE) {
-            return -1;
-        }
-        if (Manager.getNFrameImageByName("aura_" + auraId + "_0") <= 0
-                || Manager.getNFrameImageByName("aura_" + auraId + "_1") <= 0) {
-            return -1;
-        }
-        return (byte) auraId;
+        return PlayerAppearanceService.getAuraFromEquippedItem(this);
     }
 
     public byte getEffFront() {
-        if (this.inventory == null) {
-            return -1;
-        }
-        if (this.inventory.itemsBody.isEmpty() || this.inventory.itemsBody.size() < 10) {
-            return -1;
-        }
-        int levelAo = 0;
-        Item.ItemOption optionLevelAo = null;
-        int levelQuan = 0;
-        Item.ItemOption optionLevelQuan = null;
-        int levelGang = 0;
-        Item.ItemOption optionLevelGang = null;
-        int levelGiay = 0;
-        Item.ItemOption optionLevelGiay = null;
-        int levelNhan = 0;
-        Item.ItemOption optionLevelNhan = null;
-        Item itemAo = this.inventory.itemsBody.get(0);
-        Item itemQuan = this.inventory.itemsBody.get(1);
-        Item itemGang = this.inventory.itemsBody.get(2);
-        Item itemGiay = this.inventory.itemsBody.get(3);
-        Item itemNhan = this.inventory.itemsBody.get(4);
-        for (Item.ItemOption io : itemAo.itemOptions) {
-            if (io.optionTemplate.id == 72) {
-                levelAo = io.param;
-                optionLevelAo = io;
-                break;
-            }
-        }
-        for (Item.ItemOption io : itemQuan.itemOptions) {
-            if (io.optionTemplate.id == 72) {
-                levelQuan = io.param;
-                optionLevelQuan = io;
-                break;
-            }
-        }
-        for (Item.ItemOption io : itemGang.itemOptions) {
-            if (io.optionTemplate.id == 72) {
-                levelGang = io.param;
-                optionLevelGang = io;
-                break;
-            }
-        }
-        for (Item.ItemOption io : itemGiay.itemOptions) {
-            if (io.optionTemplate.id == 72) {
-                levelGiay = io.param;
-                optionLevelGiay = io;
-                break;
-            }
-        }
-        for (Item.ItemOption io : itemNhan.itemOptions) {
-            if (io.optionTemplate.id == 72) {
-                levelNhan = io.param;
-                optionLevelNhan = io;
-                break;
-            }
-        }
-        if (optionLevelAo != null && optionLevelQuan != null && optionLevelGang != null && optionLevelGiay != null && optionLevelNhan != null
-                && levelAo >= 8 && levelQuan >= 8 && levelGang >= 8 && levelGiay >= 8 && levelNhan >= 8) {
-            return 8;
-        } else if (optionLevelAo != null && optionLevelQuan != null && optionLevelGang != null && optionLevelGiay != null && optionLevelNhan != null
-                && levelAo >= 7 && levelQuan >= 7 && levelGang >= 7 && levelGiay >= 7 && levelNhan >= 7) {
-            return 7;
-        } else if (optionLevelAo != null && optionLevelQuan != null && optionLevelGang != null && optionLevelGiay != null && optionLevelNhan != null
-                && levelAo >= 6 && levelQuan >= 6 && levelGang >= 6 && levelGiay >= 6 && levelNhan >= 6) {
-            return 6;
-        } else if (optionLevelAo != null && optionLevelQuan != null && optionLevelGang != null && optionLevelGiay != null && optionLevelNhan != null
-                && levelAo >= 5 && levelQuan >= 5 && levelGang >= 5 && levelGiay >= 5 && levelNhan >= 5) {
-            return 5;
-        } else if (optionLevelAo != null && optionLevelQuan != null && optionLevelGang != null && optionLevelGiay != null && optionLevelNhan != null
-                && levelAo >= 4 && levelQuan >= 4 && levelGang >= 4 && levelGiay >= 4 && levelNhan >= 4) {
-            return 4;
-        } else {
-            return -1;
-        }
+        return PlayerAppearanceService.getEffFront(this);
     }
 
     public short getHead() {
-        if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || this.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = inventory.itemsBody.get(5);
-            Item petItem = pet.inventory.itemsBody.get(5);
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1578;
-            }
-        }
-        if (effectSkill != null && effectSkill.isBinh) {
-            return idOutfitMafuba[effectSkill.typeBinh][0];
-        }
-        if (effectSkill != null && effectSkill.isStone) {
-            return 454;
-        }
-        if (effectSkill != null && effectSkill.isHalloween) {
-            return idOutfitHalloween[effectSkill.idOutfitHalloween][this.gender][0];
-        }
-        if (effectSkill != null && effectSkill.isMonkey) {
-            return (short) ConstPlayer.HEADMONKEY[effectSkill.levelMonkey - 1];
-        } else if (effectSkill != null && effectSkill.isSocola) {
-            return 412;
-        } else if (effectSkill != null && effectSkill.isCarrot) {
-            return 669;
-        } else if (effectSkill != null && effectSkill.isPumpkin) {
-            return 584;
-        } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            if (nPoint != null && nPoint.isGogeta) {
-                return 2100;
-            } else if (fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 0][0];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-//                if (this.pet.typePet == 1) {
-//                    return idOutfitFusion[3 + this.gender][0];
-//                }
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 1][0];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-                if (nPoint != null && nPoint.levelBT == 3) {
-                    return idOutfitFusion[3 + this.gender][0];
-                }
-                return idOutfitFusion[3 + this.gender][0];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-                if (nPoint != null && nPoint.levelBT == 4) {
-                    return idOutfitFusion[6 + this.gender][0];
-                }
-                return idOutfitFusion[6 + this.gender][0];
-            }
-        } else if (inventory != null && inventory.itemsBody.get(5).isNotNullItem()) {
-            int headId = inventory.itemsBody.get(5).template.head;
-            if (headId != -1) {
-                return (short) headId;
-            }
-        }
-        return this.head;
+        return PlayerAppearanceService.getHead(this);
     }
 
     public short getBody() {
-        if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || this.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = inventory.itemsBody.get(5);
-            Item petItem = pet.inventory.itemsBody.get(5);
-
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1581;
-            }
-        }
-        if (effectSkill != null && effectSkill.isBinh) {
-            return idOutfitMafuba[effectSkill.typeBinh][1];
-        }
-        if (effectSkill != null && effectSkill.isStone) {
-            return 455;
-        }
-        if (effectSkill != null && effectSkill.isHalloween) {
-            return idOutfitHalloween[effectSkill.idOutfitHalloween][this.gender][1];
-        }
-        if (effectSkill != null && effectSkill.isMonkey) {
-            return 193;
-        } else if (effectSkill != null && effectSkill.isSocola) {
-            return 413;
-        } else if (effectSkill != null && effectSkill.isCarrot) {
-            return 670;
-        } else if (effectSkill != null && effectSkill.isPumpkin) {
-            return 585;
-        } else if (isPhuHoMapMabu && fusion != null && fusion.typeFusion == ConstPlayer.NON_FUSION) {
-            return idOutfitGod[this.gender][1];
-        } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            if (nPoint != null && nPoint.isGogeta) {
-                return 2101;
-            } else if (fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 0][1];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-//                if (this.pet.typePet == 1) {
-//                    return idOutfitFusion[3 + this.gender][1];
-//                }
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 1][1];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-                if (nPoint != null && nPoint.levelBT == 3) {
-                    return idOutfitFusion[3 + this.gender][1];
-                }
-                return idOutfitFusion[3 + this.gender][1];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-                if (nPoint != null && nPoint.levelBT == 4) {
-                    return idOutfitFusion[6 + this.gender][1];
-                }
-                return idOutfitFusion[6 + this.gender][1];
-            }
-        } else if (inventory != null && inventory.itemsBody.get(5).isNotNullItem()) {
-            int body = inventory.itemsBody.get(5).template.body;
-            if (body != -1) {
-                return (short) body;
-            }
-        }
-        if (inventory != null && inventory.itemsBody.get(0).isNotNullItem()) {
-            return inventory.itemsBody.get(0).template.part;
-        }
-        return (short) (gender == ConstPlayer.NAMEC ? 59 : 57);
+        return PlayerAppearanceService.getBody(this);
     }
 
     public short getLeg() {
-        if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || this.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = inventory.itemsBody.get(5);
-            Item petItem = pet.inventory.itemsBody.get(5);
-
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1582;
-            }
-        }
-        if (effectSkill != null && effectSkill.isBinh) {
-            return idOutfitMafuba[effectSkill.typeBinh][2];
-        }
-        if (effectSkill != null && effectSkill.isStone) {
-            return 456;
-        }
-        if (effectSkill != null && effectSkill.isHalloween) {
-            return idOutfitHalloween[effectSkill.idOutfitHalloween][this.gender][2];
-        }
-        if (effectSkill != null && effectSkill.isMonkey) {
-            return 194;
-        } else if (effectSkill != null && effectSkill.isSocola) {
-            return 414;
-        } else if (effectSkill != null && effectSkill.isCarrot) {
-            return 671;
-        } else if (effectSkill != null && effectSkill.isPumpkin) {
-            return 586;
-        } else if (isPhuHoMapMabu && fusion != null && fusion.typeFusion == ConstPlayer.NON_FUSION) {
-            return idOutfitGod[this.gender][2];
-        } else if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
-            if (nPoint != null && nPoint.isGogeta) {
-                return 2102;
-            } else if (fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 0][2];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-//                if (this.pet.typePet == 1) {
-//                    return idOutfitFusion[3 + this.gender][2];
-//                }
-                return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 1][2];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-                if (nPoint != null && nPoint.levelBT == 3) {
-                    return idOutfitFusion[3 + this.gender][2];
-                }
-                return idOutfitFusion[3 + this.gender][2];
-            } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-                if (nPoint != null && nPoint.levelBT == 4) {
-                    return idOutfitFusion[6 + this.gender][2];
-                }
-                return idOutfitFusion[6 + this.gender][2];
-            }
-        } else if (inventory != null && inventory.itemsBody.get(5).isNotNullItem()) {
-            int leg = inventory.itemsBody.get(5).template.leg;
-            if (leg != -1) {
-                return (short) leg;
-            }
-        }
-        if (inventory != null && inventory.itemsBody.get(1).isNotNullItem()) {
-            return inventory.itemsBody.get(1).template.part;
-        }
-        return (short) (gender == 1 ? 60 : 58);
+        return PlayerAppearanceService.getLeg(this);
     }
 
     public short getFlagBag() {
-        if (this.idMark.isHoldBlackBall()) {
-            return 31;
-        } else if (this.idNRNM >= 353 && this.idNRNM <= 359) {
-            return 30;
-        }
-        if (TaskService.gI().getIdTask(this) == ConstTask.TASK_3_2) {
-            return 28;
-        }
-        if (this.inventory.itemsBody.size() >= 11) {
-            if (this.inventory.itemsBody.get(8).isNotNullItem()) {
-                return this.inventory.itemsBody.get(8).template.part;
-            }
-        }
-        if (this.isPet && this.inventory.itemsBody.size() >= 8) {
-            if (this.inventory.itemsBody.get(7).isNotNullItem()) {
-                return this.inventory.itemsBody.get(7).template.part;
-            }
-        }
-        if (this.clan != null) {
-            return (short) this.clan.imgId;
-        }
-        return -1;
+        return PlayerAppearanceService.getFlagBag(this);
     }
 
     public short getMount() {
-        if (this.inventory.itemsBody.isEmpty() || this.inventory.itemsBody.size() < 10) {
-            return -1;
-        }
-        Item item = this.inventory.itemsBody.get(9);
-        if (!item.isNotNullItem()) {
-            return -1;
-        }
-        if (item.template.type == 24 || item.template.type == 23) {
-            if (item.template.gender == 3 || item.template.gender == this.gender) {
-                return item.template.id;
-            } else {
-                return -1;
-            }
-        } else {
-            if (item.template.id < 500) {
-                return item.template.id;
-            } else {
-                Short value = (Short) DataGame.MAP_MOUNT_NUM.get(item.template.id);
-                return value != null ? value : -1;
-            }
-        }
+        return PlayerAppearanceService.getMount(this);
     }
 
     public synchronized int injured(Player plAtt, long damage, boolean piercing, boolean isMobAttack) {

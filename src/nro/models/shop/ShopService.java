@@ -30,6 +30,7 @@ import nro.models.map.service.NpcService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.TimeUtil;
+import nro.models.clan.ClanItemStorageService;
 
 /**
  *
@@ -58,6 +59,13 @@ public class ShopService {
     }
 
     public void opendShop(Player player, String tagName, boolean allGender) {
+        if (ClanItemStorageService.OWNER_SHOP_TAG.equals(tagName)
+                && (player == null || player.clan == null || !player.clan.isLeader(player))) {
+            if (player != null) {
+                Service.gI().sendThongBao(player, "Chỉ Chủ bang được mở cửa hàng vật phẩm kho bang.");
+            }
+            return;
+        }
         if (tagName.equals("ITEMS_LUCKY_ROUND")) {
             openShopType4(player, tagName, player.inventory.itemsBoxCrackBall);
             return;
@@ -488,6 +496,11 @@ public class ShopService {
         } else if (tagName.equals("BILL")) {
             buyItemHD(player, tempId);
             return;
+        } else if (tagName.equals(ClanItemStorageService.OWNER_SHOP_TAG)) {
+            Shop shop = player.idMark.getShopOpen();
+            ItemShop itemShop = shop == null ? null : shop.getItemShop(tempId);
+            ClanItemStorageService.gI().purchaseFromOwnerShop(player, itemShop);
+            return;
         }
 
         if (player.idMark.getShopOpen() == null) {
@@ -851,7 +864,8 @@ public class ShopService {
             Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + eventPointPrice + " điểm sự kiện.");
             return;
         }
-        // Đổi bằng điểm Capsule Bang
+        // Các shop SHOP_CLAN hiện tại là shop cá nhân: mỗi thành viên tự trả
+        // bằng Capsule cá nhân (clanPoint), không được trừ quỹ chung của bang.
         if (is.tabShop.id == 60 || is.tabShop.id == 61 || is.tabShop.id == 62) {
             int capsuleClanPointPrice = 0;
 
@@ -915,15 +929,19 @@ public class ShopService {
                 return;
             }
 
-            if (!player.clan.spendCapsuleClan(player, capsuleClanPointPrice, is.temp.name)) {
-                return;
+            synchronized (player.clan) {
+                if (player.clanMember == null || player.clanMember.clanPoint < capsuleClanPointPrice) {
+                    Service.gI().sendThongBao(player, "Bạn không đủ " + capsuleClanPointPrice + " Capsule cá nhân.");
+                    return;
+                }
+                player.clanMember.clanPoint -= capsuleClanPointPrice;
+                player.clan.update();
+                Item item = ItemService.gI().createItemFromItemShop(is);
+                InventoryService.gI().addItemBag(player, item);
+                InventoryService.gI().sendItemBags(player);
             }
 
-            Item item = ItemService.gI().createItemFromItemShop(is);
-            InventoryService.gI().addItemBag(player, item);
-            InventoryService.gI().sendItemBags(player);
-
-            Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + capsuleClanPointPrice + " điểm Capsule Bang.");
+            Service.gI().sendThongBao(player, "Đã đổi " + is.temp.name + " bằng " + capsuleClanPointPrice + " Capsule cá nhân.");
             return;
         }
 

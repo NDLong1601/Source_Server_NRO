@@ -1104,7 +1104,8 @@ public class Mob {
      * option extends that same roll to every map.
      */
     private void addActivationDrop(Player player, int mapId, int x, int yEnd, List<ItemMap> drops) {
-        int luckPercent = getEquippedOptionPercent(player, 236);
+        int luckPercent = getEquippedOptionPercent(player, 236)
+                + ClanProgressionService.gI().luckPercent(player);
         boolean originalDropMap = MapService.gI().isMapRiengTu(mapId) || MapService.gI().isMapUpSKH(mapId);
         if (!originalDropMap && luckPercent == 0) {
             return;
@@ -1145,7 +1146,8 @@ public class Mob {
      * defeated mob's level (level 0 mobs produce level 1 equipment).
      */
     private void addLuckyNormalEquipmentDrop(Player player, int x, int yEnd, List<ItemMap> drops) {
-        int luckPercent = getEquippedOptionPercent(player, 236);
+        int luckPercent = getEquippedOptionPercent(player, 236)
+                + ClanProgressionService.gI().luckPercent(player);
         // Every point of luck is 1 / 10,000: 10% luck = 0.10%; 100% = 1%.
         if (luckPercent == 0 || !isTrue(luckPercent, 10_000L)) {
             return;

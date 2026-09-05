@@ -1,0 +1,11 @@
+unit: server-bootstrap
+bindings:
+  - framework: "NetBeans/Ant"
+    source: "nbproject/project.properties:94"
+    must_appear_in_target: "main.class remains nro.models.server.ServerManager"
+  - framework: "Windows operational scripts"
+    source: "run.bat and tools/server_control.ps1"
+    must_appear_in_target: "launch/build scripts continue to target the same entry point and jar"
+runtime_config:
+  - source: "Config.properties"
+    must_appear_in_target: "PORT and database settings remain externally configurable"

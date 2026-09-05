@@ -1,0 +1,16 @@
+wire_contracts:
+  - source_loc: src/nro/models/network/Network.java:52
+    kind: tcp
+    stability: frozen
+    target_contract: "Accept TCP clients on configured PORT, create a Session, invoke sessionInit, and register it with SessionManager."
+    semantic_divergence: "Non-blocking selector loop with retry sleep on IOException; preserve accept ordering and connection registration."
+  - source_loc: src/nro/models/server/Controller.java:85
+    kind: game-protocol
+    stability: frozen
+    target_contract: "Dispatch each numeric Message.command to the existing handler branch, preserving payload read order, validation, and player-facing error responses."
+    semantic_divergence: "Several commands use client-version-dependent integer/byte widths; handlers must retain version gates."
+  - source_loc: src/nro/models/database/PlayerDAO.java:1175
+    kind: sql
+    stability: frozen
+    target_contract: "Persist and load player state through LocalManager-managed JDBC connections using the existing schema and migration files."
+    semantic_divergence: "File-backed templates and SQL-backed player state have different startup and failure behavior."

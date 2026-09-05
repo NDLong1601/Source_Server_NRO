@@ -1,0 +1,19 @@
+flows:
+  - source_loc: src/nro/models/network/MySession.java:31
+    from_unit: network-accept
+    to_unit: protocol-dispatch
+    state: "session.player"
+    pairing: matched
+    must_preserve: "The accepted session remains associated with the authenticated Player before command dispatch."
+  - source_loc: src/nro/models/server/Manager.java:96
+    from_unit: server-bootstrap
+    to_unit: gameplay-runtime
+    state: "static template registries and MAPS"
+    pairing: matched
+    must_preserve: "Runtime services read the same initialized registries after bootstrap."
+  - source_loc: src/nro/models/data/LocalManager.java:1
+    from_unit: gameplay-runtime
+    to_unit: gameplay-runtime
+    state: "connection pool/configuration"
+    pairing: matched
+    must_preserve: "DAO connections use the configured database and close resources."

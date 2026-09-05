@@ -12,6 +12,7 @@ import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
 import nro.models.clan.ClanMessage;
 import nro.models.clan.ClanProfileV2;
+import nro.models.clan.ClanBuffService;
 import nro.models.clan.ClanTreasuryService;
 import nro.models.clan.ClanTreeService;
 import nro.models.clan.ClanProgressionService;
@@ -732,14 +733,33 @@ public class ClanService {
                         msg.writer().writeByte(cmg.isNewMessage);
                     }
                 }
+                ClanProgressionService progressionService = ClanProgressionService.gI();
+                ClanProgressionService.Branch[] progressionBranches = ClanProgressionService.Branch.values();
+                int[] progressionRanks = new int[progressionBranches.length];
+                for (int i = 0; i < progressionBranches.length; i++) {
+                    progressionRanks[i] = progressionService.rank(player.clan, progressionBranches[i]);
+                }
                 ClanProfileV2.write(msg.writer(), player.clan.id, player.clan.level,
                         player.clan.maxMember, player.clan.getCurrMembers(),
                         player.clan.clanGold, player.clan.clanGem, player.clan.treasuryVersion,
                         ClanTreasuryService.gI().getContributionForPlayer(player.clan.id, player.id),
-                        ClanTreasuryService.gI().getRecentLedgerEntries(player.clan.id, 50));
+                        ClanTreasuryService.gI().getRecentLedgerEntries(player.clan.id, 50),
+                        player.clan.clanExp, progressionService.expRequired(player.clan.level),
+                        progressionService.capsuleRequired(player.clan.level),
+                        progressionService.goldRequired(player.clan.level),
+                        progressionService.gemRequired(player.clan.level),
+                        player.clan.potentialTotal, player.clan.potentialUnspent,
+                        player.clan.progressionVersion, progressionRanks,
+                        ClanBuffService.gI().buffSnapshot(player.clan.id));
             }
             player.sendMessage(msg);
             msg.cleanup();
+            // Gửi sau packet -53 để client đã có đúng clan ID trước khi kiểm tra
+            // snapshot. Đây cũng là fallback cho trường hợp request action 112
+            // bị mất trong lúc vừa reload domain/kết nối lại ở Unity.
+            if (player.clan != null) {
+                ClanProgressionService.gI().sendSnapshot(player);
+            }
         } catch (Exception e) {
             Logger.logException(ClanService.class, e, "Lỗi send my clan " + player.clan.name + " - " + player.clan.id);
         }

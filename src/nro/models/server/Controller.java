@@ -10,6 +10,9 @@ import nro.models.services.ClanService;
 import nro.models.clan.ClanTreasuryService;
 import nro.models.clan.ClanTreeService;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanShopService;
+import nro.models.clan.ClanItemStorageService;
+import nro.models.clan.ClanGiftService;
 import nro.models.services.DayNightService;
 import nro.models.services.ChatGlobalService;
 import nro.models.services.SubMenuService;
@@ -164,7 +167,20 @@ public class Controller implements IMessageHandler {
                             case ClanProgressionService.REQUEST_VIEW:
                             case ClanProgressionService.REQUEST_UPGRADE:
                             case ClanProgressionService.REQUEST_ALLOCATE:
+                            case ClanProgressionService.REQUEST_BUFF_SNAPSHOT:
                                 ClanProgressionService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
+                            case ClanShopService.REQUEST_VIEW:
+                            case ClanShopService.REQUEST_RESTOCK:
+                            case ClanShopService.REQUEST_BUY:
+                                ClanShopService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
+                            case ClanGiftService.REQUEST_SEND_GIFT:
+                                ClanGiftService.gI().handleRequest(player, actionRadar, _msg);
+                                break;
+                            case ClanItemStorageService.REQUEST_VIEW:
+                            case ClanItemStorageService.REQUEST_USE:
+                                ClanItemStorageService.gI().handleRequest(player, actionRadar, _msg);
                                 break;
                             case 0:
                                 RadarService.gI().sendRadar(player, player.Cards);

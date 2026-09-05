@@ -1,0 +1,28 @@
+shared_modules:
+  - source_loc: src/nro/models/server/Manager.java:82
+    kind: god_class
+    used_by_units: [server-bootstrap, gameplay-runtime, protocol-dispatch]
+    fields:
+      - {name: MAPS, type: "List<Map>"}
+      - {name: ITEM_TEMPLATES, type: "List<ItemTemplate>"}
+      - {name: MOB_TEMPLATES, type: "List<MobTemplate>"}
+      - {name: NPC_TEMPLATES, type: "List<NpcTemplate>"}
+      - {name: CLANS, type: "List<Clan>"}
+    split_candidate: "Separate immutable template registries from lifecycle/orchestration."
+    migration_strategy: "Keep facade API first; extract registries behind typed services."
+  - source_loc: src/nro/models/server/Controller.java:70
+    kind: god_class
+    used_by_units: [protocol-dispatch, gameplay-runtime]
+    fields:
+      - {name: errors, type: int}
+    split_candidate: "Partition numeric command handlers by protocol domain."
+    migration_strategy: "Preserve command-to-handler mapping and delegate incrementally."
+  - source_loc: src/nro/models/player/Player.java:1
+    kind: aggregate
+    used_by_units: [protocol-dispatch, gameplay-runtime]
+    fields:
+      - {name: session, type: MySession}
+      - {name: inventory, type: "runtime player state"}
+      - {name: clan, type: Clan}
+    split_candidate: "Extract feature state objects only after access inventory is mapped."
+    migration_strategy: "Keep Player as compatibility aggregate; avoid broad field moves."

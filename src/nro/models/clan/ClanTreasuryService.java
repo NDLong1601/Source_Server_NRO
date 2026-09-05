@@ -486,6 +486,26 @@ public final class ClanTreasuryService {
         }
     }
 
+    /** Cống hiến từ hoạt động bang, tách biệt hoàn toàn với khoản đóng góp quỹ. */
+    public void addActivityContribution(int clanId, long playerId, long amount) {
+        if (clanId < 0 || playerId <= 0 || amount <= 0) {
+            return;
+        }
+        try (Connection connection = LocalManager.getConnection()) {
+            ensureSchema(connection);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT INTO clan_member_contribution (clan_id,player_id,lifetime_score,donated_gold,donated_gem) "
+                    + "VALUES (?,?,?,0,0) ON DUPLICATE KEY UPDATE lifetime_score=lifetime_score+VALUES(lifetime_score)")) {
+                ps.setInt(1, clanId);
+                ps.setLong(2, playerId);
+                ps.setLong(3, amount);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            Logger.logException(ClanTreasuryService.class, e, "Không cộng được cống hiến hoạt động bang");
+        }
+    }
+
     private boolean requireClan(Player player) {
         if (player != null && player.clan != null) {
             return true;

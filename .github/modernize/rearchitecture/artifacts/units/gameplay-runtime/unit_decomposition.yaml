@@ -1,0 +1,12 @@
+unit: gameplay-runtime
+commit: false
+candidate_splits:
+  - name: "player aggregate and feature state"
+    drivers: [god_class, shared_state]
+    rationale: "Player is the central mutable aggregate used by network, services, maps, and persistence."
+  - name: "clan feature services"
+    drivers: [cohesion, domain_boundary]
+    rationale: "Clan progression, treasury, tree, shop, gift, storage, and buffs are now distinct files but share state and protocol routing."
+  - name: "template/data loading"
+    drivers: [lifecycle, data_boundary]
+    rationale: "Static registries and file/SQL loading have a separate startup dependency from gameplay operations."

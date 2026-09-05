@@ -1,9 +1,9 @@
 # Tài liệu thiết kế Cây chung và hệ thống phát triển bang hội
 
-> Trạng thái: Giai đoạn 1, 2 và 3 đã triển khai; server khởi chạy lại ngày 04/09/2026
-> Phiên bản: 1.2
+> Trạng thái: Giai đoạn 0 đến 4 đã triển khai; cập nhật theo UAT ngày 05/09/2026
+> Phiên bản: 1.3
 > Phạm vi: Server Java tại C:/Users/PC/Music/Teamobi2026/SRC và client Unity tại C:/Users/PC/Music/PRJ_2Tab_550K  
-> Mục tiêu: Làm cơ sở thống nhất gameplay, dữ liệu, giao thức và tiêu chí kiểm thử trước khi sửa mã nguồn.
+> Mục tiêu: Tài liệu sống thống nhất gameplay, dữ liệu, giao thức, kết quả triển khai và tiêu chí kiểm thử.
 
 ## Mục lục nhanh
 
@@ -34,8 +34,8 @@ Phiên bản đầu tiên sử dụng các quyết định mặc định sau:
 6. Mỗi thành viên được tưới tối đa 5 lần mỗi ngày ở cấu hình mặc định.
 7. Cây không chết và không tụt cấp. Thiếu chăm sóc chỉ làm giảm sản lượng ngày, tránh biến hoạt động bang thành nghĩa vụ gây khó chịu.
 8. Cấp bang không còn giới hạn nội dung ở cấp 15. Hệ thống vẫn có trần kỹ thuật để phòng tràn số và có thể mở rộng bằng cấu hình.
-9. Mỗi cấp bang cấp 5 Điểm tiềm năng bang. Chỉ số chiến đấu có trần; cấp cao tiếp tục có giá trị thông qua tiện ích, cửa hàng, cây bang, kho và ngoại hình.
-10. Kho bang là kho tiền tệ và sổ cái giao dịch trong phiên bản đầu. Chưa triển khai gửi/rút vật phẩm dùng chung.
+9. Bang mới bắt đầu ở cấp 1 và có 0 Điểm tiềm năng. Mỗi lần tăng thêm một cấp bang nhận 5 điểm, nên tổng điểm ở cấp `L` là `max(0, L - 1) × 5`.
+10. Kho bang gồm quỹ tiền tệ, sổ cái và 30 ô vật phẩm hỗ trợ. Người chơi không gửi/rút vật phẩm tự do; vật phẩm mua từ cửa hàng Chủ bang đi thẳng vào kho và chỉ có thao tác **Dùng**.
 11. Tiền nạp vào quỹ bang là một chiều, không được rút lại thành tài sản cá nhân.
 12. Quà thành viên phải tiêu thụ Phiếu quà bang và chịu giới hạn ngày. Quà ngọc nên là ngọc khóa.
 13. Mọi thay đổi tài sản, điểm tiềm năng và phần thưởng đều do server quyết định, chạy trong giao dịch dữ liệu và có lịch sử kiểm tra.
@@ -74,12 +74,14 @@ Phiên bản đầu tiên sử dụng các quyết định mặc định sau:
 | Quỹ bang | Capsule Bang, Vàng bang và Ngọc bang thuộc sở hữu bang |
 | Điểm cống hiến | Chỉ số cá nhân ghi nhận hoạt động của thành viên |
 | Kho chờ | Giá trị sản xuất đã hình thành nhưng chưa quyết toán vào quỹ hoặc chưa được cá nhân nhận |
+| Kho vật phẩm bang | 30 ô vật phẩm hỗ trợ mua từ cửa hàng Chủ bang; chỉ cho dùng tại kho, không cho rút tự do |
 | Khu bang | Zone động của map 153 chỉ cho một bang truy cập |
 | Phiếu quà bang | Vật phẩm/quyền gửi quà có giới hạn, kiếm từ hoạt động bang |
+| Cửa hàng Chủ bang | Shop riêng tại NPC Dr. Drief, chỉ Chủ bang nhìn thấy và thanh toán bằng quỹ chung |
 
 ## 4. Hiện trạng kỹ thuật cần tương thích
 
-Trước khi triển khai cần lưu ý các đặc điểm hiện có:
+Tại thời điểm lập thiết kế gốc, mã nguồn có các đặc điểm cần tương thích sau. Các mục này là bối cảnh lịch sử, không phải trạng thái runtime sau Giai đoạn 4:
 
 - Cấp bang hiện bị chặn khi lớn hơn 10 trong DrDrief, nên cấp đạt được thực tế khoảng 11.
 - Giá Capsule nâng cấp hiện được hard-code theo cấp 1 đến 11 trong ClanService.
@@ -94,7 +96,7 @@ Hệ quả bắt buộc:
 
 - Không được chỉ xóa điều kiện giới hạn cấp.
 - Phải mở rộng kiểu dữ liệu cấp trên server, giao thức và cả hai nhánh client.
-- Phải tách tăng số thành viên khỏi tăng cấp thường.
+- Phải mở rộng kiểu giới hạn thành viên và chốt công thức rõ ràng; UAT sau đó đã chốt tăng 1 ô theo mỗi cấp.
 - Phải thay bảng giá hard-code bằng cấu hình hoặc công thức có kiểm soát tràn số.
 
 ## 5. Vòng lặp gameplay tổng thể
@@ -447,19 +449,25 @@ Nạp vàng hoặc ngọc không trực tiếp tạo Clan EXP. Quy tắc này ng
 - Công thức chi phí phải dùng long và kiểm tra tràn trước khi ép kiểu.
 - Nếu cấp đạt trần kỹ thuật, server từ chối an toàn và ghi log quản trị.
 
-### 8.4. Mốc mở khóa
+### 8.4. Mốc mở khóa và giới hạn thành viên
 
-Không tăng maxMember ở mọi cấp. Dùng mốc:
+Bang bắt đầu với 10 ô thành viên ở cấp 1. Mỗi cấp tăng thêm đúng 1 ô, với trần cấu hình hiện tại là 50:
+
+~~~text
+maxMemberByLevel = min(50, 10 + max(0, clanLevel - 1))
+~~~
+
+Mốc nội dung vẫn dùng để mở tính năng, độc lập với công thức thành viên:
 
 | Mốc cấp | Ví dụ mở khóa |
 |---|---|
 | 2 | Mốc thưởng khởi đầu |
 | 3 | Kho bang |
-| 5 | Tiềm năng bang và +1 slot thành viên |
-| 10 | Tầng 2 cửa hàng, +1 slot |
+| 5 | Tiềm năng bang |
+| 10 | Tầng 2 cửa hàng |
 | 15 | Nhánh tiện ích cây |
-| 20 | Ngoại hình cây mới, +1 slot |
-| Mỗi 10 cấp sau đó | Tiện ích, shop, danh hiệu hoặc slot theo trần |
+| 20 | Ngoại hình cây mới |
+| Mỗi 10 cấp sau đó | Tiện ích, shop hoặc danh hiệu |
 
 Số thành viên phải dùng short/int trong model và có giới hạn cấu hình độc lập.
 
@@ -476,32 +484,34 @@ unspentPoints         = totalPotentialPoints - sum(costOfAllocatedRanks)
 
 Bang cũ được backfill theo công thức trên. Không cấp điểm hai lần khi chạy lại migration.
 
-### 9.2. Nhánh đề xuất
+### 9.2. Các nhánh đã chốt
 
-| Khóa | Tên hiển thị | Hiệu quả cuối đề xuất | Ảnh hưởng PvP |
-|---|---|---:|---:|
-| ATTACK | Tấn công | Tối đa +4% | 50% hiệu quả |
-| HP | Sinh lực | Tối đa +8% | 50% hiệu quả |
-| KI | Khí lực | Tối đa +10% | 50% hiệu quả |
-| PVE_REDUCTION | Phòng thủ PvE | Tối đa giảm 2% | Không áp dụng PvP |
-| MOB_GOLD | Vàng từ quái thường | Tối đa +5% | Không liên quan |
-| TREE_YIELD | Sản lượng cây | Tối đa +10% | Không liên quan |
+Sáu nhánh hiển thị theo đúng thứ tự dưới đây. Mỗi nhánh mặc định có tối đa 20 bậc:
 
-Không nên đưa chí mạng, né đòn, hút HP hoặc hồi sinh vào phiên bản đầu vì dễ tạo combo mất cân bằng.
+| Khóa server | Option ID | Tên hiển thị | Hiệu quả mỗi điểm | Tối đa hiện tại |
+|---|---:|---|---:|---:|
+| ATTACK | 50 | Sức đánh | +0,2% | +4% |
+| HP | 77 | HP | +0,2% | +4% |
+| KI | 103 | KI | +0,2% | +4% |
+| LUCK | 236 | May mắn | +1% | +20% |
+| POWER | 101 | Tiềm năng, sức mạnh | +1% | +20% |
+| MOB_GOLD | 100 | Vàng từ quái | +1% | +20% |
+
+Option ID chỉ dùng để ánh xạ dữ liệu, không hiển thị trong giao diện người chơi. Dữ liệu cũ `PVE_REDUCTION` được chuyển sang `LUCK`, `TREE_YIELD` được chuyển sang `POWER`; hai khóa cũ không còn tạo hiệu lực.
 
 ### 9.3. Giá bậc
 
-Không dùng một điểm bằng một phần trăm. Giá tăng theo bậc:
+Theo yêu cầu giao diện triển khai, mỗi lần bấm tăng đúng 1 bậc và tiêu 1 điểm tiềm năng:
 
 ~~~text
-costNextRank = 1 + floor(currentRank / 10)
+costNextRank = 1
 ~~~
 
 Ví dụ:
 
-- Bậc 1–10: 1 điểm/bậc.
-- Bậc 11–20: 2 điểm/bậc.
-- Bậc 21–30: 3 điểm/bậc.
+- Mọi bậc: 1 điểm/bậc.
+- Option 50, 77, 103: mỗi bậc tăng 0,2% (5 bậc = 1%); phần lẻ được giữ nguyên, ví dụ 6 bậc = 1,2%.
+- Option 236, 101, 100: mỗi bậc tăng 1%.
 
 Mỗi nhánh có maxRank riêng trong cấu hình. Khi các nhánh chiến đấu đã tối đa, bang vẫn dùng điểm vào tiện ích hiện tại hoặc các nhánh mới trong tương lai.
 
@@ -512,6 +522,8 @@ Mỗi nhánh có maxRank riêng trong cấu hình. Khi các nhánh chiến đấ
 - Bang chủ: cộng điểm.
 - Tẩy nhánh: chỉ bang chủ, có phí quỹ và cooldown 7 ngày.
 - Tẩy toàn bộ: chỉ bang chủ, phí cao hơn và yêu cầu xác nhận hai bước.
+
+Giai đoạn 3 hiện mới triển khai thao tác cộng điểm. Tẩy nhánh/tẩy toàn bộ vẫn là thiết kế dự kiến, chưa có request runtime và không được coi là đã nghiệm thu.
 
 Mỗi thay đổi ghi:
 
@@ -534,7 +546,7 @@ Quy tắc:
 - Thành viên offline nhận đúng buff khi đăng nhập.
 - Phiên bản đầu chỉ áp dụng đầy đủ cho nhân vật chính.
 - Đệ tử không nhận hoặc chỉ nhận tỷ lệ riêng sau khi cân bằng.
-- PvP/giải đấu phải đi qua hàm xác định hệ số buff theo chế độ.
+- Hiệu lực cấu hình hiện tại được áp dụng thống nhất khi tính chỉ số; không tự giảm một nửa trong PvP.
 - Không tin giá trị phần trăm do client gửi.
 
 ## 10. Kho bang và tiền tệ bang
@@ -595,22 +607,22 @@ Client phải hiển thị cảnh báo rõ trước đóng góp.
 | Xem lịch sử cơ bản | Có | Có | Có |
 | Nâng cấp thường | Không | Có nếu được phép | Có |
 | Đột phá lớn | Không | Không mặc định | Có |
-| Nhập hàng shop | Không | Có nếu được phép | Có |
+| Mua `SHOP_CLAN_OWNER` bằng quỹ chung | Không | Không | Có |
 | Tẩy tiềm năng | Không | Không | Có |
 
 Nên có quyền cấu hình cho bang phó thay vì suy luận mọi quyền chỉ từ role.
 
 ### 10.5. Cửa hàng bang
 
-Để tránh một thành viên tiêu sạch quỹ:
+NPC Dr. Drief có hai luồng tách biệt:
 
-- Quỹ chung dùng để mở tầng shop và nhập số lượng hàng.
-- Thành viên mua hàng đã nhập bằng Capsule cá nhân/Điểm cống hiến.
-- Mỗi mặt hàng có giới hạn cá nhân ngày/tuần.
-- Mặt hàng mạnh yêu cầu tuổi bang, cấp bang và cống hiến tối thiểu.
-- Vật phẩm nhận từ shop nên khóa nếu có nguy cơ chuyển tài sản.
-
-Không cho mọi thành viên mua trực tiếp bằng số dư Vàng bang/Ngọc bang chung.
+- Các tab `SHOP_CLAN` cũ là cửa hàng cá nhân: thành viên tự trả Capsule cá nhân và vật phẩm đi vào hành trang cá nhân.
+- `SHOP_CLAN_OWNER` là cửa hàng quỹ chung: chỉ Chủ bang nhìn thấy, mở và mua được; vật phẩm đi thẳng vào kho vật phẩm bang 30 ô.
+- Mỗi dòng `item_shop` của `SHOP_CLAN_OWNER` quyết định tiền thanh toán bằng `type_sell`: `0` là Vàng bang, `1` là Ngọc bang, `2` là Capsule bang.
+- Trừ quỹ và thêm vật phẩm vào kho nằm trong cùng transaction. Nếu thiếu tiền, kho đầy hoặc ghi dữ liệu thất bại thì không trừ quỹ.
+- Thành viên và Bang phó không được mua trực tiếp bằng số dư chung.
+- Catalogue chính thức có 21 vật phẩm và được xếp đúng thứ tự thiết kế: `2272, 2270, 2271, 2258–2263, 2267–2269, 2264–2266, 2255–2257, 2252–2254`. ID `2273` và `2274` không bán trong shop.
+- Sáu nhóm buff tạm thời lưu theo bang; dùng thêm cùng nhóm chỉ nối dài ngày hết hạn, không cộng thêm phần trăm. Chỉ Chủ bang được kích hoạt vật phẩm hỗ trợ từ kho chung.
 
 ### 10.6. Lịch sử
 
@@ -640,34 +652,32 @@ Trong Bang hội > Thành viên:
 3. Xem điều kiện và số Phiếu quà đang có.
 4. Xác nhận.
 5. Server random phần thưởng.
-6. Người nhận nhận ngay nếu online hoặc nhận qua hộp quà chờ.
-7. Chat/lịch sử hiển thị kết quả.
+6. Người nhận nhận ngay nếu online hoặc nhận từ kho chờ khi đăng nhập.
+7. Hai phía nhận thông báo kết quả từ server.
 
 ### 11.2. Điều kiện
 
 - Người gửi và người nhận đang cùng bang.
 - Không phải cùng nhân vật hoặc cùng tài khoản.
-- Cả hai vào bang ít nhất 72 giờ.
-- Người gửi có Phiếu quà bang.
-- Người gửi còn lượt ngày.
-- Người nhận chưa vượt số quà được nhận trong ngày.
+- Người gửi có Phiếu quà bang trong hành trang cá nhân.
+- Mỗi cặp người gửi/người nhận chỉ được tặng một lần trong cùng ngày Việt Nam.
 - Request chưa từng được xử lý.
 
-Giới hạn đề xuất:
+Giới hạn đang áp dụng theo `data/clan_gift.properties`:
 
 | Hạn mức | Giá trị |
 |---|---:|
-| Gửi mỗi người/ngày | 1 |
-| Nhận mỗi người/ngày | 3 |
+| Tổng lượt gửi mỗi người/ngày | Không giới hạn, phụ thuộc số Phiếu quà |
+| Tổng lượt nhận mỗi người/ngày | Không giới hạn |
 | Tặng cùng một người | 1 lần/ngày |
-| Tuổi thành viên tối thiểu | 72 giờ |
+| Tuổi thành viên tối thiểu | Không yêu cầu |
 
 ### 11.3. Phần thưởng
 
-Theo yêu cầu gameplay, kết quả là vàng hoặc 3–5 ngọc:
+Theo cấu hình hiện tại, kết quả là vàng hoặc 3–5 ngọc:
 
-- Phần lớn là vàng theo cấp người nhận và cấp bang.
-- Xác suất nhỏ là 3–5 ngọc khóa.
+- 85% là Vàng theo `100.000 × (cấp bang + bậc sức mạnh người nhận - 1)`.
+- 15% là 3–5 Ngọc khóa.
 - Random tại server.
 - Không cho client chọn kết quả.
 - Không chuyển trực tiếp vàng/ngọc của người gửi cho người nhận.
@@ -678,7 +688,7 @@ Phiếu quà là chi phí thực. Không có lượt tặng miễn phí vô hạ
 
 - Chặn cùng accountId.
 - Theo dõi cặp senderId/receiverId/ngày.
-- Yêu cầu cống hiến tối thiểu trong tuần.
+- Không yêu cầu điểm cống hiến; Phiếu quà trong hành trang là chi phí thực.
 - Có thể dùng device/IP làm tín hiệu rủi ro, không nên chặn tuyệt đối chỉ bằng IP vì người chơi chung mạng.
 - Hạ hoặc khóa phần thưởng với tài khoản có mẫu gửi vòng tròn đáng ngờ.
 - Ghi log quản trị đầy đủ.
@@ -722,9 +732,10 @@ Bang hội
 ├── Chat bang
 ├── Tiềm năng
 ├── Kho bang
-├── Cửa hàng
 └── Lịch sử
 ~~~
+
+Cửa hàng Chủ bang không chiếm thêm tab ngang trong bảng Bang hội; nó được mở từ NPC Dr. Drief và chỉ xuất hiện với Chủ bang.
 
 ### 13.2. Tương tác trực tiếp với Cây bang
 
@@ -744,15 +755,18 @@ Mọi tiến độ chi tiết và điều kiện thiếu do server trả qua th�
 
 ### 13.3. Màn hình Tiềm năng
 
-Mỗi nhánh hiển thị:
+Tiêu đề **Tiềm năng bang** dùng cùng khung, chiều cao và căn lề với tiêu đề **Thông tin bang hội**. Phần danh sách hiển thị sáu nhánh theo thứ tự `Sức đánh`, `HP`, `KI`, `May mắn`, `Tiềm năng, sức mạnh`, `Vàng từ quái`; không hiển thị Option ID.
 
-- Bậc hiện tại/tối đa.
+Mỗi dòng hiển thị:
+
+- Tên chỉ số.
+- Ô số là tổng điểm đã cộng vào dòng; mỗi lần cộng thành công tăng ngay 1 đơn vị.
 - Hiệu quả hiện tại.
-- Hiệu quả bậc sau.
-- Giá điểm bậc sau.
-- Điểm còn lại.
+- Dấu cộng đỏ kích thước 16 × 16 chỉ xuất hiện với Chủ bang khi còn điểm và nhánh chưa đạt trần.
 
-Nút cộng chỉ hoạt động với bang chủ. Client vẫn gửi yêu cầu nhánh/bậc; server tự tính giá và kết quả.
+Mỗi lần bấm dấu cộng gửi đúng một yêu cầu tăng một bậc. Client cập nhật phản hồi thao tác ngay, sau đó đối soát bằng snapshot server; server tự tính giá, bậc và phần trăm. Hiệu quả phần lẻ phải hiển thị liên tục, ví dụ 6 điểm của Sức đánh là `+1,2%`, không chờ đến mốc 5 điểm.
+
+Sau khi phân bổ thành công, server tính lại chỉ số và gửi snapshot chi tiết để cả tab **Tiềm năng** lẫn tab **Thông tin** đổi ngay Sức đánh/HP/KI mà không cần đăng nhập lại. Client chủ động yêu cầu lại snapshot tối đa mỗi 2 giây khi màn hình đang mở để tự phục hồi nếu packet trước đến muộn.
 
 ### 13.4. Màn hình Kho bang
 
@@ -761,8 +775,10 @@ Hiển thị:
 - Ba số dư quỹ.
 - Điểm cống hiến cá nhân.
 - Nút đóng góp.
-- Nút nâng cấp/nhập hàng theo quyền.
+- Kho vật phẩm chung 30 ô; vật phẩm chỉ có thao tác **Dùng**, không có **Rút**.
 - Danh sách lịch sử có phân trang.
+
+Vàng bang và Ngọc bang ở phần thông tin đầu trang và trong nội dung Kho bang phải lấy cùng giá trị `long` từ snapshot quỹ, dùng cùng hàm định dạng rút gọn để không lệch giữa `1,0B` và `1,2Tỉ` cho cùng một số dư.
 
 ### 13.5. Menu thành viên
 
@@ -798,37 +814,58 @@ Không phát hành khi một tab hoạt động khác tab còn lại.
 
 - clanId
 - clanLevel int
-- clanExp long
-- expRequired long
 - maxMember int
-- totalPotential int
-- unspentPotential int
-- clanValue long
+- currentMember int
+- clanGold/clanGem/treasuryVersion/memberContribution long
+- tối đa 50 dòng ledger gần nhất
+- clanExp/expRequired long
+- capsuleRequired int, goldRequired/gemRequired long
+- totalPotential/unspentPotential int
+- progressionVersion long
+- sáu rank Tiềm năng byte theo thứ tự cố định
+
+Khối mở rộng hiện dùng magic `CLV2`, version `4` và được nối sau payload clan legacy. Client mới chỉ đọc khi còn dữ liệu và magic hợp lệ; client cũ vẫn dùng prefix hiện có.
 
 #### CLAN_TREE_SNAPSHOT
 
 - clanId
-- treeLevel int
-- state byte
+- treeLevel byte
 - growth long
 - growthRequired long
-- water int
-- waterRequired int
-- fertilizer int
-- fertilizerRequired int
-- vitality int
+- water/waterRequired int
+- fertilizer/fertilizerRequired int
+- personalWaterCount/personalWaterLimit byte
+- personalFertilizerCount/personalFertilizerLimit byte
 - pendingClanGold long
-- pendingCapsule long
-- personalWaterRemaining int
-- personalRewardState byte
-- nextProductionAt/lastProductionAt long
+- pendingCapsule int
+- helpExpiresAt long
+- upgradeStartedAt/upgradeReadyAt long
+- treeVersion long
+- detailVersion byte (`1` ở bản hiện tại)
+- clanExp long
+- clanExpRequired long
+- progressionVersion long
+
+Ba trường tiến trình cuối được gắn vào snapshot cây để thao tác Tưới/Bón cập nhật ngay số Clan EXP đang hiển thị trong tab Tiềm năng, không phụ thuộc snapshot cũ đã được mở trước đó.
 
 #### CLAN_POTENTIAL_SNAPSHOT
 
+- clanId int
+- clanLevel int
+- clanExp long
+- expRequired long
+- capsuleRequired int
+- goldRequired/gemRequired long
 - pointsTotal int
 - pointsUnspent int
-- danh sách branchKey/rank/maxRank/bonus
-- resetCooldown long
+- progressionVersion long
+- sáu rank byte theo thứ tự `ATTACK`, `HP`, `KI`, `LUCK`, `POWER`, `MOB_GOLD`
+- detailVersion byte (`1` ở bản hiện tại; chỉ mang chỉ số nhân vật)
+- hpMax, mpMax, damage và hp/mp hiện tại của nhân vật
+
+Trạng thái buff dùng packet độc lập command `127`: client yêu cầu bằng action `125`, server trả action `124` gồm `clanId`, protocolVersion `1`, số dòng và đủ sáu bản ghi `buffType byte + percent short + remainingMillis long`; giá trị thời lượng `0` là chưa kích hoạt. Cùng dữ liệu còn được gắn vào hồ sơ bang version `5` để khôi phục chắc chắn khi đăng nhập. Tách packet giúp lỗi tương thích của snapshot Tiềm năng không thể làm mất danh sách buff, đồng thời dùng thời lượng còn lại để tránh lệch đồng hồ server/client.
+
+Các trường chi tiết nhân vật cho phép client cập nhật trực tiếp tab Thông tin sau khi cộng điểm. Snapshot vẫn là nguồn sự thật cuối cùng; client không tự tính chỉ số chiến đấu.
 
 #### CLAN_TREASURY_SNAPSHOT
 
@@ -849,14 +886,17 @@ Không phát hành khi một tab hoạt động khác tab còn lại.
 - CLAIM_TREE_PERSONAL_REWARD
 - VIEW_POTENTIAL
 - ALLOCATE_POTENTIAL
-- RESET_POTENTIAL_BRANCH
 - VIEW_TREASURY
 - DEPOSIT_CLAN_GOLD
 - DEPOSIT_CLAN_GEM
 - VIEW_LEDGER_PAGE
+- VIEW_CLAN_SHOP / RESTOCK_CLAN_SHOP / BUY_CLAN_SHOP (`116–118`, snapshot `119`)
 - SEND_CLAN_GIFT
+- VIEW_CLAN_ITEM_STORAGE / USE_CLAN_ITEM (`121–122`)
 
 Mỗi request thay đổi dữ liệu gồm requestId và tham số tối thiểu. Client không gửi giá thưởng, số điểm nhận hoặc số dư sau.
+
+`RESET_POTENTIAL_BRANCH` vẫn là request dự kiến cho giai đoạn sau; bản runtime hiện tại chưa mở thao tác tẩy điểm.
 
 ### 14.4. Tương thích client cũ
 
@@ -867,7 +907,7 @@ Hai lựa chọn:
 
 Phương án 2 an toàn hơn khi còn nhiều bản client ngoài thực tế.
 
-## 15. Mô hình dữ liệu đề xuất
+## 15. Mô hình dữ liệu
 
 ### 15.1. Mở rộng bảng clan
 
@@ -881,7 +921,7 @@ Giữ các trường hiện có làm nguồn tương thích và bổ sung:
 | clan_gold | BIGINT | Vàng quỹ |
 | clan_gem | BIGINT | Ngọc quỹ |
 | treasury_version | BIGINT | Optimistic locking |
-| last_potential_reset | BIGINT | Cooldown |
+| progression_version | BIGINT | Phiên bản Clan EXP/Tiềm năng để đối soát snapshot |
 
 clan_point hiện có tiếp tục là Capsule Bang ở giai đoạn đầu. Không tạo hai nguồn Capsule khác nhau.
 
@@ -891,8 +931,7 @@ clan_point hiện có tiếp tục là Capsule Bang ở giai đoạn đầu. Kh�
 |---|---|
 | clan_id | INT |
 | branch_key | VARCHAR |
-| rank | INT |
-| updated_by | BIGINT |
+| rank_value | INT |
 | updated_at | TIMESTAMP |
 
 Khóa chính: clan_id + branch_key.
@@ -971,7 +1010,7 @@ Chỉ mục:
 
 ### 15.7. Bảng clan_pending_reward
 
-Dùng cho quà/offline/túi đầy:
+Dùng cho quà thành viên online/offline và giữ nguyên phần thưởng nếu tài sản người nhận đã chạm trần:
 
 | Cột | Kiểu |
 |---|---|
@@ -979,13 +1018,31 @@ Dùng cho quà/offline/túi đầy:
 | clan_id | INT |
 | player_id | BIGINT |
 | source_type | VARCHAR |
-| reward_json | TEXT |
+| gold_amount | BIGINT |
+| ruby_amount | INT |
 | status | TINYINT |
 | created_at | TIMESTAMP |
 | claimed_at | TIMESTAMP nullable |
 | request_id | VARCHAR unique |
 
 Phần thưởng được tạo một lần và lưu cố định; không random lại mỗi lần người chơi mở hộp.
+
+### 15.8. Kho vật phẩm và giao dịch shop Giai đoạn 4
+
+- `clan_item_storage`: khóa chính `clan_id + slot_index`, tối đa 30 slot; khóa unique `clan_id + item_template_id` để cộng dồn đúng vật phẩm.
+- `clan_item_storage_audit`: ghi người thao tác, loại hành động, item, lượng thay đổi và lượng sau giao dịch.
+- `clan_shop_purchase`: chống mua lặp bằng `clan_id + request_id` và lưu giới hạn theo người/item/ngày.
+- `clan_shop_stock` và `clan_shop_restock`: giữ dữ liệu tồn/nhập hàng cho khả năng mở rộng catalogue có tồn kho.
+- `gift_box_config`: cấu hình server-authoritative cho Hộp quà bang ID `2273`.
+- `clan_active_buff`: một dòng cho mỗi `clan_id + buff_type`, lưu phần trăm cố định và `expires_at`; khóa chính này ngăn cộng chồng chỉ số.
+- `clan_active_buff_audit`: ghi item kích hoạt, người thao tác, số ngày cộng và mốc hết hạn trước/sau.
+
+### 15.9. Chống lặp quà thành viên Giai đoạn 4
+
+- `clan_gift_daily`: số lượt gửi/nhận của từng thành viên theo ngày Việt Nam.
+- `clan_gift_pair`: khóa duy nhất cặp người gửi/người nhận/ngày.
+- `clan_gift_request`: lưu kết quả Vàng/Ngọc khóa theo `request_id`, không bốc lại khi client gửi lặp.
+- `clan_pending_reward`: phát bền vững cho người nhận online hoặc offline.
 
 ## 16. Transaction và đồng thời
 
@@ -1140,61 +1197,58 @@ clan.tree.helpRequestExpireMinutes=120
 clan.tree.productionCapHours=24
 clan.tree.personalRewardMinContribution=2
 
-clan.tree.waterItemId=<chốt khi triển khai>
-clan.tree.fertilizerItemId=<chốt khi triển khai>
-clan.tree.giftTicketItemId=<chốt khi triển khai>
-clan.tree.waterDropMapIds=<danh sách map>
-clan.tree.waterDropRate=<tỷ lệ>
+clan.tree.waterItemId=456
+clan.tree.fertilizerItemId=1094
+clan.gift.ticketItemId=2274
+clan.tree.waterDropMapIds=5,29,13,33
+clan.tree.waterDropRate=7%
 
-clan.gift.sentPerDay=1
-clan.gift.receivedPerDay=3
+clan.gift.sentPerDay=0
+clan.gift.receivedPerDay=0
+clan.gift.minimumJoinHours=0
+clan.gift.minimumContribution=0
+clan.gift.boundGemChancePercent=15
 clan.gift.boundGemMin=3
 clan.gift.boundGemMax=5
+clan.gift.goldBase=100000
 
-clan.potential.pvpMultiplier=0.50
-clan.potential.resetCooldownDays=7
+clan.potential.costPerRank=1
+clan.potential.defaultMaxRank=20
 ~~~
 
-Các placeholder ID và tỷ lệ phải được kiểm tra với dữ liệu đang triển khai trước khi điền.
+Runtime hiện tách cấu hình chính sang `data/clan_progression.properties`, `data/clan_tree.properties` và `data/clan_gift.properties`. Tẩy điểm/cooldown vẫn chưa mở; nếu triển khai sau phải bổ sung cấu hình và giao thức riêng.
 
 ## 21. Kế hoạch mã nguồn
 
 ### 21.1. Server
 
-Model mới đề xuất:
+Thành phần đã triển khai:
 
-- nro.models.clan.ClanProgression
-- nro.models.clan.ClanPotential
-- nro.models.clan.ClanTree
-- nro.models.clan.ClanTreasury
-- nro.models.clan.ClanLedgerEntry
-- nro.models.clan.ClanMemberDaily
+- `nro.models.clan.ClanProfileV2`
+- trạng thái Cây bang nội bộ trong `ClanTreeService`
+- trạng thái tiến trình/Tiềm năng do `ClanProgressionService` quản lý tập trung
 
-Service mới:
+Service đã triển khai:
 
 - ClanProgressionService
-- ClanPotentialService
 - ClanTreeService
 - ClanTreasuryService
 - ClanGiftService
-- ClanConfig
+- ClanTerritoryService
+- ClanShopService
+- ClanItemStorageService
+- `nro.models.admin.GiftBoxConfigService`
 
-DAO/repository:
-
-- ClanProgressionDAO
-- ClanTreeDAO
-- ClanTreasuryDAO
-- ClanLedgerDAO
-- ClanGiftDAO
+Các service dùng transaction JDBC trực tiếp và tự bảo đảm schema khi khởi động; migration trong `sql/migrations` vẫn là nguồn triển khai/review chính thức.
 
 Điểm tích hợp hiện có:
 
 - Clan.java: trạng thái và quyền bang.
 - ClanService.java: packet và đồng bộ.
-- DrDrief.java: menu nâng cấp/lãnh địa.
+- DrDrief.java: menu lãnh địa, nâng cấp và cửa hàng Chủ bang.
 - Manager.java: tải dữ liệu, bỏ đọc level/maxMember bằng byte.
 - NPoint.java: áp dụng buff bang.
-- ShopService.java: tầng shop, tồn kho và chi phí.
+- ShopService/ClanShopService: catalogue, quyền Chủ bang, loại tiền và transaction mua vào kho.
 - UseItem.java: Bình nước/Phân bón/Phiếu quà nếu dùng qua hành trang.
 - MapService/Zone manager: khu động map 153.
 - Player login/logout/clan join/leave: đồng bộ và gỡ buff.
@@ -1236,12 +1290,25 @@ Migration cần:
 - Đồng bộ Game1/Game2.
 - Kiểm thử cấp 127/128.
 
+#### Kết quả triển khai — 04/09/2026
+
+- Mở rộng cấp bang và giới hạn thành viên sang `int` trong model và khối mở rộng giao thức, đồng thời giữ prefix packet bang cũ để client legacy không đọc lệch.
+- Thêm `ClanProfileV2` có magic `CLV2`, version hiện tại `4`: truyền `clanId`, cấp, giới hạn/số thành viên, quỹ `long`, cống hiến, tối đa 50 dòng ledger gần nhất, Clan EXP, chi phí nâng cấp, tổng/điểm Tiềm năng còn lại, `progressionVersion` và sáu rank.
+- Game1 và Game2 cùng đọc khối mở rộng nếu tồn tại, vẫn có fallback an toàn khi server/client cũ chưa gửi version mới. Kiểm thử giao thức bao phủ biên cấp 127/128 để tránh lỗi signed byte.
+
 ### Giai đoạn 1: Dữ liệu và dịch vụ quỹ
 
 - Migration.
 - Ledger.
 - Transaction đóng góp.
 - Màn hình kho và lịch sử.
+
+#### Kết quả triển khai — 04/09/2026
+
+- Hoàn tất migration `20260904_add_clan_treasury.sql` và cơ chế tự bảo đảm schema: thêm `clan_gold`, `clan_gem`, `treasury_version`, `clan_member_contribution` và `clan_ledger`.
+- `ClanTreasuryService` xử lý xem quỹ, đóng góp Vàng/Ngọc và tải lịch sử 50 dòng mỗi trang. Đóng góp là transaction một chiều, dùng `requestId` tối đa 80 ký tự và khóa duy nhất theo bang để chống gửi lặp; không có endpoint rút tiền.
+- Điểm cống hiến, số dư sau giao dịch và ledger được ghi cùng transaction. Snapshot action `110` trả Capsule/Vàng/Ngọc bang, cống hiến cá nhân và `treasuryVersion`; action `111` trả trang lịch sử theo cursor.
+- Đồng bộ Game1/Game2 với tab **Kho bang**, nút góp Vàng/Ngọc và lịch sử. Phần đầu trang và nội dung kho dùng cùng số dư `long`/cùng formatter, khắc phục trường hợp một nơi hiển thị `1,0B` nhưng nơi khác hiển thị `1,2Tỉ` cho cùng dữ liệu.
 
 ### Giai đoạn 2: Cây bang MVP
 
@@ -1252,7 +1319,7 @@ Migration cần:
 - 5 lượt/ngày.
 - Sinh trưởng và nhận thưởng bằng nút.
 
-#### Kết quả triển khai — 04/09/2026
+#### Kết quả triển khai và điều chỉnh — 04–05/09/2026
 
 - Hoàn tất `ClanTerritoryService`: map 153 tạo Zone riêng theo `clanId`, không cho đổi khu công khai, kiểm tra lại thành viên trong lúc ở map và hủy Zone trống sau 10 phút. Mỗi bang chỉ giữ tối đa một Zone động trong bộ nhớ.
 - Hoàn tất `ClanTreeService` và migration `20260904_add_clan_tree.sql`: trạng thái cây chung, tiến độ thành viên theo ngày, khóa đồng bộ, giới hạn 5 lượt tưới/ngày, cooldown 500 ms, bón phân, sinh trưởng, sản lượng tích lũy và nút nhận thưởng vào quỹ bang. Luồng tăng cấp đã đổi từ tăng ngay sang hai trạng thái thời gian `upgrade_started_at`/`upgrade_ready_at`; packet 127 action `104` đồng bộ hai mốc này và action `110` hoàn tất nâng cấp ở server.
@@ -1281,17 +1348,20 @@ Xác minh bổ sung cho luồng tương tác/thời gian nâng: toàn bộ sourc
 - Bảng phân bổ.
 - Buff PvE/PvP có trần.
 
-#### Kết quả triển khai — 04/09/2026
+#### Kết quả triển khai và điều chỉnh — 04–05/09/2026
 
 - Thêm `ClanProgressionService` và cấu hình tập trung `data/clan_progression.properties`. Công thức EXP/Capsule dùng lần lượt `round(baseExp × L^1.55)` và `round(baseCapsule × L^1.35)`; vàng bắt đầu từ cấp 5, ngọc tại lần nâng lên các mốc cấp 10. Tất cả giá trị kinh tế, rank tối đa và hiệu lực nhánh đều có thể đổi trong file cấu hình rồi khởi động lại server.
 - Migration `20260904_add_clan_progression.sql` cùng cơ chế tự tạo schema bổ sung `clan_exp`, `potential_total`, `potential_unspent`, `progression_version`, bảng `clan_potential` và `clan_potential_audit`. Bang cũ được backfill đúng `max(0, level - 1) × 5 - điểm đã dùng`, không phát trùng khi restart.
-- Clan EXP chỉ sinh từ hoạt động: tưới cây `10`, bón phân `30`, hoàn tất hợp đồng tuần `250` theo cấu hình; đóng góp vàng/ngọc không sinh EXP. Bang chủ nâng cấp qua transaction server, trừ đúng EXP/Capsule/Vàng/Ngọc và nhận đúng 5 điểm khi lên một cấp; slot thành viên chỉ tăng ở các mốc 5, 10, 20 và mỗi 10 cấp sau đó.
-- Sau mỗi lần tưới/bón thành công, thông báo hiển thị ngay lượng Clan EXP vừa cộng và tổng EXP hiện tại/EXP cần. `ClanProgressionService.addExp` tăng `progression_version` và phát snapshot mới cho thành viên online; tab Tiềm năng tự làm mới để hiển thị EXP mới.
-- Hoàn tất 6 nhánh phân bổ, mỗi nhánh mặc định tối đa 20 bậc và giá bậc `1 + floor(currentRank / 10)`: Tấn công tối đa 4%, HP 8%, KI 10%, giảm sát thương PvE 2%, vàng quái 5% và sản lượng cây 10%. Mỗi lần cộng điểm được lưu audit với người thao tác, bậc trước/sau, điểm trước/sau và chi phí.
-- Buff chỉ do server áp dụng cho nhân vật chính: Tấn công tính đủ khi đánh quái và 50% khi đánh người; HP/KI được tính lại ngay lúc vào/rời PvP để dùng 50%; giảm sát thương chỉ nhận từ quái/boss; vàng quái và sản lượng cây được cộng trong luồng drop/sản xuất tương ứng. Thành viên online được tính lại ngay khi bang chủ cộng điểm, thành viên offline nhận khi đăng nhập.
-- Đồng bộ Game1 và Game2: packet 127 action `112–115`, tab Tiềm năng hiển thị EXP, điểm còn lại, chi phí/nấc từng nhánh; bang chủ bấm dòng cấp bang để nâng và bấm một nhánh để cộng điểm. Server vẫn kiểm tra toàn bộ quyền, chi phí và giới hạn, không tin dữ liệu client.
+- Clan EXP chỉ sinh từ hoạt động: tưới cây `10`, bón phân `30`, hoàn tất hợp đồng tuần `250` theo cấu hình; đóng góp vàng/ngọc không sinh EXP. Bang chủ nâng cấp qua transaction server, trừ đúng EXP/Capsule/Vàng/Ngọc và nhận đúng 5 điểm khi lên một cấp; slot thành viên tăng thêm 1 theo mỗi cấp bang, tối đa 50.
+- Bang mới được tạo ở cấp 1 nên có `0` điểm; tổng điểm ở cấp 5 là `20`, không phải `25`, theo `max(0, level - 1) × 5`. Mỗi lần tăng cấp thực tế cộng thêm đúng 5 điểm. Giới hạn thành viên bắt đầu ở 10 và tăng 1 theo mỗi cấp (`10 + level - 1`), tối đa 50; startup chỉ backfill tăng các bang cũ đang thấp hơn công thức, không làm giảm giá trị cao hơn đã lưu.
+- Hoàn tất đúng sáu nhánh theo thứ tự option `50, 77, 103, 236, 101, 100`, mặc định tối đa 20 bậc. Mỗi lần bấm tốn 1 điểm; option `50/77/103` tăng chính xác `0,2%` mỗi điểm (6 điểm = 1,2%), option `236/101/100` tăng `1%` mỗi điểm. Mỗi thay đổi được audit với người thao tác, bậc/điểm trước và sau.
+- Server áp dụng các nhánh vào Sức đánh, HP, KI, may mắn rơi vật phẩm, tiềm năng/sức mạnh nhận được và vàng rơi từ quái của nhân vật chính. Hiệu lực hiện tại được áp dụng thống nhất trong phép tính chỉ số, không giảm một nửa khi vào PvP. Thành viên offline nhận buff lúc đăng nhập; thành viên online được tính lại ngay khi Chủ bang cộng điểm.
+- Sau khi cộng, server tính lại `NPoint`, giữ trạng thái đầy HP/KI nếu giới hạn tối đa tăng và gửi action `115` detail v1 chứa HP tối đa, KI tối đa, sức đánh và HP/KI hiện tại. Cả tab **Tiềm năng** và **Thông tin** cập nhật ngay, không cần đăng nhập lại; client đồng thời đối soát snapshot tối đa mỗi 2 giây nếu packet đến muộn.
+- Giao diện Game1/Game2 dùng dấu cộng đỏ 16 × 16, chỉ hiện với Chủ bang khi còn điểm và chưa đạt trần. Ô số hiển thị điểm đã cộng, Option ID bị ẩn, hiệu quả phần lẻ hiển thị liên tục và tiêu đề **Tiềm năng bang** dùng cùng khung/căn lề với các tab khác.
+- Khi tưới/bón thành công, `ClanProgressionService.addExp` luôn gửi cho chính người thao tác rồi broadcast theo `clanId`. Snapshot Cây bang action `104` detail v1 mang thêm `clanExp`, EXP yêu cầu và `progressionVersion`; vì vậy tab Tiềm năng đổi từ snapshot cũ (ví dụ `130`) sang tổng mới (`190`) ngay sau chăm cây.
+- Đồng bộ Game1 và Game2 với packet 127 action `112` xem, `113` nâng cấp, `114` phân bổ và `115` snapshot. Chủ bang bấm dòng cấp bang để nâng; mọi quyền, chi phí, giới hạn và kết quả chỉ số vẫn do server xác thực.
 
-Xác minh triển khai: build thành công, cập nhật 724 class vào `20.jar`; `ClanProgressionFormulaTest` đạt PASS cho cấp 1/2/10/1000, giá bậc và mốc chi phí; kiểm tra cân bằng ngoặc cho cả Game1/Game2 đạt PASS. Server đã khởi động, nghe cổng 14445 và không có lỗi startup. Cần UAT trực tiếp bằng client Unity với bang chủ/thành viên để xác nhận thao tác màn hình, thời điểm vào/rời PvP và vị trí sprite theo map thực tế trước phát hành rộng.
+Xác minh triển khai: bản build gần nhất cập nhật 736 class vào `20.jar`; `ClanProgressionFormulaTest` đạt PASS cho cấp 1/2/10/1000, giá bậc và mốc chi phí; Assembly-CSharp của Game1/Game2 biên dịch bằng Roslyn với mã thoát `0`. Server nghe cổng 14445 và `server-error.log` trống. UAT tiếp theo cần kiểm tra đồng thời Chủ bang/thành viên, mất packet/reconnect và toàn bộ sáu hiệu lực trên chỉ số thực tế.
 
 Xác minh bản vá UAT: server Java build lại thành công `724` class vào `20.jar`; source Game1/Game2 biên dịch bằng response file Roslyn của Unity với mã thoát `0`; server khởi động lại và nghe cổng `14445`, `server-error.log` trống. Database trước bản vá đã xác nhận dữ liệu thật không mất (`water=10`, `growth=250`, `clan_exp=110`); bản vá tập trung sửa đường đồng bộ/hiển thị và bổ sung thao tác nâng cấp có thông báo thiếu chi tiết.
 
@@ -1301,10 +1371,25 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 
 ### Giai đoạn 4: Cửa hàng và quà
 
-- Shop unlock/restock.
+- Cửa hàng riêng cho Chủ bang tại Dr. Drief.
+- Thanh toán bằng quỹ chung và kho vật phẩm 30 ô.
 - Điểm cống hiến.
 - Phiếu quà.
 - Tặng quà online/offline.
+
+#### Kết quả triển khai và điều chỉnh — 05/09/2026
+
+- Giữ nguyên các tab `SHOP_CLAN` tại Dr. Drief là cửa hàng cá nhân: thành viên tự trả bằng Capsule cá nhân và vật phẩm đi vào hành trang cá nhân. Thêm `SHOP_CLAN_OWNER`, chỉ hiện/mở/mua được bởi Chủ bang; mọi vật phẩm mua tại đây đi thẳng vào kho vật phẩm chung 30 ô, không đi qua hành trang.
+- `SHOP_CLAN_OWNER` đọc loại tiền theo từng dòng `item_shop`: `type_sell=0` là Vàng bang, `1` là Ngọc bang, `2` là Capsule bang. Cả ba đều khóa và trừ trực tiếp từ bản ghi quỹ chung trong cùng transaction với thao tác thêm vật phẩm vào kho; thiếu tiền, kho đầy hoặc lỗi ghi dữ liệu thì không trừ quỹ.
+- Catalogue live gồm 21 vật phẩm theo đúng thứ tự yêu cầu. `2258–2263` dùng Vàng bang với giá 10/25/50 triệu theo mốc 1/3/7 ngày; các item còn lại dùng Ngọc bang với giá riêng từ 50 đến 2.500 ngọc; Vé đổi tên giá 1.000 ngọc và hai vé tăng tốc giá 200/350 ngọc. `2273/2274` đã loại khỏi shop.
+- Thêm `clan_item_storage` và audit bất biến `clan_item_storage_audit`. Vật phẩm trong kho chỉ có thao tác **Dùng**, không được rút ra; chỉ Chủ bang dùng Vé đổi tên, vé tăng tốc và item buff. Phiếu quà mới đi theo hành trang cá nhân, còn Hộp quà đưa phần thưởng vào hành trang người mở.
+- Hoàn tất luồng **Tặng quà** trong menu thành viên bằng action `120`. Người gửi và người nhận phải cùng bang, khác nhân vật và khác tài khoản; người gửi cần một Phiếu quà bang trong hành trang.
+- Phiếu quà ID `2274` được cộng vào hành trang khi điểm danh tại Giu-ma Đầu bò. Người chơi có thể tích lũy và tặng nhiều người; khóa duy nhất theo cặp sender/receiver/ngày chặn tặng cùng một người lần hai. Tổng lượt gửi/nhận không bị chặn thêm ngoài số Phiếu quà đang có.
+- Phần thưởng do server bốc: 15% nhận 3–5 Ngọc khóa; còn lại nhận Vàng theo `100.000 × (cấp bang + bậc sức mạnh người nhận - 1)`. Quà được ghi vào `clan_pending_reward`, phát ngay nếu người nhận online hoặc tự phát khi đăng nhập; nếu tài sản chạm trần thì vẫn giữ trạng thái chờ, không mất quà.
+- Hộp quà bang ID `2273` được cộng vào hành trang người thu hoạch Cây bang. Cấu hình mặc định bốc đều một trong 18 item buff `2252–2269`; tab **Hộp quà** trong Admin Data tiếp tục cho phép thêm/bớt và chỉnh trọng số/phần thưởng.
+- Sáu hiệu ứng dùng chung được lưu bền: hồi 1% HP/KI mỗi 5 giây, +10% Sức đánh, +10% May mắn, +15% Tiềm năng/Sức mạnh, +20% Vàng từ quái. Dùng cùng nhóm cộng nối tiếp 1/3/7 ngày nhưng phần trăm giữ nguyên. Tab **Thông tin bang hội** luôn hiển thị đủ sáu dòng dưới phần Thuộc tính; dòng chưa dùng có trạng thái **Chưa kích hoạt** màu xám, còn dòng đang chạy hiển thị đếm ngược và đổi màu theo loại: HP đỏ, KI xanh, Sức đánh vàng, Tiềm năng/Sức mạnh lục, May mắn xanh đậm, Vàng cam. Client đối soát động mỗi 2 giây bằng yêu cầu action `125`, server trả snapshot action `124`; gói trả lời được nhận theo phiên thành viên hiện tại để không bị bỏ im lặng khi ID bang cục bộ đang cập nhật trong lúc đăng nhập. Giới hạn cuộn được tính cố định theo đủ 17 hàng nội dung nên dòng Vàng không bị che và thao tác kéo không bật ngược về giới hạn cũ.
+- Build server cập nhật 744 class vào `20.jar`; item version tăng từ `79` lên `80`; startup nạp 36 shop, 2.275 item và 12 cấu hình hộp quà, nghe cổng `14445`, `server-error.log` trống. Assembly-CSharp của Unity biên dịch bằng Roslyn với mã thoát `0` cho cả Game1/Game2; `ClanProgressionFormulaTest`, `ClanProfileV2ProtocolTest` và kiểm thử transaction `ClanBuffServiceTest` đều PASS.
+- Bản vá đồng bộ buff sau UAT `bandicam 2026-09-05 19-00-07-694.mp4` bổ sung cặp action `125 → 124` và snapshot dự phòng trong hồ sơ bang version `5`, biên dịch toàn bộ Assembly-CSharp bằng Roslyn với mã thoát `0`, rồi build lại 744 class server. Ba kiểm thử tiến trình/hồ sơ/buff đều PASS; JAR triển khai có SHA-256 `A3E2624F448453319FAE1DF6A3A00D056B40E44CFA2688906D288164414A21D7`, server khởi động lại và nghe cổng 14445, log lỗi trống.
 
 ### Giai đoạn 5: Giá trị bang và hoàn thiện
 

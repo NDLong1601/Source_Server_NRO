@@ -1,0 +1,21 @@
+unit: network-accept
+source_loc: src/nro/models/network/Network.java:52
+side_effects:
+  - action: "Open non-blocking ServerSocketChannel and bind configured port"
+    must_preserve: true
+  - action: "Clone session, invoke accept handler, and register session"
+    must_preserve: true
+branches:
+  - condition: "invalid port, accept handler, or session type"
+    must_preserve: true
+    outcome: "reject startup with explicit exception"
+  - condition: "IOException in selector loop"
+    must_preserve: true
+    outcome: "log and retry after a short sleep"
+error_paths:
+  - condition: "bind/open failure"
+    contract: "log error and stop startup"
+    must_preserve: true
+concurrency:
+  model: "single selector loop thread with per-session sender/collector threads"
+  tx_boundary: null

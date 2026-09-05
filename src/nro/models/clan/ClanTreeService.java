@@ -17,6 +17,7 @@ import nro.models.item.Item;
 import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.services.InventoryService;
+import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
 
@@ -187,6 +188,31 @@ public final class ClanTreeService {
         }
     }
 
+    /** Consumed only after a shop acceleration voucher verifies an active tree upgrade. */
+    public boolean accelerateUpgrade(Player player, int hours) {
+        if (!requireClan(player) || hours <= 0) {
+            return false;
+        }
+        ClanTreeState state = getState(player.clan.id);
+        synchronized (state) {
+            if (player.clan == null || player.clan.id != state.clanId) {
+                notify(player, "Bạn không còn thuộc bang hội này.");
+                return false;
+            }
+            long now = System.currentTimeMillis();
+            if (state.upgradeReadyAt <= now) {
+                notify(player, "Cây bang không có nâng cấp đang chờ để tăng tốc.");
+                return false;
+            }
+            state.upgradeReadyAt = Math.max(now, state.upgradeReadyAt - hours * 60L * 60L * 1000L);
+            state.version++;
+            persist(state);
+            notify(player, "Đã rút ngắn thời gian nâng Cây bang " + hours + " giờ.");
+            broadcastSnapshot(player.clan, state);
+            return true;
+        }
+    }
+
     private void water(Player player, boolean fromHelp) {
         if (!requireClan(player)) {
             return;
@@ -238,7 +264,8 @@ public final class ClanTreeService {
                 persistMember(state, member);
                 InventoryService.gI().sendItemBags(player);
                 int exp = ClanProgressionService.gI().expWater();
-                boolean expAdded = ClanProgressionService.gI().addExp(player.clan, exp);
+                ClanTreasuryService.gI().addActivityContribution(player.clan.id, player.id, 10L);
+                boolean expAdded = ClanProgressionService.gI().addExp(player.clan, exp, player);
                 if (expAdded) {
                     ClanProgressionService.gI().sendSnapshot(player);
                 }
@@ -290,7 +317,8 @@ public final class ClanTreeService {
                 persistMember(state, member);
                 InventoryService.gI().sendItemBags(player);
                 int exp = ClanProgressionService.gI().expFertilize();
-                boolean expAdded = ClanProgressionService.gI().addExp(player.clan, exp);
+                ClanTreasuryService.gI().addActivityContribution(player.clan.id, player.id, 30L);
+                boolean expAdded = ClanProgressionService.gI().addExp(player.clan, exp, player);
                 if (expAdded) {
                     ClanProgressionService.gI().sendSnapshot(player);
                 }
@@ -316,6 +344,12 @@ public final class ClanTreeService {
                 sendSnapshot(player, state, memberState(player, state));
                 return;
             }
+            Item giftBox = ItemService.gI().createNewItem((short) ClanShopService.CLAN_GIFT_BOX_ITEM_ID);
+            giftBox.itemOptions.add(new Item.ItemOption(30, 0));
+            if (!InventoryService.gI().addItemBag(player, giftBox)) {
+                notify(player, "Hành trang đã đầy, cần chỗ trống để nhận Hộp quà bang khi thu hoạch.");
+                return;
+            }
             Clan clan = player.clan;
             clan.clanGold += state.pendingGold;
             clan.capsuleClan += state.pendingCapsule;
@@ -326,8 +360,10 @@ public final class ClanTreeService {
             state.version++;
             persist(state);
             clan.update();
+            InventoryService.gI().sendItemBags(player);
             notify(player, "Đã thu hoạch cho bang: " + gold + " vàng bang"
-                    + (capsule > 0 ? " và " + capsule + " Capsule Bang." : "."));
+                    + (capsule > 0 ? " và " + capsule + " Capsule Bang" : "")
+                    + "; bạn nhận 1 Hộp quà bang.");
             sendClanNotice(clan, player.name + " đã thu hoạch Cây bang: +" + gold + " vàng bang"
                     + (capsule > 0 ? ", +" + capsule + " Capsule Bang." : "."));
             broadcastSnapshot(clan, state);
@@ -500,6 +536,8 @@ public final class ClanTreeService {
 
     private MemberState memberState(Player player, ClanTreeState state) {
         int today = dayKey();
+        MemberState member = null;
+        boolean needsPersist = false;
         try (Connection connection = LocalManager.getConnection()) {
             ensureSchema(connection);
             try (PreparedStatement ps = connection.prepareStatement(
@@ -509,24 +547,31 @@ public final class ClanTreeService {
                 ps.setLong(2, player.id);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        MemberState member = new MemberState(state.clanId, player.id, rs.getInt(1), rs.getInt(2),
+                        member = new MemberState(state.clanId, player.id, rs.getInt(1), rs.getInt(2),
                                 rs.getInt(3), rs.getLong(4), rs.getLong(5));
                         if (member.dayKey != today) {
                             member.dayKey = today;
                             member.waterCount = 0;
                             member.fertilizerCount = 0;
                             member.growthContribution = 0L;
-                            persistMember(state, member);
+                            // Do not borrow another connection while the result set's connection is still leased.
+                            // This previously deadlocked a one-connection pool at the Vietnam day rollover.
+                            needsPersist = true;
                         }
-                        return member;
                     }
                 }
             }
         } catch (Exception e) {
             Logger.logException(ClanTreeService.class, e, "Không tải được tiến độ chăm cây cá nhân");
+            return new MemberState(state.clanId, player.id, today, 0, 0, 0L, 0L);
         }
-        MemberState member = new MemberState(state.clanId, player.id, today, 0, 0, 0L, 0L);
-        persistMember(state, member);
+        if (member == null) {
+            member = new MemberState(state.clanId, player.id, today, 0, 0, 0L, 0L);
+            needsPersist = true;
+        }
+        if (needsPersist) {
+            persistMember(state, member);
+        }
         return member;
     }
 
@@ -630,6 +675,12 @@ public final class ClanTreeService {
             message.writer().writeLong(state.upgradeStartedAt);
             message.writer().writeLong(state.upgradeReadyAt);
             message.writer().writeLong(state.version);
+            // Detail v1 keeps Clan EXP tied to the tree snapshot that caused it.
+            // Older clients safely ignore these trailing fields.
+            message.writer().writeByte(1);
+            message.writer().writeLong(player.clan.clanExp);
+            message.writer().writeLong(ClanProgressionService.gI().expRequired(player.clan.level));
+            message.writer().writeLong(player.clan.progressionVersion);
             player.sendMessage(message);
         } catch (Exception e) {
             Logger.logException(ClanTreeService.class, e, "Không gửi được snapshot Cây bang");

@@ -1,0 +1,21 @@
+unit: protocol-dispatch
+source_loc: src/nro/models/server/Controller.java:85
+side_effects:
+  - action: "Read command payload in protocol-defined order"
+    must_preserve: true
+  - action: "Delegate to gameplay services and send client responses"
+    must_preserve: true
+branches:
+  - condition: "player is null or account protection/transaction guard blocks action"
+    must_preserve: true
+    outcome: "return or send the existing notification"
+  - condition: "client version changes payload width"
+    must_preserve: true
+    outcome: "read byte/int according to session version"
+error_paths:
+  - condition: "unsupported command/action"
+    contract: "send existing failure notification or ignore according to branch"
+    must_preserve: true
+concurrency:
+  model: "session reader dispatches commands; feature services may schedule asynchronous work"
+  tx_boundary: "transaction guard must run before mutating player state"

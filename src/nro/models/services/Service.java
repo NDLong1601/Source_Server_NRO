@@ -51,6 +51,7 @@ import nro.models.npc_list.DuaHau;
 import nro.models.player_system.Template.Part;
 import nro.models.server.Manager;
 import nro.models.activity.ActivityService;
+import nro.models.clan.ClanProgressionService;
 
 public class Service {
 
@@ -797,6 +798,14 @@ public class Service {
             return;
         }
         player.nPoint.calPoint();
+        sendPointSnapshot(player);
+    }
+
+    /** Sends already recalculated attributes without running calPoint a second time. */
+    public void sendPointSnapshot(Player player) {
+        if (player == null || player.nPoint == null) {
+            return;
+        }
         Send_Info_NV(player);
         if (!player.isPet && !player.isBot && !player.isBoss && !player.isNewPet) {
             Message msg;
@@ -1005,6 +1014,11 @@ public class Service {
             player.nPoint.tiemNang += param;
 
         } else {
+            int clanPowerBonus = ClanProgressionService.gI().powerGainBasisPoints(player);
+            if (clanPowerBonus > 0 && param > 0L) {
+                double scaled = param * (10_000.0d + clanPowerBonus) / 10_000.0d;
+                param = scaled >= Long.MAX_VALUE ? Long.MAX_VALUE : Math.max(param, Math.round(scaled));
+            }
             long maxPower = player.nPoint.getPowerLimit();
 
             if (player.nPoint.power >= maxPower) {

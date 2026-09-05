@@ -3,6 +3,7 @@ package nro.models.npc_list;
 import nro.models.utils.Functions;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanItemStorageService;
 import nro.models.clan.ClanMember;
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
@@ -46,7 +47,10 @@ public class DrDrief extends Npc {
                     menu.add("Nhiệm vụ Bang\n[" + pl.playerTask.clanTask.leftTask + "/" + TaskConfig.getMaxClanTask()
                             + "]");
                     menu.add("Hợp đồng\ntuần");
-                    menu.add("Cửa Hàng\nBang hội");
+                    menu.add("Cửa hàng\ncá nhân");
+                    if (clan.isLeader(pl)) {
+                        menu.add("Vật phẩm\nkho bang");
+                    }
                 }
                 menu.add("Đảo Kame");
                 menu.add("Từ chối");
@@ -107,6 +111,8 @@ public class DrDrief extends Npc {
                                     case 3 ->
                                         ShopService.gI().opendShop(player, "SHOP_CLAN", false);
                                     case 4 ->
+                                        ShopService.gI().opendShop(player, ClanItemStorageService.OWNER_SHOP_TAG, true);
+                                    case 5 ->
                                         ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
                                     default -> {
                                     }

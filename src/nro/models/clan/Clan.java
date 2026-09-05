@@ -469,6 +469,18 @@ public class Clan {
     }
 
     public void addMemberOnline(Player player) {
+        if (player == null) {
+            return;
+        }
+        // Unity Play/reconnect can create a new Player instance before an old
+        // session has been fully disposed. Keep only the current instance so
+        // clan broadcasts and stat refreshes never target a stale session.
+        for (int i = this.membersInGame.size() - 1; i >= 0; i--) {
+            Player existing = this.membersInGame.get(i);
+            if (existing == null || existing.id == player.id) {
+                this.membersInGame.remove(i);
+            }
+        }
         this.membersInGame.add(player);
     }
 

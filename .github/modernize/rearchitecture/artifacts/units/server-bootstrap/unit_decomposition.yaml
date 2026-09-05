@@ -1,0 +1,9 @@
+unit: server-bootstrap
+commit: false
+candidate_splits:
+  - name: "bootstrap configuration"
+    drivers: [lifecycle, configuration]
+    rationale: "ServerManager currently mixes configuration, initialization, and runtime thread startup."
+  - name: "runtime scheduler registry"
+    drivers: [concurrency, lifecycle]
+    rationale: "Many feature threads are started directly from run()."
