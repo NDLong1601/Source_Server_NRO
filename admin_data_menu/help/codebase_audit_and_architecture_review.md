@@ -1,14 +1,17 @@
-# Kế Hoạch Tổng Thể Nâng Cấp Source Code NRO Server — Audit, Kiến Trúc Và Triển Khai
+# Kế Hoạch Tổng Thể Nâng Cấp Source Code NRO Server–Client — Audit, Kiến Trúc Và Triển Khai
 
 ## 0. Trạng thái tài liệu
 
-- Repository được đối chiếu: C:/Users/PC/Music/Teamobi2026/SRC
-- Thời điểm rà soát: 05/09/2026
-- Git HEAD tại thời điểm rà soát: b8190e4cf
-- Working tree đang có thay đổi chưa commit, gồm cả các thay đổi về clan và PlayerAppearanceService.java. Vì vậy line number chỉ đúng với snapshot hiện tại.
+- Server repository: C:/Users/PC/Music/Teamobi2026/SRC
+- Client source bắt buộc đối chiếu: C:/Users/PC/Music/PRJ_2Tab_550K
+- Thời điểm rà soát gần nhất: 06/09/2026
+- Server Git baseline: 7c842c7d9 (`fix(sec-01): harden achievement claim lifecycle`).
+- Client là Unity 2022.3.62f2 và có hai implementation song song trong `Assets/Scripts/Assembly-CSharp/Game1` và `Game2`. Thư mục client không có Git repository độc lập, vì vậy phải tạo commit/tag hoặc manifest checksum riêng trước mỗi đợt đổi protocol.
+- Line number trong tài liệu chỉ đúng với các baseline nêu trên và phải được làm mới sau mỗi đợt triển khai.
 - Java source/target: 17.
-- Quy mô: 594 file Java; khoảng 126.947 physical line.
-- Mục tiêu tài liệu: xác định lỗi thật theo call path, kiến trúc cần sửa, phương án tách Player.java, Manager.java, Controller.java, và kế hoạch nâng cấp có thể triển khai từng bước mà không phải viết lại toàn bộ server.
+- Client target: Unity 2022.3.62f2.
+- Quy mô server tại lần audit gốc: 594 file Java; khoảng 126.947 physical line.
+- Mục tiêu tài liệu: xác định lỗi thật theo call path hai phía server–client, kiến trúc cần sửa, phương án tách Player.java, Manager.java, Controller.java, và kế hoạch nâng cấp có thể triển khai từng bước mà không phải viết lại toàn bộ hệ thống.
 - Phân loại:
   - Đã xác nhận: có call path và hậu quả nhìn thấy trực tiếp trong source.
   - Rủi ro có điều kiện: code có lỗi, nhưng cần trạng thái hoặc tải đồng thời cụ thể.
@@ -33,7 +36,7 @@ Trước refactor lớn phải sửa các lỗi P0/P1 sau:
 
 | Mức | Phát hiện | Trạng thái |
 |---|---|---|
-| P0 | Nhận thưởng thành tựu không kiểm tra đủ điều kiện hoặc đã nhận; có thể nhận ngọc lặp lại | Đã xác nhận |
+| P0 | Nhận thưởng thành tựu không kiểm tra đủ điều kiện hoặc đã nhận; có thể nhận ngọc lặp lại | Đã khắc phục local ở server commit `7c842c7d9`; client source đã harden và Unity compile pass; live/staging smoke còn pending |
 | P0 | LuckyRound nhận count âm và phép nhân giá vàng bằng int có thể overflow | Đã xác nhận |
 | P0 | Trade dùng accept++ không gắn actor; một phía có thể gửi accept hai lần | Đã xác nhận |
 | P0 | Shop ký gửi mua hàng không atomic; có race double-buy và trừ tiền dù add bag thất bại | Đã xác nhận |
@@ -86,50 +89,98 @@ Song song với packet thread:
 
 Hệ quả kiến trúc chính là không có một mô hình ownership nhất quán cho mutable state. Packet thread, player loop, zone worker, event thread và disconnect thread có thể cùng sửa Player, Inventory, Zone hoặc registry.
 
+### 2.1. Source client và quy tắc đối chiếu bắt buộc
+
+Client chuẩn dùng cho các gate tiếp theo nằm tại:
+
+~~~text
+C:/Users/PC/Music/PRJ_2Tab_550K
+  Assets/Scripts/Assembly-CSharp/Game1
+  Assets/Scripts/Assembly-CSharp/Game2
+~~~
+
+Hai namespace `Game1` và `Game2` chứa hai implementation gần tương đương nhưng là các file độc lập. Mọi thay đổi command, payload, signedness, thứ tự field, kiểu số hoặc hành vi UI phải:
+
+1. Truy vết producer/consumer ở server và cả `Game1` lẫn `Game2`.
+2. Sửa đồng bộ hai client implementation hoặc tách codec dùng chung trước khi sửa.
+3. Ghi wire contract trước khi code: command, action/subcommand, byte order, signedness, giới hạn và version gate.
+4. Có golden packet test encode ở một phía và decode ở phía còn lại.
+5. Build Unity client và build Java server từ source; không chỉ dựa vào JAR/DLL cũ.
+6. Giữ toàn bộ validation, authorization, idempotency và quyết định phần thưởng ở server. Client chỉ là presentation/input adapter, không phải security boundary.
+
+Các file client phải kiểm tra tối thiểu khi tách `Controller.java` hoặc thay đổi economy protocol:
+
+- `Game1/Controller.cs`, `Game2/Controller.cs`: decode packet server.
+- `Game1/Service.cs`, `Game2/Service.cs`: encode request client.
+- `Game1/Panel.cs`, `Game2/Panel.cs`: điều kiện gửi request và cập nhật UI.
+- `Game1/Message.cs`, `Game2/Message.cs`, `myReader.cs`, `myWriter.cs`: signedness và primitive encoding.
+
 ---
 
 ## 3. Audit lỗi và rủi ro đã cập nhật
 
-### 3.1. P0 — Nhận thành tựu lặp vô hạn
+### 3.1. P0 — Nhận thành tựu lặp vô hạn — server đã khắc phục, client đã harden tương thích
 
 Call path:
 
 ~~~text
 packet command -76
-  → Controller.java:782-783
+  → Controller.java:782-786
   → AchievementService.confirmAchievement
-  → cộng gem
+  → Achievement.claimReward
+  → Inventory.tryCreditGemExact
 ~~~
 
-Bằng chứng:
+Bản lỗi ban đầu đã được xác nhận trên baseline trước SEC-01: request lặp có thể cộng ngọc nhiều lần vì validation, mark-received và credit không nằm trong cùng critical section.
 
-- Controller.java:782-783 gọi confirmAchievement với select đọc trực tiếp từ packet.
-- AchievementService.java:51-61 lấy money từ Manager.ACHIEVEMENT_TEMPLATE, gọi reward rồi cộng gem.
-- Achievement.java:60-63 có method canReward kiểm tra đủ tiến độ và chưa nhận, nhưng confirmAchievement không gọi method này.
-- Achievement.reward chỉ đặt trạng thái nhận thành true; packet lặp lại vẫn tiếp tục cộng gem.
-- Không có lock/idempotency để chặn hai packet đồng thời.
+Trạng thái triển khai tại server commit `7c842c7d9`:
 
-Hậu quả:
+- `Controller.java` đã kiểm tra player, message, reader và payload tối thiểu trước khi decode index.
+- `Achievement.claimReward` kiểm tra lifecycle, index, trạng thái hoàn thành, trạng thái đã nhận, bag và giới hạn gem trong critical section của một live `Achievement` instance.
+- `Inventory.tryCreditGemExact` dùng arithmetic có kiểm tra và trả kết quả credit chính xác.
+- Success packet `-76/action=1` chỉ được gửi sau khi state và số dư RAM đã mutation thành công.
+- Regression suite đã bao phủ request tuần tự, đồng thời, index lỗi, lifecycle/dispose, giới hạn số dư và lỗi gửi success packet.
 
-- Với một index hợp lệ và có ô trống bag, client có thể gửi lại command để cộng ngọc nhiều lần.
-- Index âm hoặc vượt range gây exception, nhưng exception bị Controller nuốt sau cơ chế log giới hạn; đây còn là nguồn log/noise.
+Wire contract đã đối chiếu với cả `Game1` và `Game2`:
 
-Sửa ngắn hạn:
+| Hướng | Payload legacy | Giới hạn hiện tại |
+|---|---|---|
+| Client → server | `command=-76`, `select: I8` | index hợp lệ `0..127`; server hiện đọc signed byte |
+| Server → client, mở danh sách | `action: I8=0`, `count: I8`, lặp `{info1: UTF, info2: UTF, reward: U16, isFinish: bool, isRecieve: bool}` | `count` phải `1..127`, `reward` phải `0..65535` |
+| Server → client, nhận thành công | `action: I8=1`, `select: U8` | client phải kiểm tra array/null/range |
+| Server → client, thất bại | notification chung, không có structured `-76` result | chưa đồng bộ lại UI theo request |
 
-1. Kiểm tra player, achievement, index và template range trước mọi truy cập.
-2. Bắt buộc achievement.canReward(index) trả true.
-3. Trong critical section theo player, đánh dấu đã nhận đúng một lần và cộng thưởng đúng một lần.
-4. Dùng phép cộng có cap, không cộng int trực tiếp.
-5. Save trạng thái thưởng và số dư trong cùng transaction/persistence unit.
-6. Thêm audit ledger với playerId, achievementId, requestId, before, delta, after.
+Client source đã harden ngày 06/09/2026, đồng bộ ở `Game1` và `Game2`:
 
-Acceptance test:
+- Reward được decode bằng `readUnsignedShort`; giá trị `50000` không còn biến thành `-15536`.
+- UI hiển thị đúng đơn vị `Ngọc`, phù hợp với mutation `inventory.gem` ở server.
+- Success response kiểm tra `arrArchive`, range và phần tử null trước khi đặt `isRecieve`.
+- Thao tác claim kiểm tra đầy đủ array/index/state và có cooldown 1,5 giây để giảm packet lặp do bấm liên tục.
 
-- Chưa hoàn thành: không nhận thưởng.
-- Đã hoàn thành: nhận đúng một lần.
-- Gửi cùng packet 100 lần tuần tự hoặc đồng thời: tổng thưởng vẫn chỉ một lần.
-- Index -1, 127 và vượt danh sách: trả lỗi protocol, không ném exception.
-- Crash giữa mark và credit không làm mất hoặc nhân đôi thưởng.
+Phạm vi bảo đảm và phần còn lại:
+
+- SEC-01 hiện bảo đảm at-most-once trên một live `Achievement` instance; chưa phải exactly-once qua crash/restart.
+- Nếu success packet bị mất sau commit, client đang mở có thể giữ UI cũ. Mở lại danh sách sẽ đồng bộ, nhưng server nên trả authoritative claimed-state cho request `ALREADY_CLAIMED` hoặc bổ sung structured result ở protocol version mới.
+- Template, progress persistence và request vẫn gắn bằng vị trí mảng. `Manager` load `select * from achievement_template` không có `ORDER BY`, còn player JSON lưu positional state; thay đổi thứ tự template có thể gắn progress/claimed state sai achievement.
+- Server chưa fail-fast nếu template count vượt 127 hoặc reward vượt 65535.
+- Client đã sửa source nhưng bản client phát hành cũ vẫn đọc reward bằng signed short cho đến khi được build và phân phối lại.
+
+Hành động tiếp theo:
+
+1. Thêm `ORDER BY id ASC` như guard ngắn hạn và kiểm tra ID liên tục/unique khi load template.
+2. Thêm startup validation cho legacy contract: template count tối đa 127 và reward trong `0..65535`.
+3. Tạo protocol v2 dùng stable `achievementId`, reward `I32`, structured result và version gate; không đổi layout legacy tại chỗ.
+4. Migrate `data_achievement` từ positional array sang record có `achievementId` và `schemaVersion`.
+5. Save claimed-state và số dư trong cùng persistence unit; thêm audit ledger có unique request/business key để tiến tới exactly-once sau crash.
+6. Thêm golden packet test chạy với codec client cho cả `Game1` và `Game2`, đặc biệt các giá trị `32767`, `32768`, `50000`, `65535`, count/index biên và packet bị truncate.
+
+Acceptance status:
+
+- PASS local server: chưa hoàn thành không nhận; hoàn thành nhận đúng một lần; request tuần tự/đồng thời không cộng lặp; index/payload lỗi không mutation; lỗi gửi packet không rollback số dư đã credit.
+- PASS static cross-source: request và response `-76` giữ nguyên byte layout cho client hiện tại; hai client implementation đã được sửa đồng bộ.
+- PASS local client: Unity 2022.3.62f2 batch compilation exit `0`, không có compiler error; cả `Game1` và `Game2` nằm trong `Assembly-CSharp` đã compile.
+- PENDING: live client–server smoke test, staging restart/load-save round trip và test mất success packet.
+- PENDING: crash consistency/exactly-once và durable ledger; phần này thuộc SEC-07, không được tuyên bố hoàn thành trong SEC-01.
 
 ### 3.2. P0 — LuckyRound count âm và overflow
 
@@ -453,7 +504,7 @@ Sửa:
 ### 3.14. P2 — Protocol fall-through và validation không đồng nhất
 
 - Controller.java:257-264 để command 42 fall-through sang -127/LuckyRound vì break đã bị comment.
-- Command -76 không check player trước khi gọi AchievementService.
+- Command `-76` đã có player/reader/payload guard trong SEC-01; dùng handler này làm characterization case khi tách dispatcher, nhưng chưa coi đó là protocol policy tập trung.
 - Nhiều service tự đọc tiếp Message, làm decode và mutation trộn với nhau.
 - Kiểm tra maintenance, trade, account protection và player null được lặp không đồng nhất giữa command.
 - Nhiều index đọc từ byte/short rồi truy cập List trực tiếp; exception thường bị catch ở tầng cao thay vì trả lỗi protocol.
@@ -918,6 +969,8 @@ Deliverable:
 - Chụp dependency checksum và build artifact checksum.
 - Bộ fixture DB đã khử dữ liệu.
 - Danh mục command/subcommand và signedness.
+- Manifest source client được hỗ trợ, gồm đường dẫn/revision hoặc checksum và Unity version.
+- Compatibility matrix server–client cho từng command, bao gồm cả `Game1` và `Game2`.
 - Baseline: CCU, thread count, heap, GC, DB pool wait, zone tick, outbound queue.
 - Test tái hiện P0 nhưng chạy trên fixture.
 - Backup DB và quy trình restore đã thử.
@@ -926,7 +979,9 @@ Deliverable:
 Exit criteria:
 
 - Một lệnh build lặp lại được.
+- Java server và cả hai namespace client build sạch từ source.
 - Test P0 đỏ trước fix.
+- Golden packet test encode/decode chéo server–client pass cho version đang hỗ trợ.
 - Không dùng production secret trong test.
 - Có mốc performance baseline.
 
@@ -934,7 +989,7 @@ Exit criteria:
 
 Work item:
 
-- SEC-01 Achievement claim validation + idempotency.
+- SEC-01 Achievement claim validation + at-most-once trên live instance: đã hoàn thành local ở server commit `7c842c7d9`; client compatibility source đã harden và Unity compile pass, còn live/staging smoke và durable exactly-once.
 - SEC-02 LuckyRound whitelist + exact arithmetic.
 - SEC-03 Trade actor state machine.
 - SEC-04 Consign conditional purchase + capacity.
@@ -1370,6 +1425,7 @@ ADR cần lập:
 - ADR-006 Network backpressure.
 - ADR-007 JSON migration.
 - ADR-008 NIO/Netty decision sau benchmark.
+- ADR-009 Client compatibility, protocol versioning và source-of-truth cho wire contract.
 
 ---
 
@@ -1377,7 +1433,7 @@ ADR cần lập:
 
 Trong 48 giờ đầu:
 
-1. Đóng đường claim thành tựu lặp.
+1. Hoàn tất closure SEC-01: client–server smoke, staging restart/load-save và ghi rõ giới hạn at-most-once; server regression và Unity compile đã pass, đường claim lặp trên live instance đã đóng.
 2. Chặn LuckyRound count không hợp lệ và overflow.
 3. Tạm khóa/disable trade nếu chưa kịp sửa actor state.
 4. Tạm serialize mua ký gửi và bắt buộc add bag thành công trước finalize; chuẩn bị DB transaction.
