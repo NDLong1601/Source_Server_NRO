@@ -7,6 +7,9 @@
 # Runtime logs and transient server state
 /logs/
 
+# Local release bundles and verification records
+/artifacts/
+
 # Server JAR backups and staging files
 /20.jar.bak_*
 /20.jar.pending

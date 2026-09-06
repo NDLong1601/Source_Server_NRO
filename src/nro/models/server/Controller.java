@@ -255,9 +255,10 @@ public class Controller implements IMessageHandler {
                     }
                     break;
                 case 42:
-                    // //Đăng ký tài khoản nhanh
-                    // Service.gI().regisAccount(_session, _msg);
-                    // break;
+                    // SEC-02: Prevent accidental fall-through into -127 (LuckyRound).
+                    // Command 42 carries client charInfo/registration payload with credentials;
+                    // registration is disabled/handled elsewhere and must never route to LuckyRound.
+                    break;
                 case -127:
                     if (player != null) {
                         LuckyRound.gI().readOpenBall(player, _msg);

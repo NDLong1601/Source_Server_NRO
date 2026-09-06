@@ -36,8 +36,8 @@ public class RewardService {
             it.quantity = Util.nextInt(5, 50) * 1000;
             boolean success = Util.isTrue(1, 2);
 
-            if (Util.isTrue(1, 2)) {
-                // VIP - Thay thế vật phẩm nếu thỏa mãn điều kiện
+            if (vip) {
+                // VIP reward pool is selected by the caller's validated mode.
                 if (Util.isTrue(5, 100)) {
                     it = ItemService.gI().createNewItem((short) 1208); // Ả Rập
                     it.itemOptions.clear();
