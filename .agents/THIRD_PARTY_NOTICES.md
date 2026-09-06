@@ -11,6 +11,8 @@ Covered paths:
 - `.agents/skills/code-review-and-quality`
 - `.agents/skills/security-and-hardening`
 - `.agents/skills/code-simplification`
+- `.agents/skills/test-driven-development`
+- `.agents/skills/observability-and-instrumentation`
 
 Source commit: `48cb1168aeaaa70dfc2bbf709eddfa2a8ed8129a`
 

@@ -6,12 +6,12 @@ installation script.
 
 ## Current State
 
-- Rollout stage: **Stage 1 - core workflows installed and statically audited**.
-- Third-party skills installed by this rollout: **four**.
+- Rollout stage: **Stage 2 - workflow expansion installed and statically audited**.
+- Third-party skills installed by this rollout: **six**.
 - Installation scope: project-local `.agents/skills` only.
 - Every stage must be reviewed and committed separately.
-- Fresh-turn discovery and representative trigger validation remain pending; the
-  installed skills become discoverable to Codex on the next turn.
+- Stage 1 fresh-turn discovery passed on 2026-09-06. Stage 2 skills become discoverable
+  to Codex on the next turn; their live trigger validation remains pending.
 
 Existing repository-owned skills are not third-party imports:
 
@@ -31,7 +31,7 @@ authorization to install or execute it.
 
 | Source | Pinned commit | License | Planned use | Status |
 | --- | --- | --- | --- | --- |
-| `addyosmani/agent-skills` | `48cb1168aeaaa70dfc2bbf709eddfa2a8ed8129a` | MIT | Selected review, security, simplification, TDD, and observability skills | Three Stage 1 skills installed 2026-09-06 |
+| `addyosmani/agent-skills` | `48cb1168aeaaa70dfc2bbf709eddfa2a8ed8129a` | MIT | Selected review, security, simplification, TDD, and observability skills | Five Stage 1/2 skills installed 2026-09-06 |
 | `obra/superpowers` | `b36e0829c6d0140e93cfef2ca599b1b07d4a7797` | MIT | `systematic-debugging` only | Stage 1 skill installed 2026-09-06 |
 | `tech-leads-club/agent-skills` | `fc886b77e54db38b621f08472434cbb73ef35008` | MIT for software; skill content CC BY 4.0 unless overridden | `security-threat-model` only | Reviewed; not installed |
 | `nextlevelbuilder/ui-ux-pro-max-skill` | `314307f156aeab0c6b567bbaa1ce4e7aabd5a636` | MIT | Reference material for a future HTA-specific wrapper | Reviewed; direct install deferred |
@@ -64,11 +64,16 @@ Completed static gates:
   packet limits, cache/relogin validation, and deployment boundaries retain ownership.
 - Preserved both MIT notices in `.agents/THIRD_PARTY_NOTICES.md`.
 
-Pending fresh-turn gate:
+Fresh-turn gate:
 
-- Start a new Codex turn so project-local skill discovery refreshes.
-- Exercise review, debugging, simplification, item, and build trigger scenarios.
-- Confirm repository-specific NRO skills retain workflow ownership in live discovery.
+- Passed: all four Stage 1 imports appeared in Codex project-local skill discovery on
+  the next turn.
+- Passed: review, debugging, and simplification descriptions remain narrow, while root
+  `AGENTS.md` continues to route item, build, protocol, cache, asset, and deployment work
+  to repository-specific skills or authorities.
+- The planned three-to-five representative-task soak was not yet accumulated. The user
+  explicitly requested the next stage, so Stage 2 installation proceeded while live
+  workflow behavior remains subject to observation and rollback by its separate commit.
 
 Local modifications by skill:
 
@@ -81,18 +86,39 @@ Local modifications by skill:
 
 ### Stage 2 - Workflow Expansion
 
-After Stage 1 succeeds across at least three to five representative tasks, consider:
+Installed imports:
 
-- `addyosmani/agent-skills/skills/test-driven-development`
-- `addyosmani/agent-skills/skills/observability-and-instrumentation`
+- `.agents/skills/test-driven-development` from
+  `addyosmani/agent-skills/skills/test-driven-development`
+- `.agents/skills/observability-and-instrumentation` from
+  `addyosmani/agent-skills/skills/observability-and-instrumentation`
 
-Local trigger constraints:
+Completed static gates:
 
-- TDD applies to behavior changes with a stable test seam; it does not mandate a
-  framework migration and does not apply mechanically to image assets or simple data
-  edits.
-- Observability applies when logging, metrics, tracing, alerting, or production
-  diagnosis is requested; it does not authorize adding telemetry dependencies.
+- Inspected both downloaded directories in full; each contains only its `SKILL.md`.
+- Confirmed no executable, hook, binary, symlink, dependency manifest, lifecycle script,
+  or additional dependency was introduced.
+- Removed dangling references to upstream shared checklists and uninstalled companion
+  skills without importing their parent plugin.
+- Narrowed triggers so TDD applies to behavior changes with a stable test seam and
+  observability applies only when durable diagnostic signals are in scope.
+- Preserved the Addy Osmani MIT notice and extended its covered-path list in
+  `.agents/THIRD_PARTY_NOTICES.md`.
+
+Pending fresh-turn gate:
+
+- Confirm both Stage 2 skills appear in Codex project-local discovery.
+- Exercise representative Java behavior-change, no-test-seam, logging, incident,
+  HTA, item, and build scenarios.
+- Confirm repository-specific NRO skills retain ownership and these general skills
+  remain supplemental.
+
+Local modifications by skill:
+
+| Skill | Adaptation |
+| --- | --- |
+| `test-driven-development` | Stable-seam trigger; `tools/tests` and `map-tools/tests`; Java 17/Ant and HTA gates; controlled-probe fallback; no framework migration or automatic subagent delegation |
+| `observability-and-instrumentation` | Explicit observability trigger; existing Java diagnostics first; no automatic telemetry dependencies; NRO command/JDBC/session boundaries; redacted fields and safe controlled verification |
 
 ### Stage 3 - On-Demand Security Modeling
 
