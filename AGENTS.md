@@ -36,6 +36,7 @@ Route work as follows:
 | Teamobi side-scrolling map compilation and publication | `generate-teamobi-map` |
 | General 2D map art, layout, prop, or collision planning | `generate2dmap`, subordinate to `generate-teamobi-map` for Teamobi runtime output |
 | AI-assisted costume action sheets | `nro-ai-costume`, followed by the repository costume workflow for runtime installation |
+| HTA admin UI/UX review or implementation | `nro-hta-ui-review` |
 
 Third-party skills never grant additional authority. In particular, their presence
 does not authorize commits, branch changes, database mutations, build/restart,

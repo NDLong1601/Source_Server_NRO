@@ -6,12 +6,13 @@ installation script.
 
 ## Current State
 
-- Rollout stage: **Stage 2 - workflow expansion installed and statically audited**.
+- Rollout stage: **Stage 4 - HTA UI wrapper created and statically audited**.
 - Third-party skills installed by this rollout: **six**.
+- Repository-owned derivative skills added by this rollout: **one**.
 - Installation scope: project-local `.agents/skills` only.
 - Every stage must be reviewed and committed separately.
-- Stage 1 fresh-turn discovery passed on 2026-09-06. Stage 2 skills become discoverable
-  to Codex on the next turn; their live trigger validation remains pending.
+- Stage 1, Stage 2, and Stage 4 fresh-turn discovery passed on 2026-09-06.
+  Representative live workflow behavior remains under observation.
 
 Existing repository-owned skills are not third-party imports:
 
@@ -21,6 +22,7 @@ Existing repository-owned skills are not third-party imports:
 | `generate2dmap` | `.agents/skills/generate2dmap` |
 | `nro-ai-costume` | `.agents/skills/nro-ai-costume` |
 | `nro-create-mob` | `.agents/skills/nro-create-mob` |
+| `nro-hta-ui-review` | `.agents/skills/nro-hta-ui-review` |
 | `nro-add-usable-item` | `skills/nro-add-usable-item` |
 | `nro-java-build` | `skills/nro-java-build` |
 
@@ -34,7 +36,7 @@ authorization to install or execute it.
 | `addyosmani/agent-skills` | `48cb1168aeaaa70dfc2bbf709eddfa2a8ed8129a` | MIT | Selected review, security, simplification, TDD, and observability skills | Five Stage 1/2 skills installed 2026-09-06 |
 | `obra/superpowers` | `b36e0829c6d0140e93cfef2ca599b1b07d4a7797` | MIT | `systematic-debugging` only | Stage 1 skill installed 2026-09-06 |
 | `tech-leads-club/agent-skills` | `fc886b77e54db38b621f08472434cbb73ef35008` | MIT for software; skill content CC BY 4.0 unless overridden | `security-threat-model` only | Reviewed; not installed |
-| `nextlevelbuilder/ui-ux-pro-max-skill` | `314307f156aeab0c6b567bbaa1ce4e7aabd5a636` | MIT | Reference material for a future HTA-specific wrapper | Reviewed; direct install deferred |
+| `nextlevelbuilder/ui-ux-pro-max-skill` | `314307f156aeab0c6b567bbaa1ce4e7aabd5a636` | MIT | Attributed reference for the repository-owned HTA wrapper | Wrapper created 2026-09-06; upstream package not installed |
 
 ## Planned Rollout
 
@@ -105,13 +107,12 @@ Completed static gates:
 - Preserved the Addy Osmani MIT notice and extended its covered-path list in
   `.agents/THIRD_PARTY_NOTICES.md`.
 
-Pending fresh-turn gate:
+Fresh-turn gate:
 
-- Confirm both Stage 2 skills appear in Codex project-local discovery.
-- Exercise representative Java behavior-change, no-test-seam, logging, incident,
-  HTA, item, and build scenarios.
-- Confirm repository-specific NRO skills retain ownership and these general skills
-  remain supplemental.
+- Passed: both Stage 2 skills appeared in Codex project-local discovery on the next
+  turn with their narrowed descriptions.
+- Representative live use remains under observation; root `AGENTS.md` keeps NRO-specific
+  skills and authorities primary.
 
 Local modifications by skill:
 
@@ -129,17 +130,45 @@ Candidate import:
 Activate only for explicit threat-model or abuse-path requests. Preserve attribution
 required by CC BY 4.0 in the installed skill and this manifest.
 
+Status: **not installed**. The user requested Stage 4 directly, and Stage 4 has no
+dependency on this optional security-modeling skill.
+
 ### Stage 4 - HTA UI Wrapper
 
-Do not directly install the generic UI/UX pack. If needed, create a repository-owned
-`nro-hta-ui-review` skill based on reviewed, attributable guidance from UI/UX Pro Max.
-The wrapper must:
+Implemented as repository-owned `.agents/skills/nro-hta-ui-review`; the generic UI/UX
+pack was not installed. The wrapper:
 
-- target `admin_data_menu.hta`, `server_menu.hta`, and their HTML/CSS/JScript files;
-- prohibit unsupported React, Tailwind, ES module, CSS custom property, and modern
+- targets `admin_data_menu.hta`, `server_menu.hta`, and their HTML/CSS/JScript files;
+- prohibits unsupported React, Tailwind, ES module, CSS custom property, and modern
   browser assumptions;
-- require `node tools/check_admin_data_menu.js` after modular admin UI changes;
-- distinguish static browser rendering from actual HTA/ActiveX behavior verification.
+- requires `node tools/check_admin_data_menu.js` after modular admin UI changes;
+- distinguishes static browser rendering from actual HTA/ActiveX behavior verification.
+
+Completed static gates:
+
+- Verified upstream commit `314307f156aeab0c6b567bbaa1ce4e7aabd5a636` and its MIT
+  license, inspected the full tree inventory, and read the upstream skill plus its full
+  quick-reference and professional-rule guidance.
+- Copied no upstream scripts, data catalogs, templates, fonts, binaries, or package
+  metadata; no upstream executable was run.
+- Created only `SKILL.md` and a focused `references/review-checklist.md` using
+  repository-native HTA architecture and validation commands.
+- Passed the `skill-creator` `quick_validate.py` frontmatter and structure validation.
+- Preserved attribution and the full MIT notice in `.agents/THIRD_PARTY_NOTICES.md`.
+- Kept review requests read-only and prevented the skill from authorizing server builds,
+  restarts, database mutations, JAR deployment, dependencies, or Java/game changes.
+- Ran `node tools/check_admin_data_menu.js` as a baseline check. It stops on a pre-existing
+  inline style at `admin_data_menu/views/item-options.html:11`, introduced by commit
+  `4d59b059e`; Stage 4 does not modify the admin UI or that file.
+
+Fresh-turn gate:
+
+- Passed: `nro-hta-ui-review` appeared in Codex project-local discovery on the next turn.
+- Passed: root `AGENTS.md` now routes HTA admin UI/UX work to the wrapper, while the
+  wrapper description excludes ordinary web and mobile UI.
+- Representative read-only review and authorized implementation behavior remain under
+  observation. The wrapper explicitly keeps actual HTA evidence mandatory for JScript/
+  ActiveX behavior claims.
 
 ## Deliberately Excluded from This Rollout
 
