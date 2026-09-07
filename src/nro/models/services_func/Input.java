@@ -50,11 +50,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Normalizer;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Input {
 
     private static final Map<Integer, Object> PLAYER_ID_OBJECT = new HashMap<>();

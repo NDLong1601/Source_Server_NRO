@@ -32,11 +32,6 @@ import nro.models.utils.SkillUtil;
 import nro.models.utils.TimeUtil;
 import nro.models.clan.ClanItemStorageService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class ShopService {
 
     private static final byte COST_GOLD = 0;

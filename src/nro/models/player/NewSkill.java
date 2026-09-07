@@ -10,11 +10,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class NewSkill {
 
     public static final int TIME_GONG = 2000;

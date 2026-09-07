@@ -32,11 +32,6 @@ import static nro.models.player_badges.BagesTemplate.sendListItemOption;
 import nro.models.utils.TimeUtil;
 import nro.models.clan.ClanProgressionService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class NPoint {
 
     // Keep this table in sync with Panel.t_tiemnang in the Unity client.

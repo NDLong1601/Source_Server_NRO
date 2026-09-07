@@ -18,11 +18,6 @@ import java.util.concurrent.TimeUnit;
 import nro.models.map.phoban.BlackBallWar;
 import nro.models.services_dungeon.MajinBuuService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class TimeUtil {
 
     public static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");

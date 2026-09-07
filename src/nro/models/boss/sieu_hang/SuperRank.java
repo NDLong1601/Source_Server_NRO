@@ -167,6 +167,12 @@ public abstract class SuperRank extends Boss {
                         this.attack();
                     }
                     break;
+                case REST:
+                case CHAT_S:
+                case DIE:
+                case CHAT_E:
+                case LEAVE_MAP:
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,7 +6,6 @@ import nro.models.boss.BossesData;
 import static nro.models.consts.BossType.PHOBAN;
 import nro.models.consts.ConstRatio;
 import nro.models.player.Player;
-import nro.models.services.EffectSkillService;
 import nro.models.services.SkillService;
 import nro.models.utils.SkillUtil;
 import nro.models.utils.Util;

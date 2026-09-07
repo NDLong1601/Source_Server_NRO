@@ -19,11 +19,6 @@ import nro.models.services.PlayerService;
 import nro.models.services.Service;
 import nro.models.shop.ShopService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Bill extends Npc {
 
     public Bill(int mapId, int status, int cx, int cy, int tempId, int avartar) {

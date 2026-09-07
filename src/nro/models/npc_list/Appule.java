@@ -8,12 +8,6 @@ import nro.models.map.service.NpcService;
 import nro.models.services.TaskService;
 import nro.models.shop.ShopService;
 
-/**
- *
- * @author By Mr Blue
- * 
- */
-
 public class Appule extends Npc {
 
     public Appule(int mapId, int status, int cx, int cy, int tempId, int avartar) {

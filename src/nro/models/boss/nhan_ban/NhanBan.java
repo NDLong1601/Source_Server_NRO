@@ -22,7 +22,6 @@ import nro.models.utils.Util;
 public class NhanBan extends Boss {
 
     private Player playerAtt;
-    private long timeJoinMap;
 
     public NhanBan(Player player, BossData bossData) throws Exception {
         super(Util.createIdBossClone((int) player.id), bossData);

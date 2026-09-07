@@ -10,7 +10,6 @@ import static nro.models.consts.BossType.FINAL;
 import java.util.ArrayList;
 import java.util.List;
 import nro.models.player.Player;
-import nro.models.services.EffectSkillService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 import nro.models.server.ServerNotify;

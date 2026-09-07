@@ -10,11 +10,6 @@ import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
 import nro.models.task.BadgesTaskService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Inventory {
 
     public Item trainArmor;

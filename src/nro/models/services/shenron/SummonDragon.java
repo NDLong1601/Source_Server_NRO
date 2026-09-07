@@ -24,11 +24,6 @@ import nro.models.consts.ConstTaskBadges;
 import nro.models.server.Maintenance;
 import nro.models.task.BadgesTaskService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class SummonDragon {
 
     public static final byte WISHED = 0;

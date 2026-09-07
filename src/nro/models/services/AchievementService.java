@@ -11,11 +11,6 @@ import nro.models.skill.Skill;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class AchievementService {
 
     private static AchievementService instance;

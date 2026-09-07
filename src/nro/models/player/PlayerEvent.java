@@ -5,9 +5,6 @@ import lombok.Setter;
 import nro.models.consts.ConstTaskBadges;
 import nro.models.task.BadgesTaskService;
 
-/**
- * @author By Mr Blue
- */
 @Setter
 @Getter
 public class PlayerEvent {

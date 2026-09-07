@@ -14,11 +14,6 @@ import nro.models.services_func.Input;
 import nro.models.shop.ShopService;
 import nro.models.event.EventManager;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class ChiChi extends Npc {
 
     public ChiChi(int mapId, int status, int cx, int cy, int tempId, int avartar) {

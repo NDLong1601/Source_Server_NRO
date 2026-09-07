@@ -54,11 +54,6 @@ import nro.models.services.TaskService;
 import nro.models.shop.ShopTab;
 import nro.models.shop_ky_gui.ConsignShopManager;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class ServerManager {
 
     public static String timeStart;

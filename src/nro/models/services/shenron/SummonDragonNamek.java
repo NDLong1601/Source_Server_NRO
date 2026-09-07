@@ -17,11 +17,6 @@ import nro.models.services.Service;
 import nro.models.services.DayNightService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class SummonDragonNamek {
 
     public static final byte DRAGON_PORUNGA = 1;

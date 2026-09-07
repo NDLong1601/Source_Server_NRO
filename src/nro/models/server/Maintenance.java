@@ -4,11 +4,6 @@ import java.util.concurrent.Executors;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Maintenance extends Thread {
 
     private static Maintenance instance;

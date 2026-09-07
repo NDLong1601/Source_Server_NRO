@@ -13,7 +13,6 @@ import nro.models.map.ItemMap;
 import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.utils.Util;
-import java.util.ArrayList;
 import java.util.List;
 import nro.models.services_dungeon.MajinBuuService;
 import nro.models.services.EffectSkillService;
@@ -51,7 +50,7 @@ public class Mabu extends Boss {
         }
         }
         ItemMap itemMap = new ItemMap(this.zone, drop, quantity, x, y, plKill.id);
-        Item item = ItemService.gI().createNewItem((short) drop);
+        ItemService.gI().createNewItem((short) drop);
         Service.gI().dropItemMap(zone, itemMap);
         // 30% xác suất để rơi đồ
         if (Util.isTrue(1, 100)) {
@@ -66,7 +65,7 @@ public class Mabu extends Boss {
             int dropOptional = drops[group][Util.nextInt(0, drops[group].length - 1)];
             // Tạo vật phẩm và thêm chỉ số shop
             ItemMap optionalItemMap = new ItemMap(this.zone, dropOptional, 1, x, y, plKill.id);
-            Item optionalItem = ItemService.gI().createNewItem((short) dropOptional);
+            ItemService.gI().createNewItem((short) dropOptional);
             List<Item.ItemOption> optionalOps = ItemService.gI().getListOptionItemShop((short) dropOptional);
             optionalOps.forEach(option -> option.param = (int) (option.param * Util.nextInt(100, 115) / 100.0));
             optionalItemMap.options.addAll(optionalOps);
@@ -90,7 +89,7 @@ public class Mabu extends Boss {
             int dropOptional = dropItems[Util.nextInt(0, dropItems.length - 1)];
             // Tạo và rơi vật phẩm ngọc rồng hoặc item cấp 2
             ItemMap optionalItemMap = new ItemMap(this.zone, dropOptional, Util.nextInt(1, 3), x, y, plKill.id);
-            Item optionalItem = ItemService.gI().createNewItem((short) dropOptional);
+            ItemService.gI().createNewItem((short) dropOptional);
             Service.gI().dropItemMap(zone, optionalItemMap);
         }
         plKill.fightMabu.changePoint((byte) 25);

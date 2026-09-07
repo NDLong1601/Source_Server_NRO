@@ -76,11 +76,6 @@ import nro.models.activity.ActivityConfigService;
 import nro.models.activity.ActivityClaimAuditService;
 import nro.models.activity.ActivityMetricsService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public final class Manager {
 
     private static final int NPC_NAME_LIFT_MARKER = -32000;

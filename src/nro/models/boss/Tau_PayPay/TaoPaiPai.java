@@ -2,7 +2,6 @@ package nro.models.boss.Tau_PayPay;
 
 
 import nro.models.boss.Boss;
-import nro.models.boss.BossID;
 import nro.models.boss.BossesData;
 import static nro.models.consts.BossType.FINAL;
 import nro.models.player.Player;

@@ -20,11 +20,6 @@ import nro.models.utils.Util;
 import nro.models.activity.ActivityService;
 import nro.models.activity.ActivityType;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class GiuMaDauBo extends Npc {
 
     public GiuMaDauBo(int mapId, int status, int cx, int cy, int tempId, int avartar) {

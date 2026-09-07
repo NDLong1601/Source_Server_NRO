@@ -19,11 +19,6 @@ import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.services.Service;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Util {
 
     private static final Random rand;

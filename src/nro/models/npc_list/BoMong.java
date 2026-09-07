@@ -23,11 +23,6 @@ import nro.models.services.Service;
 import nro.models.services.TaskService;
 import nro.models.services_func.Input;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class BoMong extends Npc {
 
     public BoMong(int mapId, int status, int cx, int cy, int tempId, int avartar) {

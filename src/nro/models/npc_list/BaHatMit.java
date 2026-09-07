@@ -23,11 +23,6 @@ import java.util.List;
 import nro.models.shop.ShopService;
 import nro.models.utils.Util;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class BaHatMit extends Npc {
 
     public BaHatMit(int mapId, int status, int cx, int cy, int tempId, int avartar) {

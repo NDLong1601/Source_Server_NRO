@@ -3,6 +3,14 @@
         "src"
     ],
     "java.project.referencedLibraries": [
-        "lib/**/*.jar"
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\apache-commons-lang.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\gson-2.8.2.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\java-json.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\lombok.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\HikariCP-5.1.0.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\slf4j-simple-2.0.0-alpha1.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\slf4j-api-2.0.0-alpha1.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\json-simple-1.1.jar",
+        "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\mysql-connector-java8-5.1.23.jar"
     ]
 }

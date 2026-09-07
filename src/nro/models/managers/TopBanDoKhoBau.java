@@ -20,9 +20,6 @@ import nro.models.clan.Clan;
 import nro.models.player.Player;
 import nro.models.services.ItemService;
 
-/**
- * @author By Mr Blue
- */
 public class TopBanDoKhoBau {
 
     @Getter

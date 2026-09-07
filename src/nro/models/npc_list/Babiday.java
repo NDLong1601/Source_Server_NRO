@@ -9,11 +9,6 @@ import nro.models.map.service.NpcService;
 import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Babiday extends Npc {
 
     public Babiday(int mapId, int status, int cx, int cy, int tempId, int avartar) {

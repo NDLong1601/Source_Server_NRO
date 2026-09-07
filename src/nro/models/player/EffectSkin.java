@@ -20,11 +20,6 @@ import nro.models.services.EquipmentOptionService;
 import nro.models.services.SkillService;
 import nro.models.skill.Skill;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class EffectSkin {
 
     public static final String[] textOdo = new String[]{

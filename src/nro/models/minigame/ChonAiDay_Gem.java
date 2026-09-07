@@ -10,7 +10,7 @@ import nro.models.utils.Util;
 
 /**
  *
- * @author Mr Blue
+ * @author Finn
  */
 public class ChonAiDay_Gem implements Runnable {
 

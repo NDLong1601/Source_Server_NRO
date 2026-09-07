@@ -19,11 +19,6 @@ import nro.models.consts.ConstAchievement;
 import nro.models.services.AchievementService;
 import nro.models.services_func.UseItem;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Pet extends Player {
 
     private static final short[][] PET_ID = {{285, 286, 287}, {288, 289, 290}, {282, 283, 284}, {304, 305, 303}, {946, 947, 948}, {1743, 1744, 1745}, {876, 877, 878}};

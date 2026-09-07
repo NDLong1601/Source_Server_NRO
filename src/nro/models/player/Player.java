@@ -77,11 +77,6 @@ import nro.models.task.BadgesTaskService;
 import nro.models.activity.ActivityService;
 import nro.models.activity.ActivityState;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Player implements Runnable {
 
     public long lastTimeEatPea;

@@ -3,7 +3,7 @@ package nro.models.minigame;
 
 /**
  *
- * @author Mr Blue
+ * @author Finn
  */
 public class ConSoMayManData {
     public int id;

@@ -4,12 +4,6 @@ import java.time.LocalTime;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
 
-/**
- *
- * @author By Mr Blue
- *
- */
-
 public class AutoMaintenance extends Thread {
 
     public static boolean AutoMaintenance = false;

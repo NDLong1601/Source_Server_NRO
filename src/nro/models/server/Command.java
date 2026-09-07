@@ -30,11 +30,6 @@ import nro.models.data.LocalManager;
 import nro.models.services.TaskService;
 import nro.models.services.SkillMasteryService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class Command {
 
     private static Command instance;

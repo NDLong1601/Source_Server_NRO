@@ -62,11 +62,6 @@ import nro.models.database.PlayerDAO;
 import nro.models.fishing.FishingItems;
 import nro.models.fishing.FishingService;
 
-/**
- *
- * @author By Mr Blue
- *
- */
 public class UseItem {
 
     private static final int ITEM_BOX_TO_BODY_OR_BAG = 0;
