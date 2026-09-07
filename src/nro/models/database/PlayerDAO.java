@@ -7,6 +7,7 @@ import nro.models.player.Friend;
 import nro.models.player.Fusion;
 import nro.models.player.PetConfig;
 import nro.models.player.Inventory;
+import nro.models.player.InventoryPersistenceSnapshot;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
@@ -374,20 +375,23 @@ public class PlayerDAO {
     }
 
     public static void updatePlayer(Player player) {
+        if (player != null && player.persistenceQuarantined) {
+            Logger.error("[SEC-04] Skipped PlayerDAO save for quarantined playerId=" + player.id);
+            return;
+        }
         if (player != null && player.idMark.isLoadedAllDataPlayer()) {
-            long st = System.currentTimeMillis();
-            try {
+            synchronized (player.inventory) {
+                if (player.persistenceQuarantined) {
+                    Logger.error("[SEC-04] Skipped PlayerDAO save after quarantine race, playerId=" + player.id);
+                    return;
+                }
+                long st = System.currentTimeMillis();
+                try {
                 JSONArray dataArray = new JSONArray();
 
                 //data kim lượng
-                dataArray.add(player.inventory.gold > PlayerConfig.getMaxGold()
-                        ? PlayerConfig.getMaxGold() : player.inventory.gold);
-                dataArray.add(player.inventory.gem);
-                dataArray.add(player.inventory.ruby);
-                dataArray.add(player.inventory.coupon);
-                dataArray.add(player.inventory.event);
-                String inventory = dataArray.toJSONString();
-                dataArray.clear();
+                InventoryPersistenceSnapshot inventorySnapshot = InventoryPersistenceSnapshot.capture(player);
+                String inventory = inventorySnapshot.getDataInventoryJson();
 
                 int mapId = player.mapIdBeforeLogout;
                 int x = player.location.x;
@@ -472,31 +476,8 @@ public class PlayerDAO {
                 String itemsBody = dataArray.toJSONString();
                 dataArray.clear();
 
-                //data bag
-                for (Item item : player.inventory.itemsBag) {
-                    JSONArray opt = new JSONArray();
-                    if (item.isNotNullItem()) {
-                        dataItem.add(item.template.id);
-                        dataItem.add(item.quantity);
-                        JSONArray options = new JSONArray();
-                        for (Item.ItemOption io : item.itemOptions) {
-                            opt.add(io.optionTemplate.id);
-                            opt.add(io.param);
-                            options.add(opt.toJSONString());
-                            opt.clear();
-                        }
-                        dataItem.add(options.toJSONString());
-                    } else {
-                        dataItem.add(-1);
-                        dataItem.add(0);
-                        dataItem.add(opt.toJSONString());
-                    }
-                    dataItem.add(item.createTime);
-                    dataArray.add(dataItem.toJSONString());
-                    dataItem.clear();
-                }
-                String itemsBag = dataArray.toJSONString();
-                dataArray.clear();
+                //data bag - shared codec with SEC-04 atomic inventory transactions
+                String itemsBag = inventorySnapshot.getItemsBagJson();
 
                 //data box
                 for (Item item : player.inventory.itemsBox) {
@@ -1136,10 +1117,11 @@ public class PlayerDAO {
                 } else {
                     Logger.success(Logger.PURPLE + TimeUtil.getCurrHour() + "h" + TimeUtil.getCurrMin() + "m: Player " + player.name + " save successfully! " + (System.currentTimeMillis() - st) + "ms\n");
                 }
-            } catch (Exception e) {
-                Logger.logException(PlayerDAO.class, e, "Lỗi save player " + player.name);
-            }
+                } catch (Exception e) {
+                    Logger.logException(PlayerDAO.class, e, "Lỗi save player " + player.name);
+                }
 
+            }
         }
 
     }

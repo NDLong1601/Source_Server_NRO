@@ -1,45 +1,42 @@
 package nro.models.shop_ky_gui;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
-import nro.models.data.LocalManager;
-import org.json.simple.JSONValue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * SEC-04: Concurrency-safe listing manager replacing legacy whole-table TRUNCATE operations
+ * with row-level transaction persistence managed by ConsignPurchaseCoordinator.
+ */
 public class ConsignShopManager {
 
     private static ConsignShopManager instance;
 
-    public static ConsignShopManager gI() {
+    public static synchronized ConsignShopManager gI() {
         if (instance == null) {
             instance = new ConsignShopManager();
         }
         return instance;
     }
 
+    public static synchronized void setInstanceForTest(ConsignShopManager testInstance) {
+        instance = testInstance;
+    }
+
     public long lastTimeUpdate;
 
     public String[] tabName = { "Áo Quần", "Găng Tay", "Phụ Kiện", "Linh tinh", "" };
 
-    public List<ConsignItem> listItem = new ArrayList<>();
+    /**
+     * Concurrent collection preventing ConcurrentModificationException during active browsing.
+     */
+    public List<ConsignItem> listItem = new CopyOnWriteArrayList<>();
 
+    /**
+     * SEC-04: Legacy save() no longer performs TRUNCATE shop_ky_gui.
+     * All listing transitions are written row-level in real-time transactions by ConsignPurchaseCoordinator.
+     */
     public void save() {
-        try (Connection con = LocalManager.getConnection();) {
-            Statement s = con.createStatement();
-            s.execute("TRUNCATE shop_ky_gui");
-            for (ConsignItem it : this.listItem) {
-                if (it != null) {
-                    s.execute(String.format(
-                            "INSERT INTO `shop_ky_gui`(`id`, `player_id`, `tab`, `item_id`,`gold`, `gem`, `quantity`, `itemOption`, `isUpTop`, `isBuy`) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
-                            it.id, it.player_sell, it.tab, it.itemId, it.goldSell, it.gemSell, it.quantity,
-                            JSONValue.toJSONString(it.options).equals("null") ? "[]"
-                                    : JSONValue.toJSONString(it.options),
-                            it.isUpTop, it.isBuy ? 1 : 0));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Row-level persistence is guaranteed in real-time by ConsignListingRepository.
+        // TRUNCATE shop_ky_gui is explicitly removed to prevent table wipeouts.
     }
 }

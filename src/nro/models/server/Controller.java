@@ -125,9 +125,9 @@ public class Controller implements IMessageHandler {
                             break;
                         case 3:
                             idItem = _msg.reader().readShort();
-                            _msg.reader().readByte();
-                            _msg.reader().readInt();
-                            ConsignShopService.gI().buyItem(player, idItem);
+                            byte clientMoneyType = _msg.reader().readByte();
+                            int clientPrice = _msg.reader().readInt();
+                            ConsignShopService.gI().buyItem(player, idItem, clientMoneyType, clientPrice);
                             break;
                         case 4:
                             moneyType = _msg.reader().readByte();

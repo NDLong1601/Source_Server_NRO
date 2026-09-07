@@ -64,6 +64,8 @@ import nro.models.npc.NonInteractiveNPC;
 import nro.models.player.Player;
 import nro.models.player_badges.BagesTemplate;
 import nro.models.shop_ky_gui.ConsignItem;
+import nro.models.shop_ky_gui.ConsignItemOptionsCodec;
+import nro.models.shop_ky_gui.ConsignListingStatus;
 import nro.models.shop_ky_gui.ConsignShopManager;
 import nro.models.task.BadgesTaskTemplate;
 import nro.models.task.ClanTaskTemplate;
@@ -835,8 +837,12 @@ public final class Manager {
             Logger.success(Logger.PURPLE + "Successfully loaded mount (" + MAP_MOUNT_NUM.size() + ")\n");
 
             //Load item ki gui
-            ps = ConnectionDatabase.prepareStatement("SELECT * FROM shop_ky_gui");
+            ps = ConnectionDatabase.prepareStatement("SELECT `id`, `player_id`, `tab`, `item_id`, `gold`, `gem`, "
+                    + "`quantity`, `itemOption`, `isUpTop`, `isBuy`, `status`, `buyer_id`, `version`, `sold_at` "
+                    + "FROM `shop_ky_gui` WHERE `status` IN ('ACTIVE', 'SOLD') "
+                    + "ORDER BY `isUpTop` DESC, `id` ASC");
             rs = ps.executeQuery();
+            ConsignShopManager.gI().listItem.clear();
             while (rs.next()) {
                 int i = rs.getInt("id");
                 int idPl = rs.getInt("player_id");
@@ -847,15 +853,15 @@ public final class Manager {
                 int quantity = rs.getInt("quantity");
                 byte isUp = rs.getByte("isUpTop");
                 boolean isBuy = rs.getByte("isBuy") == 1;
-                List<Item.ItemOption> op = new ArrayList<>();
-                JSONArray jsa2 = (JSONArray) JSONValue.parse(rs.getString("itemOption"));
-                for (int j = 0; j < jsa2.size(); ++j) {
-                    JSONObject jso2 = (JSONObject) jsa2.get(j);
-                    int idOptions = Integer.parseInt(jso2.get("id").toString());
-                    int param = Integer.parseInt(jso2.get("param").toString());
-                    op.add(new Item.ItemOption(idOptions, param));
+                ConsignListingStatus status = ConsignListingStatus.fromString(rs.getString("status"));
+                if (status == ConsignListingStatus.ACTIVE && isBuy) {
+                    status = ConsignListingStatus.SOLD;
                 }
-                ConsignShopManager.gI().listItem.add(new ConsignItem(i, itemId, idPl, tab, gold, gem, quantity, isUp, op, isBuy));
+                long buyerId = rs.getLong("buyer_id");
+                int version = Math.max(1, rs.getInt("version"));
+                List<Item.ItemOption> op = ConsignItemOptionsCodec.decode(rs.getString("itemOption"));
+                ConsignShopManager.gI().listItem.add(new ConsignItem(i, itemId, idPl, tab, gold, gem,
+                        quantity, isUp, op, status, buyerId, version, rs.getTimestamp("sold_at")));
             }
             Logger.success(Logger.RED + "Successfully loaded Consign Item (" + ConsignShopManager.gI().listItem.size() + ")\n");
 

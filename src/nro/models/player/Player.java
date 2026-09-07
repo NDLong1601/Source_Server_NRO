@@ -178,6 +178,11 @@ public class Player implements Runnable {
     public byte maxTime = 30;
     public byte type = 0;
     public boolean isOffline = false;
+    /**
+     * Fail-closed marker used when a database commit outcome cannot be proven.
+     * PlayerDAO must not overwrite the authoritative database state while set.
+     */
+    public volatile boolean persistenceQuarantined = false;
 
     public String notify = null;
 
