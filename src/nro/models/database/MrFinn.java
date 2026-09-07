@@ -20,6 +20,7 @@ import nro.models.player.Fusion;
 import nro.models.player.Pet;
 import nro.models.player.PetConfig;
 import nro.models.player.Player;
+import nro.models.ledger.MoneyLedgerService;
 import nro.models.skill.Skill;
 import nro.models.task.TaskMain;
 import nro.models.server.Client;
@@ -1470,9 +1471,8 @@ public class MrFinn {
             PlayerService.gI().dailyLogin(player);// RESET DATA KHI QUA 12H ĐÊM
             BadgesService.normalize(player);
             player.inventory.checkAndUpdateMeRongBadges(player);
-            if (player.getSession() != null && player.getSession().actived && player.getSession().vnd < 0) {
-                player.getSession().actived = false;
-                player.getSession().vnd = 0;
+            if (player.getSession() != null && player.getSession().vnd < 0) {
+                Logger.error("[SEC-05] Negative balance detected for accountId=" + player.getSession().userId);
             }
             player.nPoint.hp = plHp;
             player.nPoint.mp = plMp;

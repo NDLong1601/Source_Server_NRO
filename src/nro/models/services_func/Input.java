@@ -19,6 +19,8 @@ import nro.models.services.Service;
 import nro.models.services.GiftCodeService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
+import nro.models.ledger.MoneyLedgerService;
+import nro.models.ledger.VndProductType;
 import nro.models.map.service.NpcService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,69 +157,20 @@ public class Input {
                 }
 
                 case TRADE_GOLD -> {
-                    int cuantity1 = Integer.parseInt(text[0]);
-                    if (!player.getSession().actived) {
-                        Service.gI().sendThongBao(player, "Vui lòng kích hoạt tài khoản!");
-                        break;
-                    }
-                    if (cuantity1 < 10000 || cuantity1 > 5_000_000) {
-                        Service.gI().sendThongBao(player, "Tối thiểu 10.000Đ và tối đa 5.000.000Đ");
-                        break;
-                    }
-                    if (player.getSession().vnd < cuantity1) {
-                        Service.gI().sendThongBao(player, "Số dư không đủ, vui lòng nạp thêm");
-                    } else {
-                        PlayerDAO.subvnd(player, cuantity1);
-
-                        int soLuongThoiVang = (cuantity1 / 1000) * 4;
-                        Item item457 = ItemService.gI().createNewItem((short) 457, soLuongThoiVang);
-                        InventoryService.gI().addItemBag(player, item457);
-
-                        int soLuongVe = (cuantity1 / 10000) * 10;
-                        Item item718 = ItemService.gI().createNewItem((short) 718, soLuongVe);
-                        InventoryService.gI().addItemBag(player, item718);
-
-                        InventoryService.gI().sendItemBags(player);
-
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.DAI_GIA_MOI_NHU, cuantity1);
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.EM_XINH_EM_DEP, cuantity1);
-
-                        int eventPointBonus = (cuantity1 / 10000) * 50;
-                        player.event.addEventPoint(eventPointBonus);
-
-                        Service.gI().sendThongBao(player, "Bạn nhận thêm " + eventPointBonus + " điểm sự kiện!");
-                        Service.gI().sendThongBao(player, "Đã đổi thành công. Bạn nhận được " + soLuongThoiVang + " thỏi vàng và " + soLuongVe + " vé tặng ngọc.");
+                    try {
+                        int cuantity1 = Integer.parseInt(text[0]);
+                        MoneyLedgerService.gI().executePurchase(player, VndProductType.TRADE_GOLD, cuantity1);
+                    } catch (NumberFormatException e) {
+                        Service.gI().sendThongBao(player, "Số lượng không hợp lệ");
                     }
                 }
 
                 case TRADE_GEM -> {
-                    int quantity = Integer.parseInt(text[0]);
-                    if (quantity < 10000 || quantity > 5_000_000) {
-                        Service.gI().sendThongBao(player, "Tối thiểu 10.000Đ và tối đa 5.000.000Đ");
-                        break;
-                    }
-                    if (player.getSession().vnd < quantity) {
-                        Service.gI().sendThongBao(player, "Số dư không đủ, vui lòng nạp thêm");
-                    } else {
-                        PlayerDAO.subvnd(player, quantity);
-
-                        player.inventory.gem += quantity;
-                        Service.gI().sendMoney(player);
-
-                        int soLuongVe = (quantity / 10000) * 10;
-                        Item item718 = ItemService.gI().createNewItem((short) 718, soLuongVe);
-                        InventoryService.gI().addItemBag(player, item718);
-
-                        InventoryService.gI().sendItemBags(player);
-
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.DAI_GIA_MOI_NHU, quantity);
-                        BadgesTaskService.updateCountBagesTask(player, ConstTaskBadges.EM_XINH_EM_DEP, quantity);
-
-                        int eventPointBonus = (quantity / 10000) * 50;
-                        player.event.addEventPoint(eventPointBonus);
-
-                        Service.gI().sendThongBao(player, "Bạn nhận thêm " + eventPointBonus + " điểm sự kiện!");
-                        Service.gI().sendThongBao(player, "Đã nạp thành công. Bạn nhận được " + quantity + " ngọc và " + soLuongVe + " vé tặng ngọc.");
+                    try {
+                        int quantity = Integer.parseInt(text[0]);
+                        MoneyLedgerService.gI().executePurchase(player, VndProductType.TRADE_GEM, quantity);
+                    } catch (NumberFormatException e) {
+                        Service.gI().sendThongBao(player, "Số lượng không hợp lệ");
                     }
                 }
 
@@ -866,10 +819,12 @@ public class Input {
     }
 
     public void createFormTradeGold(Player pl) {
+        MoneyLedgerService.gI().createIntent(pl, VndProductType.TRADE_GOLD, -1);
         createForm(pl, TRADE_GOLD, "Tỉ lệ quy đổi: 10.000 vnđ = 40 Thỏi vàng \n Số dư hiện tại: " + pl.getSession().vnd, new SubInput("Số lượng", NUMERIC));
     }
 
     public void createFormTradeGem(Player pl) {
+        MoneyLedgerService.gI().createIntent(pl, VndProductType.TRADE_GEM, -1);
         createForm(pl, TRADE_GEM, "Tỉ lệ quy đổi: 10.000 vnđ = 10000 ngọc \n Số dư hiện tại: " + pl.getSession().vnd, new SubInput("Số lượng", NUMERIC));
     }
 

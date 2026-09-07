@@ -1152,46 +1152,6 @@ public class PlayerDAO {
         return lastTimeLogout > lastTimeLogin;
     }
 
-    public static boolean subvnd(Player player, int num) {
-        PreparedStatement ps = null;
-        try (Connection con = LocalManager.getConnection();) {
-            if (player.getSession().vnd >= num) {
-            } else {
-                return false;
-            }
-            ps = con.prepareStatement("update account set vnd = vnd - ? where id = ?");
-            ps.setInt(1, num);
-            ps.setInt(2, player.getSession().userId);
-            ps.executeUpdate();
-            player.getSession().vnd -= num;
-
-        } catch (Exception e) {
-            Logger.logException(PlayerDAO.class, e, "Lỗi update vnd " + player.name);
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean MuaThanhVien(Player player, int num) {
-        PreparedStatement ps = null;
-        try (Connection con = LocalManager.getConnection();) {
-            if (player.getSession().vnd >= num) {
-            } else {
-                return false;
-            }
-            ps = con.prepareStatement("update account set vnd = (vnd - ?), active = ? where id = ?");
-            ps.setInt(1, num);
-            ps.setInt(2, player.getSession().actived ? 1 : 0);
-            ps.setInt(3, player.getSession().userId);
-            ps.executeUpdate();
-            player.getSession().vnd -= num;
-        } catch (Exception e) {
-            Logger.logException(PlayerDAO.class, e, "Lỗi update mua thành viên " + player.name);
-            return false;
-        }
-        return true;
-    }
-
     public static void LogAddPoint(String name, int id, int point, String type) {
         System.out.println(name + " - " + id + " - " + point + " - " + type);
     }

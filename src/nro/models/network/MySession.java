@@ -214,6 +214,11 @@ public class MySession extends Session {
                     pl.setSession(this);
                     Client.gI().put(pl);
                     this.player = pl;
+                    nro.models.ledger.MoneyLedgerService.gI().recoverPendingDeliveriesOnLogin(pl);
+                    if (pl.persistenceQuarantined) {
+                        Client.gI().kickSession(this);
+                        return;
+                    }
                     DataGame.sendVersionGame(this);
                     DataGame.sendDataItemBG(this);
                     Controller.gI().sendInfo(this);
