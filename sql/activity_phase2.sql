@@ -1,5 +1,6 @@
 -- Activity Points Phase 2: aggregated source telemetry and shadow-mode rollout.
--- Apply while the server is stopped through tools/apply_activity_phase2.ps1.
+-- Historical Activity Phase 2 schema step retained for recovery/reprovisioning.
+-- Apply only through an approved database workflow while the server is stopped.
 
 CREATE TABLE IF NOT EXISTS activity_source_metric (
   metric_day VARCHAR(10) NOT NULL,

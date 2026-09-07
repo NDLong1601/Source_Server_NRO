@@ -4,8 +4,8 @@ Tài liệu này là tiêu chuẩn bắt buộc khi sửa Java, thêm tính năn
 
 ## 1. Phạm vi và nguyên tắc
 
-- Chỉ thao tác trong repository server hiện tại: `Teamobi2026/SRC`.
-- Chế độ đang sử dụng là local mode. Không sửa, build, clean hoặc phụ thuộc vào `PRJ_2Tap`.
+- Chỉ thao tác trong repository server hiện tại: `source-server-nro/source-server`.
+- Chế độ đang sử dụng là local mode. Không sửa, build, clean hoặc phụ thuộc vào `client-nro-unity`.
 - Xem source Java, cấu hình, dữ liệu database, assets và `20.jar` là một đơn vị phát hành. Một phần thay đổi mà các phần còn lại chưa đồng bộ có thể làm client lỗi dù Java compile thành công.
 - Bản phát hành phải được full compile. Compile riêng vài file chỉ được dùng để chẩn đoán nhanh.
 - Dừng server trước khi thay `20.jar`; giữ một bản JAR tốt để rollback.
@@ -308,7 +308,7 @@ Trước khi copy:
 ## 11. Checklist trước commit hoặc bàn giao
 
 - [ ] `git status --short` không có file lạ do build sinh ra.
-- [ ] Đã xem diff và không chạm `PRJ_2Tap`.
+- [ ] Đã xem diff và không chạm `client-nro-unity`.
 - [ ] Full compile thành công.
 - [ ] Compiler dùng Java 17 target và Lombok tương thích.
 - [ ] `20.jar` mở được và chứa đủ class thay đổi.

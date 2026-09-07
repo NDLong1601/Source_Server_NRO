@@ -1,5 +1,6 @@
 -- Activity Points Phase 3: published tiers, claim audit, and still-safe shadow rollout.
--- Apply while the server is stopped through tools/apply_activity_phase3.ps1.
+-- Historical Activity Phase 3 schema step retained for recovery/reprovisioning.
+-- Apply only through an approved database workflow while the server is stopped.
 
 CREATE TABLE IF NOT EXISTS activity_claim_audit (
   claim_id BIGINT NOT NULL AUTO_INCREMENT,

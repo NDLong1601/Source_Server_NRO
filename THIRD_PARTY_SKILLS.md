@@ -6,13 +6,16 @@ installation script.
 
 ## Current State
 
-- Rollout stage: **Stage 4 - HTA UI wrapper created and statically audited**.
+- Rollout stage: **Stage 5 - HTA UI wrapper created and statically audited**.
 - Third-party skills installed by this rollout: **six**.
 - Repository-owned derivative skills added by this rollout: **one**.
 - Installation scope: project-local `.agents/skills` only.
 - Every stage must be reviewed and committed separately.
-- Stage 1, Stage 2, and Stage 4 fresh-turn discovery passed on 2026-09-06.
+- Stage 1, Stage 2, and Stage 5 fresh-turn discovery passed on 2026-09-06.
   Representative live workflow behavior remains under observation.
+- Numbering correction: the HTA wrapper was initially recorded as Stage 4 in this
+  manifest. It was corrected to Stage 5 on 2026-09-06 using the user-provided rollout
+  definition; this correction does not imply that a separate Stage 4 was completed.
 
 Existing repository-owned skills are not third-party imports:
 
@@ -130,10 +133,10 @@ Candidate import:
 Activate only for explicit threat-model or abuse-path requests. Preserve attribution
 required by CC BY 4.0 in the installed skill and this manifest.
 
-Status: **not installed**. The user requested Stage 4 directly, and Stage 4 has no
-dependency on this optional security-modeling skill.
+Status: **not installed**. It has no dependency relationship with the Stage 5 HTA
+wrapper and remains optional.
 
-### Stage 4 - HTA UI Wrapper
+### Stage 5 - HTA UI Wrapper
 
 Implemented as repository-owned `.agents/skills/nro-hta-ui-review`; the generic UI/UX
 pack was not installed. The wrapper:
@@ -159,7 +162,7 @@ Completed static gates:
   restarts, database mutations, JAR deployment, dependencies, or Java/game changes.
 - Ran `node tools/check_admin_data_menu.js` as a baseline check. It stops on a pre-existing
   inline style at `admin_data_menu/views/item-options.html:11`, introduced by commit
-  `4d59b059e`; Stage 4 does not modify the admin UI or that file.
+  `4d59b059e`; Stage 5 does not modify the admin UI or that file.
 
 Fresh-turn gate:
 

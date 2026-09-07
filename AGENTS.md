@@ -10,7 +10,7 @@ data, asset, or safety rules below.
 - Treat Java source, SQL, runtime data, client-facing assets, administration tools,
   configuration, and `20.jar` as parts of one release unit.
 - Work only in this repository unless the user explicitly expands the scope.
-- Do not inspect, edit, build, clean, or depend on `PRJ_2Tap` or any client project
+- Do not inspect, edit, build, clean, or depend on `client-nro-unity` or any client project
   during local server work.
 - Never print database credentials or secret-bearing configuration values.
 

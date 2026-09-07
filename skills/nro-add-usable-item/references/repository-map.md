@@ -1,6 +1,6 @@
 # Teamobi NRO repository map
 
-Use these paths and invariants for `C:\Users\PC\Music\Teamobi2026\SRC`. Re-discover them if the repository moves or changes.
+Use these paths and invariants for `C:\Users\PC\Music\source-server-nro\source-server`. Re-discover them if the repository moves or changes.
 
 ## Core files
 

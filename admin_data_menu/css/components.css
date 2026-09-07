@@ -545,6 +545,17 @@ button.compact {
   background: #f8fafc;
 }
 
+#skillMasterySkillPanel,
+#skillMasteryLevelEditor {
+  display: none;
+}
+
+.item-version-badge {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: normal;
+}
+
 .skill-level-preview {
   margin-top: 5px;
   padding: 8px;

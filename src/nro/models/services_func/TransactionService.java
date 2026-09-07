@@ -12,10 +12,9 @@ import nro.models.utils.Logger;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import nro.models.Bot.Bot;
 import nro.models.server.ServerManager;
 
@@ -23,34 +22,58 @@ public class TransactionService implements Runnable {
 
     private static final int TIME_DELAY_TRADE = 10000;
 
-    static final Map<Player, Trade> PLAYER_TRADE = new HashMap<>();
-
     private static final byte SEND_INVITE_TRADE = 0;
     private static final byte ACCEPT_TRADE = 1;
     private static final byte ADD_ITEM_TRADE = 2;
     private static final byte CANCEL_TRADE = 3;
+    private static final byte REMOVE_ITEM_TRADE = 4;
     private static final byte LOCK_TRADE = 5;
     private static final byte ACCEPT = 7;
 
-    private static TransactionService i;
+    private static volatile TransactionService instance;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     private TransactionService() {
     }
 
     public static TransactionService gI() {
-        if (i == null) {
-            i = new TransactionService();
-            Executors.newSingleThreadExecutor().submit(i);
+        TransactionService localRef = instance;
+        if (localRef == null) {
+            synchronized (TransactionService.class) {
+                localRef = instance;
+                if (localRef == null) {
+                    instance = localRef = new TransactionService();
+                    localRef.startTimer();
+                }
+            }
         }
-        return i;
+        return localRef;
+    }
+
+    private void startTimer() {
+        if (running.compareAndSet(false, true)) {
+            Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "TransactionService-Timer");
+                t.setDaemon(true);
+                return t;
+            }).submit(this);
+        }
     }
 
     public void controller(Player pl, Message msg) {
+        Trade trade = null;
         try {
             byte action = msg.reader().readByte();
             int playerId = -1;
             Player plMap = null;
-            Trade trade = PLAYER_TRADE.get(pl);
+            trade = TradeRegistry.gI().getTrade(pl);
+            if (Maintenance.isRunning && action != CANCEL_TRADE) {
+                if (trade != null) {
+                    trade.cancelFromSystem("SERVER_MAINTENANCE");
+                }
+                Service.gI().sendThongBao(pl, "Máy chủ đang bảo trì, không thể giao dịch");
+                return;
+            }
             if (pl.baovetaikhoan) {
                 Service.gI().sendThongBao(pl, "Chức năng bảo vệ đã được bật. Bạn vui lòng kiểm tra lại");
                 return;
@@ -73,9 +96,9 @@ public class TransactionService implements Runnable {
                         if (plMap.tradeWVP) {
                             return;
                         }
-                        trade = PLAYER_TRADE.get(pl);
+                        trade = TradeRegistry.gI().getTrade(pl);
                         if (trade == null) {
-                            trade = PLAYER_TRADE.get(plMap);
+                            trade = TradeRegistry.gI().getTrade(plMap);
                         }
                         if (trade == null) {
                             if (action == SEND_INVITE_TRADE) {
@@ -86,7 +109,7 @@ public class TransactionService implements Runnable {
                                     try (Connection con = LocalManager.getConnection()) {
                                         checkLogout1 = PlayerDAO.checkLogout(con, pl);
                                         checkLogout2 = PlayerDAO.checkLogout(con, plMap);
-                                    } catch (Exception e) {
+                                    } catch (Exception ignored) {
                                     }
                                     if (checkLogout1) {
                                         Client.gI().kickSession(pl.getSession());
@@ -106,11 +129,18 @@ public class TransactionService implements Runnable {
                                 }
                             } else {
                                 if (plMap.idMark.getPlayerTradeId() == pl.id) {
-                                    trade = new Trade(pl, plMap);
-                                    trade.openTabTrade();
+                                    try {
+                                        trade = new Trade(pl, plMap);
+                                        trade.openTabTrade();
+                                    } catch (IllegalArgumentException | IllegalStateException ex) {
+                                        pl.idMark.setPlayerTradeId(-1);
+                                        if (plMap.idMark.getPlayerTradeId() == pl.id) {
+                                            plMap.idMark.setPlayerTradeId(-1);
+                                        }
+                                        Service.gI().sendThongBao(pl, "Không thể mở giao dịch này");
+                                    }
                                 }
                             }
-
                         } else {
                             Service.gI().sendThongBao(pl, "Không thể thực hiện");
                         }
@@ -122,15 +152,21 @@ public class TransactionService implements Runnable {
                         int quantity = msg.reader().readInt();
                         if (quantity < 0) {
                             Service.gI().sendThongBao(pl, "Không thể thực hiện");
-                            trade.cancelTrade();
+                            trade.cancelTrade(pl);
                             break;
                         }
-                        if (quantity == 0) {// do
+                        if (index != -1 && quantity == 0) {
                             quantity = 1;
                         }
                         if (index != -1 && quantity > Trade.QUANLITY_MAX) {
                             Service.gI().sendThongBao(pl, "Đã quá giới hạn giao dịch...");
-                            trade.cancelTrade();
+                            trade.cancelTrade(pl);
+                            break;
+                        }
+                        if (index == -1 && (quantity > Trade.MAX_GOLD_TRADE_PER_TIME
+                                || pl.inventory == null || quantity > pl.inventory.gold)) {
+                            Service.gI().sendThongBao(pl, "Số vàng giao dịch không hợp lệ hoặc vượt quá số dư");
+                            trade.cancelTrade(pl);
                             break;
                         }
                         trade.addItemTrade(pl, index, quantity);
@@ -138,12 +174,18 @@ public class TransactionService implements Runnable {
                     break;
                 case CANCEL_TRADE:
                     if (trade != null) {
-                        trade.cancelTrade();
+                        trade.cancelTrade(pl);
+                    }
+                    break;
+                case REMOVE_ITEM_TRADE:
+                    if (trade != null) {
+                        byte index = msg.reader().readByte();
+                        trade.removeOfferItem(pl, index);
                     }
                     break;
                 case LOCK_TRADE:
                     if (Maintenance.isRunning) {
-                        trade.cancelTrade();
+                        if (trade != null) trade.cancelTrade(pl);
                         break;
                     }
                     if (trade != null) {
@@ -152,21 +194,24 @@ public class TransactionService implements Runnable {
                     break;
                 case ACCEPT:
                     if (Maintenance.isRunning) {
-                        trade.cancelTrade();
+                        if (trade != null) trade.cancelTrade(pl);
                         break;
                     }
                     if (trade != null) {
-                        trade.acceptTrade();
-                        if (trade.accept == 1) {
-                            Service.gI().sendThongBao(pl, "Xin chờ đối phương đồng ý");
-                        } else if (trade.accept == 2) {
-                            trade.dispose();
-                        }
+                        trade.acceptTrade(pl);
+                    }
+                    break;
+                default:
+                    if (trade != null) {
+                        trade.cancelFromSystem("UNSUPPORTED_ACTION_" + action);
                     }
                     break;
             }
         } catch (Exception e) {
             Logger.logException(this.getClass(), e);
+            if (trade != null) {
+                trade.cancelFromSystem("MALFORMED_PACKET");
+            }
         }
     }
 
@@ -183,42 +228,52 @@ public class TransactionService implements Runnable {
             msg.writer().writeByte(0);
             msg.writer().writeInt((int) plInvite.id);
             plReceive.sendMessage(msg);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         } finally {
             if (msg != null) {
                 msg.cleanup();
-                msg = null;
             }
         }
     }
 
     /**
      * Hủy giao dịch
-     *
-     * @param player
      */
     public void cancelTrade(Player player) {
-        Trade trade = PLAYER_TRADE.get(player);
+        Trade trade = TradeRegistry.gI().getTrade(player);
         if (trade != null) {
-            trade.cancelTrade();
+            trade.cancelTrade(player);
         }
     }
 
     public boolean check(Player player) {
-        return PLAYER_TRADE.get(player) != null;
+        return TradeRegistry.gI().hasActiveTrade(player);
+    }
+
+    static void processTimerTick(boolean maintenanceRunning) {
+        List<Trade> trades = TradeRegistry.gI().getDistinctTradesSnapshot();
+        for (Trade trade : trades) {
+            try {
+                if (maintenanceRunning) {
+                    trade.cancelFromSystem("SERVER_MAINTENANCE");
+                } else {
+                    trade.update();
+                }
+            } catch (Exception e) {
+                Logger.logException(TransactionService.class, e);
+            }
+        }
     }
 
     @Override
     public void run() {
-        while (!Maintenance.isRunning) {
+        while (running.get()) {
             try {
                 long st = System.currentTimeMillis();
-                Set<Map.Entry<Player, Trade>> entrySet = PLAYER_TRADE.entrySet();
-                for (Map.Entry entry : entrySet) {
-                    ((Trade) entry.getValue()).update();
-                }
+                processTimerTick(Maintenance.isRunning);
                 Functions.sleep(Math.max(300 - (System.currentTimeMillis() - st), 10));
             } catch (Exception e) {
+                Logger.logException(TransactionService.class, e);
             }
         }
     }
