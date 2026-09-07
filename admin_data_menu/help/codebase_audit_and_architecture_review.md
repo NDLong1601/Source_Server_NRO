@@ -2,8 +2,8 @@
 
 ## 0. Trạng thái tài liệu
 
-- Server repository: C:/Users/PC/Music/Teamobi2026/SRC
-- Client source bắt buộc đối chiếu: C:/Users/PC/Music/PRJ_2Tab_550K
+- Server repository: C:/Users/PC/Music/source-server-nro/source-server
+- Client source bắt buộc đối chiếu: C:/Users/PC/Music/client-nro-unity
 - Thời điểm rà soát gần nhất: 06/09/2026
 - Server Git baseline: 7c842c7d9 (`fix(sec-01): harden achievement claim lifecycle`).
 - Client là Unity 2022.3.62f2 và có hai implementation song song trong `Assets/Scripts/Assembly-CSharp/Game1` và `Game2`. Thư mục client không có Git repository độc lập, vì vậy phải tạo commit/tag hoặc manifest checksum riêng trước mỗi đợt đổi protocol.
@@ -94,7 +94,7 @@ Hệ quả kiến trúc chính là không có một mô hình ownership nhất q
 Client chuẩn dùng cho các gate tiếp theo nằm tại:
 
 ~~~text
-C:/Users/PC/Music/PRJ_2Tab_550K
+C:/Users/PC/Music/client-nro-unity
   Assets/Scripts/Assembly-CSharp/Game1
   Assets/Scripts/Assembly-CSharp/Game2
 ~~~

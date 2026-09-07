@@ -1,6 +1,6 @@
 ---
 name: nro-java-build
-description: Build, repair, validate, and deploy the Teamobi NRO Java server in the Teamobi2026/SRC repository. Use for Java feature changes, rebuilding or repairing 20.jar, diagnosing javac, Lombok, or ZIP errors, comparing historical builds, fixing item-template or asset-cache regressions, or verifying sequential account logins in local mode. Keep PRJ_2Tap and every client project out of scope.
+description: Build, repair, validate, and deploy the Teamobi NRO Java server in the source-server-nro/source-server repository. Use for Java feature changes, rebuilding or repairing 20.jar, diagnosing javac, Lombok, or ZIP errors, comparing historical builds, fixing item-template or asset-cache regressions, or verifying sequential account logins in local mode. Keep client-nro-unity and every client project out of scope.
 ---
 
 # NRO Java Build
@@ -11,7 +11,7 @@ Build the server as one release unit: Java source, configuration, database data,
 
 1. Read `../../BUILD_JAVA_STANDARD.md` completely before changing build code or producing `20.jar`.
 2. Inspect `git status --short` and preserve every unrelated or pre-existing user change.
-3. Work only in the current server repository. Never edit, build, clean, or inspect `PRJ_2Tap` unless the user explicitly changes the scope.
+3. Work only in the current server repository. Never edit, build, clean, or inspect `client-nro-unity` unless the user explicitly changes the scope.
 4. For a regression, compare both source history and committed `20.jar` history. Do not assume the latest source produced the latest JAR.
 5. Record the current JAR hash and server status before any mutation.
 
@@ -99,7 +99,7 @@ Temporarily set native command error handling to continue, capture all compiler 
 
 ## Safety Rules
 
-- Never touch `PRJ_2Tap` in local-mode server work.
+- Never touch `client-nro-unity` in local-mode server work.
 - Never overwrite the only known-good `20.jar`.
 - Never expose database credentials in command output or reports.
 - Never clean the repository broadly to solve a build problem.

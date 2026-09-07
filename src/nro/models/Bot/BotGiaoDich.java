@@ -62,31 +62,42 @@ public class BotGiaoDich {
    
    
    public void activeTraDe(Player pl){
-      trade = new Trade(pl , bot);
-      this.pl = pl;
-      this.trade.openTabTrade();
+      trade = null;
+      try {
+         trade = new Trade(pl , bot);
+         this.pl = pl;
+         this.trade.openTabTrade();
+      } catch (IllegalArgumentException | IllegalStateException ex) {
+         Service.gI().sendThongBao(pl, "Không thể mở giao dịch với bot lúc này");
+      }
    }
   
    public void CheckTraDe(List<Item> item){
+    if (this.slot <= 0) {
+        this.trade.cancelTrade(this.bot);
+        return;
+    }
     int slot1 = item.stream()
-    .filter(it -> it.template.id == this.idItTd && it.quantity >= this.slot)
+    .filter(it -> it != null && it.template != null && it.template.id == this.idItTd)
     .mapToInt(it -> it.quantity)
-    .findFirst()
-    .orElse(0);
+    .sum();
     boolean check = slot1 > 0;
      if (check){
          active(slot1);
      } else {
-         this.trade.cancelTrade();
+         this.trade.cancelTrade(this.bot);
      }
    }
    
    public void active(int sl){
-       int sl1 = (int) Math.round((double) sl / this.slot);
+       int sl1 = sl / this.slot;
        Item it = ItemService.gI().createNewItem((short) this.idItem , sl1);
-       this.trade.addItemBot(it);
+       if (!this.trade.addItemBot(this.bot, it)) {
+           this.trade.cancelTrade(this.bot);
+           return;
+       }
        this.trade.lockTran(this.bot);
-       this.trade.acceptTrade();
+       this.trade.acceptTrade(this.bot);
    }
    
    public void mapL(){

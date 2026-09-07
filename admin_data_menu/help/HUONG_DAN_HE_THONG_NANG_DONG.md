@@ -2,8 +2,8 @@
 
 > Trạng thái: Giai đoạn 0–6 đã triển khai; Giai đoạn 7 (QA/phát hành) còn lại.  
 > Ngày lập kế hoạch: 01/09/2026.  
-> Server: `C:\Users\PC\Music\Teamobi2026\SRC`.  
-> Client: `C:\Users\PC\Music\PRJ_2Tab_550K`.
+> Server: `C:\Users\PC\Music\source-server-nro\source-server`.
+> Client: `C:\Users\PC\Music\client-nro-unity`.
 
 ## 1. Mục tiêu
 
@@ -1000,11 +1000,10 @@ Mục tiêu:
 - chốt timezone, reset policy, bộ source key và tier ID;
 - tạo feature flag mặc định `disabled`, `shadowMode = true`, `rewardEnabled = false`.
 
-Chạy kiểm tra trước migration (có thể thêm `-CreateBackup` để tạo snapshot local):
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_phase0.ps1 -FailOnDataIssue
-```
+Đây là cổng triển khai lịch sử đã hoàn tất. Các script kiểm tra theo Phase đã
+được loại bỏ sau khi hệ thống chuyển sang vận hành live; khi cần dựng lại môi
+trường, đối chiếu dữ liệu hiện tại với các SQL lịch sử và tạo backup trước khi
+áp dụng.
 
 Điều kiện qua cổng:
 
@@ -1065,7 +1064,7 @@ Không bật reward production khi chưa qua test túi đầy, reconnect và dou
 - NPC **Bò Mộng** (map 47/84) có mục **Năng động → Nhận quà** để xem mốc ngày/tuần và gửi yêu cầu nhận;
 - yêu cầu claim lấy lock state, kiểm tra threshold/mask/sức chứa, reserve khóa unique tại `activity_claim_audit`, giao trọn bundle, lưu player ngay rồi đánh dấu audit `SUCCESS`;
 - request lặp hoặc reconnect sau claim bị chặn bởi cả claimed mask và unique audit key. Bản ghi `PENDING` sau sự cố được giữ để ưu tiên không phát trùng và cần đối soát hỗ trợ;
-- migration/kiểm tra: `tools/apply_activity_phase3.ps1 -Apply` và `tools/check_activity_phase3.ps1 -FailOnIssue`.
+- schema và cấu hình Phase 3 đã được áp dụng; các SQL lịch sử vẫn được giữ để phục vụ recovery/reprovisioning.
 
 Runtime đang triển khai an toàn: `enabled=true`, `shadowMode=true`, `rewardEnabled=false`. Vì vậy người chơi xem được mốc nhưng chưa thể nhận quà. Chỉ chuyển sang live sau checklist túi đầy, reconnect và double-click claim có người kiểm thử duyệt.
 
@@ -1092,10 +1091,11 @@ Mục tiêu:
 - Player tool chỉ ghi khi player được xác nhận `OFFLINE`, hash `expectedVersion` còn khớp và SQL kiểm tra lại trạng thái online. Reset và đổi claim cần confirmation token; bỏ `claimed` bị chặn khi `activity_claim_audit` đã có `PENDING`/`SUCCESS`.
 - `disableactivityemergency` chỉ đổi kill switch `activity.emergency.disable`, không xóa điểm hay mốc; server poll lại file trong tối đa 5 giây.
 
-Kiểm tra triển khai hiện tại:
+Các gate Phase 4 chỉ phục vụ đợt rollout và đã được loại bỏ sau khi cấu hình
+live ổn định. Kiểm tra trạng thái production hiện tại bằng cổng live:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_phase4.ps1 -FailOnIssue
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.ps1 -FailOnIssue
 ```
 
 Kết quả đã xác minh: build Java 17 thành công, `ActivityCoreTest` pass, server mở cổng `14445`, log xác nhận `Loaded Activity Points config revision 4`; save draft/publish/list version/player/log đều đi qua backend thành công. Chưa chạy mutation vào player thật và chưa bật quà.
@@ -1187,23 +1187,26 @@ Mục tiêu:
 
 #### Kết quả triển khai (01/09/2026)
 
-- Đã bổ sung QA gate chỉ đọc `tools/check_activity_phase7.ps1`. Gate gọi lại các kiểm tra Phase 3/4, kiểm cổng server, runtime Admin, emergency flag, JAR, protocol/client hai tab và các lỗi `ActivityScreen` trong lần Unity import mới nhất.
+- Trong đợt rollout đã dùng gate Phase 7 để kiểm tra Phase 3/4, cổng server, runtime Admin, emergency flag, JAR và client hai tab. Gate theo Phase đã được loại bỏ sau khi hệ thống chuyển sang vận hành live; cổng `tools/check_activity_live.ps1` là kiểm tra production hiện hành.
 - Gate đã đạt với revision runtime `4`: `enabled=true`, `shadowMode=true`, `rewardEnabled=false`, `emergencyDisabled=false`; server Java nghe cổng `14445`, có 14 nguồn, 5 mốc ngày và 2 mốc tuần.
 - `Game1` và `Game2` vẫn mirror; Unity log không còn lỗi `ActivityScreen` sau lần import gần nhất.
 - Theo yêu cầu, **không build/export client** trong Giai đoạn 7. Test được thực hiện trực tiếp trong Unity Editor.
 - `tools/check_admin_data_menu.js` tổng thể hiện vẫn dừng ở inline style có sẵn của `npc-creator.html`; đây là lỗi ngoài phạm vi tab Năng động. QA gate mới kiểm trực tiếp backend/runtime của Năng động để không bỏ sót phần cần test.
 
-Chạy QA gate bất cứ lúc nào trước khi test Unity:
+Kiểm tra trạng thái live hiện tại:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_phase7.ps1 -FailOnIssue
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.ps1 -FailOnIssue
 ```
 
-Kết quả `ready-for-unity-editor-qa` là điều kiện để bắt đầu test tay. Lệnh không publish config, không cộng/trừ dữ liệu người chơi, không bật quà và không build client.
+Kết quả `rewards-live` xác nhận runtime đã publish đúng cấu hình production,
+emergency disable đang tắt, server đang lắng nghe và JAR có các class Activity
+bắt buộc. Lệnh không publish config, không cộng/trừ dữ liệu người chơi, không
+bật quà và không build client.
 
 ##### Kịch bản test Unity Editor
 
-1. Mở project `C:\Users\PC\Music\PRJ_2Tab_550K` trong Unity; chờ Unity compile xong rồi chạy Play Mode bằng tài khoản test.
+1. Mở project `C:\Users\PC\Music\client-nro-unity` trong Unity; chờ Unity compile xong rồi chạy Play Mode bằng tài khoản test.
 2. Mở panel người chơi, vào tab **Chức Năng**, chọn **Năng động** ngay dưới **Thông báo**. Panel phải giữ nguyên khung người chơi (không bật overlay), hiển thị header điểm/trạng thái và bốn hàng căn giữa **Mốc ngày / Mốc tuần / Nguồn điểm / Tải lại** theo kiểu Tài khoản. Mở từng mục để kiểm thanh tiến độ, trạng thái mốc và 14 nguồn/cap từ snapshot `-58`; bấm ngoài panel để lùi một cấp trước khi trở về danh sách Chức Năng.
 3. Relog một lần: kiểm điểm từ packet cũ `-97` và snapshot `-58` không bị mất, không bị nhân đôi điểm login, hai client `Game1` và `Game2` cho cùng kết quả.
 4. Thực hiện một nguồn test an toàn (ví dụ login, điểm danh hoặc thu hoạch) bằng nhân vật test. Điểm/thanh tiến độ cập nhật; nguồn đã chạm cap không tăng thêm.

@@ -20,6 +20,7 @@
 /backups/activity_phase0_*/
 /backups/activity_phase1_*/
 /backups/activity_phase2_*/
+/backups/sec03_trade_ledger_*/
 
 # Costume tool scratch output
 /costume-tools/backups/

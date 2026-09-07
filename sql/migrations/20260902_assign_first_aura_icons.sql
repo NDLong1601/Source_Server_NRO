@@ -1,5 +1,6 @@
 -- First approved batch of dedicated aura inventory icons.
--- Source artwork is imported by tools/import_aura_icons.ps1 for x1..x4.
+-- Aura artwork for x1..x4 was imported during the 2026-09-02 rollout.
+-- The one-off importer was retired after the deployed assets were verified.
 -- The remaining aura items retain their previous icon until their own artwork
 -- has been generated and imported.
 

@@ -2,7 +2,7 @@
 
 > Trạng thái: Giai đoạn 0 đến 4 đã triển khai; cập nhật theo UAT ngày 05/09/2026
 > Phiên bản: 1.3
-> Phạm vi: Server Java tại C:/Users/PC/Music/Teamobi2026/SRC và client Unity tại C:/Users/PC/Music/PRJ_2Tab_550K  
+> Phạm vi: Server Java tại C:/Users/PC/Music/source-server-nro/source-server và client Unity tại C:/Users/PC/Music/client-nro-unity
 > Mục tiêu: Tài liệu sống thống nhất gameplay, dữ liệu, giao thức, kết quả triển khai và tiêu chí kiểm thử.
 
 ## Mục lục nhanh
