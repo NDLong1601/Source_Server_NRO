@@ -1,5 +1,9 @@
 package nro.models.matches.dai_hoi_vo_thuat;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.matches.giai_dau.WorldMartialArtsTournamentManager;
 import nro.models.utils.Functions;
 import nro.models.consts.ConstPlayer;
@@ -216,10 +220,10 @@ public final class WorldMartialArtsTournament implements Runnable {
                 int gem = WorldMartialArtsTournamentManager.gI().gem;
                 int gold = WorldMartialArtsTournamentManager.gI().gold;
                 if (gold > 0) {
-                    plWin.inventory.gold++;
+                    plWin.getWallet().creditUpToCap(Currency.GOLD, 1, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Đại Hội Võ Thuật")).requireSuccess();
                     Service.gI().sendThongBao(plWin, "Bạn vừa nhận thưởng " + gold + " vàng");
                 } else {
-                    plWin.inventory.gem++;
+                    plWin.getWallet().creditUpToCap(Currency.GEM, 1, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Đại Hội Võ Thuật")).requireSuccess();
                     Service.gI().sendThongBao(plWin, "Bạn vừa nhận thưởng " + gem + " ngọc");
                 }
                 Service.gI().sendMoney(plWin);

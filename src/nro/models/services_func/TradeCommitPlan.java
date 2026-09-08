@@ -8,6 +8,10 @@ import java.util.Map;
 import nro.models.item.Item;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
+import nro.models.player.Currency;
+import nro.models.player.WalletLeg;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.utils.Logger;
@@ -137,8 +141,8 @@ public final class TradeCommitPlan {
             return CommitResult.fail(Trade.FAIL_INVALID_OFFER, "Số vàng giao dịch không hợp lệ");
         }
 
-        long p1Gold = p1.inventory.gold;
-        long p2Gold = p2.isBot ? 0 : p2.inventory.gold;
+        long p1Gold = p1.getWallet().getBalance(Currency.GOLD);
+        long p2Gold = p2.isBot ? 0 : p2.getWallet().getBalance(Currency.GOLD);
         long maxGold = PlayerConfig.getMaxGold();
         if (p1Gold < 0 || p1Gold > maxGold || p1Gold < goldTrade1
                 || (!p2.isBot && (p2Gold < 0 || p2Gold > maxGold || p2Gold < goldTrade2))) {
@@ -153,6 +157,20 @@ public final class TradeCommitPlan {
             return CommitResult.fail(Trade.FAIL_MAX_GOLD_PLAYER2, "Vàng người chơi 2 vượt giới hạn");
         }
 
+        List<WalletLeg> legs1 = new ArrayList<>();
+        if (goldTrade1 > 0) {
+            legs1.add(WalletLeg.debit(Currency.GOLD, goldTrade1));
+        }
+        if (goldTrade2 > 0) {
+            legs1.add(WalletLeg.credit(Currency.GOLD, goldTrade2));
+        }
+        List<WalletLeg> legs2 = new ArrayList<>();
+        if (goldTrade2 > 0) {
+            legs2.add(WalletLeg.debit(Currency.GOLD, goldTrade2));
+        }
+        if (goldTrade1 > 0) {
+            legs2.add(WalletLeg.credit(Currency.GOLD, goldTrade1));
+        }
         List<Item> offers1 = trade.getOfferItems1Snapshot();
         List<Item> offers2 = trade.getOfferItems2Snapshot();
         List<Debit> debits1 = resolveDebits(trade, p1, offers1);
@@ -197,16 +215,28 @@ public final class TradeCommitPlan {
                 applyLiveCredits(p2.inventory.itemsBag, transfers1);
             }
             applyLiveCredits(p1.inventory.itemsBag, transfers2);
-            p1.inventory.gold = p1GoldAfter;
-            if (!p2.isBot) {
-                p2.inventory.gold = p2GoldAfter;
+            if (!legs1.isEmpty()) {
+                var walletResult = p2.isBot
+                        ? p1.getWallet().executeBatch(legs1,
+                                WalletMutationContext.of(WalletReason.TRADE,
+                                        trade.getTradeId(), "Giao dịch với bot"))
+                        : nro.models.player.PlayerWallet.executePair(
+                                p1.getWallet(), legs1, p2.getWallet(), legs2,
+                                WalletMutationContext.of(WalletReason.TRADE,
+                                        trade.getTradeId(), "Giao dịch"));
+                if (!walletResult.isSuccess()) {
+                    restoreBag(p1.inventory.itemsBag, bag1Before);
+                    if (!p2.isBot) {
+                        restoreBag(p2.inventory.itemsBag, bag2Before);
+                    }
+                    return CommitResult.fail(Trade.FAIL_INVALID_OFFER,
+                            "Tài sản đã thay đổi trước khi hoàn tất giao dịch");
+                }
             }
         } catch (RuntimeException ex) {
             restoreBag(p1.inventory.itemsBag, bag1Before);
-            p1.inventory.gold = p1Gold;
             if (!p2.isBot) {
                 restoreBag(p2.inventory.itemsBag, bag2Before);
-                p2.inventory.gold = p2Gold;
             }
             Logger.logException(TradeCommitPlan.class,
                     new Exception("Rolled back unexpected trade apply failure tradeId=" + trade.getTradeId(), ex));

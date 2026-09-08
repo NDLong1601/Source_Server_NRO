@@ -1,5 +1,9 @@
 package nro.models.minigame;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -67,7 +71,7 @@ public class ChonAiDay_Gold implements Runnable {
                             String chatMessage = pl.name + " đã chiến thắng Chọn ai đây giải thưởng";
                             int goldC = goldNormar * 80 / 100;
                             Service.gI().sendThongBao(pl, "Chúc mừng bạn đã dành chiến thắng và nhận được " + Util.numberToMoney(goldC) + " vàng");
-                            pl.inventory.gold += goldC;
+                            pl.getWallet().tryCreditExact(Currency.GOLD, goldC, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Chọn Ai Đây vàng")).requireSuccess();
                             Service.gI().sendMoney(pl);
                             ChatGlobalService.gI().chat(pl, chatMessage);
                         }
@@ -86,7 +90,7 @@ public class ChonAiDay_Gold implements Runnable {
                             String chatMessage = pl.name + " đã chiến thắng Chọn ai đây giải VIP";
                             int goldC = goldVip * 90 / 100;
                             Service.gI().sendThongBao(pl, "Chúc mừng bạn đã dành chiến thắng và nhận được " + Util.numberToMoney(goldC) + " vàng");
-                            pl.inventory.gold += goldC;
+                            pl.getWallet().tryCreditExact(Currency.GOLD, goldC, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Chọn Ai Đây vàng")).requireSuccess();
                             Service.gI().sendMoney(pl);
                             ChatGlobalService.gI().chat(pl, chatMessage);
                         }

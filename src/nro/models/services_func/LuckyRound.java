@@ -13,6 +13,10 @@ import nro.models.item.Item.ItemOption;
 import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 import nro.models.player_system.Template;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
@@ -541,17 +545,19 @@ public class LuckyRound {
             // Validate currency balance only for paidCount > 0
             if (paidCount > 0) {
                 if (type == USING_GEM) {
-                    if (player.inventory.gem < 0 || player.inventory.gem > PlayerConfig.getMaxGem()) {
+                    long currentGem = player.getWallet().getBalance(Currency.GEM);
+                    if (currentGem < 0 || currentGem > PlayerConfig.getMaxGem()) {
                         return SpinResult.failure(SpinStatus.INVALID_BALANCE, 2, count, type);
                     }
-                    if (player.inventory.gem < requestedCost) {
+                    if (currentGem < requestedCost) {
                         return SpinResult.failure(SpinStatus.INSUFFICIENT_FUNDS, 2, count, type);
                     }
                 } else {
-                    if (player.inventory.gold < 0 || player.inventory.gold > PlayerConfig.getMaxGold()) {
+                    long currentGold = player.getWallet().getBalance(Currency.GOLD);
+                    if (currentGold < 0 || currentGold > PlayerConfig.getMaxGold()) {
                         return SpinResult.failure(SpinStatus.INVALID_BALANCE, 2, count, type);
                     }
-                    if (player.inventory.gold < requestedCost) {
+                    if (currentGold < requestedCost) {
                         return SpinResult.failure(SpinStatus.INSUFFICIENT_FUNDS, 2, count, type);
                     }
                 }
@@ -616,13 +622,13 @@ public class LuckyRound {
             long balanceAfter;
 
             if (type == USING_GEM) {
-                int gemBefore = player.inventory.gem;
+                long gemBefore = player.getWallet().getBalance(Currency.GEM);
                 if (paidCount > 0) {
                     int maxGem = PlayerConfig.getMaxGem();
                     if (gemBefore < 0 || gemBefore > maxGem) {
                         return SpinResult.failure(SpinStatus.INVALID_BALANCE, 2, count, type);
                     }
-                    if ((long) gemBefore < requestedCost) {
+                    if (gemBefore < requestedCost) {
                         return SpinResult.failure(SpinStatus.INSUFFICIENT_FUNDS, 2, count, type);
                     }
                 }
@@ -648,11 +654,18 @@ public class LuckyRound {
 
                     // Debit currency
                     if (paidCount > 0) {
-                        player.inventory.gem -= (int) requestedCost;
+                        WalletResult dRes = player.getWallet().tryDebit(
+                                Currency.GEM,
+                                requestedCost,
+                                WalletMutationContext.of(WalletReason.LUCKY_ROUND, "Quay vòng quay may mắn ngọc")
+                        );
+                        if (!dRes.isSuccess()) {
+                            throw new IllegalStateException("Failed to debit gems: " + dRes.getStatus());
+                        }
                     }
                     player.inventory.itemsBoxCrackBall.addAll(candidateRewards);
 
-                    balanceAfter = player.inventory.gem;
+                    balanceAfter = player.getWallet().getBalance(Currency.GEM);
                     int boxSizeAfter = player.inventory.itemsBoxCrackBall.size();
 
                     // Post-conditions
@@ -679,7 +692,13 @@ public class LuckyRound {
                 } catch (RuntimeException e) {
                     try {
                         // Rollback Gem
-                        player.inventory.gem = gemBefore;
+                        if (paidCount > 0) {
+                            player.getWallet().tryCreditExact(
+                                    Currency.GEM,
+                                    requestedCost,
+                                    WalletMutationContext.of(WalletReason.RECOVERY, "Hoàn trả ngọc vòng quay may mắn")
+                            ).requireSuccess();
+                        }
                         // Rollback ticket with full metadata restore
                         if (ticketDebit > 0 && ticketSnapshot != null && liveTicket != null) {
                             ticketSnapshot.restore(liveTicket);
@@ -708,7 +727,7 @@ public class LuckyRound {
 
             } else {
                 // USING_GOLD
-                long goldBefore = player.inventory.gold;
+                long goldBefore = player.getWallet().getBalance(Currency.GOLD);
                 if (paidCount > 0) {
                     long maxGold = PlayerConfig.getMaxGold();
                     if (goldBefore < 0 || goldBefore > maxGold) {
@@ -740,11 +759,18 @@ public class LuckyRound {
 
                     // Debit currency
                     if (paidCount > 0) {
-                        player.inventory.gold -= requestedCost;
+                        WalletResult dRes = player.getWallet().tryDebit(
+                                Currency.GOLD,
+                                requestedCost,
+                                WalletMutationContext.of(WalletReason.LUCKY_ROUND, "Quay vòng quay may mắn vàng")
+                        );
+                        if (!dRes.isSuccess()) {
+                            throw new IllegalStateException("Failed to debit gold: " + dRes.getStatus());
+                        }
                     }
                     player.inventory.itemsBoxCrackBall.addAll(candidateRewards);
 
-                    balanceAfter = player.inventory.gold;
+                    balanceAfter = player.getWallet().getBalance(Currency.GOLD);
                     int boxSizeAfter = player.inventory.itemsBoxCrackBall.size();
 
                     // Post-conditions
@@ -771,7 +797,13 @@ public class LuckyRound {
                 } catch (RuntimeException e) {
                     try {
                         // Rollback Gold
-                        player.inventory.gold = goldBefore;
+                        if (paidCount > 0) {
+                            player.getWallet().tryCreditExact(
+                                    Currency.GOLD,
+                                    requestedCost,
+                                    WalletMutationContext.of(WalletReason.RECOVERY, "Hoàn trả vàng vòng quay may mắn")
+                            ).requireSuccess();
+                        }
                         // Rollback ticket with full metadata restore
                         if (ticketDebit > 0 && ticketSnapshot != null && liveTicket != null) {
                             ticketSnapshot.restore(liveTicket);

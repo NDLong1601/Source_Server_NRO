@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -173,14 +177,20 @@ public final class NangCapNhan {
             return;
         }
 
-        if (stoneEnabled) {
-            InventoryService.gI().subQuantityItemsBag(player, stone, stoneCost);
-        }
+        java.util.List<nro.models.player.WalletLeg> feeLegs = new java.util.ArrayList<>(2);
         if (goldEnabled) {
-            player.inventory.gold -= goldCost;
+            feeLegs.add(nro.models.player.WalletLeg.debit(Currency.GOLD, goldCost));
         }
         if (gemEnabled) {
-            player.inventory.gem -= gemCost;
+            feeLegs.add(nro.models.player.WalletLeg.debit(Currency.GEM, gemCost));
+        }
+        if (!feeLegs.isEmpty()) {
+            player.getWallet().executeBatch(feeLegs,
+                    WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                            "Nâng cấp nhẫn")).requireSuccess();
+        }
+        if (stoneEnabled) {
+            InventoryService.gI().subQuantityItemsBag(player, stone, stoneCost);
         }
         if (Util.isTrue((float) successRate, 100)) {
             short nextRingId = (short) (ring.template.id + 1);

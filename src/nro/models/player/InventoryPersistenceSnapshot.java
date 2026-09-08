@@ -33,7 +33,8 @@ public final class InventoryPersistenceSnapshot {
     }
 
     public static InventoryPersistenceSnapshot capture(Player player) {
-        return capture(player, player.inventory.gold, player.inventory.gem, player.inventory.itemsBag);
+        return capture(player, player.getWallet().getBalance(Currency.GOLD),
+                (int) player.getWallet().getBalance(Currency.GEM), player.inventory.itemsBag);
     }
 
     public static InventoryPersistenceSnapshot capture(Player player, long gold, int gem, List<Item> itemsBag) {
@@ -66,8 +67,14 @@ public final class InventoryPersistenceSnapshot {
             throw new IllegalArgumentException("Snapshot belongs to a different player");
         }
         List<Item> committedBag = deepCopyItems(itemsBag);
-        player.inventory.gold = gold;
-        player.inventory.gem = gem;
+        WalletResult walletRestore = player.getWallet().restoreExact(
+                new WalletSnapshot(gold, gem, player.inventory.ruby, player.inventory.coupon),
+                WalletMutationContext.of(WalletReason.RECOVERY,
+                        "inventory-snapshot:" + playerId + ":" + System.identityHashCode(this),
+                        "Áp dụng inventory snapshot đã commit"));
+        if (!walletRestore.isSuccess()) {
+            throw new IllegalStateException("Committed inventory snapshot contains an invalid wallet");
+        }
         player.inventory.itemsBag.clear();
         player.inventory.itemsBag.addAll(committedBag);
     }

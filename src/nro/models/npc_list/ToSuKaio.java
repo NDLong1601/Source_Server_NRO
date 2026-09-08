@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.boss.BossID;
 import nro.models.consts.ConstNpc;
 import nro.models.services_dungeon.TrainingService;
@@ -104,7 +108,7 @@ public class ToSuKaio extends Npc {
             case 1 -> {
                 if (player.inventory.gold >= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER) {
                     if (OpenPowerService.gI().openPowerSpeed(player)) {
-                        player.inventory.gold -= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER;
+                        player.getWallet().tryDebit(Currency.GOLD, OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER, WalletMutationContext.of(WalletReason.OTHER, "Mở giới hạn sức mạnh")).requireSuccess();
                         Service.gI().sendMoney(player);
                     }
                 } else {
@@ -135,7 +139,7 @@ public class ToSuKaio extends Npc {
         long petCost = PetConfig.getLong("pet.openPower.cost", 50_000_000L, 0L, Long.MAX_VALUE);
         if (player.inventory.gold >= petCost) {
             if (OpenPowerService.gI().openPowerSpeed(player.pet)) {
-                player.inventory.gold -= petCost;
+                player.getWallet().tryDebit(Currency.GOLD, petCost, WalletMutationContext.of(WalletReason.OTHER, "Mở giới hạn đệ tử")).requireSuccess();
                 Service.gI().sendMoney(player);
             }
         } else {

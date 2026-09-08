@@ -11,6 +11,9 @@ import nro.models.map.service.NpcService;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.services.Service;
 import nro.models.services.DayNightService;
 import nro.models.utils.Util;
@@ -295,7 +298,7 @@ public class SummonDragon {
             case ConstNpc.SHENRON_1_1:
                 switch (this.select) {
                     case 0: //20 tr vàng
-                        this.playerSummonShenron.inventory.gold = 2000000000;
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GOLD, PlayerConfig.getMaxGold(), WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: max vàng")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                     case 1: //găng tay đang đeo lên 1 cấp
@@ -380,7 +383,7 @@ public class SummonDragon {
                         }
                         break;
                     case 1: //+1,5 ngọc
-                        this.playerSummonShenron.inventory.gem += 10000;
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GEM, 10000, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: 10k ngọc")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                     case 2: //+200 tr smtn
@@ -432,18 +435,14 @@ public class SummonDragon {
             case ConstNpc.SHENRON_2:
                 switch (this.select) {
                     case 0: //+150 ngọc
-                        this.playerSummonShenron.inventory.gem += 2000;
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GEM, 2000, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: 2k ngọc")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                     case 1: //+20 tr smtn
                         Service.gI().addSMTN(this.playerSummonShenron, (byte) 2, 20000000, false);
                         break;
                     case 2: //2 tr vàng
-                        if (this.playerSummonShenron.inventory.gold > 1800000000) {
-                            this.playerSummonShenron.inventory.gold = PlayerConfig.getMaxGold();
-                        } else {
-                            this.playerSummonShenron.inventory.gold += 200000000;
-                        }
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GOLD, 200_000_000, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: 200tr vàng")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                 }
@@ -451,18 +450,14 @@ public class SummonDragon {
             case ConstNpc.SHENRON_3:
                 switch (this.select) {
                     case 0: //+15 ngọc
-                        this.playerSummonShenron.inventory.gem += 200;
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GEM, 200, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: 200 ngọc")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                     case 1: //+2 tr smtn
                         Service.gI().addSMTN(this.playerSummonShenron, (byte) 2, 2000000, false);
                         break;
                     case 2: //200k vàng
-                        if (this.playerSummonShenron.inventory.gold > (2000000000 - 20000000)) {
-                            this.playerSummonShenron.inventory.gold = PlayerConfig.getMaxGold();
-                        } else {
-                            this.playerSummonShenron.inventory.gold += 20000000;
-                        }
+                        this.playerSummonShenron.getWallet().creditUpToCap(Currency.GOLD, 20_000_000, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Ước rồng thần: 20tr vàng")).requireSuccess();
                         PlayerService.gI().sendInfoHpMpMoney(this.playerSummonShenron);
                         break;
                 }

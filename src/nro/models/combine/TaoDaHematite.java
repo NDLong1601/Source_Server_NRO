@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -62,7 +66,7 @@ public class TaoDaHematite {
             // Kiểm tra xem có đủ sao pha lê không
             if (saoPhaLe.template.id >= 441 && saoPhaLe.template.id <= 447 && saoPhaLe.quantity >= 5) {
                 // Tiến hành trừ vàng và sao pha lê
-                player.inventory.gold -= gold;
+                player.getWallet().tryDebit(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Tạo đá hematite")).requireSuccess();
                 InventoryService.gI().subQuantityItemsBag(player, saoPhaLe, 5);
 
                 // Tạo đá Hematite

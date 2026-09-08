@@ -16,6 +16,11 @@ import nro.models.task.BadgesTask;
 import nro.models.player.Pet;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+import nro.models.player.WalletSnapshot;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
@@ -434,10 +439,21 @@ public class MoneyLedgerService {
             }
 
             // Apply to live player in RAM
+            WalletResult walletRestore = player.getWallet().restoreExact(
+                    new WalletSnapshot(finalGold, finalGem,
+                            (int) player.getWallet().getBalance(Currency.RUBY),
+                            (int) player.getWallet().getBalance(Currency.COUPON)),
+                    WalletMutationContext.of(WalletReason.RECOVERY,
+                            "vnd-delivery:" + purchaseKey, "Áp dụng entitlement VND đã commit"));
+            if (!walletRestore.isSuccess()) {
+                player.persistenceQuarantined = true;
+                Logger.error("[WALLET-01] Quarantined player after VND wallet projection failure, playerId="
+                        + player.id + ", purchaseKey=" + purchaseKey);
+                return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
+                        "Giao dịch đã ghi nhận; vui lòng đăng nhập lại để đồng bộ", 0, balanceAfter, purchaseKey);
+            }
             player.inventory.itemsBag.clear();
             player.inventory.itemsBag.addAll(finalBag);
-            player.inventory.gold = finalGold;
-            player.inventory.gem = finalGem;
             player.vip = finalVip;
             player.timevip = finalTimeVip;
             player.vipPurchaseCount = finalVipPurchaseCount;

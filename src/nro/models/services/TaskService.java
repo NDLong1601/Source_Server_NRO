@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.consts.ConstMob;
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
@@ -1192,7 +1197,7 @@ public class TaskService {
         }
         if (taskId > 0 && taskId < 25) {
             Service.gI().addSMTN(player, (byte) 2, 500L * (taskId + 1), false);
-            player.inventory.gold += (taskId < 5) ? 100000 * (taskId + 1) : 500000;
+            player.getWallet().creditUpToCap(Currency.GOLD, (taskId < 5) ? 100000L * (taskId + 1) : 500000L, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng nhiệm vụ chính tuyến")).requireSuccess();
             Service.gI().sendMoney(player);
         }
         return true;
@@ -1437,7 +1442,7 @@ public class TaskService {
                         Service.gI().sendThongBao(player, "Bạn nhận được " + bi.template.name);
                     }
                     InventoryService.gI().sendItemBags(player);
-                    player.inventory.addGold(goldReward);
+                    player.getWallet().creditUpToCap(Currency.GOLD, goldReward, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng nhiệm vụ phụ")).requireSuccess();
                     Service.gI().sendMoney(player);
                     Service.gI().sendThongBao(player, "Bạn nhận được "
                             + Util.numberToMoney(goldReward) + " vàng");

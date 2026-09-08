@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.clan.Clan;
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
@@ -96,7 +100,7 @@ public class VuaVegeta extends Npc {
                     Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
                     return;
                 }
-                player.inventory.subGem(ngoc);
+                player.getWallet().tryDebit(Currency.GEM, ngoc, WalletMutationContext.of(WalletReason.OTHER, "Vua Vegeta")).requireSuccess();
                 player.LearnSkill.Time = -1;
                 learnSkill(player);
             }

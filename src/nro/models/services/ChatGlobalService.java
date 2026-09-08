@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import java.awt.SystemColor;
 import nro.models.player.Player;
 import nro.models.network.Message;
@@ -73,7 +78,7 @@ public class ChatGlobalService implements Runnable {
         if (player.inventory.gem >= 5) {
             if (player.isAdmin() || Util.canDoWithTime(player.idMark.getLastTimeChatGlobal(), 30000)) {
                 if (player.isAdmin() || player.nPoint.power > 1500000) {
-                    player.inventory.subGem(1);
+                    player.getWallet().tryDebit(Currency.GEM, 1, WalletMutationContext.of(WalletReason.OTHER, "Chat thế giới")).requireSuccess();
                     Service.gI().sendMoney(player);
                     player.idMark.setLastTimeChatGlobal(System.currentTimeMillis());
                     waitingChat.add(new ChatGlobal(player, text.length() > 100 ? text.substring(0, 100) : text));

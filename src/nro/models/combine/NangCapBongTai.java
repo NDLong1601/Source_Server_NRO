@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -125,8 +129,11 @@ public class NangCapBongTai {
                     return;
                 }
 
-                player.inventory.gold -= gold;
-                player.inventory.gem -= gem;
+                player.getWallet().executeBatch(java.util.List.of(
+                        nro.models.player.WalletLeg.debit(Currency.GOLD, gold),
+                        nro.models.player.WalletLeg.debit(Currency.GEM, gem)),
+                        WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                                "Nâng cấp bông tai")).requireSuccess();
 
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     bongTai.template = ItemService.gI().getTemplate(ITEM_ID_BONG_TAI_C2);

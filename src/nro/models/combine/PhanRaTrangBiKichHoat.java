@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -71,7 +75,7 @@ public class PhanRaTrangBiKichHoat {
                 Service.gI().sendThongBao(player, "Không đủ vật phẩm để thực hiện!");
                 return;
             }
-            player.inventory.gold -= GOLD_PHAN_RA;
+            player.getWallet().tryDebit(Currency.GOLD, GOLD_PHAN_RA, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Phân rã trang bị kích hoạt")).requireSuccess();
             InventoryService.gI().subQuantityItemsBag(player, item1, 1);
             if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                 int itemId = 1656;

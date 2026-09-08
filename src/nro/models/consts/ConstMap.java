@@ -14,7 +14,7 @@ public class ConstMap {
     public static final byte MAP_KHI_GAS_HUY_DIET = 7;
     public static final byte MAP_TAY_KARIN = 8;
     public static final byte MAP_MABU_14H = 9;
-// DataMap
+    // DataMap
     public static final int LANG_ARU = 0;
     public static final int DOI_HOA_CUC = 1;
     public static final int THUNG_LUNG_TRE = 2;

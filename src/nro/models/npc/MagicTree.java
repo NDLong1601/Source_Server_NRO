@@ -1,5 +1,9 @@
 package nro.models.npc;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.map.service.NpcManager;
@@ -200,7 +204,7 @@ public class MagicTree {
             Service.gI().sendThongBao(player, "Bạn không đủ vàng để nâng cấp, còn thiếu "
                     + (goldRequire - this.player.inventory.gold) + " vàng nữa");
         } else {
-            this.player.inventory.gold -= goldRequire;
+            this.player.getWallet().tryDebit(Currency.GOLD, goldRequire, WalletMutationContext.of(WalletReason.OTHER, "Nâng cấp đậu thần")).requireSuccess();
             PlayerService.gI().sendInfoHpMpMoney(this.player);
             this.isUpgrade = true;
             this.lastTimeUpgrade = System.currentTimeMillis();
@@ -211,7 +215,7 @@ public class MagicTree {
     public void unupgradeMagicTree() {
         short gold = PEA_UPGRADE[this.level - 1][3];
         int goldReturn = (gold * (this.level <= 3 ? 1000 : 1000000));
-        this.player.inventory.gold += goldReturn;
+        this.player.getWallet().tryCreditExact(Currency.GOLD, goldReturn, WalletMutationContext.of(WalletReason.OTHER, "Hủy nâng cấp đậu thần")).requireSuccess();
         PlayerService.gI().sendInfoHpMpMoney(this.player);
         this.isUpgrade = false;
         this.loadMagicTree();
@@ -224,7 +228,7 @@ public class MagicTree {
         // Kiểm tra xem người chơi có đủ gem không
         if (this.player.inventory.gem >= gemRequired) {
             // Trừ số gem yêu cầu từ túi đồ người chơi
-            this.player.inventory.gem -= gemRequired;
+            this.player.getWallet().tryDebit(Currency.GEM, gemRequired, WalletMutationContext.of(WalletReason.OTHER, "Tăng tốc nâng cấp đậu thần")).requireSuccess();
             // Cập nhật lại thông tin gem của người chơi
             Service.gI().sendMoney(player);
 
@@ -246,7 +250,7 @@ public class MagicTree {
         if (this.level < MAX_LEVEL && this.player.inventory.gem >= upgradeGemCost) {
             // Lấy số ngọc trước khi nâng cấp
             int currentGem = this.player.inventory.gem;
-           this.player.inventory.gem -= upgradeGemCost;
+           this.player.getWallet().tryDebit(Currency.GEM, upgradeGemCost, WalletMutationContext.of(WalletReason.OTHER, "Nâng cấp đậu thần bằng ngọc")).requireSuccess();
             this.level++;  // Tăng cấp độ cây
             this.isUpgrade = false;
             Service.gI().sendMoney(player);

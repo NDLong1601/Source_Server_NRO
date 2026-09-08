@@ -1,5 +1,10 @@
 package nro.models.task;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +39,11 @@ public final class TaskRewardService {
             received.add(Util.numberToMoney(potential) + " tiềm năng");
         }
         if (gold > 0) {
-            player.inventory.gold = Math.min(player.inventory.gold + gold, PlayerConfig.getMaxGold());
+            player.getWallet().creditUpToCap(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng nhiệm vụ")).requireSuccess();
             received.add(Util.numberToMoney(gold) + " vàng");
         }
         if (gem > 0) {
-            player.inventory.gem = Math.min(player.inventory.gem + gem, PlayerConfig.getMaxGem());
+            player.getWallet().creditUpToCap(Currency.GEM, gem, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng nhiệm vụ")).requireSuccess();
             received.add(Util.numberToMoney(gem) + " ngọc");
         }
         for (int itemId : itemIds) {

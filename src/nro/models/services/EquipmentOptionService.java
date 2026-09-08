@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -267,12 +272,11 @@ public final class EquipmentOptionService {
             if (changed <= 0) {
                 return;
             }
-            int amount = Math.min(player.nPoint.dailyGemFromMob,
-                    PlayerConfig.getMaxGem() - player.inventory.gem);
-            if (amount <= 0) {
+            WalletResult gRes = player.getWallet().creditUpToCap(Currency.GEM, player.nPoint.dailyGemFromMob, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Option 161 ngọc hạ quái"));
+            if (!gRes.isSuccess() || gRes.getAmountApplied() <= 0) {
                 return;
             }
-            player.inventory.gem += amount;
+            int amount = (int) gRes.getAmountApplied();
             Service.gI().sendMoney(player);
             Service.gI().sendThongBao(player, "Option 161: nhận " + amount
                     + " ngọc từ lần hạ quái đầu tiên hôm nay.");

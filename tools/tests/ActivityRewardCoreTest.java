@@ -3,6 +3,12 @@ package nro.models.activity;
 import java.time.DayOfWeek;
 import java.time.ZoneId;
 import java.util.List;
+import nro.models.player.Currency;
+import nro.models.player.Inventory;
+import nro.models.player.PlayerConfig;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 
 /** Pure regression coverage for tier identity, eligibility and claim masks. */
 public final class ActivityRewardCoreTest {
@@ -46,6 +52,16 @@ public final class ActivityRewardCoreTest {
         require(!new ActivityReward(ActivityReward.Kind.GOLD, 0, 1, 1, 3,
                 false, false, false, List.of(), 0, 0).requiresBagSlot(),
                 "currency rewards must not consume a bag slot");
+
+        Inventory inventory = new Inventory();
+        inventory.gold = 100L;
+        inventory.gem = PlayerConfig.getMaxGem();
+        WalletResult atomicReward = inventory.getWallet().executeBatch(
+                ActivityRewardService.currencyLegs(50L, 1L, 0L),
+                WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Activity reward regression"));
+        require(!atomicReward.isSuccess(), "one capped currency must reject the whole reward batch");
+        require(inventory.gold == 100L, "failed reward batch must not partially credit gold");
+        require(inventory.gem == PlayerConfig.getMaxGem(), "failed reward batch must preserve capped gem");
 
         System.out.println("ACTIVITY_REWARD_CORE_TEST_OK");
     }

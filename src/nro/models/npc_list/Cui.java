@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.boss.Boss;
 import nro.models.boss.BossID;
 import nro.models.boss.Boss_Manager.BossManager;
@@ -103,7 +107,7 @@ public class Cui extends Npc {
                                     Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
                                             boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
-                                        player.inventory.gold -= COST_FIND_BOSS;
+                                        player.getWallet().tryDebit(Currency.GOLD, COST_FIND_BOSS, WalletMutationContext.of(WalletReason.OTHER, "Dò boss Cùi")).requireSuccess();
                                         ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
                                                 boss.location.y);
                                         Service.gI().sendMoney(player);
@@ -133,7 +137,7 @@ public class Cui extends Npc {
                                     Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
                                             boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
-                                        player.inventory.gold -= COST_FIND_BOSS;
+                                        player.getWallet().tryDebit(Currency.GOLD, COST_FIND_BOSS, WalletMutationContext.of(WalletReason.OTHER, "Dò boss Cùi")).requireSuccess();
                                         ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
                                                 boss.location.y);
                                         Service.gI().sendMoney(player);
@@ -163,7 +167,7 @@ public class Cui extends Npc {
                                     Zone z = MapService.gI().getMapCanJoin(player, boss.zone.map.mapId,
                                             boss.zone.zoneId);
                                     if (z.getNumOfPlayers() < z.maxPlayer) {
-                                        player.inventory.gold -= COST_FIND_BOSS;
+                                        player.getWallet().tryDebit(Currency.GOLD, COST_FIND_BOSS, WalletMutationContext.of(WalletReason.OTHER, "Dò boss Cùi")).requireSuccess();
                                         ChangeMapService.gI().changeMap(player, boss.zone, boss.location.x,
                                                 boss.location.y);
                                         Service.gI().sendMoney(player);

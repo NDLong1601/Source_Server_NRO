@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstPlayer;
 import nro.models.npc.Npc;
@@ -45,7 +49,7 @@ public class QuaTrung extends Npc {
                                     "Bạn có chắc chắn muốn hủy bỏ trứng Mabư?", "Đồng ý", "Từ chối");
                         } else if (select == 1) {
                             if (player.inventory.gold >= COST_AP_TRUNG_NHANH) {
-                                player.inventory.gold -= COST_AP_TRUNG_NHANH;
+                                player.getWallet().tryDebit(Currency.GOLD, COST_AP_TRUNG_NHANH, WalletMutationContext.of(WalletReason.OTHER, "Ấp trứng nhanh")).requireSuccess();
                                 player.mabuEgg.timeDone = 0;
                                 Service.gI().sendMoney(player);
                                 player.mabuEgg.sendMabuEgg();

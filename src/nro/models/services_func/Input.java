@@ -32,10 +32,16 @@ import nro.models.Bot.BotManager;
 import nro.models.Bot.NewBot;
 import nro.models.Bot.BotGiaoDich;
 import nro.models.consts.ConstTaskBadges;
+import nro.models.player.Currency;
 import nro.models.player.Enemy;
 import nro.models.player.Friend;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
+import nro.models.player.PlayerWallet;
+import nro.models.player.WalletLeg;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 import nro.models.server.Manager;
 import nro.models.services.ClanService;
 import nro.models.map.service.ChangeMapService;
@@ -181,24 +187,54 @@ public class Input {
                             String txtBuff = "Buff to player: " + pBuffItem.name + "\b";
 
                             switch (idItemBuff) {
-                                case -1:
-                                    pBuffItem.inventory.gold = Math.min(pBuffItem.inventory.gold + (long) slItemBuff, PlayerConfig.getMaxGold());
-                                    txtBuff += slItemBuff + " vàng\b";
+                                case -1: {
+                                    if (slItemBuff <= 0) {
+                                        Service.gI().sendThongBao(player, "Số lượng buff phải lớn hơn 0");
+                                        return;
+                                    }
+                                    WalletResult r = pBuffItem.getWallet().creditUpToCap(Currency.GOLD, (long) slItemBuff,
+                                            WalletMutationContext.of(WalletReason.ADMIN_ADJUSTMENT, null, "Admin buff gold"));
+                                    if (!r.isSuccess()) {
+                                        Service.gI().sendThongBao(player, "Không thể buff vàng: " + r.getMessage());
+                                        return;
+                                    }
+                                    txtBuff += r.getAmountApplied() + " vàng\b";
                                     Service.gI().sendMoney(pBuffItem);
-                                    ServerLog.logAdmin(pBuffItem.name, slItemBuff);
+                                    ServerLog.logAdmin(pBuffItem.name, (int) Math.min(Integer.MAX_VALUE, r.getAmountApplied()));
                                     break;
-                                case -2:
-                                    pBuffItem.inventory.gem = Math.min(pBuffItem.inventory.gem + slItemBuff, 2000000000);
-                                    txtBuff += slItemBuff + " ngọc\b";
+                                }
+                                case -2: {
+                                    if (slItemBuff <= 0) {
+                                        Service.gI().sendThongBao(player, "Số lượng buff phải lớn hơn 0");
+                                        return;
+                                    }
+                                    WalletResult r = pBuffItem.getWallet().creditUpToCap(Currency.GEM, (long) slItemBuff,
+                                            WalletMutationContext.of(WalletReason.ADMIN_ADJUSTMENT, null, "Admin buff gem"));
+                                    if (!r.isSuccess()) {
+                                        Service.gI().sendThongBao(player, "Không thể buff ngọc: " + r.getMessage());
+                                        return;
+                                    }
+                                    txtBuff += r.getAmountApplied() + " ngọc\b";
                                     Service.gI().sendMoney(pBuffItem);
-                                    ServerLog.logAdmin(pBuffItem.name, slItemBuff);
+                                    ServerLog.logAdmin(pBuffItem.name, (int) r.getAmountApplied());
                                     break;
-                                case -3:
-                                    pBuffItem.inventory.ruby = Math.min(pBuffItem.inventory.ruby + slItemBuff, 2000000000);
-                                    txtBuff += slItemBuff + " ngọc khóa\b";
+                                }
+                                case -3: {
+                                    if (slItemBuff <= 0) {
+                                        Service.gI().sendThongBao(player, "Số lượng buff phải lớn hơn 0");
+                                        return;
+                                    }
+                                    WalletResult r = pBuffItem.getWallet().creditUpToCap(Currency.RUBY, (long) slItemBuff,
+                                            WalletMutationContext.of(WalletReason.ADMIN_ADJUSTMENT, null, "Admin buff ruby"));
+                                    if (!r.isSuccess()) {
+                                        Service.gI().sendThongBao(player, "Không thể buff hồng ngọc: " + r.getMessage());
+                                        return;
+                                    }
+                                    txtBuff += r.getAmountApplied() + " ngọc khóa\b";
                                     Service.gI().sendMoney(pBuffItem);
-                                    ServerLog.logAdmin(pBuffItem.name, slItemBuff);
+                                    ServerLog.logAdmin(pBuffItem.name, (int) r.getAmountApplied());
                                     break;
+                                }
                                 default:
                                     Item itemBuffTemplate = ItemService.gI().createNewItem((short) idItemBuff);
                                     itemBuffTemplate.itemOptions.add(new ItemOption(idOptionBuff, slOptionBuff));
@@ -313,40 +349,78 @@ public class Input {
                     Player target = player.menuPlayer;
                     if (target != null) {
                         try {
-                            int soGem = Integer.parseInt(text[0]);
-                            if (soGem <= 0) {
+                            long soGem = Long.parseLong(text[0]);
+                            if (soGem <= 0L || soGem > (long) PlayerConfig.getMaxGem()) {
                                 Service.gI().sendThongBao(player, "Số ngọc xanh không hợp lệ");
                                 return;
                             }
 
-                            int phi = (int) (soGem * 0.1); // Tính phí 10%
-                            int tongGem = soGem + phi;     // Tổng cần trừ
+                            long phi = (long) (soGem * 0.1);
+                            long tongGem = soGem + phi;
 
-                            if (player.inventory.gem < tongGem) {
-                                Service.gI().sendThongBao(player, "Bạn cần " + tongGem + " ngọc xanh để tặng (bao gồm phí 10%)");
+                            if (tongGem <= 0L || tongGem > (long) PlayerConfig.getMaxGem()) {
+                                Service.gI().sendThongBao(player, "Số ngọc xanh tặng vượt quá giới hạn cho phép");
                                 return;
                             }
 
-                            Item item718 = InventoryService.gI().findItemBag(player, 718);
-                            if (item718 == null || item718.quantity < 1) {
-                                Service.gI().sendThongBao(player, "Bạn cần 1 vé để tặng ngọc xanh");
+                            if (target.id == player.id) {
+                                Service.gI().sendThongBao(player, "Không thể tự tặng cho bản thân");
                                 return;
                             }
 
-                            player.inventory.gem -= tongGem;
-                            InventoryService.gI().subQuantityItemsBag(player, item718, 1);
+                            long gemThucNhan = (long) (soGem * 0.9);
+                            if (gemThucNhan <= 0L) {
+                                Service.gI().sendThongBao(player, "Số ngọc thực nhận không hợp lệ");
+                                return;
+                            }
+
+                            Player first = player.id <= target.id ? player : target;
+                            Player second = player.id <= target.id ? target : player;
+
+                            synchronized (first.inventory) {
+                                synchronized (second.inventory) {
+                                    if (!player.inventory.isActive() || !target.inventory.isActive()) {
+                                        Service.gI().sendThongBao(player, "Người chơi không hoạt động");
+                                        return;
+                                    }
+
+                                    if (player.getWallet().getBalance(Currency.GEM) < tongGem) {
+                                        Service.gI().sendThongBao(player, "Bạn cần " + tongGem + " ngọc xanh để tặng (bao gồm phí 10%)");
+                                        return;
+                                    }
+
+                                    Item item718 = InventoryService.gI().findItemBag(player, 718);
+                                    if (item718 == null || item718.quantity < 1) {
+                                        Service.gI().sendThongBao(player, "Bạn cần 1 vé để tặng ngọc xanh");
+                                        return;
+                                    }
+
+                                    if (target.getWallet().getBalance(Currency.GEM) + gemThucNhan > (long) PlayerConfig.getMaxGem()) {
+                                        Service.gI().sendThongBao(player, "Ngọc xanh của người nhận đã đạt giới hạn");
+                                        return;
+                                    }
+
+                                    WalletResult transferResult = PlayerWallet.executePair(
+                                            player.getWallet(), List.of(WalletLeg.debit(Currency.GEM, tongGem)),
+                                            target.getWallet(), List.of(WalletLeg.credit(Currency.GEM, gemThucNhan)),
+                                            WalletMutationContext.of(WalletReason.GIFT_TRANSFER,
+                                                    "Tặng ngọc xanh cho " + target.name));
+                                    if (!transferResult.isSuccess()) {
+                                        Service.gI().sendThongBao(player, transferResult.getMessage());
+                                        return;
+                                    }
+
+                                    InventoryService.gI().subQuantityItemsBag(player, item718, 1);
+                                }
+                            }
+
                             InventoryService.gI().sendItemBags(player);
-
-                            int gemNhan = soGem;
-                            int gemThucNhan = (int) (gemNhan * 0.9);
-                            target.inventory.gem += gemThucNhan;
-
                             Service.gI().sendMoney(player);
                             Service.gI().sendMoney(target);
 
                             Service.gI().sendThongBao(player, "Bạn đã tặng " + gemThucNhan + " ngọc xanh cho " + target.name + " (đã trừ phí " + phi + ")");
                             Service.gI().sendThongBao(target, player.name + " vừa tặng bạn " + gemThucNhan + " ngọc xanh");
-                        } catch (Exception e) {
+                        } catch (NumberFormatException e) {
                             Service.gI().sendThongBao(player, "Lỗi định dạng số lượng ngọc xanh");
                         }
                     } else {
@@ -427,53 +501,98 @@ public class Input {
                     }
                 }
                 case BANSLL -> {
-                    int sltv = Math.abs(Integer.parseInt(text[0]));
-                    long cost = (long) sltv * 37000000;
-                    Item ThoiVang = InventoryService.gI().findItemBag(player, 457);
-                    if (ThoiVang != null) {
-                        if (ThoiVang.quantity < sltv) {
-                            Service.gI().sendThongBao(player, "Bạn chỉ có " + ThoiVang.quantity + " Thỏi vàng");
-                        } else {
-                            if (player.inventory.gold + cost > PlayerConfig.getMaxGold()) {
-                                int slban = (int) ((PlayerConfig.getMaxGold() - player.inventory.gold) / 37000000);
-                                if (slban < 1) {
-                                    Service.gI().sendThongBao(player, "Vàng sau khi bán vượt quá giới hạn");
-                                } else if (slban < 2) {
-                                    Service.gI().sendThongBao(player, "Bạn chỉ có thể bán 1 Thỏi vàng");
-                                } else {
-                                    Service.gI().sendThongBao(player, "Số lượng trong khoảng 1 tới " + slban);
-                                }
-                            } else {
-                                InventoryService.gI().subQuantityItemsBag(player, ThoiVang, sltv);
-                                InventoryService.gI().sendItemBags(player);
-                                player.inventory.gold += cost;
-                                Service.gI().sendMoney(player);
-                                Service.gI().sendThongBao(player, "Đã bán " + sltv + " Thỏi vàng thu được " + Util.numberToMoney(cost) + " vàng");
-                            }
+                    try {
+                        int sltv = Integer.parseInt(text[0]);
+                        if (sltv <= 0) {
+                            Service.gI().sendThongBao(player, "Số lượng trong khoảng 1 tới 99");
+                            return;
                         }
+                        long cost = (long) sltv * 37000000L;
+                        synchronized (player.inventory) {
+                            if (!player.inventory.isActive()) {
+                                Service.gI().sendThongBao(player, "Hành trang không hoạt động");
+                                return;
+                            }
+                            Item ThoiVang = InventoryService.gI().findItemBag(player, 457);
+                            if (ThoiVang == null || ThoiVang.quantity < sltv) {
+                                Service.gI().sendThongBao(player, "Bạn không có đủ " + sltv + " Thỏi vàng");
+                                return;
+                            }
+                            WalletResult creditRes = player.getWallet().tryCreditExact(Currency.GOLD, cost,
+                                    WalletMutationContext.of(WalletReason.ITEM_SELL, null, "Bán thỏi vàng"));
+                            if (!creditRes.isSuccess()) {
+                                Service.gI().sendThongBao(player, "Vàng sau khi bán vượt quá giới hạn");
+                                return;
+                            }
+                            InventoryService.gI().subQuantityItemsBag(player, ThoiVang, sltv);
+                        }
+                        InventoryService.gI().sendItemBags(player);
+                        Service.gI().sendMoney(player);
+                        Service.gI().sendThongBao(player, "Đã bán " + sltv + " Thỏi vàng thu được " + Util.numberToMoney(cost) + " vàng");
+                    } catch (NumberFormatException e) {
+                        Service.gI().sendThongBao(player, "Lỗi định dạng số lượng");
                     }
                 }
                 case TANG_NGOC_HONG -> {
                     Player pl = Client.gI().getPlayer(text[0]);
-                    int numruby = Integer.parseInt((text[1]));
-                    if (pl != null) {
-                        if (numruby > 0 && player.inventory.ruby >= numruby) {
-                            Item item = InventoryService.gI().findItemBag(player, 2002);
-                            player.inventory.subGem(numruby);
-                            PlayerService.gI().sendInfoHpMpMoney(player);
-                            pl.inventory.ruby += numruby;
-                            PlayerService.gI().sendInfoHpMpMoney(pl);
-                            Service.gI().sendThongBao(player, "Tặng ngọc thành công");
-                            Service.gI().sendThongBao(pl,
-                                    "Bạn được " + player.name + " tặng " + numruby + " ngọc xanh");
-                            InventoryService.gI().subQuantityItemsBag(player, item, 1);
-                            InventoryService.gI().sendItemBags(player);
-                        } else {
-                            Service.gI().sendThongBao(player, "Không đủ ngọc xanh để tặng");
-                        }
-                    } else {
-                        Service.gI().sendThongBao(player, "Người chơi không tồn tại hoặc đang offline");
+                    long numruby;
+                    try {
+                        numruby = Long.parseLong(text[1]);
+                    } catch (NumberFormatException e) {
+                        Service.gI().sendThongBao(player, "Lỗi định dạng số lượng hồng ngọc");
+                        return;
                     }
+                    if (numruby <= 0L || numruby > (long) PlayerConfig.getMaxRuby()) {
+                        Service.gI().sendThongBao(player, "Số lượng hồng ngọc không hợp lệ");
+                        return;
+                    }
+                    if (pl == null || pl.inventory == null) {
+                        Service.gI().sendThongBao(player, "Người chơi không tồn tại hoặc đang offline");
+                        return;
+                    }
+                    if (pl.id == player.id) {
+                        Service.gI().sendThongBao(player, "Không thể tự tặng cho bản thân");
+                        return;
+                    }
+
+                    Player first = player.id <= pl.id ? player : pl;
+                    Player second = player.id <= pl.id ? pl : player;
+                    synchronized (first.inventory) {
+                        synchronized (second.inventory) {
+                            if (!player.inventory.isActive() || !pl.inventory.isActive()) {
+                                Service.gI().sendThongBao(player, "Người chơi không hoạt động");
+                                return;
+                            }
+                            Item item = InventoryService.gI().findItemBag(player, 2002);
+                            if (item == null || item.quantity < 1) {
+                                Service.gI().sendThongBao(player, "Bạn cần vé tặng ngọc hồng để thực hiện");
+                                return;
+                            }
+                            if (player.getWallet().getBalance(Currency.RUBY) < numruby) {
+                                Service.gI().sendThongBao(player, "Không đủ hồng ngọc để tặng");
+                                return;
+                            }
+                            if (pl.getWallet().getBalance(Currency.RUBY) + numruby > (long) PlayerConfig.getMaxRuby()) {
+                                Service.gI().sendThongBao(player, "Hồng ngọc của người nhận đã đạt giới hạn");
+                                return;
+                            }
+                            WalletResult transferResult = PlayerWallet.executePair(
+                                    player.getWallet(), List.of(WalletLeg.debit(Currency.RUBY, numruby)),
+                                    pl.getWallet(), List.of(WalletLeg.credit(Currency.RUBY, numruby)),
+                                    WalletMutationContext.of(WalletReason.GIFT_TRANSFER,
+                                            "Tặng hồng ngọc cho " + pl.name));
+                            if (!transferResult.isSuccess()) {
+                                Service.gI().sendThongBao(player, transferResult.getMessage());
+                                return;
+                            }
+                            InventoryService.gI().subQuantityItemsBag(player, item, 1);
+                        }
+                    }
+                    InventoryService.gI().sendItemBags(player);
+                    PlayerService.gI().sendInfoHpMpMoney(player);
+                    PlayerService.gI().sendInfoHpMpMoney(pl);
+                    Service.gI().sendThongBao(player, "Tặng hồng ngọc thành công");
+                    Service.gI().sendThongBao(pl, "Bạn được " + player.name + " tặng " + numruby + " hồng ngọc");
                 }
                 case BANGHOI -> {
                     Clan clan = player.clan;

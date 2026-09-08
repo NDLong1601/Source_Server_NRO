@@ -14,6 +14,9 @@ import lombok.Data;
 import nro.models.map.Zone;
 import nro.models.matches.DHVT;
 import nro.models.player.Player;
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.server.Maintenance;
 import nro.models.server.ServerNotify;
 import nro.models.services.PlayerService;
@@ -181,10 +184,10 @@ public final class SuperRank implements Runnable {
         if (!playerWon && loser.superRank.ticket > 0) {
             loser.superRank.ticket--;
         } else if (!playerWon && loser.inventory.getGem() > 0) {
-            loser.inventory.subGem(3);
+            loser.getWallet().tryDebit(Currency.GEM, 3, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phí thua Siêu Hạng")).requireSuccess();
             Service.gI().sendMoney(loser);
         } else if (playerWon && winner.superRank.ticket == 0 && winner.inventory.getGem() > 0) {
-            winner.inventory.subGem(2);
+            winner.getWallet().tryDebit(Currency.GEM, 2, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phí thắng Siêu Hạng")).requireSuccess();
         }
 
         winner.superRank.rank = rankWin;

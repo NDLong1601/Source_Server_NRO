@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -116,8 +120,11 @@ public class PhaLeHoaTrangBi {
                         player.combineNew.gemCombine = CombineSystem.getGemPhaLeHoa(star);
 
                         float baseRatio = getRatio(star);
-                        player.inventory.gold -= gold;
-                        player.inventory.gem -= gem;
+                        player.getWallet().executeBatch(java.util.List.of(
+                                nro.models.player.WalletLeg.debit(Currency.GOLD, gold),
+                                nro.models.player.WalletLeg.debit(Currency.GEM, gem)),
+                                WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                                        "Pha lê hóa trang bị")).requireSuccess();
 
                         boolean succ = Util.isTrue(baseRatio, 100);
 

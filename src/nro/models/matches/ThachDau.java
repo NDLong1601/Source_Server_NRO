@@ -1,4 +1,8 @@
 package nro.models.matches;
+
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.consts.ConstAchievement;
 import nro.models.matches.PVP;
 import nro.models.matches.TYPE_LOSE_PVP;
@@ -24,8 +28,17 @@ public class ThachDau extends PVP {
 
     @Override
     public void start() {
-        this.p1.inventory.gold -= this.goldThachDau;
-        this.p2.inventory.gold -= this.goldThachDau;
+        var wagerResult = nro.models.player.PlayerWallet.executePair(
+                this.p1.getWallet(), java.util.List.of(
+                        nro.models.player.WalletLeg.debit(Currency.GOLD, this.goldThachDau)),
+                this.p2.getWallet(), java.util.List.of(
+                        nro.models.player.WalletLeg.debit(Currency.GOLD, this.goldThachDau)),
+                WalletMutationContext.of(WalletReason.PVP_WAGER, "Tiền cược thách đấu"));
+        if (!wagerResult.isSuccess()) {
+            Service.gI().sendThongBao(this.p1, "Không thể thu đủ tiền cược của cả hai người chơi.");
+            Service.gI().sendThongBao(this.p2, "Không thể thu đủ tiền cược của cả hai người chơi.");
+            return;
+        }
         Service.gI().sendMoney(this.p1);
         Service.gI().sendMoney(this.p2);
         super.start();
@@ -47,7 +60,7 @@ public class ThachDau extends PVP {
 
     @Override
     public void reward(Player plWin) {
-        plWin.inventory.gold += this.goldReward;
+        plWin.getWallet().tryCreditExact(Currency.GOLD, this.goldReward, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng thắng thách đấu")).requireSuccess();
         Service.gI().sendMoney(plWin);
     }
 
@@ -63,11 +76,11 @@ public class ThachDau extends PVP {
                 Service.gI().sendThongBao(p1.equals(plLose) ? p2 : p1, "Đối thủ sợ quá bỏ chạy, bạn thắng được " + Util.numberToMoney(this.goldReward) + " vàng");
             }
             Service.gI().sendThongBao(p1.equals(plLose) ? p1 : p2, "Bạn bị xử thua vì đã bỏ chạy");
-            (p1.equals(plLose) ? p1 : p2).inventory.gold -= this.goldThachDau;
+            (p1.equals(plLose) ? p1 : p2).getWallet().tryDebit(Currency.GOLD, this.goldThachDau, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phạt thua thách đấu")).requireSuccess();
         } else if (typeLose == TYPE_LOSE_PVP.DEAD) {
             Service.gI().sendThongBao(p1.equals(plLose) ? p2 : p1, "Đối thủ đã kiệt sức, bạn thắng được " + Util.numberToMoney(this.goldReward) + " vàng");
             Service.gI().sendThongBao(p1.equals(plLose) ? p1 : p2, "Bạn đã thua vì đã kiệt sức");
-            (p1.equals(plLose) ? p1 : p2).inventory.gold -= this.goldThachDau;
+            (p1.equals(plLose) ? p1 : p2).getWallet().tryDebit(Currency.GOLD, this.goldThachDau, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phạt thua thách đấu")).requireSuccess();
             // A real defeat is the sole eligible PvP outcome. RUNS_AWAY and
             // future timeout/draw results intentionally never reach here.
             ActivityService.gI().awardPvpWin(plWin, plLose.id, this.activityMatchId);

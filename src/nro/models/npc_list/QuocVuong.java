@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.npc.Npc;
@@ -78,7 +82,7 @@ public class QuocVuong extends Npc {
                         if (player.nPoint.limitPower < MAX_LIMIT_CUSTOM) {
                             if (player.inventory.gold >= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER) {
                                 if (OpenPowerService.gI().openPowerSpeed(player)) {
-                                    player.inventory.gold -= OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER;
+                                    player.getWallet().tryDebit(Currency.GOLD, OpenPowerService.COST_SPEED_OPEN_LIMIT_POWER, WalletMutationContext.of(WalletReason.OTHER, "Mở giới hạn sức mạnh")).requireSuccess();
                                     Service.gI().sendMoney(player);
                                 }
                             } else {
@@ -98,7 +102,7 @@ public class QuocVuong extends Npc {
                     if (player.pet.nPoint.limitPower < kaioStartLevel) {
                         if (player.inventory.gold >= petCost) {
                             if (OpenPowerService.gI().openPowerSpeed(player.pet)) {
-                                player.inventory.gold -= petCost;
+                                player.getWallet().tryDebit(Currency.GOLD, petCost, WalletMutationContext.of(WalletReason.OTHER, "Mở giới hạn đệ tử")).requireSuccess();
                                 Service.gI().sendMoney(player);
                             }
                         } else {

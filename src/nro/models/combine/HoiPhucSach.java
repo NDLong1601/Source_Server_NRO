@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -64,7 +68,7 @@ public class HoiPhucSach {
         if (player.inventory.getGem() < getGem(doBen)) {
             return;
         }
-        player.inventory.subGem(getGem(doBen));
+        player.getWallet().tryDebit(Currency.GEM, getGem(doBen), WalletMutationContext.of(WalletReason.COMBINE_FEE, "Hồi phục sách")).requireSuccess();
         for (Item.ItemOption io : sachTuyetKy.itemOptions) {
             if (io.optionTemplate.id == 212) {
                 io.param = 1000;

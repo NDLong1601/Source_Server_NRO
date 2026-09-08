@@ -1,4 +1,8 @@
 package nro.models.matches;
+
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.consts.ConstNpc;
 import nro.models.map.Zone;
 import nro.models.player.Player;
@@ -255,7 +259,7 @@ public class PVPService {
                 return;
             }
             pl.idMark.setLastTimeRevenge(System.currentTimeMillis());
-            pl.inventory.subGem(1);
+            pl.getWallet().tryDebit(Currency.GEM, 1, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phí PVP")).requireSuccess();
             Service.gI().sendMoney(pl);
         }
         Player enemy = Client.gI().getPlayer(pl.idMark.getIdEnemy());

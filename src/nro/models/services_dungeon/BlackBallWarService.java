@@ -1,5 +1,10 @@
 package nro.models.services_dungeon;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.map.phoban.BlackBallWar;
 import nro.models.item.Item;
 import java.util.ArrayList;
@@ -137,7 +142,7 @@ public class BlackBallWarService {
                 break;
         }
         if (player.inventory.gold >= cost) {
-            player.inventory.gold -= cost;
+            player.getWallet().tryDebit(Currency.GOLD, cost, WalletMutationContext.of(WalletReason.OTHER, "Ngọc Rồng Sao Đen")).requireSuccess();
             Service.gI().sendMoney(player);
             player.effectSkin.lastTimeXHPKI = System.currentTimeMillis();
             player.effectSkin.xHPKI = x;
@@ -166,7 +171,7 @@ public class BlackBallWarService {
                 break;
         }
         if (player.inventory.gold >= cost) {
-            player.inventory.gold -= cost;
+            player.getWallet().tryDebit(Currency.GOLD, cost, WalletMutationContext.of(WalletReason.OTHER, "Ngọc Rồng Sao Đen")).requireSuccess();
             Service.gI().sendMoney(player);
             player.effectSkin.lastTimeXDame = System.currentTimeMillis();
             player.effectSkin.xDame = x;

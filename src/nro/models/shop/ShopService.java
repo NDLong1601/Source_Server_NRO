@@ -2,9 +2,15 @@ package nro.models.shop;
 
 import nro.models.consts.ConstAchievement;
 import nro.models.item.Item;
+import nro.models.player.Currency;
 import nro.models.player.Inventory;
 import nro.models.player.PlayerConfig;
 import nro.models.player.Player;
+import nro.models.player.PlayerWallet;
+import nro.models.player.WalletLeg;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 import nro.models.shop.ItemShop;
 import nro.models.shop.Shop;
 import nro.models.shop.TabShop;
@@ -535,23 +541,32 @@ public class ShopService {
             case COST_COUPON ->
                 coupon = purchaseCost;
         }
-        if (player.inventory.gold < gold) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ vàng");
-            return false;
-        } else if (player.inventory.gem < gem) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
-            return false;
-        } else if (player.inventory.gem < ruby) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
-            return false;
-        } else if (player.inventory.coupon < coupon) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ điểm");
+        List<WalletLeg> legs = new ArrayList<>();
+        if (gold > 0) legs.add(WalletLeg.debit(Currency.GOLD, gold));
+        if (gem > 0) legs.add(WalletLeg.debit(Currency.GEM, gem));
+        if (ruby > 0) legs.add(WalletLeg.debit(Currency.RUBY, ruby));
+        if (coupon > 0) legs.add(WalletLeg.debit(Currency.COUPON, coupon));
+
+        if (legs.isEmpty()) {
+            return true;
+        }
+
+        WalletResult result = player.getWallet().executeBatch(legs,
+                WalletMutationContext.of(WalletReason.SHOP_PURCHASE, null, "Mua vật phẩm shop"));
+        if (!result.isSuccess()) {
+            if (gold > 0 && player.getWallet().getBalance(Currency.GOLD) < gold) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ vàng");
+            } else if (gem > 0 && player.getWallet().getBalance(Currency.GEM) < gem) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
+            } else if (ruby > 0 && player.getWallet().getBalance(Currency.RUBY) < ruby) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ hồng ngọc");
+            } else if (coupon > 0 && player.getWallet().getBalance(Currency.COUPON) < coupon) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ điểm");
+            } else {
+                Service.gI().sendThongBao(player, result.getMessage());
+            }
             return false;
         }
-        player.inventory.gold -= gold;
-        player.inventory.gem -= gem;
-        player.inventory.ruby -= ruby;
-        player.inventory.coupon -= coupon;
         return true;
     }
 
@@ -651,23 +666,32 @@ public class ShopService {
             case COST_COUPON ->
                 coupon = is.cost;
         }
-        if (player.inventory.gold < gold) {
-            Service.gI().sendThongBaoOK(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(player.inventory.gold - gold));
-            return false;
-        } else if (player.inventory.gem < gem) {
-            Service.gI().sendThongBaoOK(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(player.inventory.gem - gem));
-            return false;
-        } else if (player.inventory.ruby < ruby) {
-            Service.gI().sendThongBaoOK(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(player.inventory.ruby - ruby));
-            return false;
-        } else if (player.inventory.coupon < coupon) {
-            Service.gI().sendThongBaoOK(player, "Bạn không đủ điểm, còn thiếu " + Util.numberToMoney(player.inventory.coupon - coupon));
+        List<WalletLeg> legs = new ArrayList<>();
+        if (gold > 0) legs.add(WalletLeg.debit(Currency.GOLD, gold));
+        if (gem > 0) legs.add(WalletLeg.debit(Currency.GEM, gem));
+        if (ruby > 0) legs.add(WalletLeg.debit(Currency.RUBY, ruby));
+        if (coupon > 0) legs.add(WalletLeg.debit(Currency.COUPON, coupon));
+
+        if (legs.isEmpty()) {
+            return true;
+        }
+
+        WalletResult res = player.getWallet().executeBatch(legs,
+                WalletMutationContext.of(WalletReason.SHOP_PURCHASE, null, "Mua vật phẩm shop"));
+        if (!res.isSuccess()) {
+            if (gold > 0 && player.getWallet().getBalance(Currency.GOLD) < gold) {
+                Service.gI().sendThongBaoOK(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(gold - player.getWallet().getBalance(Currency.GOLD)));
+            } else if (gem > 0 && player.getWallet().getBalance(Currency.GEM) < gem) {
+                Service.gI().sendThongBaoOK(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(gem - player.getWallet().getBalance(Currency.GEM)));
+            } else if (ruby > 0 && player.getWallet().getBalance(Currency.RUBY) < ruby) {
+                Service.gI().sendThongBaoOK(player, "Bạn không đủ ngọc, còn thiếu " + Util.numberToMoney(ruby - player.getWallet().getBalance(Currency.RUBY)));
+            } else if (coupon > 0 && player.getWallet().getBalance(Currency.COUPON) < coupon) {
+                Service.gI().sendThongBaoOK(player, "Bạn không đủ điểm, còn thiếu " + Util.numberToMoney(coupon - player.getWallet().getBalance(Currency.COUPON)));
+            } else {
+                Service.gI().sendThongBaoOK(player, res.getMessage());
+            }
             return false;
         }
-        player.inventory.gold -= gold;
-        player.inventory.gem -= gem;
-        player.inventory.ruby -= ruby;
-        player.inventory.coupon -= coupon;
         Service.gI().sendMoney(player);
         return true;
     }
@@ -1056,8 +1080,9 @@ public class ShopService {
             case 188:
             case 189:
             case 190:
-                if (pl.inventory.gold >= buySpec) {
-                    pl.inventory.gold -= buySpec;
+                WalletResult debitGold = pl.getWallet().tryDebit(Currency.GOLD, buySpec,
+                        WalletMutationContext.of(WalletReason.SHOP_PURCHASE, null, "Mua vật phẩm đặc biệt"));
+                if (debitGold.isSuccess()) {
                     isBuy = true;
                 } else {
                     Service.gI().sendThongBao(pl, "Bạn Không Đủ Vàng Để Mua Vật Phẩm");
@@ -1065,7 +1090,9 @@ public class ShopService {
                 }
                 break;
             case 77:
-                if (pl.inventory.gem >= buySpec) {
+                WalletResult debitGem = pl.getWallet().tryDebit(Currency.GEM, buySpec,
+                        WalletMutationContext.of(WalletReason.SHOP_PURCHASE, null, "Mua vật phẩm đặc biệt bằng ngọc"));
+                if (debitGem.isSuccess()) {
                     isBuy = true;
                 } else {
                     Service.gI().sendThongBao(pl, "Bạn Không Đủ Ngọc Để Mua Vật Phẩm");
@@ -1178,11 +1205,12 @@ public class ShopService {
             }
             cost *= quantity;
 
-            if (pl.inventory.gold + cost > PlayerConfig.getMaxGold()) {
+            WalletResult creditRes = pl.getWallet().tryCreditExact(Currency.GOLD, cost,
+                    WalletMutationContext.of(WalletReason.ITEM_SELL, null, "Bán vật phẩm " + item.template.name));
+            if (!creditRes.isSuccess()) {
                 Service.gI().sendThongBao(pl, "Vàng sau khi bán vượt quá giới hạn");
                 return;
             }
-            pl.inventory.gold += cost;
             Service.gI().sendMoney(pl);
             Service.gI().sendThongBao(pl, "Đã bán " + item.template.name
                     + " thu được " + Util.numberToMoney(cost) + " vàng");
@@ -1259,38 +1287,89 @@ public class ShopService {
         if (items == null) {
             return;
         }
-        if (index >= items.size()) {
-            Service.gI().sendThongBao(player, "Không thể thực hiện");
-            return;
-        }
-        Item item = items.get(index);
-        int giamualaingoc = item.template.gem / 2;
-        int giamualaivang = giamualaingoc == 0 ? (int) item.template.gold / 2 > 0 ? (int) item.template.gold / 2 : item.quantity * 100 : 0;
-        if (giamualaivang > 0 && player.inventory.gold < giamualaivang) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ vàng!");
-            return;
-        }
-        if (giamualaingoc > 0 && player.inventory.gem < giamualaingoc) {
-            Service.gI().sendThongBao(player, "Bạn không có đủ ngọc xanh!");
-            return;
-        }
-        player.inventory.gem -= giamualaingoc;
-        player.inventory.gold -= giamualaivang;
-        Service.gI().sendMoney(player);
-        if (item.isNotNullItem()) {
-            if (InventoryService.gI().getCountEmptyBag(player) != 0) {
-                InventoryService.gI().addItemBag(player, item);
-                Service.gI().sendThongBao(player,
-                        "Bạn nhận được " + (item.template.id == 189
-                                ? Util.numberToMoney(item.quantity) + " vàng" : item.template.name));
-                InventoryService.gI().sendItemBags(player);
-                items.remove(index);
-            } else {
-                Service.gI().sendThongBao(player, "Hành trang đã đầy");
+        Item item;
+        synchronized (player.inventory) {
+            if (index < 0 || index >= items.size()) {
+                Service.gI().sendThongBao(player, "Không thể thực hiện");
+                return;
             }
-        } else {
-            Service.gI().sendThongBao(player, "Không thể thực hiện");
+            item = items.get(index);
+            if (item == null || !item.isNotNullItem()) {
+                Service.gI().sendThongBao(player, "Không thể thực hiện");
+                openShopType8(player, player.idMark.getTagNameShop(), items);
+                return;
+            }
+            if (InventoryService.gI().getCountEmptyBag(player) == 0) {
+                Service.gI().sendThongBao(player, "Hành trang đã đầy");
+                openShopType8(player, player.idMark.getTagNameShop(), items);
+                return;
+            }
+
+            int gemCost = item.template.gem / 2;
+            int goldCost = gemCost == 0
+                    ? ((int) item.template.gold / 2 > 0 ? (int) item.template.gold / 2 : item.quantity * 100)
+                    : 0;
+
+            List<WalletLeg> debitLegs = new ArrayList<>();
+            if (goldCost > 0) {
+                debitLegs.add(WalletLeg.debit(Currency.GOLD, goldCost));
+            }
+            if (gemCost > 0) {
+                debitLegs.add(WalletLeg.debit(Currency.GEM, gemCost));
+            }
+
+            if (!debitLegs.isEmpty()) {
+                WalletResult debitResult = player.getWallet().executeBatch(debitLegs,
+                        WalletMutationContext.of(WalletReason.SHOP_PURCHASE, null,
+                                "Chuộc lại vật phẩm đã bán"));
+                if (!debitResult.isSuccess()) {
+                    if (goldCost > 0 && player.getWallet().getBalance(Currency.GOLD) < goldCost) {
+                        Service.gI().sendThongBao(player, "Bạn không có đủ vàng!");
+                    } else if (gemCost > 0 && player.getWallet().getBalance(Currency.GEM) < gemCost) {
+                        Service.gI().sendThongBao(player, "Bạn không có đủ ngọc xanh!");
+                    } else {
+                        Service.gI().sendThongBao(player, debitResult.getMessage());
+                    }
+                    openShopType8(player, player.idMark.getTagNameShop(), items);
+                    return;
+                }
+            }
+
+            if (!InventoryService.gI().addItemBag(player, item)) {
+                List<WalletLeg> rollbackLegs = new ArrayList<>();
+                if (goldCost > 0) {
+                    rollbackLegs.add(WalletLeg.credit(Currency.GOLD, goldCost));
+                }
+                if (gemCost > 0) {
+                    rollbackLegs.add(WalletLeg.credit(Currency.GEM, gemCost));
+                }
+                if (!rollbackLegs.isEmpty()) {
+                    WalletResult rollback = player.getWallet().executeBatch(rollbackLegs,
+                            WalletMutationContext.of(WalletReason.RECOVERY,
+                                    "shop-buyback-rollback:" + player.id + ":" + index,
+                                    "Hoàn tiền chuộc vật phẩm không thể thêm vào hành trang"));
+                    if (!rollback.isSuccess()) {
+                        player.persistenceQuarantined = true;
+                        Logger.error("[WALLET-01] Quarantined player after buyback rollback failure, playerId="
+                                + player.id);
+                    }
+                }
+                Service.gI().sendThongBao(player,
+                        player.persistenceQuarantined
+                                ? "Không thể đồng bộ giao dịch; vui lòng đăng nhập lại."
+                                : "Không thể thêm vật phẩm; tài sản đã được hoàn lại.");
+                openShopType8(player, player.idMark.getTagNameShop(), items);
+                return;
+            }
+
+            items.remove(index);
         }
+
+        Service.gI().sendMoney(player);
+        Service.gI().sendThongBao(player,
+                "Bạn nhận được " + (item.template.id == 189
+                        ? Util.numberToMoney(item.quantity) + " vàng" : item.template.name));
+        InventoryService.gI().sendItemBags(player);
         openShopType8(player, player.idMark.getTagNameShop(), items);
     }
 

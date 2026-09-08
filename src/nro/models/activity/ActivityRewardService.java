@@ -1,5 +1,12 @@
 package nro.models.activity;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+import nro.models.player.WalletLeg;
+import nro.models.player.WalletSnapshot;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,31 +112,50 @@ public final class ActivityRewardService {
                         "Mốc này đã được nhận hoặc đang được hệ thống xử lý.");
             }
 
-            List<Item> bagBefore = copyBag(player);
-            try {
-                for (Item item : bundle.items) {
-                    if (!InventoryService.gI().addItemList(player.inventory.itemsBag, item)) {
+            synchronized (player.inventory) {
+                if (InventoryService.gI().getCountEmptyBag(player) < bundle.items.size()
+                        || wouldOverflowCurrency(player, bundle)) {
+                    ActivityClaimAuditService.gI().release(player, period, tier, state);
+                    return ActivityClaimResult.of(ActivityClaimResult.Reason.DELIVERY_FAILED,
+                            "Không thể nhận trọn gói quà lúc này. Vui lòng kiểm tra hành trang và giới hạn tài sản.");
+                }
+
+                List<Item> bagBefore = copyBag(player);
+                try {
+                    for (Item item : bundle.items) {
+                        if (!InventoryService.gI().addItemList(player.inventory.itemsBag, item)) {
+                            restoreBag(player, bagBefore);
+                            ActivityClaimAuditService.gI().release(player, period, tier, state);
+                            return ActivityClaimResult.of(ActivityClaimResult.Reason.DELIVERY_FAILED,
+                                    "Không thể thêm trọn gói quà vào hành trang. Vui lòng thử lại.");
+                        }
+                    }
+                } catch (Exception e) {
+                    restoreBag(player, bagBefore);
+                    ActivityClaimAuditService.gI().release(player, period, tier, state);
+                    return ActivityClaimResult.of(ActivityClaimResult.Reason.DELIVERY_FAILED,
+                            "Không thể thêm trọn gói quà vào hành trang. Vui lòng thử lại.");
+                }
+
+                List<WalletLeg> currencyLegs = currencyLegs(bundle.gold, bundle.gem, bundle.ruby);
+                if (!currencyLegs.isEmpty()) {
+                    WalletResult walletResult = player.getWallet().executeBatch(currencyLegs,
+                            WalletMutationContext.of(WalletReason.ACTIVITY_REWARD,
+                                    "Quà năng động mốc " + tier.getId()));
+                    if (!walletResult.isSuccess()) {
                         restoreBag(player, bagBefore);
                         ActivityClaimAuditService.gI().release(player, period, tier, state);
                         return ActivityClaimResult.of(ActivityClaimResult.Reason.DELIVERY_FAILED,
-                                "Không thể thêm trọn gói quà vào hành trang. Vui lòng thử lại.");
+                                "Không thể nhận trọn gói tiền thưởng: " + walletResult.getMessage());
                     }
                 }
-            } catch (Exception e) {
-                restoreBag(player, bagBefore);
-                ActivityClaimAuditService.gI().release(player, period, tier, state);
-                return ActivityClaimResult.of(ActivityClaimResult.Reason.DELIVERY_FAILED,
-                        "Không thể thêm trọn gói quà vào hành trang. Vui lòng thử lại.");
-            }
-            player.inventory.gold += bundle.gold;
-            player.inventory.gem += (int) bundle.gem;
-            player.inventory.ruby += (int) bundle.ruby;
-            setClaimed(state, period, tier.getClaimBit());
 
-            // Persist while holding the same activity-state lock used for the
-            // eligibility check. A double-click cannot pass the mask check.
-            PlayerDAO.updatePlayer(player);
-            ActivityClaimAuditService.gI().complete(player, period, tier, state);
+                setClaimed(state, period, tier.getClaimBit());
+
+                // Persist while holding both the claim-state and inventory locks.
+                PlayerDAO.updatePlayer(player);
+                ActivityClaimAuditService.gI().complete(player, period, tier, state);
+            }
             InventoryService.gI().sendItemBags(player);
             PlayerService.gI().sendInfoHpMpMoney(player);
             Service.gI().sendNangDong(player);
@@ -248,9 +274,28 @@ public final class ActivityRewardService {
     }
 
     private boolean wouldOverflowCurrency(Player player, RewardBundle bundle) {
-        return bundle.gold > PlayerConfig.getMaxGold() - player.inventory.gold
-                || bundle.gem > Integer.MAX_VALUE - (long) player.inventory.gem
-                || bundle.ruby > Integer.MAX_VALUE - (long) player.inventory.ruby;
+        WalletSnapshot snapshot = player.getWallet().getSnapshot();
+        return invalidOrOverflow(snapshot.getGold(), bundle.gold, PlayerConfig.getMaxGold())
+                || invalidOrOverflow(snapshot.getGem(), bundle.gem, PlayerConfig.getMaxGem())
+                || invalidOrOverflow(snapshot.getRuby(), bundle.ruby, PlayerConfig.getMaxRuby());
+    }
+
+    private static boolean invalidOrOverflow(long current, long amount, long max) {
+        return current < 0L || current > max || amount < 0L || amount > max - current;
+    }
+
+    static List<WalletLeg> currencyLegs(long gold, long gem, long ruby) {
+        List<WalletLeg> legs = new ArrayList<>(3);
+        if (gold > 0L) {
+            legs.add(WalletLeg.credit(Currency.GOLD, gold));
+        }
+        if (gem > 0L) {
+            legs.add(WalletLeg.credit(Currency.GEM, gem));
+        }
+        if (ruby > 0L) {
+            legs.add(WalletLeg.credit(Currency.RUBY, ruby));
+        }
+        return List.copyOf(legs);
     }
 
     private List<Item> copyBag(Player player) {

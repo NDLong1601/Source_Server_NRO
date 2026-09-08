@@ -1,5 +1,10 @@
 package nro.models.boss.Boss_mini;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.boss.Boss;
 import nro.models.boss.BossData;
 import nro.models.boss.BossID;
@@ -99,7 +104,7 @@ public class AnTrom extends Boss {
                         this.chat("Haha đã trộm được " + Util.numberToMoney(goldAnTrom) + " Vàng");
 
                         if (gold > 0) {
-                            pl.inventory.gold -= gold;
+                            pl.getWallet().tryDebit(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.OTHER, "Ăn trộm")).requireSuccess();
                             goldAnTrom += gold;
                             Service.gI().stealMoney(pl, -gold);
                             ItemMap itemMap = new ItemMap(this.zone, 190, gold, (this.location.x + pl.location.x) / 2, this.location.y, this.id);

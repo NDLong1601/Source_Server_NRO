@@ -11,6 +11,11 @@ import java.util.List;
 import nro.models.data.LocalManager;
 import nro.models.network.Message;
 import nro.models.player.Player;
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+import nro.models.player.WalletSnapshot;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
 import org.json.simple.JSONArray;
@@ -138,18 +143,32 @@ public final class ClanTreasuryService {
         Clan clan = player.clan;
         DepositResult result;
         synchronized (player) {
-            synchronized (clan) {
-                if (player.clan != clan) {
-                    Service.gI().sendThongBao(player, "Bạn không còn thuộc bang hội này.");
-                    return;
-                }
-                result = persistDeposit(player, clan, currency, amount, requestId);
-                if (result.success) {
-                    player.inventory.gold = result.playerGold;
-                    player.inventory.gem = result.playerGem;
-                    clan.clanGold = result.clanGold;
-                    clan.clanGem = result.clanGem;
-                    clan.treasuryVersion = result.treasuryVersion;
+            synchronized (player.inventory) {
+                synchronized (clan) {
+                    if (player.clan != clan) {
+                        Service.gI().sendThongBao(player, "Bạn không còn thuộc bang hội này.");
+                        return;
+                    }
+                    result = persistDeposit(player, clan, currency, amount, requestId);
+                    if (result.success) {
+                        clan.clanGold = result.clanGold;
+                        clan.clanGem = result.clanGem;
+                        clan.treasuryVersion = result.treasuryVersion;
+                        WalletResult walletRestore = player.getWallet().restoreExact(
+                                new WalletSnapshot(result.playerGold, result.playerGem,
+                                        (int) player.getWallet().getBalance(Currency.RUBY),
+                                        (int) player.getWallet().getBalance(Currency.COUPON)),
+                                WalletMutationContext.of(WalletReason.RECOVERY,
+                                        "clan-deposit:" + requestId,
+                                        "Áp dụng số dư đã commit khi đóng góp bang"));
+                        if (!walletRestore.isSuccess()) {
+                            player.persistenceQuarantined = true;
+                            Logger.error("[WALLET-01] Quarantined player after clan deposit projection failure, playerId="
+                                    + player.id);
+                            result = DepositResult.failure(
+                                    "Đóng góp đã được ghi nhận; vui lòng đăng nhập lại để đồng bộ tài sản.");
+                        }
+                    }
                 }
             }
         }

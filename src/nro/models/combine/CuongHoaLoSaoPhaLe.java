@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -135,7 +139,7 @@ public class CuongHoaLoSaoPhaLe {
         }
 
         boolean success = CombineConfig.roll("equipment.socket.enhanceRate", 25);
-        player.inventory.gold -= COST;
+        player.getWallet().tryDebit(Currency.GOLD, COST, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Cường hóa lỗ sao pha lê")).requireSuccess();
 
         if (star == 8) {
             if (opt228 == null) {

@@ -10,6 +10,11 @@ import nro.models.player.PlayerConfig;
 import nro.models.player.Pet;
 import nro.models.player.PetConfig;
 import nro.models.player.Player;
+import nro.models.player.Currency;
+import nro.models.player.PlayerWallet;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 import nro.models.network.Message;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
@@ -980,11 +985,14 @@ public class InventoryService {
         //gold, gem, ruby
         switch (item.template.type) {
             case 9:
-                if (player.inventory.gold + item.quantity <= PlayerConfig.getMaxGold()) {
-                    if (player.effectSkill.isChibi && player.typeChibi == 0) {
-                        player.inventory.gold += item.quantity;
-                    }
-                    player.inventory.gold += item.quantity;
+                long multiplier = (player.effectSkill.isChibi && player.typeChibi == 0) ? 2L : 1L;
+                long goldToAdd = (long) item.quantity * multiplier;
+                WalletResult gRes = player.getWallet().tryCreditExact(
+                        Currency.GOLD,
+                        goldToAdd,
+                        WalletMutationContext.of(WalletReason.ITEM_PICKUP, "Nhặt vàng trên đất")
+                );
+                if (gRes.isSuccess()) {
                     Service.gI().sendMoney(player);
                     return true;
                 } else {
@@ -992,21 +1000,27 @@ public class InventoryService {
                     return false;
                 }
             case 10:
-                long gem = (long) player.inventory.gem + (long) item.quantity;
-                if (gem > Integer.MAX_VALUE) {
-                    gem = Integer.MAX_VALUE;
+                WalletResult gemRes = player.getWallet().creditUpToCap(
+                        Currency.GEM,
+                        item.quantity,
+                        WalletMutationContext.of(WalletReason.ITEM_PICKUP, "Nhặt ngọc trên đất")
+                );
+                if (gemRes.isSuccess()) {
+                    Service.gI().sendMoney(player);
+                    return true;
                 }
-                player.inventory.gem = (int) gem;
-                Service.gI().sendMoney(player);
-                return true;
+                return false;
             case 34:
-                long ruby = (long) player.inventory.ruby + (long) item.quantity;
-                if (ruby > Integer.MAX_VALUE) {
-                    ruby = Integer.MAX_VALUE;
+                WalletResult rubyRes = player.getWallet().creditUpToCap(
+                        Currency.RUBY,
+                        item.quantity,
+                        WalletMutationContext.of(WalletReason.ITEM_PICKUP, "Nhặt hồng ngọc trên đất")
+                );
+                if (rubyRes.isSuccess()) {
+                    Service.gI().sendMoney(player);
+                    return true;
                 }
-                player.inventory.ruby = (int) ruby;
-                Service.gI().sendMoney(player);
-                return true;
+                return false;
         }
 
         //mở rộng hành trang - rương đồ

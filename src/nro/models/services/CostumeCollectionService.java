@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -259,10 +264,8 @@ public class CostumeCollectionService {
                 return;
             }
 
-            long goldSpace = Math.max(0L, PlayerConfig.getMaxGold() - player.inventory.gold);
-            player.inventory.gold += Math.min(goldSpace, achievement.rewardGold);
-            int gemSpace = Math.max(0, PlayerConfig.getMaxGem() - player.inventory.gem);
-            player.inventory.gem += Math.min(gemSpace, achievement.rewardGem);
+            if (achievement.rewardGold > 0) player.getWallet().creditUpToCap(Currency.GOLD, achievement.rewardGold, WalletMutationContext.of(WalletReason.ACHIEVEMENT_REWARD, "Thành tựu sưu tập: " + achievement.name)).requireSuccess();
+            if (achievement.rewardGem > 0) player.getWallet().creditUpToCap(Currency.GEM, achievement.rewardGem, WalletMutationContext.of(WalletReason.ACHIEVEMENT_REWARD, "Thành tựu sưu tập: " + achievement.name)).requireSuccess();
             grantItemRewards(player, achievement);
             Service.gI().sendMoney(player);
             InventoryService.gI().sendItemBags(player);

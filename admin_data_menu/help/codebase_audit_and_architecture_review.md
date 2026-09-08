@@ -994,7 +994,7 @@ Work item:
 - SEC-03 Trade actor state machine.
 - SEC-04 Consign conditional purchase + capacity.
 - SEC-05 VND MoneyLedgerService.
-- SEC-06 Currency cap và common validation.
+- WALLET-01 Currency cap và common validation.
 - SEC-07 Audit ledger/reconciliation tối thiểu.
 
 Exit criteria:

@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.boss.Boss;
 import nro.models.boss.BossID;
 import nro.models.boss.luyen_tap_tu_dong.Karin;
@@ -143,7 +148,7 @@ public class TrainingService {
                 if (player.inventory.getGem() > 1) {
                     Executors.newSingleThreadExecutor().submit(() -> {
                         try {
-                            player.inventory.subGem(1);
+                            player.getWallet().tryDebit(Currency.GEM, 1, WalletMutationContext.of(WalletReason.OTHER, "Luyện tập")).requireSuccess();
                             Thread.sleep(1000);
                             if (player.zone == null) {
                                 return;

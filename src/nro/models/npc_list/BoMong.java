@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,7 +86,7 @@ public class BoMong extends Npc {
                                 }
                             }
                             player.lastCheckIn = LocalDateTime.now();
-                            player.inventory.gem += 10000;
+                            player.getWallet().tryCreditExact(Currency.GEM, 10000, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng Bò Mộng")).requireSuccess();
                             Item item457 = ItemService.gI().createNewItem((short) 457);
                             item457.quantity = 100;
                             item457.itemOptions.add(new Item.ItemOption(30, 0));

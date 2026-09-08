@@ -1,5 +1,10 @@
 package nro.models.event;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import java.util.ArrayList;
 import java.util.List;
 import nro.models.consts.ConstNpc;
@@ -226,7 +231,7 @@ public class VuaHung extends Npc {
             InventoryService.gI().subQuantityItemsBag(player, ngaVoi, 9);
             InventoryService.gI().subQuantityItemsBag(player, cuaGa, 9);
             InventoryService.gI().subQuantityItemsBag(player, hongMao, 9);
-            player.inventory.gold -= 1_000_000;
+            player.getWallet().tryDebit(Currency.GOLD, 1_000_000, WalletMutationContext.of(WalletReason.OTHER, "Đổi hộp quà thường Vua Hùng")).requireSuccess();
             InventoryService.gI().sendItemBags(player);
             Service.gI().sendMoney(player);
 
@@ -252,7 +257,7 @@ public class VuaHung extends Npc {
             InventoryService.gI().subQuantityItemsBag(player, ngaVoi, 9);
             InventoryService.gI().subQuantityItemsBag(player, cuaGa, 9);
             InventoryService.gI().subQuantityItemsBag(player, hongMao, 9);
-            player.inventory.gem -= 10;
+            player.getWallet().tryDebit(Currency.GEM, 10, WalletMutationContext.of(WalletReason.OTHER, "Đổi hộp quà VIP Vua Hùng")).requireSuccess();
             InventoryService.gI().sendItemBags(player);
             Service.gI().sendMoney(player);
 
@@ -328,7 +333,7 @@ public class VuaHung extends Npc {
             InventoryService.gI().subQuantityItemsBag(player, tem, temNeeded[select]);
             InventoryService.gI().sendItemBags(player);
 
-            player.inventory.gem += gems[select];
+            player.getWallet().tryCreditExact(Currency.GEM, gems[select], WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Đổi ngọc Vua Hùng")).requireSuccess();
             Service.gI().sendMoney(player);
 
             Service.gI().sendThongBao(player, "Bạn đã nhận được " + gems[select] + " Ngọc!");

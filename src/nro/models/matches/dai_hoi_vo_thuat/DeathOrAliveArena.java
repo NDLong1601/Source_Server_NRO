@@ -1,4 +1,8 @@
 package nro.models.matches.dai_hoi_vo_thuat;
+
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.consts.ConstPlayer;
 import nro.models.matches.giai_dau.DeathOrAliveArenaManager;
 import nro.models.boss.Boss;
@@ -219,7 +223,7 @@ public class DeathOrAliveArena {
                             int cuoc = pl.binhChonPlayer;
                             if (cuoc > 0 && pl.zoneBinhChon.equals(zone)) {
                                 long vangNhan = cuoc * tongCuoc;
-                                pl.inventory.gold += vangNhan;
+                                pl.getWallet().creditUpToCap(Currency.GOLD, vangNhan, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng bình chọn võ đài sinh tử")).requireSuccess();
                                 pl.binhChonPlayer = 0;
                                 pl.binhChonHatMit = 0;
                                 Service.gI().sendMoney(pl);
@@ -229,7 +233,7 @@ public class DeathOrAliveArena {
                             int cuoc = pl.binhChonHatMit;
                             if (cuoc > 0 && pl.zoneBinhChon.equals(zone)) {
                                 long vangNhan = cuoc * tongCuoc;
-                                pl.inventory.gold += vangNhan;
+                                pl.getWallet().creditUpToCap(Currency.GOLD, vangNhan, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng bình chọn võ đài sinh tử")).requireSuccess();
                                 pl.binhChonPlayer = 0;
                                 pl.binhChonHatMit = 0;
                                 Service.gI().sendMoney(pl);

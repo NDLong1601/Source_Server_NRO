@@ -10,6 +10,7 @@ import nro.models.matches.dai_hoi_vo_thuat.SuperRankBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import nro.models.player.Player;
+import nro.models.player.WalletSnapshot;
 import org.json.simple.parser.JSONParser;
 import nro.models.utils.Logger;
 import nro.models.utils.TimeUtil;
@@ -135,15 +136,11 @@ public class SuperRankDAO {
     public static void updatePlayer(Player player) {
         if (player != null && player.idMark.isLoadedAllDataPlayer()) {
             try {
-                JSONArray dataArray = new JSONArray();
-
-                dataArray.add(player.inventory.gold);
-                dataArray.add(player.inventory.gem);
-                dataArray.add(player.inventory.ruby);
-                dataArray.add(player.inventory.coupon);
-                dataArray.add(player.inventory.event);
-                String inventory = dataArray.toJSONString();
-                dataArray.clear();
+                String inventory;
+                synchronized (player.inventory) {
+                    WalletSnapshot snapshot = player.getWallet().getSnapshot();
+                    inventory = snapshot.toDataInventoryJsonString(player.inventory.event);
+                }
                 updateData(player);
                 String query = "UPDATE player SET data_inventory = ? WHERE id = ?";
                 LocalManager.executeUpdate(query, inventory, player.id);

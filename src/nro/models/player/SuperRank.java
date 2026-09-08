@@ -41,9 +41,9 @@ public class SuperRank {
         }
 
         int rw = SuperRankService.gI().reward(rank);
-        if (rw != -1) {
+        if (rw > 0) {
             Service.gI().sendThongBao(player, "Bạn đang ở TOP " + rank + " Siêu Hạng, nhận được " + rw + " ngọc");
-            player.inventory.gem += rw;
+            player.getWallet().tryCreditExact(Currency.GEM, rw, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng TOP Siêu Hạng")).requireSuccess();
         }
 
         lastRewardTime = System.currentTimeMillis();

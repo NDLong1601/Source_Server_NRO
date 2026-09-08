@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -122,7 +126,7 @@ public class EpSaoTrangBi {
                 return;
             }
 
-            player.inventory.subGem(gem);
+            player.getWallet().tryDebit(Currency.GEM, gem, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Ép sao trang bị")).requireSuccess();
 
             int optionId = CombineSystem.getOptionDaPhaLe(daPhaLe);
             int param = CombineSystem.getParamDaPhaLe(daPhaLe);

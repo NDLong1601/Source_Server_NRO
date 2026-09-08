@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -100,7 +104,7 @@ public class NangChiSoBongTai {
                 return;
             }
             
-            player.inventory.gem -= player.combineNew.gemCombine;
+            player.getWallet().tryDebit(Currency.GEM, player.combineNew.gemCombine, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Nâng chỉ số bông tai")).requireSuccess();
             
             // Lấy item bông tai từ trong ô combine
             Item bongTai = player.combineNew.itemsCombine.stream().filter(item -> item.template.id == BONG_TAI_ID).findFirst().orElse(null);

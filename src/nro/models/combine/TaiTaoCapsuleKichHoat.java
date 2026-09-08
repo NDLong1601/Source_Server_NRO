@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import java.util.ArrayList;
@@ -95,7 +99,7 @@ public class TaiTaoCapsuleKichHoat {
             return;
         }
 
-        player.inventory.gold -= GOLD_TAI_TAO;
+        player.getWallet().tryDebit(Currency.GOLD, GOLD_TAI_TAO, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Tái tạo capsule kích hoạt")).requireSuccess();
         removeItem(player, KHOANG_TAI_CHE_ID, REQUIRED_KHOANG);
         removeItem(player, CAPSULE_ID, REQUIRED_CAPSULE);
 

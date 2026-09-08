@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -276,8 +280,11 @@ public class GhepManhHuyDiet {
         }
 
         // Trừ chi phí theo cấu hình runtime.
-        player.inventory.subGold(goldCost);
-        player.inventory.subGem(gemCost);
+        player.getWallet().executeBatch(java.util.List.of(
+                nro.models.player.WalletLeg.debit(Currency.GOLD, goldCost),
+                nro.models.player.WalletLeg.debit(Currency.GEM, gemCost)),
+                WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                        "Ghép mảnh hủy diệt")).requireSuccess();
 
         if (Util.isTrue((float) getSuccessRate(), 100)) {
             // Thành công: trừ toàn bộ 4 mảnh

@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -58,7 +62,7 @@ public class CheTaoDuiDuc {
 
             Item Hematite = player.combineNew.itemsCombine.get(0);
             if (Hematite.template.id == 1423 && Hematite.quantity >= 5) {
-                player.inventory.gold -= gold;
+                player.getWallet().tryDebit(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Chế tạo dùi đục")).requireSuccess();
                 InventoryService.gI().subQuantityItemsBag(player, Hematite, 5);
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1438);

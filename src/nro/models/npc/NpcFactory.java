@@ -1,5 +1,9 @@
 package nro.models.npc;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.npc_list.Whis;
 import nro.models.npc_list.LinhCanh;
 import nro.models.npc_list.Bulma;
@@ -694,7 +698,7 @@ public class NpcFactory {
                     case ConstNpc.CONFIRM_TELE_NAMEC -> {
                         if (select == 0) {
                             NgocRongNamecService.gI().teleportToNrNamec(player);
-                            player.inventory.subGem(10);
+                            player.getWallet().tryDebit(Currency.GEM, 10, WalletMutationContext.of(WalletReason.OTHER, "Phí dịch vụ")).requireSuccess();
                             Service.gI().sendMoney(player);
                         }
                     }
@@ -702,7 +706,7 @@ public class NpcFactory {
                         if (select == 0) {
                             if (player.mbv == 0) {
                                 if (player.inventory.gold >= 500_000) {
-                                    player.inventory.gold -= 500_000;
+                                    player.getWallet().tryDebit(Currency.GOLD, 500_000, WalletMutationContext.of(WalletReason.OTHER, "Phí dịch vụ")).requireSuccess();
                                     Service.gI().sendMoney(player);
                                     player.mbv = player.idMark.getMbv();
                                     player.baovetaikhoan = true;
@@ -734,7 +738,7 @@ public class NpcFactory {
                                     ConsignShopService.gI().openShopKyGui(player);
                                     return;
                                 }
-                                player.inventory.gem -= 5;
+                                player.getWallet().tryDebit(Currency.GEM, 5, WalletMutationContext.of(WalletReason.OTHER, "Phí dịch vụ")).requireSuccess();
                                 Service.gI().sendMoney(player);
                                 Service.gI().sendThongBao(player, "Thành công");
                                 it.isUpTop += 1;

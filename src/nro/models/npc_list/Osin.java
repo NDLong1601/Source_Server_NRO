@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import java.util.ArrayList;
 import nro.models.services_dungeon.MajinBuu14HService;
@@ -219,7 +223,7 @@ public class Osin extends Npc {
                                     if (player.inventory.getGem() < 10) {
                                         Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
                                     } else {
-                                        player.inventory.subGem(10);
+                                        player.getWallet().tryDebit(Currency.GEM, 10, WalletMutationContext.of(WalletReason.OTHER, "Osin")).requireSuccess();
                                         player.isPhuHoMapMabu = true;
                                         player.nPoint.calPoint();
                                         player.nPoint.setHp((int) player.nPoint.hpMax);
@@ -261,7 +265,7 @@ public class Osin extends Npc {
                     case ConstNpc.BUA_HO_TRO -> {
                         if (select == 0) {
                             if (player.inventory.getGem() >= 5) {
-                                player.inventory.subGem(5);
+                                player.getWallet().tryDebit(Currency.GEM, 5, WalletMutationContext.of(WalletReason.OTHER, "Osin")).requireSuccess();
                                 Service.gI().sendMoney(player);
                                 long currentTime = System.currentTimeMillis();
                                 long addedTime = 10 * 60 * 1000;

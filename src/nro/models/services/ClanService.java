@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.data.LocalManager;
 import java.util.List;
 import static nro.models.clan.Clan.DEPUTY;
@@ -576,7 +581,7 @@ public class ClanService {
             if (flagBag != null) {
                 if (flagBag.gold > 0) {
                     if (player.inventory.gold >= flagBag.gold) {
-                        player.inventory.gold -= flagBag.gold;
+                        player.getWallet().tryDebit(Currency.GOLD, flagBag.gold, WalletMutationContext.of(WalletReason.OTHER, "Tạo bang")).requireSuccess();
                     } else {
                         Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu "
                                 + Util.numberToMoney(flagBag.gold - player.inventory.gold) + " vàng");
@@ -585,7 +590,7 @@ public class ClanService {
                 }
                 if (flagBag.gem > 0) {
                     if (player.inventory.gem >= flagBag.gem) {
-                        player.inventory.gem -= flagBag.gem;
+                        player.getWallet().tryDebit(Currency.GEM, flagBag.gem, WalletMutationContext.of(WalletReason.OTHER, "Tạo bang")).requireSuccess();
                     } else {
                         Service.gI().sendThongBao(player, "Bạn không đủ ngọc, còn thiếu "
                                 + (flagBag.gem - player.inventory.gem) + " ngọc");
@@ -835,7 +840,7 @@ public class ClanService {
             if (flagBag != null) {
                 if (flagBag.gold > 0) {
                     if (player.inventory.gold >= flagBag.gold) {
-                        player.inventory.gold -= flagBag.gold;
+                        player.getWallet().tryDebit(Currency.GOLD, flagBag.gold, WalletMutationContext.of(WalletReason.OTHER, "Tạo bang")).requireSuccess();
                     } else {
                         Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu "
                                 + Util.numberToMoney(flagBag.gold - player.inventory.gold) + " vàng");
@@ -844,7 +849,7 @@ public class ClanService {
                 }
                 if (flagBag.gem > 0) {
                     if (player.inventory.gem >= flagBag.gem) {
-                        player.inventory.gem -= flagBag.gem;
+                        player.getWallet().tryDebit(Currency.GEM, flagBag.gem, WalletMutationContext.of(WalletReason.OTHER, "Tạo bang")).requireSuccess();
                     } else {
                         Service.gI().sendThongBao(player, "Bạn không đủ ngọc, còn thiếu "
                                 + (flagBag.gem - player.inventory.gem) + " ngọc");

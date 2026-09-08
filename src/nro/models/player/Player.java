@@ -205,6 +205,10 @@ public class Player implements Runnable {
     public MagicTree magicTree;
     public IntrinsicPlayer playerIntrinsic;
     public Inventory inventory;
+
+    public PlayerWallet getWallet() {
+        return this.inventory != null ? this.inventory.getWallet() : null;
+    }
     public PlayerSkill playerSkill;
     public Combine combineNew;
     public IDMark idMark;
@@ -1046,16 +1050,19 @@ public class Player implements Runnable {
             }
             int vang = (int) vangtru - Util.nextInt(10, 100);
 
-            if (this.inventory.gold >= vang && vang >= 1) {
-                this.inventory.gold -= vang;
-                Service.gI().sendMoney(this);
-                vang = vang * 95 / 100;
-                if (vang < 10000) {
-                    Service.gI().dropItemMap(this.zone, new ItemMap(zone, 189, vang, this.location.x, this.location.y, this.id));
-                } else if (vang < 20000) {
-                    Service.gI().dropItemMap(this.zone, new ItemMap(zone, 188, vang, this.location.x, this.location.y, this.id));
-                } else {
-                    Service.gI().dropItemMap(this.zone, new ItemMap(zone, 190, vang, this.location.x, this.location.y, this.id));
+            if (vang >= 1 && this.inventory != null) {
+                WalletResult debitRes = getWallet().tryDebit(Currency.GOLD, vang,
+                        WalletMutationContext.of(WalletReason.OTHER, null, "Rơi vàng khi chết"));
+                if (debitRes.isSuccess()) {
+                    Service.gI().sendMoney(this);
+                    vang = vang * 95 / 100;
+                    if (vang < 10000) {
+                        Service.gI().dropItemMap(this.zone, new ItemMap(zone, 189, vang, this.location.x, this.location.y, this.id));
+                    } else if (vang < 20000) {
+                        Service.gI().dropItemMap(this.zone, new ItemMap(zone, 188, vang, this.location.x, this.location.y, this.id));
+                    } else {
+                        Service.gI().dropItemMap(this.zone, new ItemMap(zone, 190, vang, this.location.x, this.location.y, this.id));
+                    }
                 }
             }
         }

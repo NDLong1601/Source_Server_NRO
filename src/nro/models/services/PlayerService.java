@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.daily_Giftcode.DailyGiftService;
 import nro.models.data.LocalManager;
 import java.time.Instant;
@@ -293,7 +298,7 @@ public class PlayerService {
                 boolean canHs = false;
                 if (MapService.gI().isMapBlackBallWar(player.zone.map.mapId)) {
                     if (player.inventory.gold >= COST_GOLD_HOI_SINH_NRSD) {
-                        player.inventory.gold -= COST_GOLD_HOI_SINH_NRSD;
+                        player.getWallet().tryDebit(Currency.GOLD, COST_GOLD_HOI_SINH_NRSD, WalletMutationContext.of(WalletReason.OTHER, "Hồi sinh NRSD")).requireSuccess();
                         canHs = true;
                     } else {
                         Service.gI().sendThongBao(player, "Không đủ vàng để thực hiện, còn thiếu "
@@ -302,7 +307,7 @@ public class PlayerService {
                     }
                 } else {
                     if (player.inventory.gem >= COST_GEM_HOI_SINH) {
-                        player.inventory.gem -= COST_GEM_HOI_SINH;
+                        player.getWallet().tryDebit(Currency.GEM, COST_GEM_HOI_SINH, WalletMutationContext.of(WalletReason.OTHER, "Hồi sinh")).requireSuccess();
                         canHs = true;
                     } else {
                         Service.gI().sendThongBao(player, "Không đủ ngọc để thực hiện, còn thiếu "
@@ -324,7 +329,7 @@ public class PlayerService {
             boolean canHs = false;
             if (MapService.gI().isMapMaBu(player.zone.map.mapId)) {
                 if (player.inventory.gold >= COST_GOLD_HOI_SINH_NRSD) {
-                    player.inventory.gold -= COST_GOLD_HOI_SINH_NRSD;
+                    player.getWallet().tryDebit(Currency.GOLD, COST_GOLD_HOI_SINH_NRSD, WalletMutationContext.of(WalletReason.OTHER, "Hồi sinh NRSD")).requireSuccess();
                     canHs = true;
                 } else {
                     Service.gI().sendThongBao(player, "Không đủ vàng để thực hiện, còn thiếu " + Util.numberToMoney(COST_GOLD_HOI_SINH_NRSD
@@ -333,7 +338,7 @@ public class PlayerService {
                 }
             } else {
                 if (player.inventory.gold >= COST_GOLD_HOI_SINH) {
-                    player.inventory.gold -= COST_GOLD_HOI_SINH;
+                    player.getWallet().tryDebit(Currency.GOLD, COST_GOLD_HOI_SINH, WalletMutationContext.of(WalletReason.OTHER, "Hồi sinh")).requireSuccess();
                     canHs = true;
                 } else {
                     Service.gI().sendThongBao(player, "Không đủ vàng để thực hiện, còn thiếu " + Util.numberToMoney(COST_GOLD_HOI_SINH

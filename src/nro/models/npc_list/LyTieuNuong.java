@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.minigame.ChonAiDay_Gem;
 import nro.models.minigame.ChonAiDay_Gold;
@@ -96,11 +100,11 @@ public class LyTieuNuong extends Npc {
                             Service.gI().sendThongBao(player, "Hòa!");
                         } else if (result.equals("Thắng")) {
                             long reward = tienCuoc * 96 / 100;
-                            player.inventory.gold += reward;
+                            player.getWallet().tryCreditExact(Currency.GOLD, reward, WalletMutationContext.of(WalletReason.OTHER, "Thưởng Lý Tiểu Nương")).requireSuccess();
                             Service.gI().sendMoney(player);
                             Service.gI().sendThongBao(player, "Bạn thắng và nhận được " + Util.numberToMoney(reward) + " vàng!");
                         } else {
-                            player.inventory.gold -= tienCuoc;
+                            player.getWallet().tryDebit(Currency.GOLD, tienCuoc, WalletMutationContext.of(WalletReason.OTHER, "Tiền cược Lý Tiểu Nương")).requireSuccess();
                             Service.gI().sendMoney(player);
                             Service.gI().sendThongBao(player, "Bạn thua và mất " + Util.numberToMoney(tienCuoc) + " vàng!");
                         }
@@ -316,7 +320,7 @@ public class LyTieuNuong extends Npc {
                 ChonAiDay_Gold.gI().lastTimeEnd = System.currentTimeMillis() + 300000;
             }
             if (player.inventory.gold >= 1_000_000) {
-                player.inventory.gold -= 1_000_000;
+                player.getWallet().tryDebit(Currency.GOLD, 1_000_000, WalletMutationContext.of(WalletReason.OTHER, "Lý Tiểu Nương")).requireSuccess();
                 Service.gI().sendMoney(player);
                 player.goldNormar += 1_000_000;
                 ChonAiDay_Gold.gI().goldNormar += 1_000_000;
@@ -336,7 +340,7 @@ public class LyTieuNuong extends Npc {
                 ChonAiDay_Gold.gI().lastTimeEnd = System.currentTimeMillis() + 300000;
             }
             if (player.inventory.gold >= 10_000_000) {
-                player.inventory.gold -= 10_000_000;
+                player.getWallet().tryDebit(Currency.GOLD, 10_000_000, WalletMutationContext.of(WalletReason.OTHER, "Lý Tiểu Nương")).requireSuccess();
                 Service.gI().sendMoney(player);
                 player.goldVIP += 10_000_000;
                 ChonAiDay_Gold.gI().goldVip += 10_000_000;
@@ -356,7 +360,7 @@ public class LyTieuNuong extends Npc {
                 ChonAiDay_Gem.gI().lastTimeEnd = System.currentTimeMillis() + 300000;
             }
             if (player.inventory.gem >= 10) {
-                player.inventory.gem -= 10;
+                player.getWallet().tryDebit(Currency.GEM, 10, WalletMutationContext.of(WalletReason.OTHER, "Lý Tiểu Nương")).requireSuccess();
                 Service.gI().sendMoney(player);
                 player.gemNormar += 10;
                 ChonAiDay_Gem.gI().gemNormar += 10;
@@ -376,7 +380,7 @@ public class LyTieuNuong extends Npc {
                 ChonAiDay_Gem.gI().lastTimeEnd = System.currentTimeMillis() + 300000;
             }
             if (player.inventory.gem >= 100) {
-                player.inventory.gem -= 100;
+                player.getWallet().tryDebit(Currency.GEM, 100, WalletMutationContext.of(WalletReason.OTHER, "Lý Tiểu Nương")).requireSuccess();
                 Service.gI().sendMoney(player);
                 player.gemVIP += 100;
                 ChonAiDay_Gem.gI().gemVip += 100;

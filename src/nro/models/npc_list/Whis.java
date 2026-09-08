@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.boss.BossID;
 import nro.models.combine.CombineService;
 import nro.models.consts.ConstNpc;
@@ -206,6 +210,10 @@ public class Whis extends Npc {
             String message = success ? "Học skill thành công!" : "Tư chất kém!";
             String npcMessage = success ? "Chúc mừng con nhé!" : "Ngu dốt!";
             int usedBk = success ? 9999 : 99;
+            player.getWallet().executeBatch(java.util.List.of(
+                    nro.models.player.WalletLeg.debit(Currency.GOLD, 10_000_000),
+                    nro.models.player.WalletLeg.debit(Currency.GEM, 99)),
+                    WalletMutationContext.of(WalletReason.OTHER, "Whis")).requireSuccess();
             if (success) {
                 SkillService.gI().learSkillSpecial(player, (byte) skillId);
             } else {
@@ -217,8 +225,6 @@ public class Whis extends Npc {
             Service.gI().sendThongBao(player, message);
 
             InventoryService.gI().subQuantityItemsBag(player, sach, usedBk);
-            player.inventory.gold -= 10_000_000;
-            player.inventory.gem -= 99;
             InventoryService.gI().sendItemBags(player);
 
         } catch (IOException e) {
@@ -232,6 +238,10 @@ public class Whis extends Npc {
             String message = success ? "Nâng skill thành công!" : "Tư chất kém!";
             String npcMessage = success ? "Chúc mừng con nhé!" : "Ngu dốt!";
             int usedBk = success ? 999 : 99;
+            player.getWallet().executeBatch(java.util.List.of(
+                    nro.models.player.WalletLeg.debit(Currency.GOLD, 10_000_000),
+                    nro.models.player.WalletLeg.debit(Currency.GEM, 99)),
+                    WalletMutationContext.of(WalletReason.OTHER, "Whis")).requireSuccess();
             if (success) {
                 Skill nextSkill = SkillUtil.createSkill(currentSkill.template.id, currentSkill.point + 1);
                 if (nextSkill == null) {
@@ -251,8 +261,6 @@ public class Whis extends Npc {
             Service.gI().sendThongBao(player, message);
 
             InventoryService.gI().subQuantityItemsBag(player, sach, usedBk);
-            player.inventory.gold -= 10_000_000;
-            player.inventory.gem -= 99;
             InventoryService.gI().sendItemBags(player);
 
         } catch (IOException e) {

@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -511,11 +515,17 @@ public final class NangCapNgoaiTrang {
             }
 
             // Deduct basic costs
+            List<nro.models.player.WalletLeg> feeLegs = new ArrayList<>(2);
             if (plan.goldEnabled) {
-                player.inventory.gold -= plan.goldCost;
+                feeLegs.add(nro.models.player.WalletLeg.debit(Currency.GOLD, plan.goldCost));
             }
             if (plan.gemEnabled) {
-                player.inventory.gem -= plan.gemCost;
+                feeLegs.add(nro.models.player.WalletLeg.debit(Currency.GEM, plan.gemCost));
+            }
+            if (!feeLegs.isEmpty()) {
+                player.getWallet().executeBatch(feeLegs,
+                        WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                                "Nâng cấp ngoại trang")).requireSuccess();
             }
             if (plan.stoneEnabled) {
                 InventoryService.gI().subQuantityItemsBag(player, sel.stone, plan.stoneCost);

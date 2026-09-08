@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.matches.dai_hoi_vo_thuat.The23rdMartialArtCongressService;
@@ -86,7 +90,7 @@ public class GhiDanh extends Npc {
                                             if (select == 1) {
                                                 if (player.inventory.gem >= rubychallenge) {
                                                     The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gem -= (rubychallenge);
+                                                    player.getWallet().tryDebit(Currency.GEM, rubychallenge, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thách đấu ngọc")).requireSuccess();
                                                     PlayerService.gI().sendInfoHpMpMoney(player);
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
@@ -100,7 +104,7 @@ public class GhiDanh extends Npc {
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
                                                     The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gold -= (goldchallenge);
+                                                    player.getWallet().tryDebit(Currency.GOLD, goldchallenge, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thách đấu vàng")).requireSuccess();
                                                     PlayerService.gI().sendInfoHpMpMoney(player);
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
@@ -133,7 +137,7 @@ public class GhiDanh extends Npc {
                                             if (select == 1) {
                                                 if (player.inventory.gem >= rubychallenge) {
                                                     The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gem -= (rubychallenge);
+                                                    player.getWallet().tryDebit(Currency.GEM, rubychallenge, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thách đấu ngọc")).requireSuccess();
                                                     PlayerService.gI().sendInfoHpMpMoney(player);
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;
@@ -147,7 +151,7 @@ public class GhiDanh extends Npc {
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
                                                     The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gold -= (goldchallenge);
+                                                    player.getWallet().tryDebit(Currency.GOLD, goldchallenge, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thách đấu vàng")).requireSuccess();
                                                     PlayerService.gI().sendInfoHpMpMoney(player);
                                                     player.goldChallenge *= 2;
                                                     player.rubyChallenge += 2;

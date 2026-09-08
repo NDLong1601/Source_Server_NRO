@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -90,8 +94,11 @@ public class NangCapSaoPhaLe {
             }
 
             if (saoPhaLe != null && hematite != null) {
-                player.inventory.gold -= gold;
-                player.inventory.gem -= gem;
+                player.getWallet().executeBatch(java.util.List.of(
+                        nro.models.player.WalletLeg.debit(Currency.GOLD, gold),
+                        nro.models.player.WalletLeg.debit(Currency.GEM, gem)),
+                        WalletMutationContext.of(WalletReason.COMBINE_FEE,
+                                "Nâng cấp sao pha lê")).requireSuccess();
 
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     int getSaoPhaLeCap2Id = getSaoPhaLeCap2Id(saoPhaLe.template.id);

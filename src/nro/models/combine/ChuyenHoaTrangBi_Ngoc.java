@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -141,7 +145,7 @@ public class ChuyenHoaTrangBi_Ngoc {
         }
         newItem.itemOptions.add(new ItemOption(208, 0));
 
-        player.inventory.gold -= goldChuyenHoa;
+        player.getWallet().tryDebit(Currency.GOLD, goldChuyenHoa, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Chuyển hóa trang bị ngọc")).requireSuccess();
         Service.gI().sendMoney(player);
         InventoryService.gI().addItemBag(player, newItem);
         InventoryService.gI().subQuantityItemsBag(player, trangBiGoc, 1);

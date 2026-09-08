@@ -1,4 +1,8 @@
 package nro.models.matches.dai_hoi_vo_thuat;
+
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
 import nro.models.matches.dai_hoi_vo_thuat.DeathOrAliveArena;
 import nro.models.matches.giai_dau.DeathOrAliveArenaManager;
 import nro.models.map.Zone;
@@ -30,7 +34,7 @@ public class DeathOrAliveArenaService {
         Zone zone = getMapChallenge(112);
         if (zone != null) {
             if (player.inventory.gold >= player.thoiVangVoDaiSinhTu) {
-                player.inventory.gold -= player.thoiVangVoDaiSinhTu;
+                player.getWallet().tryDebit(Currency.GOLD, player.thoiVangVoDaiSinhTu, WalletMutationContext.of(WalletReason.PVP_WAGER, "Phí thách đấu võ đài sinh tử")).requireSuccess();
                 InventoryService.gI().sendItemBags(player);
                 player.thoiVangVoDaiSinhTu += 10;
                 player.lastTimePKVoDaiSinhTu = System.currentTimeMillis();

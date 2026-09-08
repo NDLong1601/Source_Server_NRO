@@ -204,11 +204,15 @@ public class Achievement {
                 return ClaimResult.failure(ClaimStatus.PLAYER_UNAVAILABLE);
             }
 
-            Inventory.GemCreditResult creditResult = player.inventory.tryCreditGemExact(at.money);
-            if (creditResult.status == Inventory.GemCreditStatus.GEM_LIMIT) {
+            WalletResult creditResult = player.getWallet().tryCreditExact(
+                    Currency.GEM,
+                    at.money,
+                    WalletMutationContext.of(WalletReason.ACHIEVEMENT_REWARD, "Nhận thưởng thành tích: " + index)
+            );
+            if (creditResult.getStatus() == WalletStatus.LIMIT_EXCEEDED) {
                 return ClaimResult.failure(ClaimStatus.GEM_LIMIT);
             }
-            if (creditResult.status == Inventory.GemCreditStatus.INVALID_BALANCE) {
+            if (creditResult.getStatus() == WalletStatus.INVALID_BALANCE) {
                 return ClaimResult.failure(ClaimStatus.INVALID_BALANCE);
             }
             if (!creditResult.isSuccess()) {
@@ -217,7 +221,7 @@ public class Achievement {
 
             aq.isRecieve = true;
             achievementList.set(index, new AchievementQuest(aq.completed, true));
-            return ClaimResult.success(creditResult.creditedAmount, creditResult.balanceAfter);
+            return ClaimResult.success((int) creditResult.getAmountApplied(), (int) creditResult.getBalanceAfter());
         }
     }
 

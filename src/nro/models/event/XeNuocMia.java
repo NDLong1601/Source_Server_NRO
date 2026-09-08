@@ -1,5 +1,10 @@
 package nro.models.event;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.consts.ConstFont;
 import nro.models.item.Item;
 import nro.models.database.PlayerDAO;
@@ -101,7 +106,7 @@ public class XeNuocMia extends Npc {
 
             InventoryService.gI().subQuantityItemsBag(player, khucMia, 5);
             InventoryService.gI().subQuantityItemsBag(player, nuocDa, 2);
-            player.inventory.gold -= 5_000_000;
+            player.getWallet().tryDebit(Currency.GOLD, 5_000_000, WalletMutationContext.of(WalletReason.OTHER, "Mua nước mía")).requireSuccess();
 
             InventoryService.gI().sendItemBags(player);
             Service.gI().sendMoney(player);
@@ -134,7 +139,7 @@ public class XeNuocMia extends Npc {
 
             InventoryService.gI().subQuantityItemsBag(player, khucMia, 50);
             InventoryService.gI().subQuantityItemsBag(player, nuocDa, 20);
-            player.inventory.gold -= 50_000_000;
+            player.getWallet().tryDebit(Currency.GOLD, 50_000_000, WalletMutationContext.of(WalletReason.OTHER, "Mua nước mía x10")).requireSuccess();
 
             short[] waterItems = {1614, 1615, 1616};
             StringBuilder rewardMsg = new StringBuilder("Bạn đã nhận được:\n");

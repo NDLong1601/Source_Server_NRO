@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.map.phoban.BanDoKhoBau;
@@ -239,7 +243,7 @@ public class QuyLaoKame extends Npc {
                     Service.gI().sendThongBao(player, "Bạn không có đủ ngọc");
                     return;
                 }
-                player.inventory.subGem(ngoc);
+                player.getWallet().tryDebit(Currency.GEM, ngoc, WalletMutationContext.of(WalletReason.OTHER, "Quy Lão Kame")).requireSuccess();
                 player.LearnSkill.Time = -1;
                 learnSkill(player);
             }

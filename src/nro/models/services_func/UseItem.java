@@ -1,5 +1,10 @@
 package nro.models.services_func;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.boss.Boss;
 import nro.models.boss.Boss_mini.SoiHecQuyn;
 import nro.models.services.shenron.SummonDragon;
@@ -1573,10 +1578,7 @@ public class UseItem {
         int[][] gold = {{5000, 20000}};
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
-        pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-        if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
-            pl.inventory.gold = PlayerConfig.getMaxGold();
-        }
+        pl.getWallet().creditUpToCap(Currency.GOLD, Util.nextInt(gold[0][0], gold[0][1]), WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Dùng Pháo Bông")).requireSuccess();
         Service.gI().LogicEffect(pl, 62, 1, -1, 1, 1, 15000);
         Service.gI().LogicEffect(pl, 63, 1, -1, 1, 1, 5000);
         Service.gI().LogicEffect(pl, 64, 1, -1, 1, 1, 5000); // eff này live
@@ -1599,10 +1601,7 @@ public class UseItem {
         int[][] gold = {{500000, 2000000}};
         short[] icon = new short[2];
         icon[0] = item.template.iconID;
-        pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-        if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
-            pl.inventory.gold = PlayerConfig.getMaxGold();
-        }
+        pl.getWallet().creditUpToCap(Currency.GOLD, Util.nextInt(gold[0][0], gold[0][1]), WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Dùng Pháo Bông")).requireSuccess();
         Service.gI().LogicEffect(pl, 62, 1, -1, 1, 1, 15000);
         Service.gI().LogicEffect(pl, 63, 1, -1, 1, 1, 5000);
         Service.gI().LogicEffect(pl, 64, 1, -1, 1, 1, 5000); // eff này live
@@ -1752,10 +1751,7 @@ public class UseItem {
             short[] icon = new short[2];
             icon[0] = item.template.iconID;
             if (index <= 3) {
-                pl.inventory.gold += Util.nextInt(gold[0][0], gold[0][1]);
-                if (pl.inventory.gold > PlayerConfig.getMaxGold()) {
-                    pl.inventory.gold = PlayerConfig.getMaxGold();
-                }
+                pl.getWallet().creditUpToCap(Currency.GOLD, Util.nextInt(gold[0][0], gold[0][1]), WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Mở CSKB nhận vàng")).requireSuccess();
                 PlayerService.gI().sendInfoHpMpMoney(pl);
                 icon[1] = 930;
             } else {
@@ -2973,7 +2969,7 @@ public class UseItem {
 
             if (Util.isTrue(5, 90)) {
                 int ruby = Util.nextInt(10, 20);
-                pl.inventory.gem += ruby;
+                pl.getWallet().creditUpToCap(Currency.GEM, ruby, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Dùng vật phẩm nhận ngọc")).requireSuccess();
                 PlayerService.gI().sendInfoHpMpMoney(pl);
                 InventoryService.gI().subQuantityItemsBag(pl, item, 1);
                 InventoryService.gI().sendItemBags(pl);
@@ -3320,7 +3316,7 @@ public class UseItem {
 
     public void TuiVang(Player pl, Item item) {
         if (InventoryService.gI().getCountEmptyBag(pl) > 0) {
-            pl.inventory.gold += Util.nextInt(100000, 10000000);
+            pl.getWallet().creditUpToCap(Currency.GOLD, Util.nextInt(100000, 10000000), WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "Dùng Túi Vàng")).requireSuccess();
             int itemBlackGoku = 190;
             Item it = ItemService.gI().createNewItem((short) itemBlackGoku);
             int randomValue = Util.nextInt(3, 333);

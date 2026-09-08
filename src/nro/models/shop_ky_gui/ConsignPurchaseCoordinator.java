@@ -14,6 +14,7 @@ import nro.models.item.Item.ItemOption;
 import nro.models.player.InventoryPersistenceSnapshot;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
+import nro.models.player.Currency;
 import nro.models.services.CostumeCollectionService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
@@ -213,8 +214,8 @@ public class ConsignPurchaseCoordinator {
                 }
 
                 // Balance validation
-                long buyerGold = buyer.inventory.gold;
-                int buyerGem = buyer.inventory.gem;
+                long buyerGold = buyer.getWallet().getBalance(Currency.GOLD);
+                int buyerGem = (int) buyer.getWallet().getBalance(Currency.GEM);
                 if (buyerGold < 0 || buyerGem < 0) {
                     return ConsignPurchaseResult.fail(ConsignPurchaseResult.Outcome.INVENTORY_CHANGED,
                             "Số dư tài khoản không hợp lệ");

@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.managers.GiftCodeManager;
 import nro.models.player_system.GiftCode;
 import nro.models.item.Item;
@@ -50,16 +55,15 @@ public class GiftCodeService {
 
                 switch (idItem) {
                     case -1 -> {
-                        player.inventory.gold = Math.min(player.inventory.gold + (long) quantity,
-                                PlayerConfig.getMaxGold());
+                        player.getWallet().creditUpToCap(Currency.GOLD, quantity, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "GiftCode: vàng")).requireSuccess();
                         textGift += "|2|" + quantity + " vàng\b";
                     }
                     case -2 -> {
-                        player.inventory.gem = Math.min(player.inventory.gem + quantity, PlayerConfig.getMaxGem());
+                        player.getWallet().creditUpToCap(Currency.GEM, quantity, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "GiftCode: ngọc")).requireSuccess();
                         textGift += "|3|" + quantity + " ngọc\b";
                     }
                     case -3 -> {
-                        player.inventory.ruby = Math.min(player.inventory.ruby + quantity, PlayerConfig.getMaxRuby());
+                        player.getWallet().creditUpToCap(Currency.RUBY, quantity, WalletMutationContext.of(WalletReason.ACTIVITY_REWARD, "GiftCode: hồng ngọc")).requireSuccess();
                         textGift += "|4|" + quantity + " ngọc khóa\b";
                     }
                     default -> {

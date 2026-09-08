@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import java.util.Objects;
@@ -203,7 +207,7 @@ public class NangCapVatPham {
                     }
                 }
                 if (level < MAX_LEVEL_ITEM) {
-                    player.inventory.gold -= gold;
+                    player.getWallet().tryDebit(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Nâng cấp vật phẩm")).requireSuccess();
                     int statIncreasePercent = CombineConfig.getInt("equipment.upgrade.statPercent", 10, 0, 1000);
                     Item.ItemOption option = null;
                     Item.ItemOption option2 = null;

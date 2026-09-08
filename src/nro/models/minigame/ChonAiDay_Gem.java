@@ -1,5 +1,9 @@
 package nro.models.minigame;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -65,7 +69,7 @@ public class ChonAiDay_Gem implements Runnable {
                             Player pl = listN.get(0);
                             if (pl != null && pl.inventory != null) {
                                 int refund = pl.gemNormar * 90 / 100;
-                                pl.inventory.gem += refund;
+                                pl.getWallet().tryCreditExact(Currency.GEM, refund, WalletMutationContext.of(WalletReason.PVP_WAGER, "Hoàn trả Chọn Ai Đây ngọc")).requireSuccess();
                                 Service.gI().sendThongBao(pl, "Bạn là người duy nhất tham gia và bị hoàn lại 90% gem đã đặt (" + Util.mumberToBlue(refund) + ")");
                                 Service.gI().sendMoney(pl);
                             }
@@ -75,7 +79,7 @@ public class ChonAiDay_Gem implements Runnable {
                             if (pl != null && pl.inventory != null) {
                                 String chatMessage = pl.name + " đã chiến thắng Chọn ai đây giải thưởng";
                                 int goldC = gemNormar * 80 / 100;
-                                pl.inventory.gem += goldC;
+                                pl.getWallet().tryCreditExact(Currency.GEM, goldC, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Chọn Ai Đây ngọc")).requireSuccess();
                                 Service.gI().sendThongBao(pl, "Chúc mừng bạn đã giành chiến thắng và nhận được " + Util.mumberToBlue(goldC) + " hồng ngọc");
                                 Service.gI().sendMoney(pl);
                                 ChatGlobalService.gI().chat(pl, chatMessage);
@@ -94,7 +98,7 @@ public class ChonAiDay_Gem implements Runnable {
                             Player pl = listN.get(0);
                             if (pl != null && pl.inventory != null) {
                                 int refund = pl.gemVIP * 90 / 100;
-                                pl.inventory.gem += refund;
+                                pl.getWallet().tryCreditExact(Currency.GEM, refund, WalletMutationContext.of(WalletReason.PVP_WAGER, "Hoàn trả Chọn Ai Đây ngọc")).requireSuccess();
                                 Service.gI().sendThongBao(pl, "Bạn là người duy nhất tham gia và bị hoàn lại 90% gem đã đặt (" + Util.mumberToBlue(refund) + ")");
                                 Service.gI().sendMoney(pl);
                             }
@@ -104,7 +108,7 @@ public class ChonAiDay_Gem implements Runnable {
                             if (pl != null && pl.inventory != null) {
                                 String chatMessage = pl.name + " đã chiến thắng Chọn Ai Đây ngọc xanh giải VIP";
                                 int goldC = gemVip * 90 / 100;
-                                pl.inventory.gem += goldC;
+                                pl.getWallet().tryCreditExact(Currency.GEM, goldC, WalletMutationContext.of(WalletReason.PVP_WAGER, "Thưởng Chọn Ai Đây ngọc")).requireSuccess();
                                 Service.gI().sendThongBao(pl, "Chúc mừng bạn đã giành chiến thắng và nhận được " + Util.mumberToBlue(goldC) + " hồng ngọc");
                                 Service.gI().sendMoney(pl);
                                 ChatGlobalService.gI().chat(pl, chatMessage);

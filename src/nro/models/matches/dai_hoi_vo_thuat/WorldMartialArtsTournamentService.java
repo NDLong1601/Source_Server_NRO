@@ -1,8 +1,13 @@
 package nro.models.matches.dai_hoi_vo_thuat;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstTournament;
 import java.util.ArrayList;
+import java.util.List;
 
 import nro.models.matches.giai_dau.WorldMartialArtsTournamentManager;
 import nro.models.npc.Npc;
@@ -155,8 +160,9 @@ public class WorldMartialArtsTournamentService extends ConstTournament {
             if (tour == NGOAI_HANG) {
                 // Nếu giải Ngoại hạng thì bỏ qua kiểm tra power
                 NpcService.gI().createTutorial(player, npc.tempId, npc.avartar, ConstTournament.TEXT_DANG_KY_THANH_CONG.replaceAll("%1", TimeUtil.getCurrHour() + "").replaceAll("%2", TimeUtil.getCurrHour() + "h" + TimeUtil.getCurrMin()));
-                player.inventory.gold -= gold;
-                player.inventory.subGem(gem);
+                if (!debitRegistrationFee(player, gold, gem)) {
+                    return;
+                }
                 Service.gI().sendMoney(player);
                 WorldMartialArtsTournamentManager.gI().listReg.add(player.id);
                 return;
@@ -196,8 +202,9 @@ public class WorldMartialArtsTournamentService extends ConstTournament {
             }
 
             // Cập nhật tài nguyên và đăng ký giải đấu
-            player.inventory.gold -= gold;
-            player.inventory.subGem(gem);
+            if (!debitRegistrationFee(player, gold, gem)) {
+                return;
+            }
             Service.gI().sendMoney(player);
             WorldMartialArtsTournamentManager.gI().listReg.add(player.id);
             NpcService.gI().createTutorial(player, npc.tempId, npc.avartar, ConstTournament.TEXT_DANG_KY_THANH_CONG.replaceAll("%1", TimeUtil.getCurrHour() + "").replaceAll("%2", TimeUtil.getCurrHour() + "h" + TimeUtil.getCurrMin()));
@@ -208,4 +215,24 @@ public class WorldMartialArtsTournamentService extends ConstTournament {
         }
     }
 
+    private static boolean debitRegistrationFee(Player player, int gold, int gem) {
+        List<nro.models.player.WalletLeg> legs = new ArrayList<>(2);
+        if (gold > 0) {
+            legs.add(nro.models.player.WalletLeg.debit(Currency.GOLD, gold));
+        }
+        if (gem > 0) {
+            legs.add(nro.models.player.WalletLeg.debit(Currency.GEM, gem));
+        }
+        if (legs.isEmpty()) {
+            return true;
+        }
+        var result = player.getWallet().executeBatch(legs,
+                WalletMutationContext.of(WalletReason.PVP_WAGER,
+                        "Đăng ký Đại Hội Võ Thuật"));
+        if (!result.isSuccess()) {
+            Service.gI().sendThongBao(player, result.getMessage());
+            return false;
+        }
+        return true;
+    }
 }

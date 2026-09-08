@@ -16,6 +16,11 @@ import nro.models.item.Item;
 import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
+import nro.models.player.Currency;
+import nro.models.player.WalletSnapshot;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
 import nro.models.services.InventoryService;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
@@ -173,33 +178,49 @@ public final class ClanGiftService {
                 }
                 long gold = 0L; long ruby = 0L;
                 for (PendingReward reward : rewards) { gold = Math.addExact(gold, reward.gold); ruby = Math.addExact(ruby, reward.ruby); }
-                if (gold > PlayerConfig.getMaxGold() - player.inventory.gold || ruby > Integer.MAX_VALUE - (long) player.inventory.ruby) {
-                    connection.rollback();
-                    notify(player, "Có quà bang chờ nhận nhưng tài sản của bạn đã đạt giới hạn.");
-                    return;
-                }
-                if (!rewards.isEmpty()) {
-                    player.inventory.gold += gold;
-                    player.inventory.ruby += (int) ruby;
-                    JSONArray inventory = new JSONArray();
-                    inventory.add(player.inventory.gold);
-                    inventory.add(player.inventory.gem);
-                    inventory.add(player.inventory.ruby);
-                    inventory.add(player.inventory.coupon);
-                    inventory.add(player.inventory.event);
-                    try (PreparedStatement ps = connection.prepareStatement("UPDATE player SET data_inventory=? WHERE id=?")) {
-                        ps.setString(1, inventory.toJSONString());
-                        ps.setLong(2, player.id);
-                        if (ps.executeUpdate() != 1) throw new SQLException("Không tìm thấy người nhận quà bang.");
+                synchronized (player.inventory) {
+                    long currentGold = player.getWallet().getBalance(Currency.GOLD);
+                    long currentRuby = player.getWallet().getBalance(Currency.RUBY);
+                    if (gold > PlayerConfig.getMaxGold() - currentGold || ruby > (long) PlayerConfig.getMaxRuby() - currentRuby) {
+                        connection.rollback();
+                        notify(player, "Có quà bang chờ nhận nhưng tài sản của bạn đã đạt giới hạn.");
+                        return;
                     }
-                    try (PreparedStatement ps = connection.prepareStatement("UPDATE clan_pending_reward SET status=1,claimed_at=NOW() WHERE player_id=? AND status=0")) {
-                        ps.setLong(1, player.id); ps.executeUpdate();
+                    if (!rewards.isEmpty()) {
+                        long nextGold = currentGold + gold;
+                        long nextRuby = currentRuby + ruby;
+                        WalletSnapshot afterSnapshot = new WalletSnapshot(
+                                nextGold,
+                                (int) player.getWallet().getBalance(Currency.GEM),
+                                (int) nextRuby,
+                                (int) player.getWallet().getBalance(Currency.COUPON)
+                        );
+                        try (PreparedStatement ps = connection.prepareStatement("UPDATE player SET data_inventory=? WHERE id=?")) {
+                            ps.setString(1, afterSnapshot.toDataInventoryJsonString(player.inventory.event));
+                            ps.setLong(2, player.id);
+                            if (ps.executeUpdate() != 1) throw new SQLException("Không tìm thấy người nhận quà bang.");
+                        }
+                        try (PreparedStatement ps = connection.prepareStatement("UPDATE clan_pending_reward SET status=1,claimed_at=NOW() WHERE player_id=? AND status=0")) {
+                            ps.setLong(1, player.id); ps.executeUpdate();
+                        }
+                        connection.commit();
+                        WalletResult walletRestore = player.getWallet().restoreExact(
+                                afterSnapshot,
+                                WalletMutationContext.of(WalletReason.RECOVERY,
+                                        "clan-gift-claim:" + player.id + ":" + rewards.get(rewards.size() - 1).id,
+                                        "Áp dụng quà bang đã commit"));
+                        if (!walletRestore.isSuccess()) {
+                            player.persistenceQuarantined = true;
+                            Logger.error("[WALLET-01] Quarantined player after clan gift projection failure, playerId="
+                                    + player.id);
+                            notify(player, "Quà đã được ghi nhận; vui lòng đăng nhập lại để đồng bộ tài sản.");
+                            return;
+                        }
+                        Service.gI().sendMoney(player);
+                        notify(player, "Bạn đã nhận quà bang: " + rewardText(gold, (int) ruby) + ".");
+                    } else {
+                        connection.commit();
                     }
-                }
-                connection.commit();
-                if (!rewards.isEmpty()) {
-                    Service.gI().sendMoney(player);
-                    notify(player, "Bạn đã nhận quà bang: " + rewardText(gold, (int) ruby) + ".");
                 }
             } catch (Exception e) {
                 connection.rollback(); Logger.logException(ClanGiftService.class, e, "Nhận quà bang chờ");

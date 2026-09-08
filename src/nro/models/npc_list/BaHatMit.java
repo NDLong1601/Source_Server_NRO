@@ -1,5 +1,9 @@
 package nro.models.npc_list;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.matches.dai_hoi_vo_thuat.DeathOrAliveArena;
@@ -273,7 +277,7 @@ public class BaHatMit extends Npc {
                                         vdst.addBinhChon(player);
                                         player.binhChonPlayer++;
                                         player.zoneBinhChon = player.zone;
-                                        player.inventory.gold -= 1_000_000;
+                                        player.getWallet().tryDebit(Currency.GOLD, 1_000_000, WalletMutationContext.of(WalletReason.OTHER, "Bà Hạt Mít")).requireSuccess();
                                         Service.gI().sendMoney(player);
                                     } else {
                                         Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(1_000_000 - player.inventory.gold) + " vàng nữa");
@@ -286,7 +290,7 @@ public class BaHatMit extends Npc {
                                         vdst.addBinhChon(player);
                                         player.binhChonHatMit++;
                                         player.zoneBinhChon = player.zone;
-                                        player.inventory.gold -= 1_000_000;
+                                        player.getWallet().tryDebit(Currency.GOLD, 1_000_000, WalletMutationContext.of(WalletReason.OTHER, "Bà Hạt Mít")).requireSuccess();
                                         Service.gI().sendMoney(player);
                                     } else {
                                         Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(1_000_000 - player.inventory.gold) + " vàng nữa");

@@ -28,13 +28,20 @@ public class Inventory {
     public int event;
     public Iterable<Item> items;
 
+    private final PlayerWallet wallet;
+
     public Inventory() {
+        this.wallet = new PlayerWallet(this);
         itemsBody = new ArrayList<>();
         itemsBag = new ArrayList<>();
         itemsBox = new ArrayList<>();
         itemsBoxCrackBall = new ArrayList<>();
         itemsDaBan = new ArrayList<>();
         giftCode = new ArrayList<>();
+    }
+
+    public PlayerWallet getWallet() {
+        return this.wallet;
     }
 
     public int getGem() {
@@ -58,8 +65,10 @@ public class Inventory {
         return false;
     }
 
+    @Deprecated
     public void subGem(int num) {
-        this.gem -= num;
+        this.wallet.tryDebit(Currency.GEM, num,
+                WalletMutationContext.of(WalletReason.OTHER)).requireSuccess();
     }
 
     private volatile boolean active = true;
@@ -97,52 +106,38 @@ public class Inventory {
         }
     }
 
+    @Deprecated
     public synchronized GemCreditResult tryCreditGemExact(int amount) {
-        if (!this.active) {
-            return new GemCreditResult(GemCreditStatus.INACTIVE, amount, 0, this.gem, this.gem);
-        }
-        if (amount <= 0) {
-            return new GemCreditResult(GemCreditStatus.INVALID_AMOUNT, amount, 0, this.gem, this.gem);
-        }
-        int max = PlayerConfig.getMaxGem();
-        if (this.gem < 0 || this.gem > max) {
-            nro.models.utils.Logger.error("[Inventory] Corrupt gem balance=" + this.gem
-                    + " for credit request=" + amount + " – rejecting with INVALID_BALANCE");
-            return new GemCreditResult(GemCreditStatus.INVALID_BALANCE, amount, 0, this.gem, this.gem);
-        }
-        long current = (long) this.gem;
-        long newBalance = current + (long) amount;
-        if (newBalance > max) {
-            return new GemCreditResult(GemCreditStatus.GEM_LIMIT, amount, 0, this.gem, this.gem);
-        }
-        int before = this.gem;
-        this.gem = (int) newBalance;
-        return new GemCreditResult(GemCreditStatus.SUCCESS, amount, amount, before, this.gem);
+        WalletResult result = this.wallet.tryCreditExact(Currency.GEM, amount,
+                WalletMutationContext.of(WalletReason.ACHIEVEMENT_REWARD));
+        GemCreditStatus status = switch (result.getStatus()) {
+            case SUCCESS -> GemCreditStatus.SUCCESS;
+            case INACTIVE -> GemCreditStatus.INACTIVE;
+            case INVALID_AMOUNT -> GemCreditStatus.INVALID_AMOUNT;
+            case INVALID_BALANCE -> GemCreditStatus.INVALID_BALANCE;
+            case LIMIT_EXCEEDED -> GemCreditStatus.GEM_LIMIT;
+            default -> GemCreditStatus.INVALID_AMOUNT;
+        };
+        return new GemCreditResult(status, (int) result.getAmountRequested(),
+                (int) result.getAmountApplied(), (int) result.getBalanceBefore(), (int) result.getBalanceAfter());
     }
 
+    @Deprecated
     public synchronized void addGem(int gem) {
-        if (gem <= 0 || !this.active) {
-            return;
-        }
-        long max = PlayerConfig.getMaxGem();
-        if (this.gem < 0 || this.gem > max) {
-            nro.models.utils.Logger.error("[Inventory] Corrupt gem balance=" + this.gem
-                    + " for addGem request=" + gem + " – credit ignored");
-            return;
-        }
-        long updated = Math.min((long) this.gem + (long) gem, max);
-        this.gem = (int) updated;
+        this.wallet.creditUpToCap(Currency.GEM, gem,
+                WalletMutationContext.of(WalletReason.OTHER)).requireSuccess();
     }
 
+    @Deprecated
     public void subGold(int num) {
-        this.gold -= num;
+        this.wallet.tryDebit(Currency.GOLD, num,
+                WalletMutationContext.of(WalletReason.OTHER)).requireSuccess();
     }
 
+    @Deprecated
     public void addGold(int gold) {
-        this.gold += gold;
-        if (this.gold > PlayerConfig.getMaxGold()) {
-            this.gold = PlayerConfig.getMaxGold();
-        }
+        this.wallet.creditUpToCap(Currency.GOLD, gold,
+                WalletMutationContext.of(WalletReason.OTHER)).requireSuccess();
     }
 
     // [I] dispose() synchronized on same monitor as tryCreditGemExact/addGem so

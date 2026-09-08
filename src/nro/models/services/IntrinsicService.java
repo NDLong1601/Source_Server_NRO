@@ -1,5 +1,10 @@
 package nro.models.services;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+
 import nro.models.consts.ConstNpc;
 import nro.models.intrinsic.Intrinsic;
 import nro.models.player.Player;
@@ -122,7 +127,7 @@ public class IntrinsicService {
         if (player.nPoint.power >= 10000000000L) {
             int goldRequire = COST_OPEN[player.playerIntrinsic.countOpen] * 1000000;
             if (player.inventory.gold >= goldRequire) {
-                player.inventory.gold -= goldRequire;
+                player.getWallet().tryDebit(Currency.GOLD, goldRequire, WalletMutationContext.of(WalletReason.OTHER, "Mở nội tại")).requireSuccess();
                 PlayerService.gI().sendInfoHpMpMoney(player);
                 changeIntrinsic(player);
                 if (player.playerIntrinsic.countOpen < COST_OPEN.length - 1) {
@@ -141,7 +146,7 @@ public class IntrinsicService {
         if (player.nPoint.power >= 10000000000L) {
             int gemRequire = 100;
             if (player.inventory.gem >= 100) {
-                player.inventory.gem -= gemRequire;
+                player.getWallet().tryDebit(Currency.GEM, gemRequire, WalletMutationContext.of(WalletReason.OTHER, "Mở nội tại VIP")).requireSuccess();
                 PlayerService.gI().sendInfoHpMpMoney(player);
                 changeIntrinsic(player);
                 player.playerIntrinsic.countOpen = 0;

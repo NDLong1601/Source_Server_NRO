@@ -1,5 +1,9 @@
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -55,7 +59,7 @@ public class TaoDaMai {
 
             Item DuiDuc = player.combineNew.itemsCombine.get(0);
             if (DuiDuc.template.id == 1438 && DuiDuc.quantity >= 5) {
-                player.inventory.gold -= gold;
+                player.getWallet().tryDebit(Currency.GOLD, gold, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Tạo đá mài")).requireSuccess();
                 InventoryService.gI().subQuantityItemsBag(player, DuiDuc, 5);
                 if (Util.isTrue(player.combineNew.ratioCombine, 100)) {
                     Template.ItemTemplate hematiteTemplate = ItemService.gI().getTemplate(1439);

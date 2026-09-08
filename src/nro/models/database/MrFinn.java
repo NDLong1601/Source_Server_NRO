@@ -20,6 +20,10 @@ import nro.models.player.Fusion;
 import nro.models.player.Pet;
 import nro.models.player.PetConfig;
 import nro.models.player.Player;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+import nro.models.player.WalletResult;
+import nro.models.player.WalletSnapshot;
 import nro.models.ledger.MoneyLedgerService;
 import nro.models.skill.Skill;
 import nro.models.task.TaskMain;
@@ -237,14 +241,19 @@ public class MrFinn {
 
             // data kim lượng
             dataArray = (JSONArray) JSONValue.parse(rs.getString("data_inventory"));
-            player.inventory.gold = Long.parseLong(String.valueOf(dataArray.get(0)));
-            player.inventory.gem = Integer.parseInt(String.valueOf(dataArray.get(1)));
-            player.inventory.ruby = Integer.parseInt(String.valueOf(dataArray.get(2)));
-            player.inventory.coupon = Integer.parseInt(String.valueOf(dataArray.get(3)));
+            long loadedGold = Long.parseLong(String.valueOf(dataArray.get(0)));
+            int loadedGem = Integer.parseInt(String.valueOf(dataArray.get(1)));
+            int loadedRuby = Integer.parseInt(String.valueOf(dataArray.get(2)));
+            int loadedCoupon = 0;
             if (dataArray.size() >= 4) {
-                player.inventory.coupon = Integer.parseInt(String.valueOf(dataArray.get(3)));
-            } else {
-                player.inventory.coupon = 0;
+                loadedCoupon = Integer.parseInt(String.valueOf(dataArray.get(3)));
+            }
+            WalletResult walletRestore = player.getWallet().restoreExact(
+                    new WalletSnapshot(loadedGold, loadedGem, loadedRuby, loadedCoupon),
+                    WalletMutationContext.of(WalletReason.LOAD,
+                            "player-load:" + player.id, "Nạp ví nhân vật từ cơ sở dữ liệu"));
+            if (!walletRestore.isSuccess()) {
+                throw new IllegalStateException("Persisted player wallet is invalid");
             }
             if (dataArray.size() >= 5 && false) {
                 player.inventory.event = Integer.parseInt(String.valueOf(dataArray.get(4)));

@@ -1,6 +1,10 @@
 
 package nro.models.combine;
 
+import nro.models.player.Currency;
+import nro.models.player.WalletMutationContext;
+import nro.models.player.WalletReason;
+
 import nro.models.consts.ConstNpc;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
@@ -55,7 +59,7 @@ public class CheTaoTrangBiThienSu {
                 Service.gI().sendThongBao(player, "Không đủ vàng để thực hiện");
                 return;
             }
-            player.inventory.gold -= 10000000;
+            player.getWallet().tryDebit(Currency.GOLD, 10_000_000, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Chế tạo trang bị thiên sứ")).requireSuccess();
 
             int tilemacdinh = (int) CombineConfig.getRate("angel.createBaseRate", 90);
             int tileLucky = (int) CombineConfig.getRate("angel.luckyBaseRate", 5);
@@ -168,7 +172,7 @@ public class CheTaoTrangBiThienSu {
         Item itemManh = player.combineNew.itemsCombine.stream()
                 .filter(item -> item.isNotNullItem() && item.isManhTS() && item.quantity >= 5).findFirst().get();
 
-        player.inventory.gold -= 500_000_000;
+        player.getWallet().tryDebit(Currency.GOLD, 500_000_000, WalletMutationContext.of(WalletReason.COMBINE_FEE, "Chế tạo trang bị thiên sứ")).requireSuccess();
         CombineService.gI().sendEffectSuccessCombine(player);
         short[][] itemIds = { { 1048, 1051, 1054, 1057, 1060 }, { 1049, 1052, 1055, 1058, 1061 },
                 { 1050, 1053, 1056, 1059, 1062 } }; // thứ tự td - 0,nm - 1, xd - 2
