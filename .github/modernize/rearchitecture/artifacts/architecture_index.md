@@ -6,7 +6,7 @@ This index is not the full contract. Before changing code, implementation agents
 
 - The repository is structurally valid for a Java 17 NetBeans/Ant game-server monolith.
 - The main architectural risk is coupling, not missing top-level folders.
-- `Manager`, `Controller`, and `Player` are shared modules and must not be moved or split without preserving their compatibility surfaces.
+- `Manager` and `Player` remain high-risk shared modules. Gate 3 reduced `Controller` to a compatibility facade backed by an explicit signed-byte command registry and domain handlers; its public session-facing API and numeric wire contracts remain stable.
 - `PlayerAppearanceService` now owns player appearance/equipment calculations; `Player` retains delegating methods so packet, NPC, DAO, and social callers keep their existing API.
 - `server/ServerManager.java` starts network, event, boss, minigame, and maintenance threads directly; lifecycle ownership is distributed.
 - Naming consistency is imperfect (`Bot`, `daily_Giftcode`, `Boss_Manager`, `shop_ky_gui`), but package moves are high-risk because build metadata and runtime dispatch rely on exact names.

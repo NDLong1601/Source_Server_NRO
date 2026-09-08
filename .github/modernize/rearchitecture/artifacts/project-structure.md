@@ -6,7 +6,7 @@ Java 17 server monolith for a real-time online game. The repository is also an o
 
 ## Functional domains
 
-- **Runtime/bootstrap:** `src/nro/models/server/ServerManager.java`, `Manager.java`, `Controller.java`.
+- **Runtime/bootstrap:** `src/nro/models/server/ServerManager.java`, `Manager.java`, and the compatibility `Controller.java`; command ownership is partitioned under `src/nro/models/server/dispatch/`.
 - **Transport/session:** `src/nro/models/network/` and `src/nro/models/interfaces/`.
 - **Player/gameplay:** `player/`, `item/`, `skill/`, `task/`, `combine/`, `shop/`. Player presentation/equipment calculations are isolated in `player/PlayerAppearanceService.java`, while `Player.java` remains the compatibility aggregate.
 - **World simulation:** `map/`, `mob/`, `boss/`, `mob_bigboss/`, `npc/`, `npc_list/`, `event/`, `event_list/`.
@@ -16,7 +16,7 @@ Java 17 server monolith for a real-time online game. The repository is also an o
 
 ## Layer assessment
 
-The folder layout expresses domain groupings, but the runtime dependency direction is not strict. `server/Controller.java` directly imports a large number of gameplay services and domain classes; `server/Manager.java` owns global mutable registries for maps, items, mobs, NPCs, shops, tasks, and clans. This is workable for the current monolith but is the main coupling hotspot.
+The folder layout expresses domain groupings, but the runtime dependency direction is not strict. Gate 3 moved command-specific dependencies from `server/Controller.java` into auth/asset, economy, inventory/shop, world/combat, and social/clan/activity handlers. `server/Manager.java` still owns global mutable registries for maps, items, mobs, NPCs, shops, tasks, and clans and is now the main coupling hotspot.
 
 ## Structure verdict
 

@@ -1,10 +1,10 @@
 unit: protocol-dispatch
 bindings:
   - framework: "IMessageHandler"
-    source: "src/nro/models/server/Controller.java:70-85"
+    source: "src/nro/models/server/Controller.java:25-49"
     must_appear_in_target: "Controller remains reachable from the session message path"
   - framework: "numeric game protocol"
-    source: "src/nro/models/server/Controller.java:92"
+    source: "src/nro/models/server/dispatch/ControllerCommandRegistry.java:13"
     must_appear_in_target: "Command IDs and payload ordering remain stable"
 runtime_config:
   - source: "MySession.version"

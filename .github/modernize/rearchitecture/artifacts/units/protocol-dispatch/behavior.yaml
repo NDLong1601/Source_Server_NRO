@@ -1,5 +1,5 @@
 unit: protocol-dispatch
-source_loc: src/nro/models/server/Controller.java:85
+source_loc: src/nro/models/server/dispatch/ControllerCommandRegistry.java:13
 side_effects:
   - action: "Read command payload in protocol-defined order"
     must_preserve: true

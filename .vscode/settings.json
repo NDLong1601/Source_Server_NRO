@@ -12,5 +12,6 @@
         "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\slf4j-api-2.0.0-alpha1.jar",
         "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\json-simple-1.1.jar",
         "c:\\Users\\PC\\Music\\source-server-nro\\source-server\\lib\\mysql-connector-java8-5.1.23.jar"
-    ]
+    ],
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable"
 }

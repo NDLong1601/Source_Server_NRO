@@ -4,7 +4,7 @@ wire_contracts:
     stability: frozen
     target_contract: "Accept TCP clients on configured PORT, create a Session, invoke sessionInit, and register it with SessionManager."
     semantic_divergence: "Non-blocking selector loop with retry sleep on IOException; preserve accept ordering and connection registration."
-  - source_loc: src/nro/models/server/Controller.java:85
+  - source_loc: src/nro/models/server/dispatch/ControllerCommandRegistry.java:13
     kind: game-protocol
     stability: frozen
     target_contract: "Dispatch each numeric Message.command to the existing handler branch, preserving payload read order, validation, and player-facing error responses."

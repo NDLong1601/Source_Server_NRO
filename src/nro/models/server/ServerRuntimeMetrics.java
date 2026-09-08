@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import nro.models.network.SessionCloseCause;
+import nro.models.server.dispatch.ProtocolErrorType;
 
 public final class ServerRuntimeMetrics {
 
@@ -28,6 +29,7 @@ public final class ServerRuntimeMetrics {
 
     private final LongAdder duplicateCloseAttempts = new LongAdder();
     private final ConcurrentHashMap<SessionCloseCause, LongAdder> closeCauseCounts = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ProtocolErrorType, LongAdder> protocolErrorCounts = new ConcurrentHashMap<>();
 
     private ServerRuntimeMetrics() {
     }
@@ -80,6 +82,15 @@ public final class ServerRuntimeMetrics {
             return 0;
         }
         LongAdder counter = closeCauseCounts.computeIfAbsent(cause, key -> new LongAdder());
+        counter.increment();
+        return counter.sum();
+    }
+
+    public long recordProtocolError(ProtocolErrorType type) {
+        if (type == null) {
+            return 0;
+        }
+        LongAdder counter = protocolErrorCounts.computeIfAbsent(type, key -> new LongAdder());
         counter.increment();
         return counter.sum();
     }
@@ -145,6 +156,19 @@ public final class ServerRuntimeMetrics {
         return Collections.unmodifiableMap(snapshot);
     }
 
+    public long getProtocolErrorCount(ProtocolErrorType type) {
+        LongAdder adder = protocolErrorCounts.get(type);
+        return adder == null ? 0 : adder.sum();
+    }
+
+    public Map<ProtocolErrorType, Long> getProtocolErrorSnapshot() {
+        Map<ProtocolErrorType, Long> snapshot = new EnumMap<>(ProtocolErrorType.class);
+        for (Map.Entry<ProtocolErrorType, LongAdder> entry : protocolErrorCounts.entrySet()) {
+            snapshot.put(entry.getKey(), entry.getValue().sum());
+        }
+        return Collections.unmodifiableMap(snapshot);
+    }
+
     public String formatRuntimeSnapshot(int activeSessions, long activeIpLeases) {
         return "[RUNTIME] event=runtime_snapshot activeSessions=" + activeSessions
                 + " activeIpLeases=" + activeIpLeases
@@ -159,7 +183,8 @@ public final class ServerRuntimeMetrics {
                 + " tickOverruns=" + getDeadlineOverrunCount()
                 + " rejectedPlayerOverlaps=" + getRejectedOverlapCount()
                 + " duplicateCloses=" + getDuplicateCloseAttempts()
-                + " closeCauses=" + getCloseCauseSnapshot();
+                + " closeCauses=" + getCloseCauseSnapshot()
+                + " protocolErrors=" + getProtocolErrorSnapshot();
     }
 
     public void reset() {
@@ -176,5 +201,6 @@ public final class ServerRuntimeMetrics {
         senderSendFailureCount.reset();
         duplicateCloseAttempts.reset();
         closeCauseCounts.clear();
+        protocolErrorCounts.clear();
     }
 }

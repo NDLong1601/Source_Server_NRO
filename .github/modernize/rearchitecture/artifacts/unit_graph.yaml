@@ -31,14 +31,15 @@ units:
         used_fields: [player, version, typeClient, zoomLevel]
   - name: protocol-dispatch
     source_anchors:
-      - src/nro/models/server/Controller.java:70
+      - src/nro/models/server/Controller.java:49
+      - src/nro/models/server/dispatch/ControllerCommandRegistry.java:13
       - src/nro/models/network/MySession.java:27
     exported_signature:
       - "void onMessage(ISession, Message)"
       - "void sendMessage(Message)"
     dynamic_entrypoints:
       - "IMessageHandler implementation"
-      - "numeric packet command switch"
+      - "signed-byte command registry and domain handlers"
     depends_on:
       - "gameplay-runtime"
     shared_refs:
