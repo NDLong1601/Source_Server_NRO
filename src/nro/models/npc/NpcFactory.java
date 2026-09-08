@@ -81,7 +81,7 @@ import nro.models.item.Item;
 import nro.models.matches.PVPService;
 import nro.models.server.Client;
 import nro.models.server.Maintenance;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services_func.Input;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
@@ -111,7 +111,7 @@ public class NpcFactory {
     public static final java.util.Map<Long, Object> PLAYERID_OBJECT = new HashMap<>();
 
     public static Npc createNPC(int mapId, int status, int cx, int cy, int tempId) {
-        NpcTemplate temp = Manager.getNpcTemplate(tempId);
+        NpcTemplate temp = GameRuntime.gI().templates().npc(tempId);
         int avatar = temp != null ? temp.avatar : 0;
         try {
             return switch (tempId) {
@@ -249,7 +249,7 @@ public class NpcFactory {
                         public void openBaseMenu(Player player) {
                             if (canOpenNpc(player)) {
                                 Shop shop = null;
-                                for (Shop s : Manager.SHOPS) {
+                                for (Shop s : GameRuntime.gI().templates().shops()) {
                                     if (s.npcId == tempId) {
                                         shop = s;
                                         break;
@@ -269,7 +269,7 @@ public class NpcFactory {
                                 if (player.idMark.getIndexMenu() == ConstNpc.BASE_MENU) {
                                     if (select == 0) {
                                         Shop shop = null;
-                                        for (Shop s : Manager.SHOPS) {
+                                        for (Shop s : GameRuntime.gI().templates().shops()) {
                                             if (s.npcId == tempId) {
                                                 shop = s;
                                                 break;
@@ -555,7 +555,7 @@ public class NpcFactory {
                             case 0 -> {
                                 Clan clan = player.clan;
                                 clan.deleteDB(clan.id);
-                                Manager.CLANS.remove(clan);
+                                GameRuntime.gI().clans().remove(clan);
                                 player.clan = null;
                                 player.clanMember = null;
                                 ClanService.gI().sendMyClan(player);

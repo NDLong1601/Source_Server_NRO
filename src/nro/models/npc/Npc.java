@@ -3,7 +3,8 @@ import nro.models.consts.ConstNpc;
 import nro.models.map.Map;
 import nro.models.map.Zone;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.WorldFactory;
 import nro.models.network.Message;
 import nro.models.map.service.MapService;
 import nro.models.services.Service;
@@ -34,14 +35,15 @@ public abstract class Npc implements IAtionNpc {
     public long lastChatTime;
 
     public Npc(int mapId, int status, int cx, int cy, int tempId, int avartar) {
-        this.map = MapService.gI().getMapById(mapId);
+        Map buildingMap = WorldFactory.currentBuildingMap(mapId);
+        this.map = buildingMap != null ? buildingMap : MapService.gI().getMapById(mapId);
         this.mapId = mapId;
         this.status = status;
         this.cx = cx;
         this.cy = cy;
         this.tempId = tempId;
         this.avartar = avartar;
-        Manager.NPCS.add(this);
+        GameRuntime.gI().npcs().add(this);
     }
 
     public void initBaseMenu(String text) {

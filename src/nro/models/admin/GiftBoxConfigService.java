@@ -265,7 +265,7 @@ public final class GiftBoxConfigService {
     }
 
     private Item createReward(Player player, RewardConfig reward) {
-        if (reward.itemId < 0 || reward.itemId >= nro.models.server.Manager.ITEM_TEMPLATES.size()) {
+        if (reward.itemId < 0 || reward.itemId >= nro.models.server.GameRuntime.gI().templates().itemTemplates().size()) {
             return null;
         }
         Item item;

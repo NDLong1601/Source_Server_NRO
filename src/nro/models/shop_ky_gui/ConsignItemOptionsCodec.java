@@ -3,6 +3,7 @@ package nro.models.shop_ky_gui;
 import java.util.ArrayList;
 import java.util.List;
 import nro.models.item.Item;
+import nro.models.player_system.Template.ItemOptionTemplate;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -37,6 +38,10 @@ public final class ConsignItemOptionsCodec {
     }
 
     public static List<Item.ItemOption> decode(String json) {
+        return decode(json, null);
+    }
+
+    public static List<Item.ItemOption> decode(String json, List<ItemOptionTemplate> templates) {
         List<Item.ItemOption> decoded = new ArrayList<>();
         if (json == null || json.trim().isEmpty() || "null".equalsIgnoreCase(json.trim())) {
             return decoded;
@@ -59,7 +64,14 @@ public final class ConsignItemOptionsCodec {
             }
             int id = Integer.parseInt(String.valueOf(row.get("id")));
             int param = Integer.parseInt(String.valueOf(row.get("param")));
-            decoded.add(new Item.ItemOption(id, param));
+            if (templates == null) {
+                decoded.add(new Item.ItemOption(id, param));
+            } else {
+                if (id < 0 || id >= templates.size() || templates.get(id).id != id) {
+                    throw new IllegalArgumentException("Unknown consignment option template id " + id);
+                }
+                decoded.add(new Item.ItemOption(templates.get(id), param));
+            }
         }
         return decoded;
     }

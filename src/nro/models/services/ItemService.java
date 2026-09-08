@@ -7,7 +7,7 @@ import nro.models.item.Item;
 import nro.models.map.ItemMap;
 import nro.models.player.Player;
 import nro.models.shop.ItemShop;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.utils.TimeUtil;
 import nro.models.utils.Util;
 import nro.models.item.Item.ItemOption;
@@ -32,9 +32,9 @@ public class ItemService {
     }
 
     public short getItemIdByIcon(short IconID) {
-        for (int i = 0; i < Manager.ITEM_TEMPLATES.size(); i++) {
-            if (Manager.ITEM_TEMPLATES.get(i).iconID == IconID) {
-                return Manager.ITEM_TEMPLATES.get(i).id;
+        for (int i = 0; i < GameRuntime.gI().templates().itemTemplates().size(); i++) {
+            if (GameRuntime.gI().templates().itemTemplates().get(i).iconID == IconID) {
+                return GameRuntime.gI().templates().itemTemplates().get(i).id;
             }
         }
         return -1;
@@ -272,7 +272,7 @@ public class ItemService {
 
     /** Returns detached option objects so callers can safely randomize params. */
     public List<Item.ItemOption> getDefaultItemOptions(short id) {
-        List<Item.ItemOption> source = Manager.ITEM_DEFAULT_OPTIONS.get(id);
+        List<Item.ItemOption> source = GameRuntime.gI().templates().defaultItemOptions().get(id);
         List<Item.ItemOption> result = new ArrayList<>();
         if (source != null) {
             for (Item.ItemOption option : source) {
@@ -592,11 +592,11 @@ public class ItemService {
     }
 
     public ItemOptionTemplate getItemOptionTemplate(int id) {
-        return Manager.ITEM_OPTION_TEMPLATES.get(id);
+        return GameRuntime.gI().templates().itemOptionTemplates().get(id);
     }
 
     public Template.ItemTemplate getTemplate(int id) {
-        return Manager.ITEM_TEMPLATES.get(id);
+        return GameRuntime.gI().templates().itemTemplates().get(id);
     }
 
     public int getPercentTrainArmor(Item item) {
@@ -1004,7 +1004,7 @@ public class ItemService {
             return defaults;
         }
         List<Item.ItemOption> list = new ArrayList<>();
-        Manager.SHOPS.forEach(shop -> shop.tabShops.forEach(tabShop -> tabShop.itemShops.forEach(itemShop -> {
+        GameRuntime.gI().templates().shops().forEach(shop -> shop.tabShops.forEach(tabShop -> tabShop.itemShops.forEach(itemShop -> {
             if (itemShop.temp.id == id && list.isEmpty()) {
                 for (Item.ItemOption option : itemShop.options) {
                     list.add(new Item.ItemOption(option));

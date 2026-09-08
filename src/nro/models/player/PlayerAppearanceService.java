@@ -8,7 +8,7 @@ import nro.models.minigame.ChonAiDay_Gem;
 import nro.models.minigame.ChonAiDay_Gold;
 import nro.models.radar.Card;
 import nro.models.radar.RadarCard;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.InventoryService;
 import nro.models.services.RadarService;
 import nro.models.services.TaskService;
@@ -102,8 +102,8 @@ public final class PlayerAppearanceService {
         if (auraId < 0 || auraId > Byte.MAX_VALUE) {
             return -1;
         }
-        if (Manager.getNFrameImageByName("aura_" + auraId + "_0") <= 0
-                || Manager.getNFrameImageByName("aura_" + auraId + "_1") <= 0) {
+        if (GameRuntime.gI().templates().imageFrameCount("aura_" + auraId + "_0") <= 0
+                || GameRuntime.gI().templates().imageFrameCount("aura_" + auraId + "_1") <= 0) {
             return -1;
         }
         return (byte) auraId;

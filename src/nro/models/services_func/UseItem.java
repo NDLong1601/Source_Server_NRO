@@ -58,8 +58,8 @@ import nro.models.map.service.MapService;
 import nro.models.services_dungeon.NgocRongNamecService;
 import nro.models.map.service.ItemMapService;
 import nro.models.npc.DuaHauEgg;
-import nro.models.server.Manager;
-import static nro.models.server.Manager.isTopSukienChanged;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.services.ChatGlobalService;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.Logger;
@@ -1585,8 +1585,8 @@ public class UseItem {
         Service.gI().LogicEffect(pl, 65, 1, -1, 1, 1, 5000);
 
         /*    pl.point_sukien1 += 1;
-        if (!Manager.isTopSukien1Changed) {
-            Manager.isTopSukien1Changed = true;
+        if (!GameRuntime.gI().leaderboards().hasDirtyBoards()) {
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT_ONE);
         } */
         Item removeItem = InventoryService.gI().findItemBag(pl, 1575);
         if (removeItem != null) {
@@ -1612,8 +1612,8 @@ public class UseItem {
         Service.gI().LogicEffect(pl, 65, 1, -1, 1, 1, 5000);
 
         /*  pl.point_sukien += 1;
-        if (!Manager.isTopSukienChanged) {
-            Manager.isTopSukienChanged = true;
+        if (!GameRuntime.gI().leaderboards().hasDirtyBoards()) {
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT);
         }*/
         Item removeItem = InventoryService.gI().findItemBag(pl, 1576);
         if (removeItem != null) {
@@ -1658,9 +1658,7 @@ public class UseItem {
 
             player.point_sukien2 += 1;
             PlayerDAO.updateEventRankingPoints(player);
-            if (!Manager.isTopSukien2Changed) {
-                Manager.isTopSukien2Changed = true;
-            }
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT_TWO);
 
             PlayerService.gI().sendInfoHpMpMoney(player);
             InventoryService.gI().sendItemBags(player);
@@ -1704,7 +1702,7 @@ public class UseItem {
 
             player.point_sukien += 1;
             PlayerDAO.updateEventRankingPoints(player);
-            Manager.isTopSukienChanged = true;
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT);
 
             PlayerService.gI().sendInfoHpMpMoney(player);
             InventoryService.gI().sendItemBags(player);

@@ -28,7 +28,7 @@ import nro.models.ledger.MoneyLedgerService;
 import nro.models.skill.Skill;
 import nro.models.task.TaskMain;
 import nro.models.server.Client;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.MySession;
 import nro.models.player_system.AntiLogin;
 import nro.models.services.ClanService;
@@ -100,12 +100,12 @@ public class MrFinn {
                 if (rs.getBoolean("ban")) {
                     Service.gI().sendThongBaoOK(session,
                             "Tài khoản này đang bị khóa. Liên hệ Admin để biết thêm thông tin");
-                } else if (Manager.SECOND_WAIT_LOGIN > 0 && secondsPass1 >= 0 && secondsPass1 < Manager.SECOND_WAIT_LOGIN) {
+                } else if (GameRuntime.gI().config().loginWaitSeconds() > 0 && secondsPass1 >= 0 && secondsPass1 < GameRuntime.gI().config().loginWaitSeconds()) {
                     if (secondsPass >= 0 && secondsPass < secondsPass1) {
-                        Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass);
+                        Service.gI().sendWaitToLogin(session, GameRuntime.gI().config().loginWaitSeconds() - secondsPass);
                         return null;
                     }
-                    Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass1);
+                    Service.gI().sendWaitToLogin(session, GameRuntime.gI().config().loginWaitSeconds() - secondsPass1);
                     return null;
                 } else if (lastTimeLogin > session.lastTimeLogout
                         && (plInGame = Client.gI().getPlayerByUser(session.userId)) != null) {
@@ -113,8 +113,8 @@ public class MrFinn {
                         Client.gI().kickSession(plInGame.getSession(), nro.models.network.SessionCloseCause.DUPLICATE_LOGIN);
                     }
                 } else {
-                    if (Manager.SECOND_WAIT_LOGIN > 0 && secondsPass >= 0 && secondsPass < Manager.SECOND_WAIT_LOGIN) {
-                        Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass);
+                    if (GameRuntime.gI().config().loginWaitSeconds() > 0 && secondsPass >= 0 && secondsPass < GameRuntime.gI().config().loginWaitSeconds()) {
+                        Service.gI().sendWaitToLogin(session, GameRuntime.gI().config().loginWaitSeconds() - secondsPass);
                     } else {
                         rs = LocalManager.executeQuery("select * from player where account_id = ? limit 1",
                                 session.userId);
@@ -1347,7 +1347,7 @@ public class MrFinn {
             // data achievement
             try {
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("data_achievement"));
-                for (int i = 0; i < Manager.ACHIEVEMENT_TEMPLATE.size(); i++) {
+                for (int i = 0; i < GameRuntime.gI().templates().achievements().size(); i++) {
                     AchievementQuest aq;
                     if (i < dataArray.size()) {
                         JSONArray data = (JSONArray) JSONValue.parse(dataArray.get(i).toString());

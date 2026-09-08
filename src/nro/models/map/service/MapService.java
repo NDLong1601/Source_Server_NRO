@@ -7,7 +7,7 @@ import nro.models.map.Zone;
 import nro.models.clan.ClanTerritoryService;
 import nro.models.mob.Mob;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
@@ -326,7 +326,7 @@ public class MapService {
     }
 
     public Map getMapById(int mapId) {
-        for (Map map : Manager.MAPS) {
+        for (Map map : GameRuntime.gI().worlds().snapshot()) {
             if (map.mapId == mapId) {
                 return map;
             }
@@ -447,7 +447,7 @@ public class MapService {
     }
 
     public boolean isMapOffline(int mapId) {
-        for (Map map : Manager.MAPS) {
+        for (Map map : GameRuntime.gI().worlds().snapshot()) {
             if (map.mapId == mapId) {
                 return map.type == ConstMap.MAP_OFFLINE;
             }

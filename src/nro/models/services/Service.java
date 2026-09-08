@@ -49,7 +49,7 @@ import nro.models.npc.NonInteractiveNPC;
 import nro.models.npc.Npc;
 import nro.models.npc_list.DuaHau;
 import nro.models.player_system.Template.Part;
-import nro.models.server.Manager;
+import nro.models.server.AssetDataExporter;
 import nro.models.activity.ActivityService;
 import nro.models.clan.ClanProgressionService;
 
@@ -690,7 +690,7 @@ public class Service {
 
     public void chat(Player player, String text) {
         if (text.equals("part")) {
-            Manager.loadPart();
+            AssetDataExporter.exportParts();
             DataGame.updateData(player.getSession());
             return;
         }

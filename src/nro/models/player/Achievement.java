@@ -7,7 +7,7 @@ import java.util.List;
 import nro.models.item.Item;
 import nro.models.player_system.Template.AchievementQuest;
 import nro.models.player_system.Template.AchievementTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.utils.Logger;
 
 public class Achievement {
@@ -158,11 +158,11 @@ public class Achievement {
     public boolean canReward(int index) {
         synchronized (lock) {
             if (lifecycleState != LifecycleState.ACTIVE
-                    || index < 0 || index >= Manager.ACHIEVEMENT_TEMPLATE.size()) {
+                    || index < 0 || index >= GameRuntime.gI().templates().achievements().size()) {
                 return false;
             }
             AchievementQuest aq = getQuestLocked(index);
-            AchievementTemplate at = Manager.ACHIEVEMENT_TEMPLATE.get(index);
+            AchievementTemplate at = GameRuntime.gI().templates().achievements().get(index);
             return aq != null && at != null && !aq.isRecieve
                     && getCompletedLocked(index) >= at.maxCount;
         }
@@ -183,11 +183,11 @@ public class Achievement {
             if (achievementList == null) {
                 return ClaimResult.failure(ClaimStatus.INVALID_INDEX);
             }
-            if (index < 0 || index >= achievementList.size() || index >= Manager.ACHIEVEMENT_TEMPLATE.size()) {
+            if (index < 0 || index >= achievementList.size() || index >= GameRuntime.gI().templates().achievements().size()) {
                 return ClaimResult.failure(ClaimStatus.INVALID_INDEX);
             }
             AchievementQuest aq = achievementList.get(index);
-            AchievementTemplate at = Manager.ACHIEVEMENT_TEMPLATE.get(index);
+            AchievementTemplate at = GameRuntime.gI().templates().achievements().get(index);
             if (aq == null || at == null) {
                 return ClaimResult.failure(ClaimStatus.INVALID_INDEX);
             }

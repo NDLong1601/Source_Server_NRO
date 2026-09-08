@@ -2,7 +2,7 @@ package nro.models.data;
 
 import nro.models.player_system.Template.ArrHead2Frames;
 import nro.models.player_system.Template.ItemOptionTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import nro.models.network.MySession;
 import nro.models.player_system.Template;
@@ -43,9 +43,9 @@ public class ItemData {
     }
 
     private static int getWireTemplateCount() {
-        int total = Manager.ITEM_TEMPLATES.size();
+        int total = GameRuntime.gI().templates().itemTemplates().size();
         for (int id = 0; id < total; id++) {
-            if (Manager.ITEM_TEMPLATES.get(id).id != id) {
+            if (GameRuntime.gI().templates().itemTemplates().get(id).id != id) {
                 throw new IllegalStateException("Item template không liên tục tại ID " + id);
             }
         }
@@ -57,7 +57,7 @@ public class ItemData {
         int payloadBytes = append ? APPEND_PACKET_OVERHEAD_BYTES : RELOAD_PACKET_OVERHEAD_BYTES;
         int end = start;
         while (end < total) {
-            int itemBytes = templatePacketBytes(Manager.ITEM_TEMPLATES.get(end));
+            int itemBytes = templatePacketBytes(GameRuntime.gI().templates().itemTemplates().get(end));
             if (payloadBytes + itemBytes > MAX_PACKET_PAYLOAD_BYTES) {
                 break;
             }
@@ -74,7 +74,7 @@ public class ItemData {
     private static void assertTemplatePacketFits(int start, int end, boolean append) {
         int payloadBytes = append ? APPEND_PACKET_OVERHEAD_BYTES : RELOAD_PACKET_OVERHEAD_BYTES;
         for (int index = start; index < end; index++) {
-            payloadBytes += templatePacketBytes(Manager.ITEM_TEMPLATES.get(index));
+            payloadBytes += templatePacketBytes(GameRuntime.gI().templates().itemTemplates().get(index));
         }
         if (payloadBytes > MAX_PACKET_PAYLOAD_BYTES) {
             throw new IllegalStateException("Packet item template " + (append ? "append" : "reload")
@@ -129,8 +129,8 @@ public class ItemData {
             msg.writer().writeByte(8);
             msg.writer().writeByte(DataGame.vsItem); //vcitem
             msg.writer().writeByte(0); //update option
-            msg.writer().writeByte(Manager.ITEM_OPTION_TEMPLATES.size());
-            for (ItemOptionTemplate io : Manager.ITEM_OPTION_TEMPLATES) {
+            msg.writer().writeByte(GameRuntime.gI().templates().itemOptionTemplates().size());
+            for (ItemOptionTemplate io : GameRuntime.gI().templates().itemOptionTemplates()) {
                 msg.writer().writeUTF(io.name);
                 msg.writer().writeByte(io.type);
             }
@@ -151,7 +151,7 @@ public class ItemData {
             msg.writer().writeByte(1); //reload itemtemplate
             msg.writer().writeShort(count);
             for (int i = 0; i < count; i++) {
-                Template.ItemTemplate itemTemplate = Manager.ITEM_TEMPLATES.get(i);
+                Template.ItemTemplate itemTemplate = GameRuntime.gI().templates().itemTemplates().get(i);
                 msg.writer().writeByte(itemTemplate.type);
                 msg.writer().writeByte(itemTemplate.gender);
                 msg.writer().writeUTF(itemTemplate.name);
@@ -180,16 +180,16 @@ public class ItemData {
             msg.writer().writeShort(start);
             msg.writer().writeShort(end);
             for (int i = start; i < end; i++) {
-//                System.out.println("start: " + start + " -> " + end + " id " + Manager.ITEM_TEMPLATES.get(i).id);
-                msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).type);
-                msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).gender);
-                msg.writer().writeUTF(Manager.ITEM_TEMPLATES.get(i).name);
-                msg.writer().writeUTF(wireDescription(Manager.ITEM_TEMPLATES.get(i)));
-                msg.writer().writeByte(Manager.ITEM_TEMPLATES.get(i).level);
-                msg.writer().writeInt(Manager.ITEM_TEMPLATES.get(i).strRequire);
-                msg.writer().writeShort(Manager.ITEM_TEMPLATES.get(i).iconID);
-                msg.writer().writeShort(Manager.ITEM_TEMPLATES.get(i).part);
-                msg.writer().writeBoolean(Manager.ITEM_TEMPLATES.get(i).isUpToUp);
+//                System.out.println("start: " + start + " -> " + end + " id " + GameRuntime.gI().templates().itemTemplates().get(i).id);
+                msg.writer().writeByte(GameRuntime.gI().templates().itemTemplates().get(i).type);
+                msg.writer().writeByte(GameRuntime.gI().templates().itemTemplates().get(i).gender);
+                msg.writer().writeUTF(GameRuntime.gI().templates().itemTemplates().get(i).name);
+                msg.writer().writeUTF(wireDescription(GameRuntime.gI().templates().itemTemplates().get(i)));
+                msg.writer().writeByte(GameRuntime.gI().templates().itemTemplates().get(i).level);
+                msg.writer().writeInt(GameRuntime.gI().templates().itemTemplates().get(i).strRequire);
+                msg.writer().writeShort(GameRuntime.gI().templates().itemTemplates().get(i).iconID);
+                msg.writer().writeShort(GameRuntime.gI().templates().itemTemplates().get(i).part);
+                msg.writer().writeBoolean(GameRuntime.gI().templates().itemTemplates().get(i).isUpToUp);
             }
             session.doSendMessage(msg);
             msg.cleanup();
@@ -224,8 +224,8 @@ public class ItemData {
             msg.writer().writeByte(8);
             msg.writer().writeByte(DataGame.vsItem); //vcitem
             msg.writer().writeByte(100);
-            msg.writer().writeShort(Manager.ARR_HEAD_2_FRAMES.size());
-            for (ArrHead2Frames io : Manager.ARR_HEAD_2_FRAMES) {
+            msg.writer().writeShort(GameRuntime.gI().templates().headFrames().size());
+            for (ArrHead2Frames io : GameRuntime.gI().templates().headFrames()) {
                 msg.writer().writeByte(io.frames.size());
                 for (int i : io.frames) {
                     msg.writer().writeShort(i);

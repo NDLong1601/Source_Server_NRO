@@ -25,7 +25,7 @@ import nro.models.player.Player;
 import nro.models.player_system.Template;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.map.service.ChangeMapService;
 import nro.models.player.KOLProgressData;
 import nro.models.utils.TimeUtil;
@@ -56,7 +56,7 @@ public class PlayerDAO {
     public static boolean createNewPlayer(int userId, String name, byte gender, int hair) {
         try {
             JSONArray dataArray = new JSONArray();
-            int greenGem = PlayerConfig.getStartGem(Manager.TEST);
+            int greenGem = PlayerConfig.getStartGem(GameRuntime.gI().config().test());
             dataArray.add(PlayerConfig.getStartGold()); //vàng
             dataArray.add(greenGem); //ngọc xanh
             dataArray.add(PlayerConfig.getStartRuby()); //hồng ngọc
@@ -249,7 +249,7 @@ public class PlayerDAO {
             dataArray.add(0); //
             String itemTime = dataArray.toJSONString();
             dataArray.clear();
-            int taskIndex = (Manager.TEST) ? 28 : 0;
+            int taskIndex = (GameRuntime.gI().config().test()) ? 28 : 0;
             dataArray.add(taskIndex); //id nhiệm vụ
             dataArray.add(0); //index nhiệm vụ con
             dataArray.add(0); //số lượng đã làm

@@ -25,7 +25,7 @@ import nro.models.player.PlayerConfig;
 import nro.models.player_system.Template.AchievementQuest;
 import nro.models.player_system.Template.AchievementTemplate;
 import nro.models.server.Controller;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.AchievementService;
 
 /**
@@ -103,7 +103,6 @@ public final class AchievementClaimRegressionTest {
     public static void main(String[] args) throws Exception {
         System.out.println("=== RUNNING SEC-01 ACHIEVEMENT CLAIM REGRESSION TESTS ===");
 
-        List<AchievementTemplate> backupTemplates = new ArrayList<>(Manager.ACHIEVEMENT_TEMPLATE);
         try {
             setupTemplates();
 
@@ -136,22 +135,21 @@ public final class AchievementClaimRegressionTest {
             System.out.println("ALL SEC-01 REGRESSION TESTS PASSED! Total assertions: " + assertions);
 
         } finally {
-            Manager.ACHIEVEMENT_TEMPLATE.clear();
-            Manager.ACHIEVEMENT_TEMPLATE.addAll(backupTemplates);
-            System.out.println("Restored Manager.ACHIEVEMENT_TEMPLATE successfully.");
+            System.out.println("Achievement template test snapshot completed successfully.");
         }
     }
 
     private static void setupTemplates() {
-        Manager.ACHIEVEMENT_TEMPLATE.clear();
+        List<AchievementTemplate> templates = new ArrayList<>();
         // Index 0: Power achievement (100 gem, maxCount = 1000)
-        Manager.ACHIEVEMENT_TEMPLATE.add(new AchievementTemplate("Gia nhập vệ binh", "1000 SM", 100, 1000));
+        templates.add(new AchievementTemplate("Gia nhập vệ binh", "1000 SM", 100, 1000));
         // Index 1: Power achievement (200 gem, maxCount = 5000)
-        Manager.ACHIEVEMENT_TEMPLATE.add(new AchievementTemplate("Sức mạnh siêu cấp", "5000 SM", 200, 5000));
+        templates.add(new AchievementTemplate("Sức mạnh siêu cấp", "5000 SM", 200, 5000));
         // Index 2: Magic tree achievement (150 gem, maxCount = 5)
-        Manager.ACHIEVEMENT_TEMPLATE.add(new AchievementTemplate("Nông dân chăm chỉ", "Cây đậu cấp 5", 150, 5));
+        templates.add(new AchievementTemplate("Nông dân chăm chỉ", "Cây đậu cấp 5", 150, 5));
         // Index 3: Generic count achievement (300 gem, maxCount = 100)
-        Manager.ACHIEVEMENT_TEMPLATE.add(new AchievementTemplate("Trăm trận trăm thắng", "Thắng 100 trận", 300, 100));
+        templates.add(new AchievementTemplate("Trăm trận trăm thắng", "Thắng 100 trận", 300, 100));
+        GameRuntime.installAchievementsForTesting(templates);
     }
 
     private static Player createPlayerWithBag() {
@@ -505,10 +503,12 @@ public final class AchievementClaimRegressionTest {
     /** Case 12: Invalid reward money (money <= 0 in template) rejected without side effects. */
     private static void testCase12_InvalidRewardMoney() {
         Player player = createPlayerWithBag();
-        AchievementTemplate original = Manager.ACHIEVEMENT_TEMPLATE.get(3);
+        AchievementTemplate original = GameRuntime.gI().templates().achievements().get(3);
         try {
             // Tamper template with non-positive reward
-            Manager.ACHIEVEMENT_TEMPLATE.set(3, new AchievementTemplate(original.info1, original.info2, 0, original.maxCount));
+            List<AchievementTemplate> templates = new ArrayList<>(GameRuntime.gI().templates().achievements());
+            templates.set(3, new AchievementTemplate(original.info1, original.info2, 0, original.maxCount));
+            GameRuntime.installAchievementsForTesting(templates);
             player.achievement.doneNotAdd(3, 100);
 
             ClaimResult result = player.achievement.claimReward(3);
@@ -517,7 +517,9 @@ public final class AchievementClaimRegressionTest {
             check(!player.achievement.isRecieve(3), "Case 12: quest must not be marked claimed");
             check(player.inventory.gem == 0, "Case 12: gem balance must remain 0");
         } finally {
-            Manager.ACHIEVEMENT_TEMPLATE.set(3, original);
+            List<AchievementTemplate> templates = new ArrayList<>(GameRuntime.gI().templates().achievements());
+            templates.set(3, original);
+            GameRuntime.installAchievementsForTesting(templates);
         }
 
         System.out.println("  [PASS] Case 12: Invalid reward money rejected safely");

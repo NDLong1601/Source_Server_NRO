@@ -28,7 +28,7 @@ import nro.models.consts.ConstTask;
 import nro.models.database.MrFinn;
 import nro.models.database.PlayerDAO;
 import nro.models.server.Client;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.map.service.NpcService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
@@ -94,43 +94,23 @@ public class ClanService {
     }
 
     public Clan getClanById(int id) throws Exception {
-        return getClanById(0, Manager.getNumClan(), id);
-    }
-
-    private Clan getClanById(int l, int r, int id) throws Exception {
-        if (l <= r) {
-            int m = (l + r) / 2;
-            Clan clan = null;
-            try {
-                clan = Manager.CLANS.get(m);
-            } catch (Exception e) {
-                throw new Exception("Không tìm thấy clan id: " + id);
-            }
-            if (clan.id == id) {
-                return clan;
-            } else if (clan.id > id) {
-                r = m - 1;
-            } else {
-                l = m + 1;
-            }
-            return getClanById(l, r, id);
-        } else {
-            throw new Exception("Không tìm thấy clan id: " + id);
-        }
+        return GameRuntime.gI().clans().find(id)
+                .orElseThrow(() -> new Exception("Không tìm thấy clan id: " + id));
     }
 
     public List<Clan> getClans(String name) {
         List<Clan> listClan = new ArrayList();
-        if (Manager.CLANS.size() <= 20) {
-            for (Clan clan : Manager.CLANS) {
+        List<Clan> clans = GameRuntime.gI().clans().snapshot();
+        if (clans.size() <= 20) {
+            for (Clan clan : clans) {
                 if (clan.name.contains(name)) {
                     listClan.add(clan);
                 }
             }
         } else {
-            int n = Util.nextInt(0, Manager.CLANS.size() - 20);
-            for (int i = n; i < Manager.CLANS.size(); i++) {
-                Clan clan = Manager.CLANS.get(i);
+            int n = Util.nextInt(0, clans.size() - 20);
+            for (int i = n; i < clans.size(); i++) {
+                Clan clan = clans.get(i);
                 if (clan.name.contains(name)) {
                     listClan.add(clan);
                 }
@@ -602,7 +582,7 @@ public class ClanService {
                 Clan clan = new Clan();
                 clan.imgId = imgId;
                 clan.name = name;
-                Manager.addClan(clan);
+                GameRuntime.gI().clans().add(clan);
 
                 player.clan = clan;
                 clan.addClanMember(player, Clan.LEADER);
@@ -1144,7 +1124,7 @@ public class ClanService {
         try (Connection con = LocalManager.getConnection();) {
             ps = con.prepareStatement(
                     "update clan set slogan = ?, img_id = ?, power_point = ?, max_member = ?, clan_point = ?, level = ?, members = ?, name_2 = ?, tops = ? where id = ? limit 1");
-            for (Clan clan : Manager.CLANS) {
+            for (Clan clan : GameRuntime.gI().clans().snapshot()) {
                 JSONArray dataArray = new JSONArray();
                 JSONObject dataObject = new JSONObject();
                 for (ClanMember cm : clan.members) {

@@ -9,8 +9,8 @@ import nro.models.database.TraningDAO;
 import nro.models.player.Player;
 import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
-import nro.models.server.Manager;
-import static nro.models.server.Manager.isTopWhisChanged;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.utils.Util;
 
 public class Whis extends TrainingBoss {
@@ -97,9 +97,7 @@ public class Whis extends TrainingBoss {
 
         if (plKill != null) {
             plKill.thachdauwhis++;
-            if (!Manager.isTopWhisChanged) {
-                Manager.isTopWhisChanged = true;
-            }
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.WHIS);
             Service.gI().sendMoney(plKill);
             PlayerDAO.updatePlayer(plKill);
 

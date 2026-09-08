@@ -6,7 +6,7 @@ import nro.models.player.PetConfig;
 import nro.models.skill.NClass;
 import nro.models.skill.Skill;
 import nro.models.player_system.Template.SkillTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.SkillMasteryService;
 
 public class SkillUtil {
@@ -16,9 +16,9 @@ public class SkillUtil {
     private final static NClass nClassXD;
 
     static {
-        nClassTD = Manager.NCLASS.get(0);
-        nClassNM = Manager.NCLASS.get(1);
-        nClassXD = Manager.NCLASS.get(2);
+        nClassTD = GameRuntime.gI().templates().classes().get(0);
+        nClassNM = GameRuntime.gI().templates().classes().get(1);
+        nClassXD = GameRuntime.gI().templates().classes().get(2);
     }
 
     public static Skill createSkill(int tempId, int level) {

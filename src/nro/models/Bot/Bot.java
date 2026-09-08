@@ -9,7 +9,7 @@ import nro.models.map.service.MapService;
 import nro.models.player.Player;
 import nro.models.services.PlayerService;
 import nro.models.player_system.Template.SkillTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.EffectSkillService;
 import nro.models.services.Service;
 import nro.models.services.SkillService;
@@ -172,7 +172,7 @@ public class Bot extends Player {
     }
 
     public void leakSkill() {
-        for (NClass n : Manager.gI().NCLASS) {
+        for (NClass n : GameRuntime.gI().templates().classes()) {
             if (n.classId == this.gender) {
                 for (SkillTemplate template : n.skillTemplatess) {
                     for (Skill skill : template.skillss) {

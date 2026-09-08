@@ -70,7 +70,7 @@ public class ConsignItem {
         if (source != null) {
             for (ItemOption opt : source) {
                 if (opt != null && opt.optionTemplate != null) {
-                    copy.add(new ItemOption(opt.optionTemplate.id, opt.param));
+                    copy.add(new ItemOption(opt));
                 }
             }
         }

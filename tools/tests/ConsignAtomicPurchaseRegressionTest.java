@@ -35,7 +35,7 @@ import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
 import nro.models.player_system.Template.ItemOptionTemplate;
 import nro.models.player_system.Template.ItemTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
@@ -301,30 +301,27 @@ public final class ConsignAtomicPurchaseRegressionTest {
     }
 
     private static void setupTestTemplates() {
-        if (Manager.ITEM_TEMPLATES.isEmpty()) {
-            for (int i = 0; i < 3000; i++) {
-                ItemTemplate t = new ItemTemplate();
-                t.id = (short) i;
-                t.name = "Template_" + i;
-                t.type = 0;
-                Manager.ITEM_TEMPLATES.add(t);
-            }
+        List<ItemTemplate> itemTemplates = new ArrayList<>();
+        for (int i = 0; i < 3000; i++) {
+            ItemTemplate template = new ItemTemplate();
+            template.id = (short) i;
+            template.name = "Template_" + i;
+            template.type = 0;
+            itemTemplates.add(template);
         }
-        if (Manager.ITEM_TEMPLATES.size() > 457) {
-            Manager.ITEM_TEMPLATES.get(457).isUpToUp = true;
-            // Generic directly storable template used by purchase fixtures.
-            Manager.ITEM_TEMPLATES.get(190).type = 6;
-            Manager.ITEM_TEMPLATES.get(220).type = 14;
-            Manager.ITEM_TEMPLATES.get(220).isUpToUp = true;
+        itemTemplates.get(457).isUpToUp = true;
+        itemTemplates.get(190).type = 6;
+        itemTemplates.get(220).type = 14;
+        itemTemplates.get(220).isUpToUp = true;
+
+        List<ItemOptionTemplate> optionTemplates = new ArrayList<>();
+        for (int i = 0; i < 300; i++) {
+            ItemOptionTemplate option = new ItemOptionTemplate();
+            option.id = i;
+            option.name = "Option_" + i;
+            optionTemplates.add(option);
         }
-        if (Manager.ITEM_OPTION_TEMPLATES.isEmpty()) {
-            for (int i = 0; i < 300; i++) {
-                ItemOptionTemplate ot = new ItemOptionTemplate();
-                ot.id = i;
-                ot.name = "Option_" + i;
-                Manager.ITEM_OPTION_TEMPLATES.add(ot);
-            }
-        }
+        GameRuntime.installTemplatesForTesting(itemTemplates, optionTemplates, List.of());
     }
 
     // =========================================================================
@@ -1278,6 +1275,7 @@ public final class ConsignAtomicPurchaseRegressionTest {
     /** Test 29: Existing SEC-03 trade tests still pass. */
     static void test29_ExistingSec03TradeTestsPass() throws Exception {
         nro.models.services_func.TradeStateRegressionTest.main(new String[0]);
+        setupTestTemplates();
         System.out.println("  [PASS] Test 29: SEC-03 TradeStateRegressionTest passed completely");
     }
 
@@ -1285,6 +1283,7 @@ public final class ConsignAtomicPurchaseRegressionTest {
     static void test30_ExistingSec01AchievementTestsPass() throws Exception {
         Class<?> clazz = Class.forName("AchievementClaimRegressionTest");
         clazz.getMethod("main", String[].class).invoke(null, (Object) new String[0]);
+        setupTestTemplates();
         System.out.println("  [PASS] Test 30: SEC-01 AchievementClaimRegressionTest passed completely");
     }
 
@@ -1449,7 +1448,7 @@ public final class ConsignAtomicPurchaseRegressionTest {
         check(!createResult.isSuccess(), "Test 38: Wallet-mutating item cannot be listed through bag workflow");
         check(repo.store.isEmpty(), "Test 38: Rejected side-effect item is not persisted");
 
-        Manager.ITEM_TEMPLATES.get(191).type = 9;
+        GameRuntime.gI().templates().itemTemplates().get(191).type = 9;
         ConsignItem corruptListing = new ConsignItem(38, (short) 191, 9999, (byte) 0, 100, -1, 1,
                 (byte) 0, Collections.singletonList(new ItemOption(86, 0)),
                 ConsignListingStatus.ACTIVE, 0, 1, null);

@@ -10,7 +10,8 @@ import nro.models.item.Item;
 import nro.models.database.PlayerDAO;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.services.Service;
@@ -119,9 +120,7 @@ public class XeNuocMia extends Npc {
             InventoryService.gI().sendItemBags(player);
             player.point_sukien1 += 1;
             PlayerDAO.updateEventRankingPoints(player);
-            if (!Manager.isTopSukien1Changed) {
-                Manager.isTopSukien1Changed = true;
-            }
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT_ONE);
 
             Service.gI().sendThongBao(player, "Bạn đã nhận được " + itemRandom.template.name + "!");
         } else {
@@ -164,9 +163,7 @@ public class XeNuocMia extends Npc {
             Service.gI().sendMoney(player);
             player.point_sukien1 += 10;
             PlayerDAO.updateEventRankingPoints(player);
-            if (!Manager.isTopSukien1Changed) {
-                Manager.isTopSukien1Changed = true;
-            }
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.EVENT_ONE);
 
             Service.gI().sendThongBao(player, rewardMsg.toString());
         } else {

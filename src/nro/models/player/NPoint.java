@@ -9,7 +9,7 @@ import nro.models.intrinsic.Intrinsic;
 import nro.models.item.Item;
 import nro.models.item.Item.ItemOption;
 import nro.models.skill.Skill;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.EffectSkillService;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
@@ -416,7 +416,7 @@ public class NPoint {
     }
 
     private boolean isMonkeyMob(Mob mob) {
-        nro.models.player_system.Template.MobTemplate template = Manager.getMobTemplateByTemp(mob.tempId);
+        nro.models.player_system.Template.MobTemplate template = GameRuntime.gI().templates().mob(mob.tempId);
         return template != null && template.name != null
                 && template.name.toLowerCase(Locale.ROOT).contains("khỉ");
     }
@@ -2249,7 +2249,7 @@ public class NPoint {
                     tiemNang += ((long) tiemNang * 5 / 100);
                 }
             }
-            tiemNang *= Manager.RATE_EXP_SERVER;
+            tiemNang *= GameRuntime.gI().config().experienceRate();
             tiemNang = calSubTNSM(tiemNang);
             if (tiemNang <= 0) {
                 tiemNang = 1;

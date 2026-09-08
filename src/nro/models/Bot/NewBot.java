@@ -3,7 +3,7 @@ package nro.models.Bot;
 import java.util.Random;
 import nro.models.player_system.Template;
 import nro.models.player_system.Template.ItemTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.ItemService;
 
 public class NewBot {
@@ -12,7 +12,7 @@ public class NewBot {
 
     public boolean LOAD_PART = true;
     public int MAXPART = 0;
-    public static int[][] PARTBOT = new int[Manager.ITEM_TEMPLATES.size()][4];
+    public static int[][] PARTBOT = new int[GameRuntime.gI().templates().itemTemplates().size()][4];
 
     private final String[] FIRST_NAMES = java.util.stream.IntStream.rangeClosed(1, 50000)
             .mapToObj(i -> "MrFinn" + i)
@@ -28,7 +28,7 @@ public class NewBot {
     public void LoadPart() {
         if (LOAD_PART) {
             int i = 0;
-            for (Template.ItemTemplate it : Manager.ITEM_TEMPLATES) {
+            for (Template.ItemTemplate it : GameRuntime.gI().templates().itemTemplates()) {
                 if (it.type == 5) {
                     if (it.head != -1 && it.leg != -1 && it.body != -1 && it.leg != 194) {
                         PARTBOT[i][0] = it.head;
@@ -72,7 +72,8 @@ public class NewBot {
                 shopBotCopy = new BotGiaoDich(shop);
             }
 
-            int flag = Manager.gI().FLAGS_BAGS.get(new Random().nextInt(Manager.gI().FLAGS_BAGS.size())).id;
+            int flag = GameRuntime.gI().templates().flagBags().get(
+                    new Random().nextInt(GameRuntime.gI().templates().flagBags().size())).id;
 
             Bot b;
             if (type == 3) {

@@ -4,7 +4,7 @@ import nro.models.consts.ConstNpc;
 import nro.models.consts.ConstTask;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.TaskService;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class NpcManager {
 
     public static Npc getByIdAndMap(int id, int mapId) {
-        for (Npc npc : Manager.NPCS) {
+        for (Npc npc : GameRuntime.gI().npcs().snapshot()) {
             if (npc.tempId == id && npc.mapId == mapId) {
                 return npc;
             }
@@ -25,7 +25,7 @@ public class NpcManager {
     }
 
     public static Npc getNpc(byte tempId) {
-        for (Npc npc : Manager.NPCS) {
+        for (Npc npc : GameRuntime.gI().npcs().snapshot()) {
             if (npc.tempId == tempId) {
                 return npc;
             }

@@ -25,7 +25,7 @@ import nro.models.utils.TimeUtil;
 
 import java.util.List;
 import nro.models.services_dungeon.BlackBallWarService;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.InventoryService;
 import nro.models.services.ItemService;
 import nro.models.clan.ClanTerritoryService;
@@ -1138,7 +1138,7 @@ public class ChangeMapService {
     }
 
     public Map getMapById(int mapId) {
-        for (Map map : Manager.MAPS) {
+        for (Map map : GameRuntime.gI().worlds().snapshot()) {
             if (map.mapId == mapId) {
                 return map;
             }

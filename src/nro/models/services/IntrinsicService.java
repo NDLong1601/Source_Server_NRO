@@ -8,14 +8,14 @@ import nro.models.player.WalletResult;
 import nro.models.consts.ConstNpc;
 import nro.models.intrinsic.Intrinsic;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import nro.models.map.service.NpcService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 import java.util.List;
 import nro.models.item.Item;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 
 public class IntrinsicService {
 
@@ -32,16 +32,16 @@ public class IntrinsicService {
     public List<Intrinsic> getIntrinsics(byte playerGender) {
         switch (playerGender) {
             case 0:
-                return Manager.INTRINSIC_TD;
+                return GameRuntime.gI().templates().intrinsicEarth();
             case 1:
-                return Manager.INTRINSIC_NM;
+                return GameRuntime.gI().templates().intrinsicNamek();
             default:
-                return Manager.INTRINSIC_XD;
+                return GameRuntime.gI().templates().intrinsicSaiyan();
         }
     }
 
     public Intrinsic getIntrinsicById(int id) {
-        for (Intrinsic intrinsic : Manager.INTRINSICS) {
+        for (Intrinsic intrinsic : GameRuntime.gI().templates().intrinsics()) {
             if (intrinsic.id == id) {
                 return new Intrinsic(intrinsic);
             }

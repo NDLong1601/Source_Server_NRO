@@ -1,7 +1,6 @@
 package nro.models.task;
 
 import nro.models.player.Player;
-import nro.models.server.Manager;
 import nro.models.task.ClanTaskTemplate;
 
 public class BadgesTask {

@@ -12,7 +12,8 @@ import nro.models.mob.BigBoss;
 import nro.models.mob.Mob;
 import nro.models.network.Message;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
 
@@ -75,9 +76,7 @@ public class MayDoSucManh extends BigBoss {
             pl.point_maydam += points;
             milestoneMap.put(playerId, currentMilestone);
 
-            if (!Manager.isTopMaydamChanged) {
-                Manager.isTopMaydamChanged = true;
-            }
+            GameRuntime.gI().leaderboards().markDirty(LeaderboardService.Board.MACHINE);
 
             Service.gI().sendThongBao(pl, "Bạn đã nhận được " + points + " điểm Máy Đấm!");
             Service.gI().updatePlayerPointMayDam(pl);

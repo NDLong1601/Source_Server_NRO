@@ -25,7 +25,7 @@ import nro.models.npc.Npc;
 import nro.models.task.SideTaskTemplate;
 import nro.models.task.SubTaskMain;
 import nro.models.task.TaskMain;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
@@ -77,7 +77,7 @@ public class TaskService {
     }
 
     private TaskMain createTaskMain(Player player, int id) {
-        for (TaskMain tm : Manager.TASKS) {
+        for (TaskMain tm : GameRuntime.gI().templates().tasks()) {
             if (tm.id == id) {
                 return buildTaskMain(player, tm);
             }
@@ -86,7 +86,7 @@ public class TaskService {
     }
 
     private TaskMain getFirstTaskMain(Player player) {
-        for (TaskMain tm : Manager.TASKS) {
+        for (TaskMain tm : GameRuntime.gI().templates().tasks()) {
             if (tm != null && tm.subTasks != null && !tm.subTasks.isEmpty()) {
                 return buildTaskMain(player, tm);
             }
@@ -1343,7 +1343,7 @@ public class TaskService {
     //========================SIDE TASK========================
     public SideTaskTemplate getSideTaskTemplateById(int id) {
         if (id != -1) {
-            for (SideTaskTemplate template : Manager.SIDE_TASKS_TEMPLATE) {
+            for (SideTaskTemplate template : GameRuntime.gI().templates().sideTasks()) {
                 if (template.id == id) {
                     return template;
                 }
@@ -1356,7 +1356,7 @@ public class TaskService {
         player.playerTask.sideTask.renew();
         if (player.playerTask.sideTask.leftTask > 0) {
             player.playerTask.sideTask.reset();
-            SideTaskTemplate temp = Manager.SIDE_TASKS_TEMPLATE.get(Util.nextInt(0, Manager.SIDE_TASKS_TEMPLATE.size() - 1));
+            SideTaskTemplate temp = GameRuntime.gI().templates().sideTasks().get(Util.nextInt(0, GameRuntime.gI().templates().sideTasks().size() - 1));
             player.playerTask.sideTask.template = temp;
             player.playerTask.sideTask.maxCount = Util.nextInt(temp.count[level][0], temp.count[level][1]);
             player.playerTask.sideTask.leftTask--;
@@ -1603,7 +1603,7 @@ public class TaskService {
     //========================CLAN TASK========================
     public ClanTaskTemplate getClanTaskTemplateById(int id) {
         if (id != -1) {
-            for (ClanTaskTemplate template : Manager.CLAN_TASKS_TEMPLATE) {
+            for (ClanTaskTemplate template : GameRuntime.gI().templates().clanTasks()) {
                 if (template.id == id) {
                     return template;
                 }
@@ -1616,7 +1616,7 @@ public class TaskService {
         player.playerTask.clanTask.renew();
         if (player.playerTask.clanTask.leftTask > 0) {
             player.playerTask.clanTask.reset();
-            ClanTaskTemplate temp = Manager.CLAN_TASKS_TEMPLATE.get(Util.nextInt(0, Manager.CLAN_TASKS_TEMPLATE.size() - 1));
+            ClanTaskTemplate temp = GameRuntime.gI().templates().clanTasks().get(Util.nextInt(0, GameRuntime.gI().templates().clanTasks().size() - 1));
             player.playerTask.clanTask.template = temp;
             player.playerTask.clanTask.maxCount = Util.nextInt(temp.count[level][0], temp.count[level][1]);
             player.playerTask.clanTask.level = level;

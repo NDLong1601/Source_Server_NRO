@@ -33,7 +33,7 @@ import nro.models.services.EquipmentOptionService;
 import nro.models.services.KanaoQuestService;
 import nro.models.map.service.MapService;
 import nro.models.player_system.Template.ItemTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.TimeUtil;
@@ -1173,9 +1173,9 @@ public class Mob {
 
         // IDs 0..187 are the canonical common armor, pants, gloves, shoes
         // and radar templates. Later IDs include event and premium equipment.
-        int upperBound = Math.min(187, Manager.ITEM_TEMPLATES.size() - 1);
+        int upperBound = Math.min(187, GameRuntime.gI().templates().itemTemplates().size() - 1);
         for (int itemId = 0; itemId <= upperBound; itemId++) {
-            ItemTemplate template = Manager.ITEM_TEMPLATES.get(itemId);
+            ItemTemplate template = GameRuntime.gI().templates().itemTemplates().get(itemId);
             if (template == null || template.type < 0 || template.type > 4
                     || template.level != targetLevel
                     || (template.gender != normalizedGender && template.gender != 3)) {

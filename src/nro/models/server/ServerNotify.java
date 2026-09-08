@@ -76,8 +76,8 @@ public class ServerNotify extends Thread {
         try {
             msg = new Message(50);
             msg.writer().writeByte(10);
-            for (int i = 0; i < Manager.NOTIFY.size(); i++) {
-                String[] arr = Manager.NOTIFY.get(i).split("<>");
+            for (int i = 0; i < GameRuntime.gI().templates().notifications().size(); i++) {
+                String[] arr = GameRuntime.gI().templates().notifications().get(i).split("<>");
                 msg.writer().writeShort(i);
                 msg.writer().writeUTF(arr[0]);
                 msg.writer().writeUTF(arr[1]);

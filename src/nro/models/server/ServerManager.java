@@ -47,7 +47,6 @@ import nro.models.boss.Boss_Manager.TrungThuEventManager;
 import nro.models.event.EventManager;
 import nro.models.Bot.BotManager;
 import nro.models.boss.Boss_Manager.FinalBossManager;
-import nro.models.data.LocalManager;
 import nro.models.managers.ShenronEventManager;
 import nro.models.minigame.ChonAiDay_Gem;
 import nro.models.minigame.ChonAiDay_Gold;
@@ -80,7 +79,7 @@ public class ServerManager {
     private ScheduledExecutorService topUpdater;
 
     public void init() {
-        Manager.gI();
+        GameRuntime.gI();
         //TaskService.gI().loadTask();
         HistoryTransactionDAO.deleteHistory();
     }
@@ -137,7 +136,7 @@ public class ServerManager {
             AdminEventConfigService.gI().load();
             new Thread(AdminEventConfigService.gI(), "Admin event point grants").start();
             BossManager.gI().loadBoss();
-            Manager.MAPS.forEach(nro.models.map.Map::initBoss);
+            GameRuntime.gI().worlds().snapshot().forEach(nro.models.map.Map::initBoss);
             EventManager.gI().init();
 
             new Thread(BossManager.gI(), "Update boss").start();
@@ -173,17 +172,12 @@ public class ServerManager {
         topUpdater.scheduleAtFixedRate(() -> {
             if (shouldUpdateTop()) {
                 updateTop();
-                Manager.resetTopFlags();
             }
         }, 0, 3000, TimeUnit.MILLISECONDS);
     }
 
     private boolean shouldUpdateTop() {
-        return Manager.isTopMaydamChanged
-                || Manager.isTopSukienChanged
-                || Manager.isTopSukien1Changed
-                || Manager.isTopSukien2Changed
-                || Manager.isTopWhisChanged;
+        return GameRuntime.gI().leaderboards().hasDirtyBoards();
     }
 
     private void stopTopUpdater() {
@@ -194,26 +188,10 @@ public class ServerManager {
     }
 
     private void updateTop() {
-        try (Connection con = LocalManager.gI().getConnection()) {
-            if (Manager.isTopMaydamChanged) {
-                Manager.Topmaydam = Manager.realTop(Manager.queryTopmaydam, con);
-            }
-            if (Manager.isTopSukienChanged) {
-                Manager.Topsukien = Manager.realTop(Manager.queryTopsukien, con);
-            }
-            if (Manager.isTopSukien1Changed) {
-                Manager.Topsukien1 = Manager.realTop(Manager.queryTopsukien1, con);
-            }
-            if (Manager.isTopSukien2Changed) {
-                Manager.Topsukien2 = Manager.realTop(Manager.queryTopsukien2, con);
-            }
-            if (Manager.isTopWhisChanged) {
-                Manager.Topwhis = Manager.realTop(Manager.queryTopwhis, con);
-            }
-
-            Manager.resetTopFlags();
+        try {
+            GameRuntime.gI().leaderboards().refreshDirty();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.logException(ServerManager.class, e, "Cannot refresh leaderboards");
         }
     }
 
@@ -222,7 +200,7 @@ public class ServerManager {
             Network.gI().init().setAcceptHandler(new ISessionAcceptHandler() {
                 @Override
                 public void sessionInit(ISession is) {
-                    IpLease lease = ipRegistry.acquire(is.getIP(), Manager.MAX_PER_IP);
+                    IpLease lease = ipRegistry.acquire(is.getIP(), GameRuntime.gI().config().maxConnectionsPerIp());
                     if (lease == null) {
                         is.close(SessionCloseCause.IP_REJECTED);
                         return;
@@ -296,7 +274,7 @@ public class ServerManager {
                     }
                 },
                 () -> {
-                    Manager.gI().shutdownRuntimeExecutors();
+                    GameRuntime.gI().shutdown();
                     if (topUpdater != null) {
                         topUpdater.shutdownNow();
                     }
@@ -348,7 +326,8 @@ public class ServerManager {
                 case "runtime":
                     ServerManager manager = ServerManager.gI();
                     System.out.println(ServerRuntimeMetrics.gI().formatRuntimeSnapshot(
-                            SessionManager.gI().getNumSession(), manager.getIpRegistry().getActiveLeases()));
+                            SessionManager.gI().getNumSession(), manager.getIpRegistry().getActiveLeases())
+                            + " tickEngine=" + GameRuntime.gI().tickEngine().health());
                     break;
                 case "run":
                 try {

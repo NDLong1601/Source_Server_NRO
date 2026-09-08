@@ -18,7 +18,7 @@ import nro.models.mob.Mob;
 import nro.models.npc.Npc;
 import nro.models.npc.NpcFactory;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.Service;
 import nro.models.utils.Functions;
 import nro.models.utils.Util;
@@ -197,7 +197,7 @@ public class Map implements Runnable {
     public void initMob(byte[] mobTemp, byte[] mobLevel, int[] mobHp, short[] mobX, short[] mobY) {
         for (int i = 0; i < mobTemp.length; i++) {
             int mobTempId = mobTemp[i];
-            Template.MobTemplate temp = Manager.getMobTemplateByTemp(mobTempId);
+            Template.MobTemplate temp = GameRuntime.gI().templates().mob(mobTempId);
             if (temp != null) {
                 Mob mob = new Mob();
                 mob.id = i;

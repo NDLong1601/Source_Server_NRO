@@ -16,7 +16,8 @@ import nro.models.map.service.NpcService;
 import nro.models.services.PlayerService;
 import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.utils.Util;
 
 public class GhiDanh extends Npc {
@@ -212,11 +213,11 @@ public class GhiDanh extends Npc {
                     case ConstNpc.MAY_DAM -> {
                         switch (select) {
                             case 0 ->
-                                Service.gI().showListTopTraiDat(player, Manager.Topmaydam);
+                                Service.gI().showListTopTraiDat(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.MACHINE));
                             case 1 ->
-                                Service.gI().showListTopNamek(player, Manager.Topmaydam);
+                                Service.gI().showListTopNamek(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.MACHINE));
                             case 2 ->
-                                Service.gI().showListTopXayda(player, Manager.Topmaydam);
+                                Service.gI().showListTopXayda(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.MACHINE));
                             case 3 ->
                                 Service.gI().sendThongBao(player, "Điểm hiện tại của bạn là: " + player.point_maydam);
                         }

@@ -3,7 +3,7 @@ package nro.models.services;
 import nro.models.player_system.Template.FlagBag;
 import java.util.List;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import java.util.ArrayList;
 
@@ -76,7 +76,7 @@ public class FlagBagService {
     }
 
     public FlagBag getFlagBag(int id) {
-        for (FlagBag fb : Manager.FLAGS_BAGS) {
+        for (FlagBag fb : GameRuntime.gI().templates().flagBags()) {
             if (fb.id == id) {
                 return fb;
             }

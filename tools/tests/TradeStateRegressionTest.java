@@ -26,7 +26,7 @@ import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
 import nro.models.player_system.Template.ItemOptionTemplate;
 import nro.models.player_system.Template.ItemTemplate;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services_func.Trade;
 import nro.models.services_func.TradeCommitPlan;
 import nro.models.services_func.TradeRegistry;
@@ -180,29 +180,27 @@ public final class TradeStateRegressionTest {
     }
 
     private static void setupTestTemplates() {
-        Manager.ITEM_OPTION_TEMPLATES.clear();
+        List<ItemOptionTemplate> optionTemplates = new ArrayList<>();
         for (int i = 0; i <= 300; i++) {
             ItemOptionTemplate iot = new ItemOptionTemplate();
             iot.id = i;
             iot.name = "Option " + i;
-            Manager.ITEM_OPTION_TEMPLATES.add(iot);
+            optionTemplates.add(iot);
         }
 
-        Manager.ITEM_TEMPLATES.clear();
+        List<ItemTemplate> itemTemplates = new ArrayList<>();
         for (int i = 0; i <= 2000; i++) {
             ItemTemplate it = new ItemTemplate();
             it.id = (short) i;
             it.name = "Template_" + i;
             it.type = 0;
-            Manager.ITEM_TEMPLATES.add(it);
+            itemTemplates.add(it);
         }
+        GameRuntime.installTemplatesForTesting(itemTemplates, optionTemplates, List.of());
     }
 
     public static void main(String[] args) throws Exception {
         System.out.println("=== RUNNING SEC-03 TRADE STATE MACHINE REGRESSION TESTS ===");
-
-        List<ItemOptionTemplate> backupOptionTemplates = new ArrayList<>(Manager.ITEM_OPTION_TEMPLATES);
-        List<ItemTemplate> backupItemTemplates = new ArrayList<>(Manager.ITEM_TEMPLATES);
 
         try {
             setupTestTemplates();
@@ -243,10 +241,7 @@ public final class TradeStateRegressionTest {
 
             System.out.println("ALL SEC-03 REGRESSION TESTS PASSED! Total assertions: " + assertions);
         } finally {
-            Manager.ITEM_OPTION_TEMPLATES.clear();
-            Manager.ITEM_OPTION_TEMPLATES.addAll(backupOptionTemplates);
-            Manager.ITEM_TEMPLATES.clear();
-            Manager.ITEM_TEMPLATES.addAll(backupItemTemplates);
+            // Each regression program runs in an isolated JVM; no global restore is required.
         }
     }
 

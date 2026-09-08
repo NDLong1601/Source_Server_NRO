@@ -17,7 +17,7 @@ import nro.models.shop.TabShop;
 import nro.models.network.Message;
 import nro.models.item.Item.ItemOption;
 import java.util.ArrayList;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.InventoryService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
@@ -109,7 +109,7 @@ public class ShopService {
     }
 
     private Shop getShop(String tagName) throws Exception {
-        for (Shop s : Manager.SHOPS) {
+        for (Shop s : GameRuntime.gI().templates().shops()) {
             if (s.tagName != null && s.tagName.equals(tagName)) {
                 return s;
             }

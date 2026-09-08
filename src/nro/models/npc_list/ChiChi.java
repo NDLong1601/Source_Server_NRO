@@ -8,7 +8,8 @@ import java.util.List;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.services.InventoryService;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.services.Service;
 import nro.models.services_func.Input;
 import nro.models.shop.ShopService;
@@ -80,7 +81,7 @@ public class ChiChi extends Npc {
                 } else if (player.idMark.getIndexMenu() == ConstNpc.PHAO_BONG_VIP) {
                     switch (select) {
                         case 0:
-                            Service.gI().showListTop(player, Manager.Topsukien);
+                            Service.gI().showListTop(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.EVENT));
                             break;
                         case 1:
                             Service.gI().sendThongBao(player, "Bạn có " + player.point_sukien + " điểm Hộp quà thiếu nhi.");
@@ -89,7 +90,7 @@ public class ChiChi extends Npc {
                 } else if (player.idMark.getIndexMenu() == ConstNpc.PHAO_BONG) {
                     switch (select) {
                         case 0:
-                            Service.gI().showListTop(player, Manager.Topsukien1);
+                            Service.gI().showListTop(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.EVENT_ONE));
                             break;
                         case 1:
                             Service.gI().sendThongBao(player, "Bạn có " + player.point_sukien1 + " điểm Nước mía.");
@@ -98,7 +99,7 @@ public class ChiChi extends Npc {
                 } else if (player.idMark.getIndexMenu() == ConstNpc.GOKU_DAY) {
                     switch (select) {
                         case 0:
-                            Service.gI().showListTop(player, Manager.Topsukien2);
+                            Service.gI().showListTop(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.EVENT_TWO));
                             break;
                         case 1:
                             Service.gI().sendThongBao(player, "Bạn có " + player.point_sukien2 + " điểm Kem trái cây.");

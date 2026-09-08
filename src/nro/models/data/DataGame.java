@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.MySession;
 import nro.models.item.Item;
 import nro.models.player.Player;
@@ -167,7 +167,7 @@ public class DataGame {
     public static void updateMap(MySession session) {
         Message msg;
         try {
-            int mobTemplateCount = Manager.MOB_TEMPLATES.size();
+            int mobTemplateCount = GameRuntime.gI().templates().mobTemplates().size();
             if (mobTemplateCount > MAX_SIGNED_TEMPLATE_COUNT) {
                 throw new IllegalStateException(
                         "updateMap chỉ hỗ trợ tối đa " + MAX_SIGNED_TEMPLATE_COUNT
@@ -176,7 +176,7 @@ public class DataGame {
                 );
             }
             for (int id = 0; id < mobTemplateCount; id++) {
-                MobTemplate temp = Manager.MOB_TEMPLATES.get(id);
+                MobTemplate temp = GameRuntime.gI().templates().mobTemplates().get(id);
                 if (temp.id != id) {
                     throw new IllegalStateException(
                             "mob_template phải liên tục từ ID 0: vị trí " + id
@@ -186,13 +186,13 @@ public class DataGame {
             }
             msg = Service.gI().messageNotMap((byte) 6);
             msg.writer().writeByte(vsMap);
-            String[] mapNames = buildMapNamesById(Manager.MAP_TEMPLATES);
+            String[] mapNames = buildMapNamesById(GameRuntime.gI().templates().mapTemplates());
             msg.writer().writeByte(mapNames.length);
             for (String mapName : mapNames) {
                 msg.writer().writeUTF(mapName);
             }
             int maxNpcId = -1;
-            for (NpcTemplate temp : Manager.NPC_TEMPLATES) {
+            for (NpcTemplate temp : GameRuntime.gI().templates().npcTemplates()) {
                 if (temp.id > maxNpcId) {
                     maxNpcId = temp.id;
                 }
@@ -200,7 +200,7 @@ public class DataGame {
             int totalNpcCount = maxNpcId + 1;
             msg.writer().writeByte(totalNpcCount);
             for (int id = 0; id <= maxNpcId; id++) {
-                NpcTemplate temp = Manager.getNpcTemplate(id);
+                NpcTemplate temp = GameRuntime.gI().templates().npc(id);
                 if (temp != null) {
                     msg.writer().writeUTF(temp.name);
                     msg.writer().writeShort(temp.head);
@@ -216,7 +216,7 @@ public class DataGame {
                 }
             }
             msg.writer().writeByte(mobTemplateCount);
-            for (MobTemplate temp : Manager.MOB_TEMPLATES) {
+            for (MobTemplate temp : GameRuntime.gI().templates().mobTemplates()) {
                 msg.writer().writeByte(temp.type);
                 msg.writer().writeUTF(temp.name);
                 msg.writer().writeInt(temp.hp);
@@ -294,8 +294,8 @@ public class DataGame {
             msg.writer().writeByte(vsSkill);
             msg.writer().writeByte(0); //count skill option
 
-            msg.writer().writeByte(Manager.NCLASS.size());
-            for (NClass nClass : Manager.NCLASS) {
+            msg.writer().writeByte(GameRuntime.gI().templates().classes().size());
+            for (NClass nClass : GameRuntime.gI().templates().classes()) {
                 msg.writer().writeUTF(nClass.name);
 
                 msg.writer().writeByte(nClass.skillTemplatess.size());
@@ -659,7 +659,7 @@ public class DataGame {
     private static synchronized byte[] getBgImageVersions(byte zoomLevel) {
         return BG_IMAGE_VERSIONS.computeIfAbsent(zoomLevel, zoom -> {
             int maxImageId = -1;
-            for (BgItem bgItem : Manager.BG_ITEMS) {
+            for (BgItem bgItem : GameRuntime.gI().templates().backgroundItems()) {
                 if (bgItem.idImage > maxImageId) {
                     maxImageId = bgItem.idImage;
                 }
@@ -709,13 +709,13 @@ public class DataGame {
 
     static BgItem[] buildBgItemTable() {
         int maxTemplateId = -1;
-        for (BgItem bgItem : Manager.BG_ITEMS) {
+        for (BgItem bgItem : GameRuntime.gI().templates().backgroundItems()) {
             if (bgItem != null && bgItem.id > maxTemplateId) {
                 maxTemplateId = bgItem.id;
             }
         }
         BgItem[] bgItemsById = new BgItem[maxTemplateId + 1];
-        for (BgItem bgItem : Manager.BG_ITEMS) {
+        for (BgItem bgItem : GameRuntime.gI().templates().backgroundItems()) {
             if (bgItem != null && bgItem.id >= 0 && bgItem.id < bgItemsById.length) {
                 bgItemsById[bgItem.id] = bgItem;
             }
@@ -787,8 +787,8 @@ public class DataGame {
     //head-avatar
     public static void sendHeadAvatar(Message msg) {
         try {
-            msg.writer().writeShort(Manager.HEAD_AVATARS.size());
-            for (HeadAvatar ha : Manager.HEAD_AVATARS) {
+            msg.writer().writeShort(GameRuntime.gI().templates().headAvatars().size());
+            for (HeadAvatar ha : GameRuntime.gI().templates().headAvatars()) {
                 msg.writer().writeShort(ha.headId);
                 msg.writer().writeShort(ha.avatarId);
             }
@@ -805,7 +805,7 @@ public class DataGame {
         try {
             msg = new Message(66);
             msg.writer().writeUTF(imgName);
-            msg.writer().writeByte(Manager.getNFrameImageByName(imgName));
+            msg.writer().writeByte(GameRuntime.gI().templates().imageFrameCount(imgName));
 
             final byte[] data = FileIO.readFile("data/img_by_name/x" + session.zoomLevel + "/" + imgName + ".png");
 

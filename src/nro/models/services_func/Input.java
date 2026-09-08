@@ -42,7 +42,7 @@ import nro.models.player.WalletLeg;
 import nro.models.player.WalletMutationContext;
 import nro.models.player.WalletReason;
 import nro.models.player.WalletResult;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.services.ClanService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services.PlayerService;
@@ -620,7 +620,7 @@ public class Input {
                         clan = player.clan;
                         if (clan.isLeader(player)) {
                             clan.deleteDB(clan.id);
-                            Manager.CLANS.remove(clan);
+                            GameRuntime.gI().clans().remove(clan);
                             player.clan = null;
                             player.clanMember = null;
                             ClanService.gI().sendMyClan(player);

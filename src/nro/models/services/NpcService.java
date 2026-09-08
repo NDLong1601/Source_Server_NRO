@@ -4,7 +4,7 @@ import nro.models.consts.ConstNpc;
 import nro.models.npc.Npc;
 import nro.models.npc.NpcFactory;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.network.Message;
 import nro.models.utils.Logger;
 
@@ -89,7 +89,7 @@ public class NpcService {
     }
 
     public int getAvatar(int npcId) {
-        for (Npc npc : Manager.NPCS) {
+        for (Npc npc : GameRuntime.gI().npcs().snapshot()) {
             if (npc.tempId == npcId) {
                 return npc.avartar;
             }

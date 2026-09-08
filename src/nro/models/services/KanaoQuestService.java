@@ -9,7 +9,7 @@ import nro.models.map.service.MapService;
 import nro.models.mob.Mob;
 import nro.models.player.Player;
 import nro.models.player_system.Template;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.task.TaskConfig;
 import nro.models.task.TaskRewardService;
 import nro.models.utils.Util;
@@ -124,7 +124,7 @@ public final class KanaoQuestService {
             }
             Set<Integer> mobIds = new LinkedHashSet<>();
             for (Mob mob : map.zones.get(0).mobs) {
-                if (mob != null && Manager.getMobTemplateByTemp(mob.tempId) != null) {
+                if (mob != null && GameRuntime.gI().templates().mob(mob.tempId) != null) {
                     mobIds.add(mob.tempId);
                 }
             }
@@ -136,7 +136,7 @@ public final class KanaoQuestService {
     }
 
     private String getMobName(int mobId) {
-        Template.MobTemplate mobTemplate = Manager.getMobTemplateByTemp(mobId);
+        Template.MobTemplate mobTemplate = GameRuntime.gI().templates().mob(mobId);
         return mobTemplate != null ? mobTemplate.name : "quái " + mobId;
     }
 

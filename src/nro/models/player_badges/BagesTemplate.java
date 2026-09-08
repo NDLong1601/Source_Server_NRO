@@ -2,7 +2,7 @@ package nro.models.player_badges;
 
 import nro.models.item.Item;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +17,7 @@ public class BagesTemplate {
     public List<Item.ItemOption> options = new ArrayList<>();
 
     public static int findIdItemByIdIdEffect(int idEffect) {
-        for (BagesTemplate data : Manager.BAGES_TEMPLATES) {
+        for (BagesTemplate data : GameRuntime.gI().templates().badges()) {
             if (data.idEffect == idEffect) {
                 return data.idItem;
             }
@@ -26,7 +26,7 @@ public class BagesTemplate {
     }
 
     public static int fineIdEffectbyIdItem(int idItem) {
-        for (BagesTemplate data : Manager.BAGES_TEMPLATES) {
+        for (BagesTemplate data : GameRuntime.gI().templates().badges()) {
             if (data.idItem == idItem) {
                 return data.idEffect;
             }
@@ -35,7 +35,7 @@ public class BagesTemplate {
     }
 
     public static BagesTemplate fineBadgesbyIdItem(int idItem) {
-        for (BagesTemplate data : Manager.BAGES_TEMPLATES) {
+        for (BagesTemplate data : GameRuntime.gI().templates().badges()) {
             if (data.idItem == idItem) {
                 return data;
             }
@@ -44,7 +44,7 @@ public class BagesTemplate {
     }
 
     public static BagesTemplate findBadgesByIdEffect(int idEffect) {
-        for (BagesTemplate data : Manager.BAGES_TEMPLATES) {
+        for (BagesTemplate data : GameRuntime.gI().templates().badges()) {
             if (data.idEffect == idEffect) {
                 return data;
             }
@@ -68,7 +68,7 @@ public class BagesTemplate {
         Set<Integer> setIdItem = new HashSet<>();
         BadgesService.normalize(player);
         for (BadgesData data : player.dataBadges) {
-            for (BagesTemplate temp : Manager.BAGES_TEMPLATES) {
+            for (BagesTemplate temp : GameRuntime.gI().templates().badges()) {
                 if (temp.idEffect == data.idBadGes) {
                     setIdItem.add(temp.idItem);
                 }
@@ -81,7 +81,7 @@ public class BagesTemplate {
         List<Item.ItemOption> listOptions = new ArrayList<>();
         long now = System.currentTimeMillis();
         for (BadgesData data : player.dataBadges) {
-            for (BagesTemplate temp : Manager.BAGES_TEMPLATES) {
+            for (BagesTemplate temp : GameRuntime.gI().templates().badges()) {
                 if (data.idBadGes == temp.idEffect && data.isUse && data.timeofUseBadges > now) {
                     listOptions.addAll(temp.options);
                 }

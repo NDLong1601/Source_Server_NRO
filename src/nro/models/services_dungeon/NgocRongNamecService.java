@@ -7,7 +7,7 @@ import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.player.Player;
 import nro.models.server.Client;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.server.ServerManager;
 import nro.models.map.service.ItemMapService;
 import nro.models.map.service.NpcService;
@@ -66,11 +66,11 @@ public class NgocRongNamecService implements Runnable {
         listMap.add(43);
         for (byte i = 0; i < (byte) 7; i++) {
             int index = Util.nextInt(0, listMap.size() - 1);
-            int idZone = Util.nextInt(0, Manager.MAPS.get(listMap.get(index)).zones.size() - 1);
+            int idZone = Util.nextInt(0, GameRuntime.gI().worlds().get(listMap.get(index)).zones.size() - 1);
             mapNrNamec[i] = listMap.get(index);
-            nameNrNamec[i] = Manager.MAPS.get(listMap.get(index)).mapName;
+            nameNrNamec[i] = GameRuntime.gI().worlds().get(listMap.get(index)).mapName;
             zoneNrNamec[i] = (byte) idZone;
-            Zone zone = Manager.MAPS.get(listMap.get(index)).zones.get(idZone);
+            Zone zone = GameRuntime.gI().worlds().get(listMap.get(index)).zones.get(idZone);
             int x = Util.nextInt(100, zone.map.mapWidth - 100);
             int y = zone.map.yPhysicInTop(x, 100);
             if (type == (byte) 0) {
@@ -102,11 +102,11 @@ public class NgocRongNamecService implements Runnable {
         for (byte i = 0; i < (byte) 7; i++) {
             if (NgocRongNamecService.gI().pNrNamec[i].equals("")) {
                 int index = Util.nextInt(0, listMap.size() - 1);
-                int idZone = Util.nextInt(0, Manager.MAPS.get(listMap.get(index)).zones.size() - 1);
+                int idZone = Util.nextInt(0, GameRuntime.gI().worlds().get(listMap.get(index)).zones.size() - 1);
                 mapNrNamec[i] = listMap.get(index);
-                nameNrNamec[i] = Manager.MAPS.get(listMap.get(index)).mapName;
+                nameNrNamec[i] = GameRuntime.gI().worlds().get(listMap.get(index)).mapName;
                 zoneNrNamec[i] = (byte) idZone;
-                Zone zone = Manager.MAPS.get(listMap.get(index)).zones.get(idZone);
+                Zone zone = GameRuntime.gI().worlds().get(listMap.get(index)).zones.get(idZone);
                 int x = Util.nextInt(100, zone.map.mapWidth - 100);
                 int y = zone.map.yPhysicInTop(x, 100);
                 if (this.isReinit && this.lastTimeReinit - System.currentTimeMillis() > 0) {
@@ -123,7 +123,7 @@ public class NgocRongNamecService implements Runnable {
 
     public void removeStoneNrNamec() {
         for (byte i = 0; i < (byte) 7; i++) {
-            Zone zone = Manager.MAPS.get(mapNrNamec[i]).zones.get(zoneNrNamec[i]);
+            Zone zone = GameRuntime.gI().worlds().get(mapNrNamec[i]).zones.get(zoneNrNamec[i]);
             int idItem = (int) (i + 353);
             int idItem2 = 362;
             for (byte j = 0; j < zone.items.size(); j++) {
@@ -189,7 +189,7 @@ public class NgocRongNamecService implements Runnable {
         }
         int idMAP = mapNrNamec[p.idGo];
         int idZone = zoneNrNamec[p.idGo];
-        Zone z = Manager.MAPS.get(idMAP).zones.get(idZone);
+        Zone z = GameRuntime.gI().worlds().get(idMAP).zones.get(idZone);
         if (z != null && !z.items.isEmpty()) {
             for (int i = 0; i < z.items.size(); i++) {
                 ItemMap it = z.items.get(i);
@@ -210,7 +210,7 @@ public class NgocRongNamecService implements Runnable {
             int idMAP = mapNrNamec[id];
             int idZone = zoneNrNamec[id];
             Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
-            Zone z = Manager.MAPS.get(idMAP).zones.get(idZone);
+            Zone z = GameRuntime.gI().worlds().get(idMAP).zones.get(idZone);
             if (z != null && !z.items.isEmpty()) {
                 ItemMap it = z.getItemMapByTempId(temp);
                 if (it != null) {
@@ -233,7 +233,7 @@ public class NgocRongNamecService implements Runnable {
                             int w = 0;
                             for (int i = 0; i < findIndex(index, indexMap).size(); i++) {
                                 int map = findIndex(index, indexMap).get(i);
-                                w += Manager.MAPS.get(map).mapWidth;
+                                w += GameRuntime.gI().worlds().get(map).mapWidth;
                             }
                             return (id + 1) + " Sao:" + z.map.mapName + " (" + Math.abs((pl.location.x - it.x - w) / 10)
                                     + " m)";
@@ -277,7 +277,7 @@ public class NgocRongNamecService implements Runnable {
                         int w = 0;
                         for (int i = 0; i < findIndex(index, indexMap).size(); i++) {
                             int map = findIndex(index, indexMap).get(i);
-                            w += Manager.MAPS.get(map).mapWidth;
+                            w += GameRuntime.gI().worlds().get(map).mapWidth;
                         }
                         return (id + 1) + " Sao:" + player.zone.map.mapName + " ("
                                 + Math.abs((pl.location.x - player.location.x - w) / 10) + " m)(" + nPlayer + ")";
@@ -300,7 +300,7 @@ public class NgocRongNamecService implements Runnable {
             int idMAP = mapNrNamec[id];
             int idZone = zoneNrNamec[id];
             Integer[] sttMap = { 7, 8, 9, 10, 11, 12, 13, 25, 31, 32, 33, 34, 43 };
-            Zone z = Manager.MAPS.get(idMAP).zones.get(idZone);
+            Zone z = GameRuntime.gI().worlds().get(idMAP).zones.get(idZone);
             if (z != null && !z.items.isEmpty()) {
                 ItemMap it = z.getItemMapByTempId(temp);
                 if (it != null) {
@@ -323,7 +323,7 @@ public class NgocRongNamecService implements Runnable {
                             int w = 0;
                             for (int i = 0; i < findIndex(index, indexMap).size(); i++) {
                                 int map = findIndex(index, indexMap).get(i);
-                                w += Manager.MAPS.get(map).mapWidth;
+                                w += GameRuntime.gI().worlds().get(map).mapWidth;
                             }
                             return "Hóa thạch Ngọc Rồng:" + z.map.mapName + " ("
                                     + Math.abs((pl.location.x - it.x - w) / 10) + " m)";

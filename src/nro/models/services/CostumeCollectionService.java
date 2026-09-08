@@ -22,7 +22,7 @@ import nro.models.network.Message;
 import nro.models.player.Player;
 import nro.models.player.PlayerConfig;
 import nro.models.player_system.Template;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.shop.ItemShop;
 import nro.models.shop.Shop;
 import nro.models.shop.TabShop;
@@ -495,8 +495,8 @@ public class CostumeCollectionService {
     }
 
     private Template.ItemTemplate getItemTemplate(short itemTemplateId) {
-        return itemTemplateId >= 0 && itemTemplateId < Manager.ITEM_TEMPLATES.size()
-                ? Manager.ITEM_TEMPLATES.get(itemTemplateId) : null;
+        return itemTemplateId >= 0 && itemTemplateId < GameRuntime.gI().templates().itemTemplates().size()
+                ? GameRuntime.gI().templates().itemTemplates().get(itemTemplateId) : null;
     }
 
     private int countOwnedGroups(Set<Short> ownedIds, List<CostumeGroup> costumes) {
@@ -536,7 +536,7 @@ public class CostumeCollectionService {
 
     private List<CostumeGroup> getCostumesForGender(byte gender) {
         Map<String, CostumeGroup> groupedCostumes = new LinkedHashMap<>();
-        for (Template.ItemTemplate template : Manager.ITEM_TEMPLATES) {
+        for (Template.ItemTemplate template : GameRuntime.gI().templates().itemTemplates()) {
             if (template != null && template.type == COSTUME_TYPE
                     && (template.gender == gender || template.gender > 2)
                     && !isHeadOnlyCostume(template)) {
@@ -591,11 +591,11 @@ public class CostumeCollectionService {
     private ShopLocation findShopLocation(short templateId) {
         ShopLocation location = new ShopLocation();
         LinkedHashSet<String> salePlaces = new LinkedHashSet<>();
-        for (Shop shop : Manager.SHOPS) {
+        for (Shop shop : GameRuntime.gI().templates().shops()) {
             if (shop == null || shop.tabShops == null) {
                 continue;
             }
-            Template.NpcTemplate npc = Manager.getNpcTemplate(shop.npcId);
+            Template.NpcTemplate npc = GameRuntime.gI().templates().npc(shop.npcId);
             String npcName = npc == null ? "NPC " + shop.npcId : npc.name;
             for (TabShop tab : shop.tabShops) {
                 if (tab == null || tab.itemShops == null) {

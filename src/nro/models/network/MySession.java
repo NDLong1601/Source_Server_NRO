@@ -15,7 +15,7 @@ import java.io.IOException;
 import nro.models.network.Message;
 import nro.models.server.Client;
 import nro.models.server.Maintenance;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.player_system.AntiLogin;
 import nro.models.services.Service;
 import nro.models.utils.Logger;
@@ -240,7 +240,7 @@ public class MySession extends Session {
             return;
         }
 
-        if (Manager.LOCAL) {
+        if (GameRuntime.gI().config().local()) {
             Service.gI().sendThongBaoOK(this, "Server này chỉ để lưu dữ liệu\nVui lòng qua server khác");
             return;
         }
@@ -248,7 +248,7 @@ public class MySession extends Session {
             Service.gI().sendThongBaoOK(this, "Server đang trong thời gian bảo trì, vui lòng quay lại sau");
             return;
         }
-        if (!this.isAdmin && Client.gI().getPlayers().size() >= Manager.MAX_PLAYER) {
+        if (!this.isAdmin && Client.gI().getPlayers().size() >= GameRuntime.gI().config().maxPlayers()) {
             Service.gI().sendThongBaoOK(this, "Máy chủ hiện đang quá tải, "
                     + "cư dân vui lòng di chuyển sang máy chủ khác.");
             return;

@@ -6,7 +6,7 @@ import nro.models.player_system.Template.AchievementTemplate;
 import nro.models.network.Message;
 import nro.models.player.Achievement;
 import nro.models.player.Player;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.skill.Skill;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
@@ -27,9 +27,9 @@ public class AchievementService {
         try {
             msg = new Message(-76);
             msg.writer().writeByte(0);
-            msg.writer().writeByte(Manager.ACHIEVEMENT_TEMPLATE.size());
-            for (int i = 0; i < Manager.ACHIEVEMENT_TEMPLATE.size(); i++) {
-                AchievementTemplate at = Manager.ACHIEVEMENT_TEMPLATE.get(i);
+            msg.writer().writeByte(GameRuntime.gI().templates().achievements().size());
+            for (int i = 0; i < GameRuntime.gI().templates().achievements().size(); i++) {
+                AchievementTemplate at = GameRuntime.gI().templates().achievements().get(i);
                 msg.writer().writeUTF(at.info1); // info 1
                 msg.writer().writeUTF(regex(player, at.info2) + " (" + numberToString(player.achievement.getCompleted(i)) + "/" + numberToString(at.maxCount) + ")"); // info 2
                 msg.writer().writeShort(at.money); // money

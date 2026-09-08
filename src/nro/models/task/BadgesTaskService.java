@@ -4,13 +4,13 @@ import nro.models.player.Player;
 import nro.models.player_badges.BadgesData;
 import nro.models.player_badges.BagesTemplate;
 import nro.models.player_badges.BadgesService;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 
 public class BadgesTaskService {
 
     public static void createAndResetTask(Player player) {
         player.dataTaskBadges.clear();
-        for (BadgesTaskTemplate BTT : Manager.TASKS_BADGES_TEMPLATE) {
+        for (BadgesTaskTemplate BTT : GameRuntime.gI().templates().badgeTasks()) {
             BadgesTask data = new BadgesTask();
             data.id = BTT.id;
             data.count = 0;

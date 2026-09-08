@@ -4,7 +4,7 @@ import nro.models.boss.BossID;
 import nro.models.map.Map;
 import nro.models.map.Zone;
 import nro.models.matches.giai_dau.WorldMartialArtsTournamentManager;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
 import nro.models.map.service.MapService;
 import nro.models.services.Service;
 import nro.models.utils.Util;
@@ -96,7 +96,7 @@ public class NonInteractiveNPC extends Player {
     }
 
     private void init() {
-        for (Map m : Manager.MAPS) {
+        for (Map m : GameRuntime.gI().worlds().snapshot()) {
             switch (m.mapId) {
                 case 45 -> {
                     for (Zone z : m.zones) {

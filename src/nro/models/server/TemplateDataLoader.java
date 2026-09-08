@@ -1,0 +1,996 @@
+package nro.models.server;
+
+import nro.models.radar.OptionCard;
+import nro.models.services.RadarService;
+import nro.models.radar.RadarCard;
+import nro.models.data.LocalManager;
+import nro.models.consts.ConstPlayer;
+import nro.models.consts.ConstMap;
+import nro.models.consts.ConstNpc;
+import nro.models.data.DataGame;
+import nro.models.database.ShopDAO;
+import nro.models.player_system.Template.*;
+import nro.models.clan.Clan;
+import nro.models.clan.ClanMember;
+import nro.models.clan.ClanTreasuryService;
+import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanShopService;
+import nro.models.clan.ClanItemStorageService;
+import nro.models.clan.ClanGiftService;
+import nro.models.clan.ClanBuffService;
+import static nro.models.data.DataGame.MAP_MOUNT_NUM;
+import nro.models.player_system.GiftCode;
+import nro.models.managers.GiftCodeManager;
+import nro.models.intrinsic.Intrinsic;
+import nro.models.item.Item;
+import nro.models.item.Item.ItemOption;
+import nro.models.map.WayPoint;
+import nro.models.npc.Npc;
+import nro.models.npc.NpcFactory;
+import nro.models.shop.Shop;
+import nro.models.skill.NClass;
+import nro.models.skill.Skill;
+import nro.models.task.SideTaskTemplate;
+import nro.models.task.SubTaskMain;
+import nro.models.task.TaskMain;
+import nro.models.map.service.MapService;
+import nro.models.utils.Logger;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import nro.models.network.Sender;
+import nro.models.map.Zone;
+import nro.models.matches.TOP;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import nro.models.npc.NonInteractiveNPC;
+import nro.models.player.Player;
+import nro.models.player_badges.BagesTemplate;
+import nro.models.shop_ky_gui.ConsignItem;
+import nro.models.shop_ky_gui.ConsignItemOptionsCodec;
+import nro.models.shop_ky_gui.ConsignListingStatus;
+import nro.models.shop_ky_gui.ConsignShopManager;
+import nro.models.task.BadgesTaskTemplate;
+import nro.models.task.ClanTaskTemplate;
+import nro.models.utils.FileIO;
+import nro.models.utils.Util;
+import nro.models.admin.GiftBoxConfigService;
+import nro.models.activity.ActivityConfigService;
+import nro.models.activity.ActivityClaimAuditService;
+import nro.models.activity.ActivityMetricsService;
+
+final class TemplateDataLoader {
+
+    private static final int NPC_NAME_LIFT_MARKER = -32000;
+
+    private MapTemplate[] MAP_TEMPLATES = new MapTemplate[0];
+    private final List<ItemOptionTemplate> ITEM_OPTION_TEMPLATES = new ArrayList<>();
+    private final List<ArrHead2Frames> ARR_HEAD_2_FRAMES = new ArrayList<>();
+    private final Map<String, Byte> IMAGES_BY_NAME = new HashMap<>();
+    private final List<ItemTemplate> ITEM_TEMPLATES = new ArrayList<>();
+    private final Map<Short, List<ItemOption>> ITEM_DEFAULT_OPTIONS = new HashMap<>();
+    private final List<MobTemplate> MOB_TEMPLATES = new ArrayList<>();
+    private final List<NpcTemplate> NPC_TEMPLATES = new ArrayList<>();
+    private final List<TaskMain> TASKS = new ArrayList<>();
+    private final List<SideTaskTemplate> SIDE_TASKS_TEMPLATE = new ArrayList<>();
+    private final List<ClanTaskTemplate> CLAN_TASKS_TEMPLATE = new ArrayList<>();
+    private final List<AchievementTemplate> ACHIEVEMENT_TEMPLATE = new ArrayList<>();
+    private final List<Intrinsic> INTRINSICS = new ArrayList<>();
+    private final List<Intrinsic> INTRINSIC_TD = new ArrayList<>();
+    private final List<Intrinsic> INTRINSIC_NM = new ArrayList<>();
+    private final List<Intrinsic> INTRINSIC_XD = new ArrayList<>();
+    private final List<HeadAvatar> HEAD_AVATARS = new ArrayList<>();
+    private final List<BgItem> BG_ITEMS = new ArrayList<>();
+    private final List<FlagBag> FLAGS_BAGS = new ArrayList<>();
+    private final List<NClass> NCLASS = new ArrayList<>();
+    private List<Shop> SHOPS = new ArrayList<>();
+    private final List<Clan> CLANS = new ArrayList<>();
+    private final List<String> NOTIFY = new ArrayList<>();
+    private static final String CLAN_FEATURE_NOTIFY_NAME = "Bang hội - Cập nhật tính năng";
+    private static final String CLAN_FEATURE_NOTIFY_TEXT
+            = "Chào mừng bạn đến với các hoạt động bang hội!\n\n"
+            + "Bắt đầu bằng cách tạo hoặc gia nhập một bang để cùng đồng đội nhận nhiệm vụ và tích lũy Capsule Bang.\n\n"
+            + "- NPC Dr.Brief tại Lãnh địa Bang Hội: xem Nhiệm vụ Bang, Hợp đồng tuần và Cửa hàng Bang hội. Bang chủ có thêm các mục quản lý, nâng cấp và tập hợp thành viên.\n"
+            + "- NPC Giu-ma Đầu Bò: điểm danh nhận 1 Capsule Bang mỗi ngày; bang chủ có thể gọi Gấu Tướng Cướp khi có đủ đồng đội.\n"
+            + "- Tây Thánh địa: nơi tìm vật phẩm và mảnh hồn bông tai Porata.\n"
+            + "- Cùng hoàn thành nhiệm vụ và hợp đồng tuần để mang thêm Capsule Bang về cho bang.\n"
+            + "- Khi mua vật phẩm hoặc nâng cấp, điểm cá nhân được ưu tiên; bang chủ và bang phó có thể dùng quỹ chung của bang.\n\n"
+            + "Hãy rủ đồng đội cùng tham gia để bang hội phát triển nhanh hơn!";
+    private final List<BadgesTaskTemplate> TASKS_BADGES_TEMPLATE = new ArrayList<>();
+    private final List<BagesTemplate> BAGES_TEMPLATES = new ArrayList<>();
+    private final LeaderboardService leaderboards;
+
+    TemplateDataLoader(LeaderboardService leaderboards) {
+        this.leaderboards = Objects.requireNonNull(leaderboards, "leaderboards");
+    }
+
+    private void ensureClanFeatureNotify() {
+        String notifyPrefix = CLAN_FEATURE_NOTIFY_NAME + "<>";
+        String notifyText = notifyPrefix + CLAN_FEATURE_NOTIFY_TEXT;
+        for (int i = 0; i < NOTIFY.size(); i++) {
+            String notify = NOTIFY.get(i);
+            if (notify != null && notify.startsWith(notifyPrefix)) {
+                if (!notify.equals(notifyText)) {
+                    NOTIFY.set(i, notifyText);
+                }
+                return;
+            }
+        }
+        // Keep the update at the top when the database migration has not been run yet.
+        NOTIFY.add(0, notifyText);
+    }
+
+    private void ensureClanHeadquartersNpc(MapTemplate mapTemplate) {
+        if (mapTemplate.id != 153) {
+            return;
+        }
+        for (int i = 0; i < mapTemplate.npcId.length; i++) {
+            if (mapTemplate.npcId[i] == ConstNpc.DR_DRIEF) {
+                mapTemplate.npcX[i] = 659;
+                mapTemplate.npcY[i] = 744;
+                return;
+            }
+        }
+
+        // Older databases only placed Giu-ma Đầu Bò in the guild headquarters.
+        // Add Dr Drief so the weekly contract and rally menus are reachable even
+        // before the map-data migration is applied.
+        int oldLength = mapTemplate.npcId.length;
+        mapTemplate.npcId = Arrays.copyOf(mapTemplate.npcId, oldLength + 1);
+        mapTemplate.npcX = Arrays.copyOf(mapTemplate.npcX, oldLength + 1);
+        mapTemplate.npcY = Arrays.copyOf(mapTemplate.npcY, oldLength + 1);
+        mapTemplate.npcId[oldLength] = ConstNpc.DR_DRIEF;
+        mapTemplate.npcX[oldLength] = 659;
+        mapTemplate.npcY[oldLength] = 744;
+    }
+
+    private void ensureClanShopNpc() {
+        for (Shop shop : SHOPS) {
+            if (shop != null && "SHOP_CLAN".equals(shop.tagName)) {
+                shop.npcId = ConstNpc.DR_DRIEF;
+            }
+        }
+    }
+
+    DataBundle load() {
+        loadDatabase();
+        return new DataBundle(System.currentTimeMillis(), MAP_TEMPLATES, ITEM_OPTION_TEMPLATES,
+                ARR_HEAD_2_FRAMES, IMAGES_BY_NAME, ITEM_TEMPLATES, ITEM_DEFAULT_OPTIONS, MOB_TEMPLATES,
+                NPC_TEMPLATES, TASKS, SIDE_TASKS_TEMPLATE, CLAN_TASKS_TEMPLATE, ACHIEVEMENT_TEMPLATE,
+                INTRINSICS, INTRINSIC_TD, INTRINSIC_NM, INTRINSIC_XD, HEAD_AVATARS, BG_ITEMS,
+                FLAGS_BAGS, NCLASS, SHOPS, NOTIFY, TASKS_BADGES_TEMPLATE, BAGES_TEMPLATES, CLANS);
+    }
+
+    private void loadDatabase() {
+        long st = System.currentTimeMillis();
+        JSONArray dataArray;
+        JSONObject dataObject;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try (Connection ConnectionDatabase = LocalManager.getConnection()) {
+            //load part
+            ps = ConnectionDatabase.prepareStatement("select * from part ORDER BY id ASC");
+            rs = ps.executeQuery();
+            List<Part> parts = new ArrayList<>();
+            while (rs.next()) {
+                Part part = new Part();
+                part.id = rs.getShort("id");
+                part.type = rs.getByte("type");
+                dataArray = (JSONArray) JSONValue.parse(rs.getString("data").replaceAll("\\\"", ""));
+                for (int j = 0; j < dataArray.size(); j++) {
+                    JSONArray pd = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
+                    part.partDetails.add(new PartDetail(Short.parseShort(String.valueOf(pd.get(0))),
+                            Byte.parseByte(String.valueOf(pd.get(1))),
+                            Byte.parseByte(String.valueOf(pd.get(2)))));
+                    pd.clear();
+                }
+                parts.add(part);
+                dataArray.clear();
+            }
+            try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("data/update_data/part"))) {
+                dos.writeShort(parts.size());
+                for (Part part : parts) {
+                    dos.writeByte(part.type);
+                    for (PartDetail partDetail : part.partDetails) {
+                        dos.writeShort(partDetail.iconId);
+                        dos.writeByte(partDetail.dx);
+                        dos.writeByte(partDetail.dy);
+                    }
+                }
+                dos.flush();
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded part (" + parts.size() + ")\n");
+
+            //load bg item template
+            ps = ConnectionDatabase.prepareStatement("select * from bg_item_template ORDER BY id ASC");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                BgItem bgItem = new BgItem();
+                bgItem.id = rs.getInt("id");
+                bgItem.layer = rs.getByte("layer");
+                bgItem.dx = rs.getShort("dx");
+                bgItem.dy = rs.getShort("dy");
+                bgItem.idImage = rs.getShort("image_id");
+                BG_ITEMS.add(bgItem);
+            }
+            Logger.success(Logger.RED + "Successfully loaded bg item template (" + BG_ITEMS.size() + ")\n");
+
+            //load array head 2 frames
+            ps = ConnectionDatabase.prepareStatement("select * from array_head_2_frames");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                ArrHead2Frames arrHead2Frames = new ArrHead2Frames();
+                dataArray = (JSONArray) JSONValue.parse(rs.getString("data"));
+                for (int i = 0; i < dataArray.size(); i++) {
+                    arrHead2Frames.frames.add(Integer.valueOf(dataArray.get(i).toString()));
+                }
+                ARR_HEAD_2_FRAMES.add(arrHead2Frames);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded arr head 2 frames (" + ARR_HEAD_2_FRAMES.size() + ")\n");
+
+            // Giai đoạn 1: đảm bảo kho bang có schema trước khi đọc các clan.
+            ClanTreasuryService.gI().ensureSchema(ConnectionDatabase);
+            ClanTreeService.gI().ensureSchema(ConnectionDatabase);
+            ClanProgressionService.gI().ensureSchema(ConnectionDatabase);
+            ClanShopService.gI().ensureSchema(ConnectionDatabase);
+            ClanGiftService.gI().ensureSchema(ConnectionDatabase);
+            ClanItemStorageService.gI().ensureSchema(ConnectionDatabase);
+            ClanBuffService.gI().ensureSchema(ConnectionDatabase);
+
+            //load clan
+            ps = ConnectionDatabase.prepareStatement("select * from clan");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Clan clan = new Clan();
+                clan.id = rs.getInt("id");
+                clan.name = rs.getString("name");
+                clan.name2 = rs.getString("name_2");
+                clan.slogan = rs.getString("slogan");
+                clan.imgId = rs.getByte("img_id");
+                clan.powerPoint = rs.getLong("power_point");
+                clan.maxMember = Clan.normalizeMaxMember(rs.getInt("max_member"));
+                clan.capsuleClan = rs.getInt("clan_point");
+                clan.level = Clan.normalizeLevel(rs.getInt("level"));
+                clan.clanGold = rs.getLong("clan_gold");
+                clan.clanGem = rs.getLong("clan_gem");
+                clan.treasuryVersion = rs.getLong("treasury_version");
+                clan.createTime = (int) (rs.getTimestamp("create_time").getTime() / 1000);
+                dataArray = (JSONArray) JSONValue.parse(rs.getString("members"));
+                for (int i = 0; i < dataArray.size(); i++) {
+                    dataObject = (JSONObject) JSONValue.parse(String.valueOf(dataArray.get(i)));
+                    ClanMember cm = new ClanMember();
+                    cm.clan = clan;
+                    cm.id = Integer.parseInt(String.valueOf(dataObject.get("id")));
+                    cm.name = String.valueOf(dataObject.get("name"));
+                    cm.head = Short.parseShort(String.valueOf(dataObject.get("head")));
+                    cm.body = Short.parseShort(String.valueOf(dataObject.get("body")));
+                    cm.leg = Short.parseShort(String.valueOf(dataObject.get("leg")));
+                    cm.role = Byte.parseByte(String.valueOf(dataObject.get("role")));
+                    cm.donate = Integer.parseInt(String.valueOf(dataObject.get("donate")));
+                    cm.receiveDonate = Integer.parseInt(String.valueOf(dataObject.get("receive_donate")));
+                    cm.memberPoint = Integer.parseInt(String.valueOf(dataObject.get("member_point")));
+                    cm.clanPoint = Integer.parseInt(String.valueOf(dataObject.get("clan_point")));
+                    cm.joinTime = Integer.parseInt(String.valueOf(dataObject.get("join_time")));
+                    cm.timeAskPea = Long.parseLong(String.valueOf(dataObject.get("ask_pea_time")));
+                    try {
+                        cm.powerPoint = Long.parseLong(String.valueOf(dataObject.get("power")));
+                    } catch (NumberFormatException e) {
+                    }
+                    clan.addClanMember(cm);
+                }
+                dataArray = (JSONArray) JSONValue.parse(rs.getString("thanhTichBDKB"));
+                if (!dataArray.isEmpty()) {
+                    clan.levelDoneBanDoKhoBau = Integer.parseInt(String.valueOf(dataArray.get(0)));
+                    clan.thoiGianHoanThanhBDKB = Long.parseLong(String.valueOf(dataArray.get(1)));
+                }
+                dataArray.clear();
+                // Các bản cũ dùng cột tops với giá trị "cc"; bản mới lưu state
+                // hợp đồng bang tuần và cooldown truy nã Gấu Tướng Cướp ở đây.
+                clan.loadWeeklyState(rs.getString("tops"));
+                CLANS.add(clan);
+            }
+
+            // Query progression only after the clan result set is exhausted;
+            // several JDBC drivers close an active ResultSet when another statement is issued.
+            for (Clan clan : CLANS) {
+                // Backfill clans that were created before Cây bang existed.
+                // INSERT IGNORE means a pre-existing tree is never reset or overwritten.
+                ClanTreeService.gI().initializeClan(ConnectionDatabase, clan);
+                ClanProgressionService.gI().loadForClan(ConnectionDatabase, clan);
+            }
+
+            ps = ConnectionDatabase.prepareStatement("select id from clan order by id desc limit 1");
+            rs = ps.executeQuery();
+            if (rs.first()) {
+                Clan.NEXT_ID = rs.getInt("id") + 1;
+            }
+
+            Logger.success(Logger.RED + "Successfully loaded clan (" + CLANS.size() + "), clan next id: " + Clan.NEXT_ID + "\n");
+
+            //load skill
+            ps = ConnectionDatabase.prepareStatement("select * from skill_template order by nclass_id, slot");
+            rs = ps.executeQuery();
+            byte nClassId = -1;
+            NClass nClass = null;
+            while (rs.next()) {
+                byte id = rs.getByte("nclass_id");
+                if (id != nClassId) {
+                    nClassId = id;
+                    nClass = new NClass();
+                    nClass.name = id == ConstPlayer.TRAI_DAT ? "Trái Đất" : id == ConstPlayer.NAMEC ? "Namếc" : "Xayda";
+                    nClass.classId = nClassId;
+                    NCLASS.add(nClass);
+                }
+                SkillTemplate skillTemplate = new SkillTemplate();
+                skillTemplate.classId = nClassId;
+                skillTemplate.id = rs.getByte("id");
+                skillTemplate.name = rs.getString("name");
+                skillTemplate.maxPoint = rs.getByte("max_point");
+                skillTemplate.manaUseType = rs.getByte("mana_use_type");
+                skillTemplate.type = rs.getByte("type");
+                skillTemplate.iconId = rs.getShort("icon_id");
+                skillTemplate.damInfo = rs.getString("dam_info");
+                nClass.skillTemplatess.add(skillTemplate);
+
+                dataArray = (JSONArray) JSONValue.parse(
+                        rs.getString("skills")
+                                .replaceAll("\\[\"", "[")
+                                .replaceAll("\"\\[", "[")
+                                .replaceAll("\"\\]", "]")
+                                .replaceAll("\\]\"", "]")
+                                .replaceAll("\\}\",\"\\{", "},{")
+                );
+                for (int j = 0; j < dataArray.size(); j++) {
+                    JSONObject dts = (JSONObject) JSONValue.parse(String.valueOf(dataArray.get(j)));
+                    Skill skill = new Skill();
+                    skill.template = skillTemplate;
+                    skill.skillId = Short.parseShort(String.valueOf(dts.get("id")));
+                    skill.point = Byte.parseByte(String.valueOf(dts.get("point")));
+                    skill.powRequire = Long.parseLong(String.valueOf(dts.get("power_require")));
+                    skill.manaUse = Integer.parseInt(String.valueOf(dts.get("mana_use")));
+                    skill.coolDown = Integer.parseInt(String.valueOf(dts.get("cool_down")));
+                    skill.dx = Integer.parseInt(String.valueOf(dts.get("dx")));
+                    skill.dy = Integer.parseInt(String.valueOf(dts.get("dy")));
+                    skill.maxFight = Integer.parseInt(String.valueOf(dts.get("max_fight")));
+                    skill.damage = Integer.parseInt(String.valueOf(dts.get("damage")));
+                    skill.price = Short.parseShort(String.valueOf(dts.get("price")));
+                    skill.moreInfo = String.valueOf(dts.get("info"));
+                    skillTemplate.skillss.add(skill);
+                }
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded skill (" + NCLASS.size() + ")\n");
+
+            //load head avatar
+            ps = ConnectionDatabase.prepareStatement("select * from head_avatar");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                HeadAvatar headAvatar = new HeadAvatar(rs.getInt("head_id"), rs.getInt("avatar_id"));
+                HEAD_AVATARS.add(headAvatar);
+            }
+            Logger.success(Logger.RED + "Successfully loaded head avatar (" + HEAD_AVATARS.size() + ")\n");
+
+            //load flag bag
+            ps = ConnectionDatabase.prepareStatement("select * from flag_bag");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                FlagBag flagBag = new FlagBag();
+                flagBag.id = rs.getInt("id");
+                flagBag.name = rs.getString("name");
+                flagBag.gold = rs.getInt("gold");
+                flagBag.gem = rs.getInt("gem");
+                flagBag.iconId = rs.getShort("icon_id");
+                String[] iconData = rs.getString("icon_data").split(",");
+                flagBag.iconEffect = new short[iconData.length];
+                for (int j = 0; j < iconData.length; j++) {
+                    flagBag.iconEffect[j] = Short.parseShort(iconData[j].trim());
+                }
+                FLAGS_BAGS.add(flagBag);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded flag bag (" + FLAGS_BAGS.size() + ")\n");
+
+            //load intrinsic
+            ps = ConnectionDatabase.prepareStatement("select * from intrinsic");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Intrinsic intrinsic = new Intrinsic();
+                intrinsic.id = rs.getByte("id");
+                intrinsic.name = rs.getString("name");
+                intrinsic.paramFrom1 = rs.getShort("param_from_1");
+                intrinsic.paramTo1 = rs.getShort("param_to_1");
+                intrinsic.paramFrom2 = rs.getShort("param_from_2");
+                intrinsic.paramTo2 = rs.getShort("param_to_2");
+                intrinsic.icon = rs.getShort("icon");
+                intrinsic.gender = rs.getByte("gender");
+                switch (intrinsic.gender) {
+                    case ConstPlayer.TRAI_DAT ->
+                        INTRINSIC_TD.add(intrinsic);
+                    case ConstPlayer.NAMEC ->
+                        INTRINSIC_NM.add(intrinsic);
+                    case ConstPlayer.XAYDA ->
+                        INTRINSIC_XD.add(intrinsic);
+                    default -> {
+                        INTRINSIC_TD.add(intrinsic);
+                        INTRINSIC_NM.add(intrinsic);
+                        INTRINSIC_XD.add(intrinsic);
+                    }
+                }
+                INTRINSICS.add(intrinsic);
+            }
+            Logger.success(Logger.RED + "Successfully loaded intrinsic (" + INTRINSICS.size() + ")\n");
+
+            //load task
+            ps = ConnectionDatabase.prepareStatement("SELECT id, task_main_template.name, detail, "
+                    + "task_sub_template.name AS 'sub_name', max_count, notify, npc_id, map "
+                    + "FROM task_main_template JOIN task_sub_template ON task_main_template.id = "
+                    + "task_sub_template.task_main_id ORDER BY task_main_template.id, task_sub_template.ducvupro");
+            rs = ps.executeQuery();
+            int taskId = -1;
+            TaskMain task = null;
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                if (id != taskId) {
+                    taskId = id;
+                    task = new TaskMain();
+                    task.id = taskId;
+                    task.name = rs.getString("name");
+                    task.detail = rs.getString("detail");
+                    TASKS.add(task);
+                }
+                SubTaskMain subTask = new SubTaskMain();
+                subTask.name = rs.getString("sub_name");
+                subTask.maxCount = rs.getShort("max_count");
+                subTask.notify = rs.getString("notify");
+                subTask.npcId = rs.getByte("npc_id");
+                subTask.mapId = rs.getShort("map");
+                task.subTasks.add(subTask);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded task (" + TASKS.size() + ")\n");
+
+            //load side task
+            ps = ConnectionDatabase.prepareStatement("select * from side_task_template order by id");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                SideTaskTemplate sideTask = new SideTaskTemplate();
+                sideTask.id = rs.getInt("id");
+                sideTask.name = rs.getString("name");
+                String[] mc1 = rs.getString("max_count_lv1").split("-");
+                String[] mc2 = rs.getString("max_count_lv2").split("-");
+                String[] mc3 = rs.getString("max_count_lv3").split("-");
+                String[] mc4 = rs.getString("max_count_lv4").split("-");
+                String[] mc5 = rs.getString("max_count_lv5").split("-");
+                sideTask.count[0][0] = Integer.parseInt(mc1[0]);
+                sideTask.count[0][1] = Integer.parseInt(mc1[1]);
+                sideTask.count[1][0] = Integer.parseInt(mc2[0]);
+                sideTask.count[1][1] = Integer.parseInt(mc2[1]);
+                sideTask.count[2][0] = Integer.parseInt(mc3[0]);
+                sideTask.count[2][1] = Integer.parseInt(mc3[1]);
+                sideTask.count[3][0] = Integer.parseInt(mc4[0]);
+                sideTask.count[3][1] = Integer.parseInt(mc4[1]);
+                sideTask.count[4][0] = Integer.parseInt(mc5[0]);
+                sideTask.count[4][1] = Integer.parseInt(mc5[1]);
+                SIDE_TASKS_TEMPLATE.add(sideTask);
+            }
+            Logger.success(Logger.RED + "Successfully loaded side task (" + SIDE_TASKS_TEMPLATE.size() + ")\n");
+
+            // load task badges
+            ps = ConnectionDatabase.prepareStatement("select * from task_badges_template order by id");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                BadgesTaskTemplate badgesTaskTemplate = new BadgesTaskTemplate();
+                badgesTaskTemplate.id = rs.getInt("id");
+                badgesTaskTemplate.name = rs.getString("NAME");
+                badgesTaskTemplate.count = rs.getInt("maxCount");
+                badgesTaskTemplate.idbadgesReward = rs.getInt("idbadgesReward");
+                TASKS_BADGES_TEMPLATE.add(badgesTaskTemplate);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded task badges (" + TASKS_BADGES_TEMPLATE.size() + ")\n");
+
+            //load clan task
+            ps = ConnectionDatabase.prepareStatement("select * from clan_task_template order by id");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                ClanTaskTemplate clanTask = new ClanTaskTemplate();
+                clanTask.id = rs.getInt("id");
+                clanTask.name = rs.getString("name");
+                String[] mc1 = rs.getString("max_count_lv1").split("-");
+                String[] mc2 = rs.getString("max_count_lv2").split("-");
+                String[] mc3 = rs.getString("max_count_lv3").split("-");
+                String[] mc4 = rs.getString("max_count_lv4").split("-");
+                String[] mc5 = rs.getString("max_count_lv5").split("-");
+                clanTask.count[0][0] = Integer.parseInt(mc1[0]);
+                clanTask.count[0][1] = Integer.parseInt(mc1[1]);
+                clanTask.count[1][0] = Integer.parseInt(mc2[0]);
+                clanTask.count[1][1] = Integer.parseInt(mc2[1]);
+                clanTask.count[2][0] = Integer.parseInt(mc3[0]);
+                clanTask.count[2][1] = Integer.parseInt(mc3[1]);
+                clanTask.count[3][0] = Integer.parseInt(mc4[0]);
+                clanTask.count[3][1] = Integer.parseInt(mc4[1]);
+                clanTask.count[4][0] = Integer.parseInt(mc5[0]);
+                clanTask.count[4][1] = Integer.parseInt(mc5[1]);
+                CLAN_TASKS_TEMPLATE.add(clanTask);
+            }
+            Logger.success(Logger.RED + "Successfully loaded clan task (" + CLAN_TASKS_TEMPLATE.size() + ")\n");
+
+            //load achievement template
+            ps = ConnectionDatabase.prepareStatement("select * from achievement_template");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                ACHIEVEMENT_TEMPLATE.add(new AchievementTemplate(rs.getString("info1"), rs.getString("info2"), rs.getInt("money"), rs.getLong("max_count")));
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded achievement (" + ACHIEVEMENT_TEMPLATE.size() + ")\n");
+
+            int batchSize = 750;
+            int offset = 0;
+
+            try {
+                while (true) {
+                    ps = ConnectionDatabase.prepareStatement(
+                            "SELECT * FROM item_template ORDER BY id ASC LIMIT ? OFFSET ?");
+                    ps.setInt(1, batchSize);
+                    ps.setInt(2, offset);
+                    rs = ps.executeQuery();
+                    if (!rs.next()) {
+                        break;
+                    }
+                    do {
+                        ItemTemplate itemTemp = new ItemTemplate();
+                        itemTemp.id = rs.getShort("id");
+                        itemTemp.type = rs.getByte("type");
+                        itemTemp.gender = rs.getByte("gender");
+                        itemTemp.name = rs.getString("name");
+                        itemTemp.description = rs.getString("description");
+                        itemTemp.level = rs.getByte("level");
+                        itemTemp.iconID = rs.getShort("icon_id");
+                        itemTemp.part = rs.getShort("part");
+                        itemTemp.isUpToUp = rs.getBoolean("is_up_to_up");
+                        itemTemp.strRequire = rs.getInt("power_require");
+                        itemTemp.gold = rs.getInt("gold");
+                        itemTemp.gem = rs.getInt("gem");
+                        itemTemp.head = rs.getInt("head");
+                        itemTemp.body = rs.getInt("body");
+                        itemTemp.leg = rs.getInt("leg");
+
+                        int expectedItemId = ITEM_TEMPLATES.size();
+                        if (itemTemp.id != expectedItemId) {
+                            throw new SQLException("item_template phải liên tục từ ID 0: vị trí "
+                                    + expectedItemId + " đang chứa ID " + itemTemp.id);
+                        }
+
+                        ITEM_TEMPLATES.add(itemTemp);
+                    } while (rs.next());
+                    offset += batchSize;
+                }
+
+                Logger.success(Logger.RED + "Successfully loaded map item template (" + ITEM_TEMPLATES.size() + " items)\n");
+
+            } catch (SQLException e) {
+                throw new IllegalStateException("Cannot load a complete item_template snapshot", e);
+            } finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                    if (ps != null) {
+                        ps.close();
+                    }
+                } catch (SQLException e) {
+                    Logger.error("Error closing resources: " + e.getMessage());
+                }
+            }
+
+            //load item option template
+            ps = ConnectionDatabase.prepareStatement("select id, name from item_option_template order by id asc");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                ItemOptionTemplate optionTemp = new ItemOptionTemplate();
+                optionTemp.id = rs.getInt("id");
+                optionTemp.name = rs.getString("name");
+                ITEM_OPTION_TEMPLATES.add(optionTemp);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");
+
+            loadDefaultItemOptions(ConnectionDatabase);
+            GiftBoxConfigService.gI().load(ConnectionDatabase);
+            ActivityConfigService.gI().load(ConnectionDatabase);
+            ActivityClaimAuditService.gI().ensureSchema(ConnectionDatabase);
+            ActivityMetricsService.gI().start(ConnectionDatabase);
+
+            //load shop
+            SHOPS = ShopDAO.getShops(ConnectionDatabase, ITEM_TEMPLATES,
+                    ITEM_OPTION_TEMPLATES, ITEM_DEFAULT_OPTIONS);
+            ensureClanShopNpc();
+            Logger.success(Logger.RED + "Successfully loaded shop (" + SHOPS.size() + ")\n");
+
+            //load notify
+            ps = ConnectionDatabase.prepareStatement("select * from notify order by id desc");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                NOTIFY.add(rs.getString("name") + "<>" + rs.getString("text"));
+            }
+            ensureClanFeatureNotify();
+            Logger.success(Logger.PURPLE + "Successfully loaded notify (" + NOTIFY.size() + ")\n");
+
+            //load image by name
+            ps = ConnectionDatabase.prepareStatement("select name, n_frame from img_by_name");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                IMAGES_BY_NAME.put(rs.getString("name"), rs.getByte("n_frame"));
+            }
+            Logger.success(Logger.RED + "Successfully loaded images by name (" + IMAGES_BY_NAME.size() + ")\n");
+
+            //Load mount
+            for (ItemTemplate item : ITEM_TEMPLATES) {
+                if (item.type == 23 && getNFrameImageByName("mount_" + item.part + "_0") != 0) {
+                    MAP_MOUNT_NUM.put(item.id, (short) (item.part + 30000));
+                }
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded mount (" + MAP_MOUNT_NUM.size() + ")\n");
+
+            //Load item ki gui
+            ps = ConnectionDatabase.prepareStatement("SELECT `id`, `player_id`, `tab`, `item_id`, `gold`, `gem`, "
+                    + "`quantity`, `itemOption`, `isUpTop`, `isBuy`, `status`, `buyer_id`, `version`, `sold_at` "
+                    + "FROM `shop_ky_gui` WHERE `status` IN ('ACTIVE', 'SOLD') "
+                    + "ORDER BY `isUpTop` DESC, `id` ASC");
+            rs = ps.executeQuery();
+            ConsignShopManager.gI().listItem.clear();
+            while (rs.next()) {
+                int i = rs.getInt("id");
+                int idPl = rs.getInt("player_id");
+                byte tab = rs.getByte("tab");
+                short itemId = rs.getShort("item_id");
+                int gold = rs.getInt("gold");
+                int gem = rs.getInt("gem");
+                int quantity = rs.getInt("quantity");
+                byte isUp = rs.getByte("isUpTop");
+                boolean isBuy = rs.getByte("isBuy") == 1;
+                ConsignListingStatus status = ConsignListingStatus.fromString(rs.getString("status"));
+                if (status == ConsignListingStatus.ACTIVE && isBuy) {
+                    status = ConsignListingStatus.SOLD;
+                }
+                long buyerId = rs.getLong("buyer_id");
+                int version = Math.max(1, rs.getInt("version"));
+            List<Item.ItemOption> op = ConsignItemOptionsCodec.decode(
+                    rs.getString("itemOption"), ITEM_OPTION_TEMPLATES);
+                ConsignShopManager.gI().listItem.add(new ConsignItem(i, itemId, idPl, tab, gold, gem,
+                        quantity, isUp, op, status, buyerId, version, rs.getTimestamp("sold_at")));
+            }
+            Logger.success(Logger.RED + "Successfully loaded Consign Item (" + ConsignShopManager.gI().listItem.size() + ")\n");
+
+            //load mob template
+            ps = ConnectionDatabase.prepareStatement("select * from mob_template order by id asc");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                MobTemplate mobTemp = new MobTemplate();
+                mobTemp.id = rs.getByte("id");
+                mobTemp.type = rs.getByte("type");
+                mobTemp.name = rs.getString("name");
+                mobTemp.hp = rs.getInt("hp");
+                mobTemp.rangeMove = rs.getByte("range_move");
+                mobTemp.speed = rs.getByte("speed");
+                mobTemp.dartType = rs.getByte("dart_type");
+                mobTemp.percentDame = rs.getByte("percent_dame");
+                mobTemp.percentTiemNang = rs.getByte("percent_tiem_nang");
+                MOB_TEMPLATES.add(mobTemp);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded mob template (" + MOB_TEMPLATES.size() + ")\n");
+
+            //load npc template
+            ps = ConnectionDatabase.prepareStatement("select * from npc_template");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                NpcTemplate npcTemp = new NpcTemplate();
+                npcTemp.id = rs.getInt("id");
+                npcTemp.name = rs.getString("name");
+                npcTemp.head = rs.getInt("head");
+                npcTemp.body = rs.getInt("body");
+                npcTemp.leg = rs.getInt("leg");
+                npcTemp.avatar = rs.getInt("avatar");
+                NPC_TEMPLATES.add(npcTemp);
+            }
+            Logger.success(Logger.RED + "Successfully loaded npc template (" + NPC_TEMPLATES.size() + ")\n");
+            ps = ConnectionDatabase.prepareStatement("select * from data_badges");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                BagesTemplate template = new BagesTemplate();
+                template.id = rs.getInt("id");
+                template.idEffect = rs.getInt("idEffect");
+                template.idItem = rs.getInt("idItem");
+                template.NAME = rs.getString("NAME");
+
+                JSONArray option = (JSONArray) JSONValue.parse(rs.getString("Options"));;
+                if (option != null) {
+                    for (int u = 0; u < option.size(); u++) {
+                        JSONObject jsonobject = (JSONObject) option.get(u);
+                        int optionId = Integer.parseInt(jsonobject.get("id").toString());
+                        int param = Integer.parseInt(jsonobject.get("param").toString());
+                        template.options.add(itemOption(optionId, param));
+                    }
+                }
+                BAGES_TEMPLATES.add(template);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded badges template (" + BAGES_TEMPLATES.size() + ")\n");
+            //load map template
+            ps = ConnectionDatabase.prepareStatement("select count(id) from map_template");
+            rs = ps.executeQuery();
+            if (rs.first()) {
+                int countRow = rs.getShort(1);
+                MAP_TEMPLATES = new MapTemplate[countRow];
+                ps = ConnectionDatabase.prepareStatement("select * from map_template ORDER BY id ASC");
+                rs = ps.executeQuery();
+                short i = 0;
+                while (rs.next()) {
+                    MapTemplate mapTemplate = new MapTemplate();
+                    int mapId = rs.getInt("id");
+                    String mapName = rs.getString("name");
+                    mapTemplate.id = mapId;
+                    mapTemplate.name = mapName;
+                    mapTemplate.type = rs.getByte("type");
+                    mapTemplate.planetId = rs.getByte("planet_id");
+                    mapTemplate.bgType = rs.getByte("bg_type");
+                    mapTemplate.tileId = rs.getByte("tile_id");
+                    mapTemplate.bgId = rs.getByte("bg_id");
+                    mapTemplate.zones = rs.getByte("zones");
+                    mapTemplate.maxPlayerPerZone = rs.getByte("max_player");
+                    //load waypoints
+                    dataArray = (JSONArray) JSONValue.parse(rs.getString("waypoints")
+                            .replaceAll("\\[\"\\[", "[[")
+                            .replaceAll("\\]\"\\]", "]]")
+                            .replaceAll("\",\"", ",")
+                    );
+                    for (int j = 0; j < dataArray.size(); j++) {
+                        WayPoint wp = new WayPoint();
+                        JSONArray dtwp = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
+                        wp.name = String.valueOf(dtwp.get(0));
+                        wp.minX = Short.parseShort(String.valueOf(dtwp.get(1)));
+                        wp.minY = Short.parseShort(String.valueOf(dtwp.get(2)));
+                        wp.maxX = Short.parseShort(String.valueOf(dtwp.get(3)));
+                        wp.maxY = Short.parseShort(String.valueOf(dtwp.get(4)));
+                        wp.isEnter = Byte.parseByte(String.valueOf(dtwp.get(5))) == 1;
+                        wp.isOffline = Byte.parseByte(String.valueOf(dtwp.get(6))) == 1;
+                        wp.goMap = Short.parseShort(String.valueOf(dtwp.get(7)));
+                        wp.goX = Short.parseShort(String.valueOf(dtwp.get(8)));
+                        wp.goY = Short.parseShort(String.valueOf(dtwp.get(9)));
+                        mapTemplate.wayPoints.add(wp);
+                        dtwp.clear();
+                    }
+                    dataArray.clear();
+                    //load mobs
+                    dataArray = (JSONArray) JSONValue.parse(rs.getString("mobs").replaceAll("\\\"", ""));
+                    mapTemplate.mobTemp = new byte[dataArray.size()];
+                    mapTemplate.mobLevel = new byte[dataArray.size()];
+                    mapTemplate.mobHp = new int[dataArray.size()];
+                    mapTemplate.mobX = new short[dataArray.size()];
+                    mapTemplate.mobY = new short[dataArray.size()];
+                    for (int j = 0; j < dataArray.size(); j++) {
+                        JSONArray dtm = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
+                        mapTemplate.mobTemp[j] = Byte.parseByte(String.valueOf(dtm.get(0)));
+                        mapTemplate.mobLevel[j] = Byte.parseByte(String.valueOf(dtm.get(1)));
+                        mapTemplate.mobHp[j] = Integer.parseInt(String.valueOf(dtm.get(2)));
+                        mapTemplate.mobX[j] = Short.parseShort(String.valueOf(dtm.get(3)));
+                        mapTemplate.mobY[j] = Short.parseShort(String.valueOf(dtm.get(4)));
+                        dtm.clear();
+                    }
+                    dataArray.clear();
+                    //load npcs
+                    dataArray = (JSONArray) JSONValue.parse(rs.getString("npcs").replaceAll("\\\"", ""));
+                    mapTemplate.npcId = new int[dataArray.size()];
+                    mapTemplate.npcX = new short[dataArray.size()];
+                    mapTemplate.npcY = new short[dataArray.size()];
+                    for (int j = 0; j < dataArray.size(); j++) {
+                        JSONArray dtn = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
+                        mapTemplate.npcId[j] = Integer.parseInt(String.valueOf(dtn.get(0)));
+                        mapTemplate.npcX[j] = Short.parseShort(String.valueOf(dtn.get(1)));
+                        int visualY = Integer.parseInt(String.valueOf(dtn.get(2)));
+                        // Dùng marker riêng để không xung đột các tuple map cũ vốn đã có
+                        // trường thứ tư. Dạng mới: [npcId,x,visualY,-32000,nameLift,...].
+                        // Part DATA được Admin bù cùng lượng nên sprite vẫn đứng ở visualY.
+                        int nameLift = dtn.size() > 4
+                                && Integer.parseInt(String.valueOf(dtn.get(3))) == NPC_NAME_LIFT_MARKER
+                                ? Integer.parseInt(String.valueOf(dtn.get(4)))
+                                : 0;
+                        nameLift = Math.max(0, Math.min(64, nameLift));
+                        mapTemplate.npcY[j] = (short) Math.max(Short.MIN_VALUE,
+                                Math.min(Short.MAX_VALUE, visualY - nameLift));
+                        dtn.clear();
+                    }
+                    dataArray.clear();
+                    ensureClanHeadquartersNpc(mapTemplate);
+                    MAP_TEMPLATES[i++] = mapTemplate;
+                }
+                Logger.success(Logger.RED + "Successfully loaded map template (" + MAP_TEMPLATES.length + ")\n");
+            }
+
+            ps = ConnectionDatabase.prepareStatement("select * from radar");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                RadarCard rd = new RadarCard();
+                rd.Id = rs.getShort("id");
+                rd.IconId = rs.getShort("iconId");
+                rd.Rank = rs.getByte("rank");
+                rd.Max = rs.getByte("max");
+                rd.Type = rs.getByte("type");
+                rd.Template = rs.getShort("mob_id");
+                rd.Name = rs.getString("name");
+                rd.Info = rs.getString("info");
+                JSONArray arr = (JSONArray) JSONValue.parse(rs.getString("body"));
+                for (int i = 0; i < arr.size(); i++) {
+                    JSONObject ob = (JSONObject) arr.get(i);
+                    if (ob != null) {
+                        rd.Head = Short.parseShort(ob.get("head").toString());
+                        rd.Body = Short.parseShort(ob.get("body").toString());
+                        rd.Leg = Short.parseShort(ob.get("leg").toString());
+                        rd.Bag = Short.parseShort(ob.get("bag").toString());
+                    }
+                }
+                rd.Options.clear();
+                arr = (JSONArray) JSONValue.parse(rs.getString("options"));
+                for (int i = 0; i < arr.size(); i++) {
+                    JSONObject ob = (JSONObject) arr.get(i);
+                    if (ob != null) {
+                        rd.Options.add(new OptionCard(Integer.parseInt(ob.get("id").toString()), Short.parseShort(ob.get("param").toString()), Byte.parseByte(ob.get("activeCard").toString())));
+                    }
+                }
+                rd.Milestones = parseRadarMilestones(getRadarMilestones(rs), rd.Max);
+                rd.Require = rs.getShort("require");
+                rd.RequireLevel = rs.getShort("require_level");
+                rd.AuraId = rs.getShort("aura_id");
+                RadarService.gI().RADAR_TEMPLATE.add(rd);
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded radar template (" + RadarService.gI().RADAR_TEMPLATE.size() + ")\n");
+
+            //Load giftcode
+            ps = ConnectionDatabase.prepareStatement("SELECT * FROM giftcode");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                GiftCode giftcode = new GiftCode();
+                giftcode.code = rs.getString("code");
+                giftcode.id = rs.getInt("id");
+                giftcode.countLeft = rs.getInt("count_left");
+                giftcode.datecreate = rs.getTimestamp("datecreate");
+                giftcode.dateexpired = rs.getTimestamp("expired");
+                JSONArray jar = (JSONArray) JSONValue.parse(rs.getString("detail"));
+                if (jar != null) {
+                    for (int i = 0; i < jar.size(); ++i) {
+                        JSONObject jsonObj = (JSONObject) jar.get(i);
+
+                        int id = Integer.parseInt(jsonObj.get("id").toString());
+                        int quantity = Integer.parseInt(jsonObj.get("quantity").toString());
+
+                        Object defaultFlag = jsonObj.get("useDefaultOptions");
+                        if (defaultFlag == null) {
+                            defaultFlag = jsonObj.get("useDefault");
+                        }
+                        boolean useDefaultOptions = defaultFlag != null
+                                && ("1".equals(defaultFlag.toString())
+                                || "true".equalsIgnoreCase(defaultFlag.toString()));
+
+                        JSONArray option = (JSONArray) jsonObj.get("options");
+                        ArrayList<ItemOption> optionList = new ArrayList<>();
+
+                        if (option != null) {
+                            for (int u = 0; u < option.size(); u++) {
+                                JSONObject jsonobject = (JSONObject) option.get(u);
+                                int optionId = Integer.parseInt(jsonobject.get("id").toString());
+                                int param = Integer.parseInt(jsonobject.get("param").toString());
+                                optionList.add(itemOption(optionId, param));
+                            }
+                        }
+
+                        giftcode.option.put(id, optionList);
+                        giftcode.useDefaultOptions.put(id, useDefaultOptions);
+                        giftcode.detail.put(id, quantity);
+                    }
+                }
+
+                GiftCodeManager.gI().listGiftCode.add(giftcode);
+            }
+            Logger.success(Logger.RED + "Successfully loaded giftcode (" + GiftCodeManager.gI().listGiftCode.size() + ")\n");
+
+            leaderboards.loadAll(ConnectionDatabase);
+            Logger.success(Logger.PURPLE + "Successfully loaded leaderboards\n");
+
+        } catch (Exception e) {
+            Logger.logException(TemplateDataLoader.class, e, "Database loading error");
+            throw new IllegalStateException("Database loading failed before registry publication", e);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (SQLException e) {
+            }
+        }
+
+        Logger.log(Logger.PURPLE, "Total database loading time: " + (System.currentTimeMillis() - st) + " (ms)\n");
+
+    }
+
+    private void loadDefaultItemOptions(Connection connection) {
+        ITEM_DEFAULT_OPTIONS.clear();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT item_template_id, option_id, param FROM item_default_option ORDER BY item_template_id, sort_order, option_id");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                short itemId = rs.getShort("item_template_id");
+                List<ItemOption> options = ITEM_DEFAULT_OPTIONS.computeIfAbsent(itemId, key -> new ArrayList<>());
+                options.add(itemOption(rs.getInt("option_id"), rs.getInt("param")));
+            }
+            Logger.success(Logger.PURPLE + "Successfully loaded default item options (" + ITEM_DEFAULT_OPTIONS.size() + ")\n");
+        } catch (SQLException e) {
+            Logger.error("Could not load item_default_option (table may not be migrated yet): " + e.getMessage());
+        }
+    }
+
+    private byte getNFrameImageByName(String name) {
+        Object n = IMAGES_BY_NAME.get(name);
+        if (n != null) {
+            return Byte.parseByte(String.valueOf(n));
+        } else {
+            return 0;
+        }
+    }
+
+    private ItemOption itemOption(int optionId, int param) {
+        if (optionId < 0 || optionId >= ITEM_OPTION_TEMPLATES.size()) {
+            throw new IllegalArgumentException("Unknown item option template id " + optionId);
+        }
+        ItemOptionTemplate template = ITEM_OPTION_TEMPLATES.get(optionId);
+        if (template.id != optionId) {
+            throw new IllegalStateException("item_option_template must be contiguous from ID 0; index=" + optionId);
+        }
+        return new ItemOption(template, param);
+    }
+
+    private static String getRadarMilestones(ResultSet rs) {
+        try {
+            return rs.getString("milestones");
+        } catch (Exception ignored) {
+            return "[]";
+        }
+    }
+
+    private static byte[] parseRadarMilestones(String json, byte defaultMax) {
+        byte safeMax = defaultMax > 0 ? defaultMax : 1;
+        byte[] fallback = new byte[]{1, safeMax, safeMax};
+        try {
+            Object parsed = JSONValue.parse(json == null || json.isBlank() ? "[]" : json);
+            if (!(parsed instanceof JSONArray arr) || arr.isEmpty()) {
+                return fallback;
+            }
+            int size = Math.max(3, arr.size());
+            byte[] milestones = new byte[size];
+            milestones[0] = 1;
+            for (int i = 1; i < size; i++) {
+                Object value = i < arr.size() ? arr.get(i) : null;
+                int amount = value == null ? safeMax : Integer.parseInt(value.toString());
+                milestones[i] = (byte) Math.max(1, Math.min(127, amount));
+            }
+            return milestones;
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+}

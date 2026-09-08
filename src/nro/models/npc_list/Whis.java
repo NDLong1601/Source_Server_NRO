@@ -14,7 +14,8 @@ import nro.models.network.Message;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.services.InventoryService;
-import nro.models.server.Manager;
+import nro.models.server.GameRuntime;
+import nro.models.server.LeaderboardService;
 import nro.models.services.Service;
 import nro.models.services.SkillService;
 import nro.models.services.SkillMasteryService;
@@ -88,7 +89,7 @@ public class Whis extends Npc {
                 }
             }
             case 2 ->
-                Service.gI().showListTop(player, Manager.Topwhis);
+                Service.gI().showListTop(player, GameRuntime.gI().leaderboards().get(LeaderboardService.Board.WHIS));
             case 1 ->
                 showSkillLearningMenu(player, biKiepTuyetKy);
             case 3 ->
