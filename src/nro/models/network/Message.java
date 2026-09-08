@@ -28,10 +28,15 @@ public class Message implements IMessage {
         this.dos = new DataOutputStream(this.os);
     }
 
+    private byte[] rawBytes;
+
     public Message(byte command, byte[] data) {
         this.command = command;
-        this.is = new ByteArrayInputStream(data);
-        this.dis = new DataInputStream(this.is);
+        this.rawBytes = data;
+        if (data != null) {
+            this.is = new ByteArrayInputStream(data);
+            this.dis = new DataInputStream(this.is);
+        }
     }
 
     @Override
@@ -46,7 +51,10 @@ public class Message implements IMessage {
 
     @Override
     public byte[] getData() {
-        return this.os.toByteArray();
+        if (this.os != null) {
+            return this.os.toByteArray();
+        }
+        return this.rawBytes != null ? this.rawBytes : new byte[0];
     }
 
     @Override

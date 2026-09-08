@@ -8,6 +8,7 @@ import nro.models.player.Player;
 import nro.models.network.SessionManager;
 import nro.models.interfaces.ISession;
 import nro.models.network.MySession;
+import nro.models.network.SessionCloseCause;
 import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services.shenron.SummonDragon;
@@ -15,11 +16,11 @@ import nro.models.services_func.TransactionService;
 import nro.models.services_dungeon.NgocRongNamecService;
 import nro.models.utils.Functions;
 import nro.models.utils.Logger;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import nro.models.services.shenron.SummonDragonNamek;
 
@@ -29,20 +30,22 @@ public class Client implements Runnable {
     private static final long ADMIN_ONLINE_SYNC_INTERVAL_MS = 5000L;
     private static final long ADMIN_ONLINE_ERROR_LOG_INTERVAL_MS = 60000L;
 
+    private final Object registryLock = new Object();
     private final Map<Long, Player> players_id = new HashMap<>();
     private final Map<Integer, Player> players_userId = new HashMap<>();
     private final Map<String, Player> players_name = new HashMap<>();
-    @Getter
     private final List<Player> players = new ArrayList<>();
     private boolean adminOnlineSchemaReady;
     private long lastAdminOnlineSyncMillis;
     private long lastAdminOnlineErrorLogMillis;
+    private final ExecutorService updateExecutor;
 
     private Client() {
-        Executors.newSingleThreadExecutor().submit(this, "Update Client");
+        this.updateExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory("ClientRegistry", false));
+        this.updateExecutor.submit(this);
     }
 
-    public static Client gI() {
+    public static synchronized Client gI() {
         if (instance == null) {
             instance = new Client();
         }
@@ -50,20 +53,76 @@ public class Client implements Runnable {
     }
 
     public void put(Player player) {
-        if (!players_id.containsKey(player.id)) {
-            this.players_id.put(player.id, player);
+        if (player == null) {
+            return;
         }
-        if (!players_name.containsValue(player)) {
-            this.players_name.put(player.name, player);
-        }
-        if (!players_userId.containsValue(player)) {
-            this.players_userId.put(player.getSession().userId, player);
-        }
-        if (!players.contains(player)) {
-            this.players.add(player);
+        List<Player> displacedPlayers = putInMemory(player);
+        for (Player displaced : displacedPlayers) {
+            MySession displacedSession = displaced.getSession();
+            if (displacedSession != null && displacedSession != player.getSession()) {
+                displacedSession.close(SessionCloseCause.DUPLICATE_LOGIN);
+            }
         }
         syncAdminOnlinePlayer(player);
+    }
 
+    void putForTesting(Player player) {
+        if (player == null) {
+            return;
+        }
+        putInMemory(player);
+    }
+
+    void removeForTesting(Player player) {
+        if (player == null) {
+            return;
+        }
+        removeFromMemory(player);
+    }
+
+    private List<Player> putInMemory(Player player) {
+        synchronized (this.registryLock) {
+            List<Player> displaced = new ArrayList<>();
+            int accountId = player.getSession() != null ? player.getSession().userId : Integer.MIN_VALUE;
+            for (Player existing : this.players) {
+                if (existing == null || existing == player) {
+                    continue;
+                }
+                MySession existingSession = existing.getSession();
+                boolean sameAccount = accountId != Integer.MIN_VALUE && existingSession != null
+                        && existingSession.userId == accountId;
+                if (existing.id == player.id || java.util.Objects.equals(existing.name, player.name) || sameAccount) {
+                    displaced.add(existing);
+                }
+            }
+            for (Player existing : displaced) {
+                removeFromMemoryLocked(existing);
+            }
+            this.players_id.put(player.id, player);
+            this.players_name.put(player.name, player);
+            if (accountId != Integer.MIN_VALUE) {
+                this.players_userId.put(accountId, player);
+            }
+            if (!this.players.contains(player)) {
+                this.players.add(player);
+            }
+            return displaced;
+        }
+    }
+
+    private boolean removeFromMemory(Player player) {
+        synchronized (this.registryLock) {
+            return removeFromMemoryLocked(player);
+        }
+    }
+
+    private boolean removeFromMemoryLocked(Player player) {
+        int beforeSize = this.players.size();
+        boolean removedId = this.players_id.entrySet().removeIf(entry -> entry.getValue() == player);
+        boolean removedName = this.players_name.entrySet().removeIf(entry -> entry.getValue() == player);
+        boolean removedUser = this.players_userId.entrySet().removeIf(entry -> entry.getValue() == player);
+        this.players.remove(player);
+        return removedId || removedName || removedUser || this.players.size() != beforeSize;
     }
 
     /**
@@ -74,25 +133,10 @@ public class Client implements Runnable {
         if (player == null || previousName == null) {
             return;
         }
-        this.players_name.remove(previousName, player);
-        this.players_name.put(player.name, player);
-    }
-
-    private void remove(MySession session) {
-        if (session.player != null) {
-            this.remove(session.player);
-            session.player.dispose();
+        synchronized (this.registryLock) {
+            this.players_name.remove(previousName, player);
+            this.players_name.put(player.name, player);
         }
-        if (session.joinedGame) {
-            session.joinedGame = false;
-            try {
-                LocalManager.executeUpdate("update account set last_time_logout = ? where id = ?",
-                        new Timestamp(System.currentTimeMillis()), session.userId);
-            } catch (Exception e) {
-                Logger.logException(Client.class, e);
-            }
-        }
-        ServerManager.gI().disconnect(session);
     }
 
     private void remove(Player player) {
@@ -110,7 +154,7 @@ public class Client implements Runnable {
      * and persistence is attempted even when cleanup throws.
      */
     static void executeRemovalLifecycle(Player player, Runnable cleanup, Runnable save) {
-        if (player == null) {
+        if (player == null || !player.beginRemoval()) {
             return;
         }
         if (player.achievement != null) {
@@ -121,146 +165,170 @@ public class Client implements Runnable {
             }
         }
         try {
-            cleanup.run();
-        } catch (RuntimeException e) {
-            Logger.logException(Client.class, e,
-                    "Unexpected removal cleanup failure for player " + player.id);
+            try {
+                cleanup.run();
+            } catch (RuntimeException e) {
+                Logger.logException(Client.class, e,
+                        "Unexpected removal cleanup failure for player " + player.id);
+            } finally {
+                save.run();
+            }
         } finally {
-            save.run();
+            player.dispose();
         }
     }
 
     private void removeFromRegistriesAndTeardown(Player player) {
-        this.players_id.remove(player.id);
-        this.players_name.remove(player.name);
-        MySession playerSession = player.getSession();
-        if (playerSession != null) {
-            this.players_userId.remove(playerSession.userId);
+        removeFromMemory(player);
+        Player replacement = getPlayer(player.id);
+        if (replacement == null) {
+            removeAdminOnlinePlayer(player);
+        } else if (replacement != player) {
+            syncAdminOnlinePlayer(replacement);
         }
-        this.players.remove(player);
-        removeAdminOnlinePlayer(player);
 
-        if (!player.beforeDispose) {
-            player.beforeDispose = true;
-            try {
-                player.mapIdBeforeLogout = player.zone.map.mapId;
-                if (player.idNRNM != -1) {
-                    ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1, player.location.x, player.location.y, -1);
-                    Service.gI().dropItemMap(player.zone, itemMap);
-                    NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
-                    NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
-                    player.idNRNM = -1;
-                }
-            } catch (Exception e) {
-                Logger.error("[Client.remove] mapId/idNRNM cleanup failed for player=" + player.id + ": " + e);
-            }
-            try {
-                ChangeMapService.gI().exitMap(player);
-            } catch (Exception e) {
-                Logger.error("[Client.remove] exitMap failed for player=" + player.id + ": " + e);
-            }
-            try {
-                TransactionService.gI().cancelTrade(player);
-            } catch (Exception e) {
-                Logger.error("[Client.remove] cancelTrade failed for player=" + player.id + ": " + e);
-            }
-            try {
-                if (player.clan != null) {
-                    player.clan.removeMemberOnline(null, player);
-                }
-            } catch (Exception e) {
-                Logger.error("[Client.remove] clan.removeMemberOnline failed for player=" + player.id + ": " + e);
-            }
-            try {
-                if (SummonDragon.gI().playerSummonShenron != null
-                        && SummonDragon.gI().playerSummonShenron.id == player.id) {
-                    SummonDragon.gI().isPlayerDisconnect = true;
-                }
-                if (SummonDragonNamek.gI().playerSummonShenron != null
-                        && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
-                    SummonDragonNamek.gI().isPlayerDisconnect = true;
-                }
-                if (player.shenronEvent != null) {
-                    player.shenronEvent.isPlayerDisconnect = true;
-                }
-            } catch (Exception e) {
-                Logger.error("[Client.remove] dragon/shenron disconnect failed for player=" + player.id + ": " + e);
-            }
-            try {
-                if (player.mobMe != null) {
-                    player.mobMe.mobMeDie();
-                }
-            } catch (Exception e) {
-                Logger.error("[Client.remove] mobMe.mobMeDie failed for player=" + player.id + ": " + e);
-            }
-            try {
-                if (player.pet != null) {
-                    if (player.pet.mobMe != null) {
-                        player.pet.mobMe.mobMeDie();
+        synchronized (player.getLifecycleLock()) {
+            if (!player.beforeDispose) {
+                player.beforeDispose = true;
+                try {
+                    player.mapIdBeforeLogout = player.zone != null && player.zone.map != null ? player.zone.map.mapId : -1;
+                    if (player.idNRNM != -1 && player.zone != null && player.location != null) {
+                        ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1, player.location.x, player.location.y, -1);
+                        Service.gI().dropItemMap(player.zone, itemMap);
+                        NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
+                        NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
+                        player.idNRNM = -1;
                     }
-                    ChangeMapService.gI().exitMap(player.pet);
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] mapId/idNRNM cleanup failed for player=" + player.id + ": " + e);
                 }
-            } catch (Exception e) {
-                Logger.error("[Client.remove] pet teardown failed for player=" + player.id + ": " + e);
+                try {
+                    ChangeMapService.gI().exitMap(player);
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] exitMap failed for player=" + player.id + ": " + e);
+                }
+                try {
+                    TransactionService.gI().cancelTrade(player);
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] cancelTrade failed for player=" + player.id + ": " + e);
+                }
+                try {
+                    if (player.clan != null) {
+                        player.clan.removeMemberOnline(null, player);
+                    }
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] clan.removeMemberOnline failed for player=" + player.id + ": " + e);
+                }
+                try {
+                    if (SummonDragon.gI().playerSummonShenron != null
+                            && SummonDragon.gI().playerSummonShenron.id == player.id) {
+                        SummonDragon.gI().isPlayerDisconnect = true;
+                    }
+                    if (SummonDragonNamek.gI().playerSummonShenron != null
+                            && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
+                        SummonDragonNamek.gI().isPlayerDisconnect = true;
+                    }
+                    if (player.shenronEvent != null) {
+                        player.shenronEvent.isPlayerDisconnect = true;
+                    }
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] dragon/shenron disconnect failed for player=" + player.id + ": " + e);
+                }
+                try {
+                    if (player.mobMe != null) {
+                        player.mobMe.mobMeDie();
+                    }
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] mobMe.mobMeDie failed for player=" + player.id + ": " + e);
+                }
+                try {
+                    if (player.pet != null) {
+                        if (player.pet.mobMe != null) {
+                            player.pet.mobMe.mobMeDie();
+                        }
+                        ChangeMapService.gI().exitMap(player.pet);
+                    }
+                } catch (Exception e) {
+                    Logger.error("[Client.remove] pet teardown failed for player=" + player.id + ": " + e);
+                }
             }
         }
     }
 
     private void saveRemovedPlayer(Player player) {
-        try {
-            PlayerDAO.updatePlayer(player);
-        } catch (Exception e) {
-            Logger.error("[Client.remove] PlayerDAO.updatePlayer failed for player=" + player.id + ": " + e);
+        synchronized (player.getLifecycleLock()) {
+            try {
+                PlayerDAO.updatePlayer(player);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] PlayerDAO.updatePlayer failed for player=" + player.id + ": " + e);
+            }
         }
     }
 
+    public void removePlayerFromSession(MySession session, Player player) {
+        this.remove(player);
+    }
 
     public void kickSession(MySession session) {
+        kickSession(session, SessionCloseCause.ADMIN_KICK);
+    }
+
+    public void kickSession(MySession session, SessionCloseCause cause) {
         if (session != null) {
-            this.remove(session);
-            session.disconnect();
+            session.close(cause != null ? cause : SessionCloseCause.ADMIN_KICK);
         }
     }
 
     public Player getPlayer(long playerId) {
-        return this.players_id.get(playerId);
+        synchronized (this.registryLock) {
+            return this.players_id.get(playerId);
+        }
     }
 
     public Player getPlayerByUser(int userId) {
-        return this.players_userId.get(userId);
+        synchronized (this.registryLock) {
+            return this.players_userId.get(userId);
+        }
     }
 
     public Player getPlayer(String name) {
-        return this.players_name.get(name);
+        synchronized (this.registryLock) {
+            return this.players_name.get(name);
+        }
     }
 
     public List<Player> getPlayers() {
-        return this.players;
+        synchronized (this.registryLock) {
+            return new ArrayList<>(this.players);
+        }
     }
 
     public void close() {
-        Logger.log(Logger.YELLOW, "BEGIN KICK OUT SESSION " + players.size() + "\n");
-        while (!players.isEmpty()) {
-            Player pl = players.remove(0);
+        close(SessionCloseCause.SERVER_SHUTDOWN);
+    }
+
+    public void close(SessionCloseCause cause) {
+        List<Player> snapshot = getPlayers();
+        Logger.log(Logger.YELLOW, "BEGIN KICK OUT SESSION " + snapshot.size() + "\n");
+        for (Player pl : snapshot) {
             if (pl != null && pl.getSession() != null) {
-                this.kickSession(pl.getSession());
+                this.kickSession(pl.getSession(), cause);
+            } else if (pl != null) {
+                this.remove(pl);
             }
         }
+        this.updateExecutor.shutdownNow();
         Logger.success("SUCCESSFUL\n");
     }
 
     private void update() {
-        for (int i = SessionManager.gI().getSessions().size() - 1; i >= 0; i--) {
-            ISession s = SessionManager.gI().getSessions().get(i);
-            MySession session = (MySession) s;
-            if (session == null) {
-                SessionManager.gI().getSessions().remove(i);
-                continue;
-            }
-            if (session.timeWait > 0) {
-                session.timeWait--;
-                if (session.timeWait == 0) {
-                    kickSession(session);
+        for (ISession s : SessionManager.gI().getSessions()) {
+            if (s instanceof MySession session) {
+                if (session.timeWait > 0) {
+                    session.timeWait--;
+                    if (session.timeWait == 0) {
+                        session.close(nro.models.network.SessionCloseCause.LOGIN_TIMEOUT);
+                    }
                 }
             }
         }
@@ -326,7 +394,7 @@ public class Client implements Runnable {
         lastAdminOnlineSyncMillis = now;
         try {
             ensureAdminOnlineSchema();
-            List<Player> snapshot = new ArrayList<>(players);
+            List<Player> snapshot = getPlayers();
             for (Player player : snapshot) {
                 syncAdminOnlinePlayer(player);
             }
@@ -346,13 +414,7 @@ public class Client implements Runnable {
     }
 
     public Player getPlayerByID(int playerId) {
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            if (player != null && player.id == playerId) {
-                return player;
-            }
-        }
-        return null;
+        return getPlayer((long) playerId);
     }
 
     @Override

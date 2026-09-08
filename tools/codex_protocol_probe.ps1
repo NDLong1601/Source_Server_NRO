@@ -8,6 +8,7 @@ param(
     [switch]$MapData,
     [int]$MapId = -1,
     [int]$BgImageId = -1,
+    [string]$ResourceName = '',
     [string]$IconManifest = '',
     [string]$ItemIconManifest = ''
 )
@@ -45,6 +46,14 @@ function Read-Utf8([byte[]]$Data, [ref]$Offset) {
     $value = [Text.Encoding]::UTF8.GetString($Data, $Offset.Value, $length)
     $Offset.Value += $length
     return $value
+}
+
+function Get-ResourcePacketName([byte[]]$Data) {
+    if ($Data.Length -lt 3 -or $Data[0] -ne 2) {
+        return $null
+    }
+    $offset = 1
+    return Read-Utf8 $Data ([ref]$offset)
 }
 
 function Convert-WithKey([int]$value, [ref]$index) {
@@ -118,9 +127,13 @@ function Read-KeyedMessage($stream) {
     }
     $wireData = Read-Exact $stream $size
     $data = [byte[]]::new($size)
+    $currentReadIndex = $script:readIndex
+    $keyLength = $key.Length
     for ($i = 0; $i -lt $size; $i++) {
-        $data[$i] = [byte](Convert-WithKey $wireData[$i] ([ref]$script:readIndex))
+        $data[$i] = [byte](($wireData[$i] -bxor $key[$currentReadIndex % $keyLength]) -band 0xFF)
+        $currentReadIndex++
     }
+    $script:readIndex = $currentReadIndex
     return [pscustomobject]@{ Command = $command; Data = $data }
 }
 
@@ -152,7 +165,7 @@ function New-ClientTypePayload([int]$zoom) {
 }
 
 $client = [System.Net.Sockets.TcpClient]::new()
-$client.ReceiveTimeout = 15000
+$client.ReceiveTimeout = 30000
 $client.SendTimeout = 15000
 $stream = $null
 try {
@@ -175,7 +188,9 @@ try {
             throw "Unexpected setClientType response $($clientTypeAck.Command)."
         }
     }
-    if ($MobId -ge 0) {
+    if (-not [string]::IsNullOrWhiteSpace($ResourceName)) {
+        Write-KeyedMessage $stream -74 ([byte[]]@(2))
+    } elseif ($MobId -ge 0) {
         if ($MobId -gt 127) {
             throw 'MobId must fit the signed-byte protocol range 0..127.'
         }
@@ -217,8 +232,14 @@ try {
             $packet = Read-KeyedMessage $stream
             $packets.Add($packet)
             $subType = if ($packet.Command -eq -28 -and $packet.Data.Length -ge 3) { $packet.Data[2] } else { -1 }
-            "command=$($packet.Command) length=$($packet.Data.Length) itemSubType=$subType"
-            if (($MobId -ge 0 -and $packet.Command -eq 11) -or
+            $isRequestedResource = -not [string]::IsNullOrWhiteSpace($ResourceName) -and
+                $packet.Command -eq -74 -and (Get-ResourcePacketName $packet.Data) -eq $ResourceName
+            if ([string]::IsNullOrWhiteSpace($ResourceName) -or $packet.Command -ne -74 -or $isRequestedResource) {
+                "command=$($packet.Command) length=$($packet.Data.Length) itemSubType=$subType"
+            }
+            if ((-not [string]::IsNullOrWhiteSpace($ResourceName) -and
+                    $packet.Command -eq -74 -and $packet.Data.Length -ge 1 -and $packet.Data[0] -eq 3) -or
+                ([string]::IsNullOrWhiteSpace($ResourceName) -and $MobId -ge 0 -and $packet.Command -eq 11) -or
                 ($MobId -lt 0 -and $IconId -ge 0 -and $packet.Command -eq -67) -or
                 ($MobId -lt 0 -and $IconId -lt 0 -and $MapData -and
                     $packet.Command -eq -28 -and $packet.Data.Length -ge 3 -and $packet.Data[0] -eq 6) -or
@@ -252,7 +273,52 @@ try {
         "iconVersionsVerified=$($entries.Count) zoom=$Zoom"
     }
 
-    if ($MobId -ge 0) {
+    if (-not [string]::IsNullOrWhiteSpace($ResourceName)) {
+        $resourcePacket = $null
+        foreach ($packet in $packets) {
+            if ($packet.Command -eq -74 -and (Get-ResourcePacketName $packet.Data) -eq $ResourceName) {
+                $resourcePacket = $packet
+                break
+            }
+        }
+        if ($null -eq $resourcePacket) {
+            throw "The resource request did not return $ResourceName."
+        }
+        $resourcePackets = @($packets | Where-Object {
+            $_.Command -eq -74 -and $_.Data.Length -ge 1 -and $_.Data[0] -eq 2
+        })
+        $completionPackets = @($packets | Where-Object {
+            $_.Command -eq -74 -and $_.Data.Length -ge 1 -and $_.Data[0] -eq 3
+        })
+        $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+        $resourceDirectory = Join-Path $repoRoot "data\res\x$Zoom"
+        $expectedResourceCount = @(Get-ChildItem -LiteralPath $resourceDirectory -File).Count
+        if ($resourcePackets.Count -ne $expectedResourceCount -or $completionPackets.Count -ne 1) {
+            throw "Incomplete resource stream: files=$($resourcePackets.Count)/$expectedResourceCount completion=$($completionPackets.Count)."
+        }
+        $data = $resourcePacket.Data
+        $offset = 1
+        $returnedName = Read-Utf8 $data ([ref]$offset)
+        if ($offset + 4 -gt $data.Length) {
+            throw 'The resource packet ended before its payload length.'
+        }
+        $resourceLength = Read-BigEndianInt32 $data $offset
+        $offset += 4
+        if ($resourceLength -lt 0 -or $offset + $resourceLength -ne $data.Length) {
+            throw 'The resource response has an invalid payload length.'
+        }
+        $actual = if ($resourceLength -eq 0) { [byte[]]::new(0) } else { [byte[]]$data[$offset..($data.Length - 1)] }
+        $expectedPath = Join-Path $resourceDirectory $ResourceName
+        if (-not (Test-Path -LiteralPath $expectedPath -PathType Leaf)) {
+            throw "The deployed resource file does not exist: $expectedPath"
+        }
+        $expected = [IO.File]::ReadAllBytes($expectedPath)
+        if ($actual.Length -ne $expected.Length -or (Get-Sha256Hex $actual) -ne (Get-Sha256Hex $expected)) {
+            throw 'The resource response does not match the deployed file.'
+        }
+        "resourceFiles=$($resourcePackets.Count) completionPackets=$($completionPackets.Count)"
+        "resourceName=$returnedName zoom=$Zoom payloadBytes=$($actual.Length) packetBytes=$($data.Length) sha256=$(Get-Sha256Hex $actual)"
+    } elseif ($MobId -ge 0) {
         $mobPackets = @($packets | Where-Object { $_.Command -eq 11 })
         "mobPackets=$($mobPackets.Count)"
         if ($mobPackets.Count -ne 1 -or $mobPackets[0].Data.Length -le 9) {

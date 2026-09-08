@@ -1,40 +1,71 @@
 package nro.models.network;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import nro.models.interfaces.ISession;
 
 public class SessionManager {
 
-    private static SessionManager instance;
-    private final List<ISession> sessions = new CopyOnWriteArrayList<>();
+    private static final SessionManager INSTANCE = new SessionManager();
+    private final ConcurrentHashMap<Long, ISession> sessions = new ConcurrentHashMap<>();
+    private final AtomicBoolean acceptingSessions = new AtomicBoolean(true);
+    private volatile SessionCloseCause shutdownCause = SessionCloseCause.SERVER_SHUTDOWN;
 
     public static SessionManager gI() {
-        if (instance == null) {
-            instance = new SessionManager();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     public void putSession(ISession session) {
-        sessions.add(session);
+        if (session == null) {
+            return;
+        }
+        if (!acceptingSessions.get()) {
+            session.close(shutdownCause);
+            return;
+        }
+        if (session.isClosed()) {
+            return;
+        }
+
+        sessions.put(session.getID(), session);
+
+        // Close may have removed the session just before the insertion above.
+        // Recheck after publication so that race cannot resurrect a terminal session.
+        if (session.isClosed()) {
+            sessions.remove(session.getID(), session);
+        } else if (!acceptingSessions.get()) {
+            sessions.remove(session.getID(), session);
+            session.close(shutdownCause);
+        }
     }
 
     public void removeSession(ISession session) {
-        sessions.remove(session);
+        if (session != null) {
+            sessions.remove(session.getID(), session);
+        }
+    }
+
+    public void closeAll(SessionCloseCause cause) {
+        shutdownCause = cause != null ? cause : SessionCloseCause.SERVER_SHUTDOWN;
+        acceptingSessions.set(false);
+        for (ISession session : List.copyOf(sessions.values())) {
+            if (session != null) {
+                session.close(shutdownCause);
+            }
+        }
+        sessions.clear();
     }
 
     public List<ISession> getSessions() {
-        return sessions;
+        return List.copyOf(sessions.values());
     }
 
     public void cleanupSessions() {
-        for (ISession session : sessions) {
-            if (!session.isConnected()) {
-                sessions.remove(session);
-                session.dispose();
+        for (ISession session : List.copyOf(sessions.values())) {
+            if (session != null && (!session.isConnected() || session.isClosed())) {
+                sessions.remove(session.getID());
+                session.close(SessionCloseCause.INTERNAL_ERROR);
             }
         }
     }
@@ -55,11 +86,14 @@ public class SessionManager {
         cleanupThread.start();
     }
 
+    public ISession find(long id) {
+        return sessions.get(id);
+    }
+
     public ISession findByID(long id) throws Exception {
-        for (ISession session : sessions) {
-            if (session.getID() == id) {
-                return session;
-            }
+        ISession session = sessions.get(id);
+        if (session != null) {
+            return session;
         }
         throw new Exception("Session " + id + " does not exist");
     }

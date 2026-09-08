@@ -712,6 +712,7 @@ public class InventoryService {
         Item item = player.inventory.itemsBox.get(index);
         if (item.isNotNullItem()) {
             boolean done = false;
+            boolean boxChanged = false;
             if (item.template.type >= 0 && item.template.type <= 5 || item.template.type == 32) {
                 Item itemBody = player.inventory.itemsBody.get(item.template.type == 32 ? 6 : item.template.type);
                 if (!itemBody.isNotNullItem()) {
@@ -727,6 +728,7 @@ public class InventoryService {
                             player.inventory.itemsBody.set(item.template.type == 32 ? 6 : item.template.type, item);
                             player.inventory.itemsBox.set(index, itemBody);
                             done = true;
+                            boxChanged = true;
 
                             sendItemBody(player);
                             Service.gI().point(player);
@@ -743,7 +745,11 @@ public class InventoryService {
                         player.inventory.itemsBox.set(index, sItem);
                     }
                     sendItemBags(player);
+                    boxChanged = true;
                 }
+            }
+            if (boxChanged) {
+                sendItemBoxData(player);
             }
         }
     }
@@ -769,7 +775,7 @@ public class InventoryService {
                 }
                 sortItems(player.inventory.itemsBag);
                 sendItemBags(player);
-                sendItemBox(player);
+                sendItemBoxData(player);
             }
         }
     }
@@ -781,7 +787,7 @@ public class InventoryService {
                 player.inventory.itemsBody.set(index, putItemBox(player, item));
                 sortItems(player.inventory.itemsBag);
                 sendItemBody(player);
-                sendItemBox(player);
+                sendItemBoxData(player);
                 Service.gI().point(player);
                 Service.gI().Send_Caitrang(player);
             }
@@ -882,6 +888,11 @@ public class InventoryService {
     }
 
     public void sendItemBox(Player player) {
+        sendItemBoxData(player);
+        this.openBox(player);
+    }
+
+    public void sendItemBoxData(Player player) {
         Message msg;
         try {
             msg = new Message(-35);
@@ -919,7 +930,6 @@ public class InventoryService {
             msg.cleanup();
         } catch (Exception e) {
         }
-        this.openBox(player);
     }
 
     public void openBox(Player player) {

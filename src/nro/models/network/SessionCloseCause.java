@@ -1,0 +1,17 @@
+package nro.models.network;
+
+public enum SessionCloseCause {
+    REMOTE_EOF,
+    PROTOCOL_ERROR,
+    SEND_FAILURE,
+    SLOW_CONSUMER,
+    LOGIN_TIMEOUT,
+    DUPLICATE_LOGIN,
+    ADMIN_KICK,
+    SECURITY_VIOLATION,
+    MAINTENANCE,
+    SERVER_SHUTDOWN,
+    INTERNAL_ERROR,
+    IP_REJECTED,
+    CLIENT_DISCONNECT
+}

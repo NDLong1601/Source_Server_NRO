@@ -1317,8 +1317,8 @@ public class Service {
     }
 
     public void sendThongBaoToAnotherNotMe(Player me, String text) {
-        for (int i = 0; i < Client.gI().getPlayers().size(); i++) {
-            Player pl = Client.gI().getPlayers().get(i);
+        List<Player> onlinePlayers = Client.gI().getPlayers();
+        for (Player pl : onlinePlayers) {
             if (pl != null && !pl.equals(me)) {
                 this.sendThongBao(pl, text);
             }

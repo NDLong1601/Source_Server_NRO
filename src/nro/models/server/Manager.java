@@ -50,11 +50,13 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import nro.models.network.Sender;
 import nro.models.map.Zone;
 import nro.models.matches.TOP;
 import org.json.simple.JSONArray;
@@ -92,9 +94,12 @@ public final class Manager {
     public static boolean DAO_AUTO_UPDATER = false;
     public static MapTemplate[] MAP_TEMPLATES;
     public static final List<nro.models.map.Map> MAPS = new ArrayList<>();
-    private final ScheduledExecutorService mapUpdater = Executors.newSingleThreadScheduledExecutor();
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
-    private static final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ScheduledExecutorService mapUpdater = Executors.newSingleThreadScheduledExecutor(
+            new NamedThreadFactory("MapMaintenance", false));
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(
+            Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("WorldScheduler", false));
+    private static final ExecutorService executor = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("ZoneWorker", false));
     public static final List<ItemOptionTemplate> ITEM_OPTION_TEMPLATES = new ArrayList<>();
     public static final List<ArrHead2Frames> ARR_HEAD_2_FRAMES = new ArrayList<>();
     public static final Map<String, Byte> IMAGES_BY_NAME = new HashMap<>();
@@ -251,6 +256,29 @@ public final class Manager {
         this.initMap();
     }
 
+    public void shutdownRuntimeExecutors() {
+        this.mapUpdater.shutdownNow();
+        scheduler.shutdownNow();
+        executor.shutdownNow();
+    }
+
+    static int updateZoneBatch(List<Zone> zones) {
+        int failures = 0;
+        for (Zone zone : zones) {
+            try {
+                zone.update();
+            } catch (Throwable error) {
+                failures++;
+                ServerRuntimeMetrics.gI().recordTickException();
+                int mapId = zone.map != null ? zone.map.mapId : -1;
+                Logger.error("[TICK] event=zone_tick_failed mapId=" + mapId
+                        + " zoneId=" + zone.zoneId
+                        + " errorType=" + error.getClass().getSimpleName() + "\n");
+            }
+        }
+        return failures;
+    }
+
     private void initMap() {
         int[][] tileTyleTop = readTileIndexTileType(ConstMap.TILE_TOP);
         for (MapTemplate mapTemp : MAP_TEMPLATES) {
@@ -278,7 +306,8 @@ public final class Manager {
             }
         }, 1, 1, TimeUnit.SECONDS);
 
-        scheduler.scheduleAtFixedRate(() -> {
+        scheduler.scheduleWithFixedDelay(() -> {
+            long startTick = System.currentTimeMillis();
             try {
                 List<Callable<Void>> tasks = new ArrayList<>();
                 for (nro.models.map.Map map : MAPS) {
@@ -288,9 +317,7 @@ public final class Manager {
                         if (batch.size() >= 10) {
                             List<Zone> finalBatch = new ArrayList<>(batch);
                             tasks.add(() -> {
-                                for (Zone z : finalBatch) {
-                                    z.update();
-                                }
+                                updateZoneBatch(finalBatch);
                                 return null;
                             });
                             batch.clear();
@@ -299,9 +326,7 @@ public final class Manager {
                     if (!batch.isEmpty()) {
                         List<Zone> finalBatch = new ArrayList<>(batch);
                         tasks.add(() -> {
-                            for (Zone z : finalBatch) {
-                                z.update();
-                            }
+                            updateZoneBatch(finalBatch);
                             return null;
                         });
                     }
@@ -312,13 +337,27 @@ public final class Manager {
                     completionService.submit(task);
                 }
                 for (int i = 0; i < tasks.size(); i++) {
-                    completionService.take();
+                    try {
+                        completionService.take().get();
+                    } catch (ExecutionException ee) {
+                        ServerRuntimeMetrics.gI().recordTickException();
+                        Logger.error("Zone tick execution error: " + ee.getCause());
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Throwable e) {
+                Logger.logException(Manager.class, (Exception) (e instanceof Exception ? e : new Exception(e)));
+            } finally {
+                long elapsed = System.currentTimeMillis() - startTick;
+                ServerRuntimeMetrics.gI().recordTickDuration(elapsed);
+                if (elapsed > 1000) {
+                    ServerRuntimeMetrics.gI().recordDeadlineOverrun();
+                }
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
 
         Logger.success(Logger.RED + "Update maps thread started success!\n");
     }
@@ -1230,6 +1269,15 @@ public final class Manager {
         if ((value = properties.get("server.daoautoupdater")) != null) {
             DAO_AUTO_UPDATER = String.valueOf(value).equalsIgnoreCase("true");
         }
+        int senderMaxMessages = Sender.getDefaultMaxQueueMessages();
+        long senderMaxBytes = Sender.getDefaultMaxQueueBytes();
+        if ((value = properties.get("server.sender.max_messages")) != null) {
+            senderMaxMessages = Integer.parseInt(String.valueOf(value));
+        }
+        if ((value = properties.get("server.sender.max_bytes")) != null) {
+            senderMaxBytes = Long.parseLong(String.valueOf(value));
+        }
+        Sender.configureDefaultLimits(senderMaxMessages, senderMaxBytes);
     }
 
     /**

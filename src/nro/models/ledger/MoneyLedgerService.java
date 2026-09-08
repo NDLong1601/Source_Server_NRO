@@ -185,7 +185,8 @@ public class MoneyLedgerService {
         }
         if (player.persistenceQuarantined && player.getSession() != null
             && nro.models.server.Client.gI().getPlayerByUser(player.getSession().userId) == player) {
-            nro.models.server.Client.gI().kickSession(player.getSession());
+            nro.models.server.Client.gI().kickSession(player.getSession(),
+                nro.models.network.SessionCloseCause.INTERNAL_ERROR);
         }
         return result;
     }

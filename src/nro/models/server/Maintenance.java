@@ -8,19 +8,19 @@ public class Maintenance extends Thread {
 
     private static Maintenance instance;
     private int timeInSeconds;
-    public static boolean isRunning = false;
+    public static volatile boolean isRunning = false;
 
     private Maintenance() {
     }
 
-    public static Maintenance gI() {
+    public static synchronized Maintenance gI() {
         if (instance == null) {
             instance = new Maintenance();
         }
         return instance;
     }
 
-    public void startCountdown() {
+    public synchronized void startCountdown() {
         if (!isRunning) {
             isRunning = true;
             this.timeInSeconds = 60;
@@ -28,7 +28,7 @@ public class Maintenance extends Thread {
         }
     }
 
-    public void startSeconds(int seconds) {
+    public synchronized void startSeconds(int seconds) {
         if (!isRunning) {
             isRunning = true;
             this.timeInSeconds = seconds;
@@ -36,7 +36,7 @@ public class Maintenance extends Thread {
         }
     }
 
-    public void startImmediately() {
+    public synchronized void startImmediately() {
         if (!isRunning) {
             isRunning = true;
             Logger.log(Logger.YELLOW, "BẮT ĐẦU BẢO TRÌ NGAY\n");

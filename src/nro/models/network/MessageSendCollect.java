@@ -27,10 +27,7 @@ public class MessageSendCollect implements IMessageSendCollect {
             size = dis.readUnsignedShort();
         }
         byte[] data = new byte[size];
-        int len = 0;
-        for (int byteRead = 0; len != -1 && byteRead < size; byteRead += len) {
-            len = dis.read(data, byteRead, size - byteRead);
-        }
+        dis.readFully(data);
         if (session.sentKey()) {
             for (int i = 0; i < data.length; ++i) {
                 data[i] = this.readKey(session, data[i]);
@@ -50,44 +47,41 @@ public class MessageSendCollect implements IMessageSendCollect {
 
     @Override
     public void doSendMessage(ISession session, DataOutputStream dos, Message msg) throws Exception {
-        try {
-            byte[] data = msg.getData();
-            if (session.sentKey()) {
-                byte b = this.writeKey(session, msg.command);
-                dos.writeByte(b);
-            } else {
-                dos.writeByte(msg.command);
-            }
-            if (data != null) {
-                int size = data.length;
-                if (msg.command == -32 || msg.command == -66 || msg.command == -74 || msg.command == 11 || msg.command == -67 || msg.command == -87 || msg.command == 66) {
-                    byte b2 = this.writeKey(session, (byte) size);
-                    dos.writeByte(b2 - 128);
-                    byte b3 = this.writeKey(session, (byte) (size >> 8));
-                    dos.writeByte(b3 - 128);
-                    byte b4 = this.writeKey(session, (byte) (size >> 16));
-                    dos.writeByte(b4 - 128);
-                } else if (session.sentKey()) {
-                    byte byte1 = this.writeKey(session, (byte) (size >> 8));
-                    dos.writeByte(byte1);
-                    byte byte2 = this.writeKey(session, (byte) (size & 0xFF));
-                    dos.writeByte(byte2);
-                } else {
-                    dos.writeShort(size);
-                }
-                if (session.sentKey()) {
-                    for (int i = 0; i < data.length; ++i) {
-                        data[i] = this.writeKey(session, data[i]);
-                    }
-                }
-                dos.write(data);
-            } else {
-                dos.writeShort(0);
-            }
-            dos.flush();
-            msg.cleanup();
-        } catch (IOException iOException) {
+        byte[] data = msg.getData();
+        if (session.sentKey()) {
+            byte b = this.writeKey(session, msg.command);
+            dos.writeByte(b);
+        } else {
+            dos.writeByte(msg.command);
         }
+        if (data != null) {
+            int size = data.length;
+            if (QueuedFrame.isExtendedCommand(msg.command)) {
+                byte b2 = this.writeKey(session, (byte) size);
+                dos.writeByte(b2 - 128);
+                byte b3 = this.writeKey(session, (byte) (size >> 8));
+                dos.writeByte(b3 - 128);
+                byte b4 = this.writeKey(session, (byte) (size >> 16));
+                dos.writeByte(b4 - 128);
+            } else if (session.sentKey()) {
+                byte byte1 = this.writeKey(session, (byte) (size >> 8));
+                dos.writeByte(byte1);
+                byte byte2 = this.writeKey(session, (byte) (size & 0xFF));
+                dos.writeByte(byte2);
+            } else {
+                dos.writeShort(size);
+            }
+            if (session.sentKey()) {
+                for (int i = 0; i < data.length; ++i) {
+                    data[i] = this.writeKey(session, data[i]);
+                }
+            }
+            dos.write(data);
+        } else {
+            dos.writeShort(0);
+        }
+        dos.flush();
+        msg.cleanup();
     }
 
     @Override

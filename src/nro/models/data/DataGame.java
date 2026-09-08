@@ -881,16 +881,25 @@ public class DataGame {
                     msg.writer().writeUTF(original);
                     msg.writer().writeInt(res.length);
                     msg.writer().write(res);
-                    session.sendMessage(msg);
+                    // Resource refresh is a multi-megabyte burst. Write each file
+                    // through the synchronized direct path so socket backpressure
+                    // bounds production instead of overflowing the per-session queue.
+                    session.doSendMessage(msg);
                     msg.cleanup();
                 } catch (IOException e) {
                     Logger.logException(DataGame.class, e);
+                    if (session.isClosed()) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    Logger.logException(DataGame.class, e);
+                    return;
                 }
             }
             msg = new Message(-74);
             msg.writer().writeByte(3);
             msg.writer().writeInt(getResourceVersion(session.zoomLevel));
-            session.sendMessage(msg);
+            session.doSendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);

@@ -112,11 +112,11 @@ public class TransactionService implements Runnable {
                                     } catch (Exception ignored) {
                                     }
                                     if (checkLogout1) {
-                                        Client.gI().kickSession(pl.getSession());
+                                        Client.gI().kickSession(pl.getSession(), nro.models.network.SessionCloseCause.CLIENT_DISCONNECT);
                                         break;
                                     }
                                     if (checkLogout2) {
-                                        Client.gI().kickSession(plMap.getSession());
+                                        Client.gI().kickSession(plMap.getSession(), nro.models.network.SessionCloseCause.CLIENT_DISCONNECT);
                                         break;
                                     }
                                     pl.idMark.setLastTimeTrade(System.currentTimeMillis());

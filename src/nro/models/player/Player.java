@@ -37,6 +37,7 @@ import nro.models.map.service.MapService;
 import nro.models.services.PetService;
 import nro.models.services.PlayerService;
 import nro.models.services.TaskService;
+import nro.models.task.BadgesTaskService;
 import nro.models.services.AutoQuestService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.combine.Combine;
@@ -73,11 +74,38 @@ import nro.models.services.ItemTimeService;
 import nro.models.services.ItemService;
 import nro.models.services.EquipmentOptionService;
 import nro.models.task.BadgesTask;
-import nro.models.task.BadgesTaskService;
 import nro.models.activity.ActivityService;
 import nro.models.activity.ActivityState;
+import java.util.concurrent.atomic.AtomicBoolean;
+import nro.models.server.ServerRuntimeMetrics;
 
 public class Player implements Runnable {
+
+    private final AtomicBoolean isUpdating = new AtomicBoolean(false);
+    private final Object lifecycleLock = new Object();
+    private final AtomicBoolean removalStarted = new AtomicBoolean(false);
+    private final AtomicBoolean disposed = new AtomicBoolean(false);
+    private final PlayerMailbox mailbox = new PlayerMailbox(this, 128);
+
+    public AtomicBoolean getIsUpdating() {
+        return this.isUpdating;
+    }
+
+    public Object getLifecycleLock() {
+        return this.lifecycleLock;
+    }
+
+    public PlayerMailbox getMailbox() {
+        return this.mailbox;
+    }
+
+    public boolean isDisposed() {
+        return this.disposed.get();
+    }
+
+    public boolean beginRemoval() {
+        return this.removalStarted.compareAndSet(false, true);
+    }
 
     public long lastTimeEatPea;
     private long lastTimeItemExpirationCheck;
@@ -114,7 +142,7 @@ public class Player implements Runnable {
     public long total_damage_maydam;
     public boolean powerReduced = false;
     public String originalName;
-    public boolean beforeDispose;
+    public volatile boolean beforeDispose;
 
     public int mbv = 0;
     public boolean baovetaikhoan;
@@ -450,19 +478,36 @@ public class Player implements Runnable {
 
     @Override
     public void run() {
-        Functions.sleep(500);
-        while (!Maintenance.isRunning && session != null && session.isConnected() && this.name != null) {
-            long st = System.currentTimeMillis();
-            update();
-            Functions.sleep(Math.max(1000 - (System.currentTimeMillis() - st), 10));
-        }
+        // Leaked per-login executor loop removed in Gate 2 (RUN-04).
+        // WorldTickEngine / Zone is now the sole tick owner.
     }
 
     public void start() {
-        Executors.newSingleThreadExecutor().submit(this, "Update player " + this.name);
+        // Leaked per-login executor removed in Gate 2 (RUN-04).
+        // Compatibility no-op for Controller.sendInfo callers.
     }
 
     public void update() {
+        if (this.beforeDispose || this.disposed.get()) {
+            return;
+        }
+        if (!this.isUpdating.compareAndSet(false, true)) {
+            ServerRuntimeMetrics.gI().recordRejectedOverlap();
+            return;
+        }
+        try {
+            synchronized (this.lifecycleLock) {
+                if (this.beforeDispose || this.disposed.get()) {
+                    return;
+                }
+                internalUpdate();
+            }
+        } finally {
+            this.isUpdating.set(false);
+        }
+    }
+
+    private void internalUpdate() {
         if (!this.beforeDispose) {
             try {
                 if (this.isPl()) {
@@ -499,7 +544,7 @@ public class Player implements Runnable {
                 }
                 if ((this.zone != null && !MapService.gI().isHome(this.zone.map.mapId)) || (!this.isPl() && this.zone == null)) {
                     if (isPl() && idMark != null && idMark.isBan() && Util.canDoWithTime(idMark.getLastTimeBan(), 5000)) {
-                        Client.gI().kickSession(session);
+                        Client.gI().kickSession(session, nro.models.network.SessionCloseCause.SECURITY_VIOLATION);
                         return;
                     }
                     if (nPoint != null) {
@@ -1466,8 +1511,16 @@ public class Player implements Runnable {
     }
 
     public void dispose() {
-        // Close the lifecycle before any cleanup can fail or touch inventory state.
-        if (achievement != null) {
+        if (!this.disposed.compareAndSet(false, true)) {
+            return;
+        }
+        synchronized (this.lifecycleLock) {
+            this.beforeDispose = true;
+            if (this.mailbox != null) {
+                this.mailbox.close();
+            }
+            // Close the lifecycle before any cleanup can fail or touch inventory state.
+            if (achievement != null) {
             try {
                 achievement.closeClaims();
             } catch (Exception e) {
@@ -1654,6 +1707,7 @@ public class Player implements Runnable {
         name = null;
         textThongBaoChangeMap = null;
         textThongBaoThua = null;
+        }
     }
 
     public String getLastChatMessage() {

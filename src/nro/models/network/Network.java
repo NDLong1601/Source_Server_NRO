@@ -8,6 +8,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SelectionKey;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import nro.models.interfaces.INetwork;
 import nro.models.interfaces.IServerClose;
 import nro.models.interfaces.ISession;
@@ -20,7 +21,7 @@ public class Network implements INetwork, Runnable {
     private int port = -1;
     private ServerSocketChannel serverSocketChannel;
     private Class sessionClone = Session.class;
-    private boolean start;
+    private final AtomicBoolean start = new AtomicBoolean(false);
     private boolean randomKey;
     private IServerClose serverClose;
     private ISessionAcceptHandler acceptHandler;
@@ -69,7 +70,7 @@ public class Network implements INetwork, Runnable {
             Logger.error("Error initializing server at port " + port + "\n");
             System.exit(0);
         }
-        this.start = true;
+        this.start.set(true);
         this.loopServer.start();
         Logger.success("Server initialized and listening on port " + this.port + "\n");
         return this;
@@ -77,7 +78,7 @@ public class Network implements INetwork, Runnable {
 
     @Override
     public INetwork close() {
-        this.start = false;
+        this.start.set(false);
         if (this.serverSocketChannel != null) {
             try {
                 this.serverSocketChannel.close();
@@ -106,7 +107,7 @@ public class Network implements INetwork, Runnable {
 
     @Override
     public void run() {
-        while (this.start) {
+        while (this.start.get()) {
             try {
                 int numKeys = this.selector.select(500);
                 if (numKeys == 0) {
@@ -125,22 +126,45 @@ public class Network implements INetwork, Runnable {
                     }
 
                     ServerSocketChannel server = (ServerSocketChannel) key.channel();
-                    Socket socket = server.accept().socket();
-                    socket.setTcpNoDelay(true);
+                    Socket socket = null;
+                    ISession session = null;
+                    try {
+                        java.nio.channels.SocketChannel accepted = server.accept();
+                        if (accepted == null) {
+                            continue;
+                        }
+                        socket = accepted.socket();
+                        socket.setTcpNoDelay(true);
 
-                    ISession session = SessionFactory.gI().cloneSession(this.sessionClone, socket);
-                    this.acceptHandler.sessionInit(session);
-                    SessionManager.gI().putSession(session);
+                        session = SessionFactory.gI().cloneSession(this.sessionClone, socket);
+                        this.acceptHandler.sessionInit(session);
+                        if (session.getSessionState() == SessionState.ACTIVE && !session.isClosed()) {
+                            SessionManager.gI().putSession(session);
+                        }
+                    } catch (Exception acceptFailure) {
+                        if (session != null) {
+                            session.close(SessionCloseCause.INTERNAL_ERROR);
+                        } else if (socket != null) {
+                            try {
+                                socket.close();
+                            } catch (IOException ignored) {
+                            }
+                        }
+                        Logger.error("[SESSION] event=session_accept_failed errorType="
+                                + acceptFailure.getClass().getSimpleName() + "\n");
+                    }
                 }
             } catch (IOException ex) {
-                Logger.error("IOException in Network loop: " + ex.getMessage());
+                Logger.error("[NETWORK] event=loop_failure errorType="
+                        + ex.getClass().getSimpleName() + "\n");
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             } catch (Exception ex2) {
-                Logger.error("Exception in Network loop: " + ex2.toString());
+                Logger.error("[NETWORK] event=loop_failure errorType="
+                        + ex2.getClass().getSimpleName() + "\n");
             }
         }
     }
@@ -178,6 +202,9 @@ public class Network implements INetwork, Runnable {
 
     @Override
     public void stopConnect() {
-        this.start = false;
+        this.start.set(false);
+        if (this.selector != null) {
+            this.selector.wakeup();
+        }
     }
 }

@@ -23,7 +23,12 @@ import nro.models.network.MySession;
 import nro.models.services_dungeon.NgocRongNamecService;
 import nro.models.utils.Logger;
 import nro.models.utils.TimeUtil;
+import nro.models.network.IpConnectionRegistry;
+import nro.models.network.IpLease;
+import nro.models.network.SessionCloseCause;
+import nro.models.network.SessionManager;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +62,13 @@ import nro.models.shop_ky_gui.ConsignShopManager;
 public class ServerManager {
 
     public static String timeStart;
-    public static final Map<Object, Object> CLIENTS = new HashMap<>();
+    @Deprecated
+    public static final Map<Object, Object> CLIENTS = new ConcurrentHashMap<>();
+    private final IpConnectionRegistry ipRegistry = new IpConnectionRegistry();
+
+    public IpConnectionRegistry getIpRegistry() {
+        return ipRegistry;
+    }
     public static String NAME_SERVER = "Ngọc Rồng Onlime";
     public static String DOMAIN = "Server 1";
     public static String NAME = "Ngọc Rồng Online";
@@ -65,7 +76,7 @@ public class ServerManager {
     public static int PORT = 14445;
     public static int EVENT_SEVER = 0;
     private static ServerManager instance;
-    public static boolean isRunning;
+    public static volatile boolean isRunning;
     private ScheduledExecutorService topUpdater;
 
     public void init() {
@@ -74,7 +85,7 @@ public class ServerManager {
         HistoryTransactionDAO.deleteHistory();
     }
 
-    public static ServerManager gI() {
+    public static synchronized ServerManager gI() {
         if (instance == null) {
             instance = new ServerManager();
             instance.init();
@@ -158,7 +169,7 @@ public class ServerManager {
     }
 
     private void startTopUpdater() {
-        topUpdater = Executors.newSingleThreadScheduledExecutor();
+        topUpdater = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("TopUpdater", false));
         topUpdater.scheduleAtFixedRate(() -> {
             if (shouldUpdateTop()) {
                 updateTop();
@@ -211,10 +222,12 @@ public class ServerManager {
             Network.gI().init().setAcceptHandler(new ISessionAcceptHandler() {
                 @Override
                 public void sessionInit(ISession is) {
-                    if (!canConnectWithIp(is.getIP())) {
-                        is.disconnect();
+                    IpLease lease = ipRegistry.acquire(is.getIP(), Manager.MAX_PER_IP);
+                    if (lease == null) {
+                        is.close(SessionCloseCause.IP_REJECTED);
                         return;
                     }
+                    is.setIpLease(lease);
                     is.setMessageHandler(Controller.gI())
                             .setSendCollect(new MessageSendCollect())
                             .setKeyHandler(new MyKeyHandler())
@@ -223,8 +236,9 @@ public class ServerManager {
 
                 @Override
                 public void sessionDisconnect(ISession session) {
-                    Client.gI().kickSession((MySession) session);
-                    disconnect((MySession) session);
+                    if (session != null) {
+                        session.close(SessionCloseCause.CLIENT_DISCONNECT);
+                    }
                 }
             }).setTypeSessioClone(MySession.class)
                     .setDoSomeThingWhenClose(() -> {
@@ -237,32 +251,9 @@ public class ServerManager {
         }
     }
 
-    private boolean canConnectWithIp(String ipAddress) {
-        Object o = CLIENTS.get(ipAddress);
-        if (o == null) {
-            CLIENTS.put(ipAddress, 1);
-            return true;
-        } else {
-            int n = Integer.parseInt(String.valueOf(o));
-            if (n < Manager.MAX_PER_IP) {
-                n++;
-                CLIENTS.put(ipAddress, n);
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
     public void disconnect(MySession session) {
-        Object o = CLIENTS.get(session.getIP());
-        if (o != null) {
-            int n = Integer.parseInt(String.valueOf(o));
-            n--;
-            if (n < 0) {
-                n = 0;
-            }
-            CLIENTS.put(session.getIP(), n);
+        if (session != null) {
+            session.close(SessionCloseCause.CLIENT_DISCONNECT);
         }
     }
 
@@ -288,17 +279,28 @@ public class ServerManager {
 
     public void close() {
         isRunning = false;
-        try {
-            ClanService.gI().close();
-        } catch (Exception e) {
-            Logger.error("Lỗi save clan!\n");
-        }
-        try {
-            ConsignShopManager.gI().save();
-        } catch (Exception e) {
-            Logger.error("Lỗi save shop ký gửi!\n");
-        }
-        Client.gI().close();
+        executeShutdownPhases(
+                () -> Network.gI().stopConnect(),
+                () -> SessionManager.gI().closeAll(SessionCloseCause.MAINTENANCE),
+                () -> Client.gI().close(SessionCloseCause.MAINTENANCE),
+                () -> {
+                    try {
+                        ClanService.gI().close();
+                    } catch (Exception e) {
+                        Logger.error("Lỗi save clan!\n");
+                    }
+                    try {
+                        ConsignShopManager.gI().save();
+                    } catch (Exception e) {
+                        Logger.error("Lỗi save shop ký gửi!\n");
+                    }
+                },
+                () -> {
+                    Manager.gI().shutdownRuntimeExecutors();
+                    if (topUpdater != null) {
+                        topUpdater.shutdownNow();
+                    }
+                });
         Logger.success("SUCCESSFULLY MAINTENANCE!\n");
 
         try {
@@ -307,6 +309,24 @@ public class ServerManager {
             e.printStackTrace();
         }
         System.exit(0);
+    }
+
+    static void executeShutdownPhases(Runnable stopAccepts, Runnable closeSessions,
+            Runnable closePlayers, Runnable persistSharedState, Runnable shutdownExecutors) {
+        runShutdownPhase("stop_accepts", stopAccepts);
+        runShutdownPhase("close_sessions", closeSessions);
+        runShutdownPhase("close_players", closePlayers);
+        runShutdownPhase("persist_shared_state", persistSharedState);
+        runShutdownPhase("shutdown_executors", shutdownExecutors);
+    }
+
+    private static void runShutdownPhase(String phase, Runnable action) {
+        try {
+            action.run();
+        } catch (Throwable error) {
+            Logger.error("[SHUTDOWN] event=phase_failed phase=" + phase
+                    + " errorType=" + error.getClass().getSimpleName() + "\n");
+        }
     }
 
     private static void activeCommandLine() {
@@ -324,6 +344,11 @@ public class ServerManager {
                 case "tat":
                     AutoMaintenance.AutoMaintenance = false;
                     System.out.println("Đã tắt chế độ bảo trì tự động.");
+                    break;
+                case "runtime":
+                    ServerManager manager = ServerManager.gI();
+                    System.out.println(ServerRuntimeMetrics.gI().formatRuntimeSnapshot(
+                            SessionManager.gI().getNumSession(), manager.getIpRegistry().getActiveLeases()));
                     break;
                 case "run":
                 try {

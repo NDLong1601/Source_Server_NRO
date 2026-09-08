@@ -110,7 +110,7 @@ public class MrFinn {
                 } else if (lastTimeLogin > session.lastTimeLogout
                         && (plInGame = Client.gI().getPlayerByUser(session.userId)) != null) {
                     if (plInGame != null) {
-                        Client.gI().kickSession(plInGame.getSession());
+                        Client.gI().kickSession(plInGame.getSession(), nro.models.network.SessionCloseCause.DUPLICATE_LOGIN);
                     }
                 } else {
                     if (Manager.SECOND_WAIT_LOGIN > 0 && secondsPass >= 0 && secondsPass < Manager.SECOND_WAIT_LOGIN) {
@@ -127,7 +127,7 @@ public class MrFinn {
                         } else {
                             plInGame = Client.gI().getPlayerByUser(session.userId);
                             if (plInGame != null) {
-                                Client.gI().kickSession(plInGame.getSession());
+                                Client.gI().kickSession(plInGame.getSession(), nro.models.network.SessionCloseCause.DUPLICATE_LOGIN);
                             }
                             if ((player = loadPlayer(rs, false)) != null) {
                                 player.isPlayer = true;
@@ -139,9 +139,9 @@ public class MrFinn {
                                 player.point_maydam = rs.getInt("point_maydam");
                                 player.total_damage_maydam = rs.getLong("total_damage_maydam");
                                 player.isNewMember = !Util.isTimeDifferenceGreaterThanNDays(createTime, 35);
-                                LocalManager.executeUpdate("update account set last_time_login = '"
-                                        + new Timestamp(System.currentTimeMillis()) + "', ip_address = '"
-                                        + session.ipAddress + "' where id = " + session.userId);
+                                LocalManager.executeUpdate(
+                                        "update account set last_time_login = ?, ip_address = ? where id = ?",
+                                        new Timestamp(System.currentTimeMillis()), session.ipAddress, session.userId);
                             }
                         }
                     }
@@ -153,7 +153,6 @@ public class MrFinn {
                 al.wrong();
             }
         } catch (Exception e) {
-            Logger.error(session.uu);
             if (player != null) {
                 player.dispose();
                 player = null;

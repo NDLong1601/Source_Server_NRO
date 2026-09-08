@@ -347,7 +347,7 @@ public class ConsignShopService {
         }
         Service.gI().sendThongBao(player, result.getMessage());
         if (result.getOutcome() == ConsignPurchaseResult.Outcome.PERSISTENCE_UNKNOWN) {
-            Client.gI().kickSession(player.getSession());
+            Client.gI().kickSession(player.getSession(), nro.models.network.SessionCloseCause.INTERNAL_ERROR);
             return;
         }
         openShopKyGui(player);

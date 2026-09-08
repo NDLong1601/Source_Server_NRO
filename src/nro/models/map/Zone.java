@@ -259,7 +259,8 @@ public class Zone {
         for (int i = this.notBosses.size() - 1; i >= 0; i--) {
             Player pl = this.notBosses.get(i);
             if (!pl.isPet && !pl.isBot && !pl.isNewPet) {
-                this.notBosses.get(i).update();
+                pl.getMailbox().drain();
+                pl.update();
             }
         }
     }

@@ -2,6 +2,7 @@ package nro.models.network;
 
 import nro.models.interfaces.IKeySessionHandler;
 import nro.models.interfaces.ISession;
+import nro.models.utils.Logger;
 
 public class KeyHandler implements IKeySessionHandler {
 
@@ -16,9 +17,13 @@ public class KeyHandler implements IKeySessionHandler {
                 msg.writer().writeByte(KEYS[i] ^ KEYS[i - 1]);
             }
             session.doSendMessage(msg);
-            msg.cleanup();
             session.setSentKey(true);
         } catch (Exception exception) {
+            Logger.error("[SESSION] event=session_key_send_failed sessionId=" + session.getID()
+                    + " errorType=" + exception.getClass().getSimpleName() + "\n");
+            session.close(SessionCloseCause.SEND_FAILURE);
+        } finally {
+            msg.cleanup();
         }
     }
 }

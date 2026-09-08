@@ -689,8 +689,7 @@ public class NpcFactory {
                                 }
                                 case 4 -> {
                                     Service.gI().sendThongBao(player, "Kik người chơi " + p.name + " thành công");
-                                    Client.gI().getPlayers().remove(p);
-                                    Client.gI().kickSession(p.getSession());
+                                    Client.gI().kickSession(p.getSession(), nro.models.network.SessionCloseCause.ADMIN_KICK);
                                 }
                             }
                         }
