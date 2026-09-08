@@ -69,30 +69,7 @@ CREATE TABLE IF NOT EXISTS `vnd_delivery_outbox` (
     KEY `idx_vnd_outbox_account` (`account_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 3. Baselines include zero accounts. For an older partial rollout, reconstruct
--- the opening value from the first committed movement, never from today's balance.
--- Records opening balances without fabricating retroactive individual purchases.
-INSERT INTO `vnd_transaction_ledger` (
-    `purchase_key`,
-    `account_id`,
-    `player_id`,
-    `transaction_type`,
-    `amount`,
-    `balance_before`,
-    `balance_after`,
-    `policy_version`,
-    `created_at`
-)
-SELECT
-    CONCAT('baseline_account_', a.`id`),
-    a.`id`,
-    0,
-    'BASELINE_OPENING',
-    COALESCE((SELECT l.balance_before FROM vnd_transaction_ledger l WHERE l.account_id=a.id AND l.transaction_type <> 'BASELINE_OPENING' ORDER BY l.id LIMIT 1), a.vnd),
-    0,
-    COALESCE((SELECT l.balance_before FROM vnd_transaction_ledger l WHERE l.account_id=a.id AND l.transaction_type <> 'BASELINE_OPENING' ORDER BY l.id LIMIT 1), a.vnd),
-    'SEC-05-BASELINE',
-    NOW()
-FROM `account` a
-WHERE NOT EXISTS (SELECT 1 FROM vnd_transaction_ledger b WHERE b.purchase_key=CONCAT('baseline_account_',a.id));
+-- SEC-07 owns baseline capture. This older SEC-05 migration deliberately does
+-- not infer an opening value from a current balance; run
+-- sql/operations/sec07_capture_vnd_baseline.sql at an approved cutover.
 DROP TEMPORARY TABLE sec05_preflight_guard;

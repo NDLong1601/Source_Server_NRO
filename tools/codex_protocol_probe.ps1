@@ -208,7 +208,9 @@ try {
         Write-KeyedMessage $stream -28 ([byte[]]@(8))
     }
 
-    $deadline = [DateTime]::UtcNow.AddSeconds(20)
+    # PowerShell decrypts large item-template packets byte by byte. Keep this
+    # bounded, but allow enough time to read every append and completion packet.
+    $deadline = [DateTime]::UtcNow.AddSeconds(60)
     $packets = New-Object System.Collections.Generic.List[object]
     while ([DateTime]::UtcNow -lt $deadline) {
         try {

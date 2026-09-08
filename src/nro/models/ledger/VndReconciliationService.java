@@ -1,14 +1,11 @@
 package nro.models.ledger;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import nro.models.utils.Logger;
 
-/**
- * SEC-05: Bounded, read-only reconciliation and audit service.
- * Compares opening baseline + credits - debits against account.vnd to detect and report drift.
- * Never silently rewrites balances, deletes entries, or modifies data.
- */
+/** Bounded, read-only SEC-07 reconciliation service. */
 public class VndReconciliationService {
 
     private final MoneyLedgerRepository repository;
@@ -21,69 +18,70 @@ public class VndReconciliationService {
         return new VndReconciliationService(MoneyLedgerService.gI().getRepository());
     }
 
-    public record ReconciliationReport(
-        int accountsAudited,
-        int accountsWithDrift,
-        int accountsWithPending,
-        List<MoneyLedgerRepository.AccountAudit> driftedAccounts,
-        List<String> warnings
-    ) {
-        public boolean isHealthy() {
-            return accountsWithDrift == 0;
+    /**
+     * Runs the SEC-07 audit against a bounded, owner-consistent snapshot. A
+     * finding is data, not an exception: one bad owner is retained while other
+     * owners in the batch are still evaluated.
+     */
+    public VndReconciliationRunReport runSec07(VndReconciliationRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("SEC-07 request is required");
+        }
+        long startedAt = System.currentTimeMillis();
+        if (!(repository instanceof VndReconciliationDataSource source)) {
+            return VndReconciliationRunReport.unavailable(request, startedAt,
+                    "REPOSITORY_DOES_NOT_SUPPORT_SEC07");
         }
 
-        public void printSummary() {
-            System.out.println("=== SEC-05 VND LEDGER RECONCILIATION REPORT ===");
-            System.out.println("Accounts Audited: " + accountsAudited);
-            System.out.println("Accounts with Drift: " + accountsWithDrift);
-            System.out.println("Accounts with Pending Deliveries: " + accountsWithPending);
-            if (accountsWithDrift > 0) {
-                System.out.println("DRIFT DETECTED IN THE FOLLOWING ACCOUNTS:");
-                for (MoneyLedgerRepository.AccountAudit a : driftedAccounts) {
-                    System.out.println("  AccountId=" + a.accountId()
-                        + " | Current=" + a.currentVnd()
-                        + " | Baseline=" + a.baselineVnd()
-                        + " | Credits=" + a.totalCredits()
-                        + " | Debits=" + a.totalDebits()
-                        + " | Expected=" + a.expectedVnd()
-                        + " | Drift=" + a.drift());
+        final VndReconciliationDataSource.ReconciliationSnapshot snapshot;
+        try {
+            snapshot = source.readVndSnapshot(request);
+        } catch (RuntimeException unavailable) {
+            Logger.error("[SEC-07] Reconciliation unavailable run=" + request.runId());
+            return VndReconciliationRunReport.unavailable(request, startedAt,
+                    "SNAPSHOT_UNAVAILABLE");
+        }
+
+        List<VndReconciliationCalculator.OwnerReconciliation> owners = new ArrayList<>();
+        EnumMap<VndReconciliationStatus, Integer> counts = new EnumMap<>(VndReconciliationStatus.class);
+        for (VndReconciliationDataSource.OwnerSnapshot owner : snapshot.owners()) {
+            VndReconciliationCalculator.OwnerReconciliation result;
+            try {
+                result = owner.evaluated() != null
+                        ? owner.evaluated()
+                        : VndReconciliationCalculator.evaluate(owner, System.currentTimeMillis(),
+                                request.stalePendingAfterMillis());
+            } catch (RuntimeException invalidSnapshot) {
+                result = new VndReconciliationCalculator.OwnerReconciliation(
+                        owner == null ? -1L : owner.ownerId(),
+                        owner == null ? 0L : owner.persistedBalance(),
+                        null,
+                        List.of(VndReconciliationStatus.UNAVAILABLE),
+                        List.of(new VndReconciliationFinding(VndReconciliationStatus.UNAVAILABLE,
+                                owner == null ? -1L : owner.ownerId(), "VND", "", "OWNER_EVALUATION_FAILED")));
+            }
+            owners.add(result);
+            for (VndReconciliationStatus status : result.statuses()) {
+                counts.merge(status, 1, Integer::sum);
+                if (status != VndReconciliationStatus.OK) {
+                    Logger.error("[SEC-07] finding run=" + request.runId()
+                            + " owner=" + result.ownerId() + " code=" + status.name());
                 }
-            } else {
-                System.out.println("All audited accounts match ledger expectations exactly.");
-            }
-            if (!warnings.isEmpty()) {
-                System.out.println("Warnings:");
-                for (String w : warnings) {
-                    System.out.println("  - " + w);
-                }
-            }
-            System.out.println("===============================================");
-        }
-    }
-
-    public ReconciliationReport runAudit(int maxAccounts) {
-        List<MoneyLedgerRepository.AccountAudit> audits = repository.auditAccountsWithActivity(maxAccounts);
-        List<MoneyLedgerRepository.AccountAudit> drifted = new ArrayList<>();
-        int pendingCount = 0;
-        List<String> warnings = new ArrayList<>();
-
-        for (MoneyLedgerRepository.AccountAudit audit : audits) {
-            if (audit.hasDrift()) {
-                drifted.add(audit);
-                Logger.error("[SEC-05 Reconciliation] Drift detected for accountId=" + audit.accountId());
-            }
-            if (audit.pendingDeliveries() > 0) {
-                pendingCount++;
-                warnings.add("Account " + audit.accountId() + " has " + audit.pendingDeliveries() + " pending outbox deliveries.");
             }
         }
 
-        warnings.add("Note: Direct writes by external payment/top-up processors bypassing MoneyLedgerService will register as drift.");
-
-        return new ReconciliationReport(audits.size(), drifted.size(), pendingCount, drifted, warnings);
-    }
-
-    public MoneyLedgerRepository.AccountAudit auditSingleAccount(int accountId) {
-        return repository.auditAccount(accountId);
+        boolean coverageComplete = snapshot.coverageComplete()
+                && !snapshot.hasMoreOwners()
+                && snapshot.unresolvedOwnerIds().isEmpty()
+                && owners.stream().noneMatch(owner -> owner.statuses().contains(VndReconciliationStatus.UNAVAILABLE));
+        if (!coverageComplete) {
+            counts.merge(VndReconciliationStatus.INCOMPLETE_COVERAGE, 1, Integer::sum);
+        }
+        return new VndReconciliationRunReport(
+                request.runId(), startedAt, System.currentTimeMillis(),
+                snapshot.cutoffLedgerId(), snapshot.cutoffAtMillis(),
+                "REPEATABLE_READ_OWNER_SNAPSHOT",
+                request.afterOwnerId(), snapshot.nextCursor(), snapshot.hasMoreOwners(),
+                coverageComplete, owners, counts, "", snapshot.unresolvedOwnerIds());
     }
 }

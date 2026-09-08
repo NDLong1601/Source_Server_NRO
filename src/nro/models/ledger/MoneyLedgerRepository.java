@@ -15,7 +15,8 @@ public interface MoneyLedgerRepository {
         CONFLICTING_PAYLOAD,
         VIP_LIMIT_REACHED,
         UNKNOWN,
-        FAILED
+        FAILED,
+        BASELINE_MISSING
     }
 
     record DebitResult(
@@ -40,21 +41,6 @@ public interface MoneyLedgerRepository {
         int retryCount,
         long createdAt
     ) {}
-
-    record AccountAudit(
-        int accountId,
-        int currentVnd,
-        int baselineVnd,
-        long totalCredits,
-        long totalDebits,
-        long expectedVnd,
-        long drift,
-        int pendingDeliveries
-    ) {
-        public boolean hasDrift() {
-            return drift != 0;
-        }
-    }
 
     /**
      * Atomically debits account.vnd conditionally and inserts immutable ledger and pending outbox records.
@@ -93,7 +79,4 @@ public interface MoneyLedgerRepository {
 
     void recordOutboxFailure(String purchaseKey, String errorCode);
 
-    AccountAudit auditAccount(int accountId);
-
-    List<AccountAudit> auditAccountsWithActivity(int limit);
 }

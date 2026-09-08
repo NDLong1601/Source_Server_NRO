@@ -80,7 +80,8 @@ public class MoneyLedgerService {
         VIP_SEASON_CLOSED,
         UNACTIVATED_ACCOUNT,
         PLAYER_QUARANTINED,
-        FAILED
+        FAILED,
+        BASELINE_MISSING
     }
 
     public record PurchaseResult(
@@ -270,6 +271,10 @@ public class MoneyLedgerService {
         if (debitResult.status() == MoneyLedgerRepository.DebitStatus.VIP_LIMIT_REACHED) {
             return new PurchaseResult(PurchaseOutcome.VIP_LIMIT_REACHED,
                 "Bạn đã mua tối đa 4 lượt VIP mùa này rồi!", 0, 0, purchaseKey);
+        }
+        if (debitResult.status() == MoneyLedgerRepository.DebitStatus.BASELINE_MISSING) {
+            return new PurchaseResult(PurchaseOutcome.BASELINE_MISSING,
+                "Giao dịch đang cần được kiểm tra; vui lòng thử lại sau", 0, 0, purchaseKey);
         }
 
         if (debitResult.status() == MoneyLedgerRepository.DebitStatus.INSUFFICIENT_BALANCE) {
