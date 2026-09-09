@@ -151,6 +151,7 @@
     [string]$AssetWidth = "0",
     [string]$AssetHeight = "0",
     [string]$Anchor = "top-left",
+    [string]$LookbackDays = "",
     [string]$Encoded = "0"
 )
 
@@ -184,7 +185,7 @@ foreach ($paramName in @(
         "HeadW", "HeadH", "BodyW", "BodyH", "LegW", "LegH", "AvatarW", "AvatarH",
         "Mode", "FullBodyPath", "FullBodyIconId", "FullBodyW", "FullBodyH", "FullBodyDx", "FullBodyDy",
         "ProjectId", "RequestPath", "ReleaseId", "WidthTiles", "HeightTiles", "TileSetId",
-        "AssetPath", "ImageId", "Layer", "Dx", "Dy", "AssetWidth", "AssetHeight", "Anchor"
+        "AssetPath", "ImageId", "Layer", "Dx", "Dy", "AssetWidth", "AssetHeight", "Anchor", "LookbackDays"
     )) {
     Set-Variable -Name $paramName -Value (Decode-InputParam (Get-Variable -Name $paramName -ValueOnly))
 }
@@ -936,6 +937,7 @@ function Reset-PetConfig {
 }
 
 . (Join-Path $PSScriptRoot "admin_task_data.ps1")
+. (Join-Path $PSScriptRoot "clan_economy_admin_backend.ps1")
 
 function SqlString {
     param([string]$Value)
@@ -6759,6 +6761,7 @@ try {
         "saveplayercore" { Save-PlayerCore }
         "rescueplayer" { Rescue-Player }
         "getactivityoverview" { Get-ActivityOverview }
+        "getclaneconomy" { Get-ClanEconomyReport -LookbackDays $LookbackDays -ConfigPath (Join-Path $Root "data\clan_economy.properties") }
         "getactivitydraft" { Get-ActivityDraft }
         "listactivityversions" { List-ActivityVersions }
         "getactivityversion" { (Get-ActivityVersionByNumber ([long](Get-ActivityInteger $Id 'Id' 1 2147483647))) | ConvertTo-Json -Depth 35 }

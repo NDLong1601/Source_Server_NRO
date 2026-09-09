@@ -14,6 +14,7 @@ import nro.models.item.Item;
 import nro.models.consts.ConstNpc;
 import nro.models.player_system.Template.FlagBag;
 import nro.models.clan.Clan;
+import nro.models.clan.ClanAppearanceService;
 import nro.models.clan.ClanMember;
 import nro.models.clan.ClanMessage;
 import nro.models.clan.ClanProfileV2;
@@ -21,6 +22,7 @@ import nro.models.clan.ClanBuffService;
 import nro.models.clan.ClanTreasuryService;
 import nro.models.clan.ClanTreeService;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanValueService;
 import nro.models.consts.ConstAchievement;
 import nro.models.player.Player;
 import nro.models.network.Message;
@@ -592,6 +594,7 @@ public class ClanService {
                 // không chờ thành viên đầu tiên mở map lãnh địa.
                 ClanTreeService.gI().initializeClan(clan);
                 ClanProgressionService.gI().initializeClan(clan);
+                ClanValueService.gI().initializeClan(clan);
 
                 Service.gI().sendFlagBag(player);
                 sendMyClan(player);
@@ -724,6 +727,9 @@ public class ClanService {
                 for (int i = 0; i < progressionBranches.length; i++) {
                     progressionRanks[i] = progressionService.rank(player.clan, progressionBranches[i]);
                 }
+                ClanValueService.Snapshot clanValue = ClanValueService.gI().snapshot(player.clan);
+                ClanAppearanceService.AppearanceView clanAppearance = ClanAppearanceService.gI()
+                        .snapshot(player.clan, ClanTreeService.gI().valueState(player.clan.id).level(), clanValue);
                 ClanProfileV2.write(msg.writer(), player.clan.id, player.clan.level,
                         player.clan.maxMember, player.clan.getCurrMembers(),
                         player.clan.clanGold, player.clan.clanGem, player.clan.treasuryVersion,
@@ -735,7 +741,8 @@ public class ClanService {
                         progressionService.gemRequired(player.clan.level),
                         player.clan.potentialTotal, player.clan.potentialUnspent,
                         player.clan.progressionVersion, progressionRanks,
-                        ClanBuffService.gI().buffSnapshot(player.clan.id));
+                        ClanBuffService.gI().buffSnapshot(player.clan.id),
+                        clanValue.enabled(), clanValue.score(), clanValue.version(), clanAppearance);
             }
             player.sendMessage(msg);
             msg.cleanup();

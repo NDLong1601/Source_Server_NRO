@@ -16,7 +16,7 @@ import java.util.List;
 public final class ClanProfileV2 {
 
     public static final int MAGIC = 0x434C5632; // "CLV2"
-    public static final byte VERSION = 5;
+    public static final byte VERSION = 7;
     public static final int POTENTIAL_BRANCH_COUNT = 6;
 
     private ClanProfileV2() {
@@ -29,7 +29,9 @@ public final class ClanProfileV2 {
             long clanExp, long expRequired, int capsuleRequired,
             long goldRequired, long gemRequired, int potentialTotal,
             int potentialUnspent, long progressionVersion,
-            int[] potentialRanks, List<ClanBuffService.BuffView> buffStates) throws IOException {
+            int[] potentialRanks, List<ClanBuffService.BuffView> buffStates,
+            boolean clanValueEnabled, ClanValueConfig.Score clanValue, long clanValueVersion,
+            ClanAppearanceService.AppearanceView appearance) throws IOException {
         writer.writeInt(MAGIC);
         writer.writeByte(VERSION);
         writer.writeInt(clanId);
@@ -75,6 +77,21 @@ public final class ClanProfileV2 {
             writer.writeShort(buff.percent());
             writer.writeLong(Math.max(0L, buff.expiresAt() - snapshotAt));
         }
+        ClanValueConfig.Score safeValue = clanValue == null
+                ? new ClanValueConfig.Score(1, 0L, 0L, 0L, 0L, 0L, 0L) : clanValue;
+        writer.writeBoolean(clanValueEnabled);
+        writer.writeByte(safeValue.formulaVersion());
+        writer.writeLong(safeValue.totalValue());
+        writer.writeLong(safeValue.clanLevelScore());
+        writer.writeLong(safeValue.spentPotentialScore());
+        writer.writeLong(safeValue.treeLevelScore());
+        writer.writeLong(safeValue.achievementScore());
+        writer.writeLong(safeValue.weeklyActivityScore());
+        writer.writeLong(Math.max(0L, clanValueVersion));
+        if (appearance == null || appearance.appearance() == null) {
+            throw new IllegalArgumentException("Clan appearance is required for profile v7");
+        }
+        ClanAppearanceProtocol.writeDetails(writer, clanId, appearance.enabled(), appearance.appearance());
     }
 
     public static Profile read(DataInputStream reader) throws IOException {
@@ -116,6 +133,16 @@ public final class ClanProfileV2 {
         int[] potentialRanks = new int[POTENTIAL_BRANCH_COUNT];
         int[] buffPercents = new int[ClanBuffService.BuffType.values().length];
         long[] buffRemainingMillis = new long[ClanBuffService.BuffType.values().length];
+        boolean clanValueEnabled = false;
+        int clanValueFormulaVersion = 0;
+        long clanValue = 0L;
+        long clanLevelScore = 0L;
+        long spentPotentialScore = 0L;
+        long treeLevelScore = 0L;
+        long achievementScore = 0L;
+        long weeklyActivityScore = 0L;
+        long clanValueVersion = 0L;
+        ClanAppearanceProtocol.Snapshot appearance = null;
         if (version >= 4) {
             clanExp = reader.readLong();
             expRequired = reader.readLong();
@@ -141,11 +168,28 @@ public final class ClanProfileV2 {
                 }
             }
         }
+        if (version >= 6) {
+            clanValueEnabled = reader.readBoolean();
+            clanValueFormulaVersion = reader.readUnsignedByte();
+            clanValue = Math.max(0L, reader.readLong());
+            clanLevelScore = Math.max(0L, reader.readLong());
+            spentPotentialScore = Math.max(0L, reader.readLong());
+            treeLevelScore = Math.max(0L, reader.readLong());
+            achievementScore = Math.max(0L, reader.readLong());
+            weeklyActivityScore = Math.max(0L, reader.readLong());
+            clanValueVersion = Math.max(0L, reader.readLong());
+        }
+        if (version >= 7) {
+            appearance = ClanAppearanceProtocol.readDetails(reader,
+                    ClanAppearanceProtocol.ACTION_UNSIGNED, ClanAppearanceProtocol.VERSION);
+        }
         return new Profile(version, clanId, level, maxMember, currentMember,
                 clanGold, clanGem, treasuryVersion, memberContribution, ledgerEntries,
                 clanExp, expRequired, capsuleRequired, goldRequired, gemRequired,
                 potentialTotal, potentialUnspent, progressionVersion, potentialRanks,
-                buffPercents, buffRemainingMillis);
+                buffPercents, buffRemainingMillis, clanValueEnabled, clanValueFormulaVersion,
+                clanValue, clanLevelScore, spentPotentialScore, treeLevelScore,
+                achievementScore, weeklyActivityScore, clanValueVersion, appearance);
     }
 
     public static final class Profile {
@@ -171,6 +215,16 @@ public final class ClanProfileV2 {
         public final int[] potentialRanks;
         public final int[] buffPercents;
         public final long[] buffRemainingMillis;
+        public final boolean clanValueEnabled;
+        public final int clanValueFormulaVersion;
+        public final long clanValue;
+        public final long clanLevelScore;
+        public final long spentPotentialScore;
+        public final long treeLevelScore;
+        public final long achievementScore;
+        public final long weeklyActivityScore;
+        public final long clanValueVersion;
+        public final ClanAppearanceProtocol.Snapshot appearance;
 
         private Profile(int version, int clanId, int level, int maxMember, int currentMember,
                 long clanGold, long clanGem, long treasuryVersion, long memberContribution,
@@ -178,7 +232,11 @@ public final class ClanProfileV2 {
                 long clanExp, long expRequired, int capsuleRequired,
                 long goldRequired, long gemRequired, int potentialTotal,
                 int potentialUnspent, long progressionVersion, int[] potentialRanks,
-                int[] buffPercents, long[] buffRemainingMillis) {
+                int[] buffPercents, long[] buffRemainingMillis,
+                boolean clanValueEnabled, int clanValueFormulaVersion, long clanValue,
+                long clanLevelScore, long spentPotentialScore, long treeLevelScore,
+                long achievementScore, long weeklyActivityScore, long clanValueVersion,
+                ClanAppearanceProtocol.Snapshot appearance) {
             this.version = version;
             this.clanId = clanId;
             this.level = level;
@@ -200,6 +258,16 @@ public final class ClanProfileV2 {
             this.potentialRanks = potentialRanks.clone();
             this.buffPercents = buffPercents.clone();
             this.buffRemainingMillis = buffRemainingMillis.clone();
+            this.clanValueEnabled = clanValueEnabled;
+            this.clanValueFormulaVersion = clanValueFormulaVersion;
+            this.clanValue = clanValue;
+            this.clanLevelScore = clanLevelScore;
+            this.spentPotentialScore = spentPotentialScore;
+            this.treeLevelScore = treeLevelScore;
+            this.achievementScore = achievementScore;
+            this.weeklyActivityScore = weeklyActivityScore;
+            this.clanValueVersion = clanValueVersion;
+            this.appearance = appearance;
         }
     }
 }

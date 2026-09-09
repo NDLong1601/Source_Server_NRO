@@ -130,6 +130,15 @@ public final class ClanShopService {
     }
 
     public void handleRequest(Player player, byte action, Message message) throws IOException {
+        ClanFeatureFlags flags = ClanFeatureFlags.gI();
+        if (!flags.isEnabled(ClanFeatureFlags.Feature.SHOP)) {
+            notify(player, "Cửa hàng bang đang tạm khóa.");
+            return;
+        }
+        if (action != REQUEST_VIEW && !flags.canMutate(ClanFeatureFlags.Feature.SHOP)) {
+            notify(player, "Cửa hàng bang đang ở chế độ chỉ xem; giao dịch tạm khóa.");
+            return;
+        }
         if (action == REQUEST_VIEW) {
             sendSnapshot(player);
         } else if (action == REQUEST_RESTOCK) {
@@ -140,6 +149,7 @@ public final class ClanShopService {
     }
 
     public void sendSnapshot(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.SHOP)) return;
         if (!requireClan(player)) return;
         Clan clan = player.clan;
         Map<Integer, Integer> stock = loadStock(clan.id);
@@ -173,6 +183,10 @@ public final class ClanShopService {
 
     private void restock(Player player, int itemId, String requestId) {
         if (!requireClan(player) || !enabled) return;
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.TREASURY)) {
+            notify(player, "Kho bang đang ở chế độ chỉ xem; chưa thể nhập hàng.");
+            return;
+        }
         CatalogItem item = catalog.get(itemId);
         if (item == null || !validRequestId(requestId)) {
             notify(player, "Yêu cầu nhập hàng không hợp lệ.");
@@ -189,10 +203,13 @@ public final class ClanShopService {
         }
         synchronized (clan) {
             try (Connection connection = LocalManager.getConnection()) {
+                ClanTreasuryService.gI().ensureSchema(connection);
                 connection.setAutoCommit(false);
                 try {
                     if (restockRequestExists(connection, clan.id, requestId)) {
                         connection.rollback();
+                        ClanEconomyMetricsService.gI().record(
+                                ClanEconomyMetricsService.Signal.DUPLICATE_REQUEST, clan.id);
                         notify(player, "Yêu cầu nhập hàng này đã được xử lý.");
                         sendSnapshot(player);
                         return;
@@ -213,13 +230,32 @@ public final class ClanShopService {
                     updateClanMoney(connection, clan.id, row.capsule - item.restockCapsule, row.gold - item.restockGold);
                     saveStock(connection, clan.id, itemId, item.stockCap);
                     saveRestock(connection, clan.id, player.id, itemId, requestId, currentStock, item.stockCap);
+                    String metadata = "{\"itemId\":" + itemId + ",\"stockAfter\":" + item.stockCap + "}";
+                    if (item.restockCapsule > 0) {
+                        ClanTreasuryService.gI().appendLedger(connection, clan.id, player.id, player.name,
+                                "SHOP_RESTOCK", ClanTreasuryService.CURRENCY_CAPSULE, -item.restockCapsule,
+                                row.capsule - item.restockCapsule, null, metadata,
+                                ClanTreasuryService.ledgerRequestId("SHOP_RESTOCK", requestId,
+                                        ClanTreasuryService.CURRENCY_CAPSULE));
+                    }
+                    if (item.restockGold > 0L) {
+                        ClanTreasuryService.gI().appendLedger(connection, clan.id, player.id, player.name,
+                                "SHOP_RESTOCK", ClanTreasuryService.CURRENCY_GOLD, -item.restockGold,
+                                row.gold - item.restockGold, null, metadata,
+                                ClanTreasuryService.ledgerRequestId("SHOP_RESTOCK", requestId,
+                                        ClanTreasuryService.CURRENCY_GOLD));
+                    }
                     connection.commit();
+                    ClanEconomyMetricsService.gI().markActiveClan(clan.id);
                     clan.capsuleClan = row.capsule - item.restockCapsule;
                     clan.clanGold = row.gold - item.restockGold;
+                    clan.treasuryVersion++;
                     notify(player, "Đã nhập " + added + " " + itemName(itemId) + " vào cửa hàng bang.");
                     sendSnapshot(player);
                 } catch (Exception e) {
                     connection.rollback();
+                    ClanEconomyMetricsService.gI().record(
+                            ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
                     Logger.logException(ClanShopService.class, e, "Transaction nhập hàng bang");
                     notify(player, "Không thể nhập hàng lúc này.");
                 } finally {
@@ -292,6 +328,8 @@ public final class ClanShopService {
             try {
                 if (requestExists(connection, clan.id, requestId)) {
                     connection.rollback();
+                    ClanEconomyMetricsService.gI().record(
+                            ClanEconomyMetricsService.Signal.DUPLICATE_REQUEST, clan.id);
                     return PurchaseResult.fail("Yêu cầu mua này đã được xử lý.");
                 }
                 int stock = lockStock(connection, clan.id, item.itemId);
@@ -307,9 +345,12 @@ public final class ClanShopService {
                 saveStock(connection, clan.id, item.itemId, stock - 1);
                 savePurchase(connection, clan.id, player.id, item.itemId, today, bought + 1, requestId);
                 connection.commit();
+                ClanEconomyMetricsService.gI().markActiveClan(clan.id);
                 return PurchaseResult.ok();
             } catch (Exception e) {
                 connection.rollback();
+                ClanEconomyMetricsService.gI().record(
+                        ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
                 Logger.logException(ClanShopService.class, e, "Transaction mua hàng bang");
                 return PurchaseResult.fail("Mua hàng thất bại, tài sản của bạn chưa bị trừ.");
             } finally {
@@ -326,6 +367,10 @@ public final class ClanShopService {
         if (player == null || item == null || item.template == null) return false;
         int id = item.template.id;
         if (id < 2252 || id > 2272) return false;
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.BUFF)) {
+            notify(player, "Vật phẩm hỗ trợ bang đang tạm khóa.");
+            return true;
+        }
         if (id == RENAME_TICKET_ITEM_ID) {
             if (player.clan == null || !player.clan.isLeader(player)) {
                 notify(player, "Chỉ bang chủ có thể dùng Vé đổi tên bang.");
@@ -494,7 +539,8 @@ public final class ClanShopService {
     }
 
     private void updateClanMoney(Connection connection, int clanId, int capsule, long gold) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement("UPDATE clan SET clan_point=?,clan_gold=? WHERE id=?")) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "UPDATE clan SET clan_point=?,clan_gold=?,treasury_version=treasury_version+1 WHERE id=?")) {
             ps.setInt(1, capsule); ps.setLong(2, gold); ps.setInt(3, clanId);
             if (ps.executeUpdate() != 1) throw new SQLException("Không lưu được quỹ bang");
         }

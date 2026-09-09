@@ -19,6 +19,7 @@ import nro.models.clan.ClanShopService;
 import nro.models.clan.ClanItemStorageService;
 import nro.models.clan.ClanGiftService;
 import nro.models.clan.ClanBuffService;
+import nro.models.clan.ClanValueService;
 import static nro.models.data.DataGame.MAP_MOUNT_NUM;
 import nro.models.player_system.GiftCode;
 import nro.models.managers.GiftCodeManager;
@@ -77,6 +78,7 @@ import nro.models.admin.GiftBoxConfigService;
 import nro.models.activity.ActivityConfigService;
 import nro.models.activity.ActivityClaimAuditService;
 import nro.models.activity.ActivityMetricsService;
+import nro.models.clan.ClanEconomyMetricsService;
 
 final class TemplateDataLoader {
 
@@ -255,6 +257,7 @@ final class TemplateDataLoader {
             ClanGiftService.gI().ensureSchema(ConnectionDatabase);
             ClanItemStorageService.gI().ensureSchema(ConnectionDatabase);
             ClanBuffService.gI().ensureSchema(ConnectionDatabase);
+            ClanEconomyMetricsService.gI().start(ConnectionDatabase);
 
             //load clan
             ps = ConnectionDatabase.prepareStatement("select * from clan");
@@ -316,6 +319,7 @@ final class TemplateDataLoader {
                 // INSERT IGNORE means a pre-existing tree is never reset or overwritten.
                 ClanTreeService.gI().initializeClan(ConnectionDatabase, clan);
                 ClanProgressionService.gI().loadForClan(ConnectionDatabase, clan);
+                ClanValueService.gI().loadForClan(ConnectionDatabase, clan);
             }
 
             ps = ConnectionDatabase.prepareStatement("select id from clan order by id desc limit 1");

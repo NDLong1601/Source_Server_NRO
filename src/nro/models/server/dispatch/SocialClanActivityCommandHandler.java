@@ -1,12 +1,15 @@
 package nro.models.server.dispatch;
 
 import nro.models.activity.ActivityClientService;
+import nro.models.clan.ClanAppearanceService;
 import nro.models.clan.ClanGiftService;
 import nro.models.clan.ClanItemStorageService;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanRankingService;
 import nro.models.clan.ClanShopService;
 import nro.models.clan.ClanTreasuryService;
 import nro.models.clan.ClanTreeService;
+import nro.models.clan.ClanValueService;
 import nro.models.fishing.FishingProgressService;
 import nro.models.matches.PVPService;
 import nro.models.player_badges.BadgesService;
@@ -105,6 +108,12 @@ public final class SocialClanActivityCommandHandler implements CommandHandler {
             case ClanItemStorageService.REQUEST_VIEW,
                     ClanItemStorageService.REQUEST_USE ->
                 ClanItemStorageService.gI().handleRequest(context.player(), action, context.message());
+            case ClanValueService.REQUEST_VIEW ->
+                ClanValueService.gI().handleRequest(context.player(), action);
+            case ClanRankingService.REQUEST_PAGE ->
+                ClanRankingService.gI().handleRequest(context.player(), action, context.message());
+            case ClanAppearanceService.REQUEST_VIEW ->
+                ClanAppearanceService.gI().handleRequest(context.player(), action);
             case 0 -> RadarService.gI().sendRadar(context.player(), context.player().Cards);
             case 42 -> FishingProgressService.gI().openFishBook(context.player());
             case CostumeCollectionService.ACTION_COLLECTION ->

@@ -22,6 +22,7 @@ public final class ClanTerritoryService {
     private static final ClanTerritoryService INSTANCE = new ClanTerritoryService();
 
     private final Map<Integer, Zone> territories = new ConcurrentHashMap<>();
+    private final Map<Integer, Long> territoryCreatedAt = new ConcurrentHashMap<>();
     private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "clan-territory-cleanup");
         thread.setDaemon(true);
@@ -43,6 +44,12 @@ public final class ClanTerritoryService {
     }
 
     public Zone getOrCreateTerritory(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.TERRITORY)) {
+            if (player != null) {
+                Service.gI().sendThongBao(player, "Lãnh địa bang đang tạm khóa.");
+            }
+            return null;
+        }
         if (player == null || player.clan == null) {
             return null;
         }
@@ -72,6 +79,9 @@ public final class ClanTerritoryService {
             territory.territoryLastActiveAt = System.currentTimeMillis();
             territoryMap.zones.add(territory);
             territories.put(clanId, territory);
+            territoryCreatedAt.put(clanId, System.currentTimeMillis());
+            ClanEconomyMetricsService.gI().record(
+                    ClanEconomyMetricsService.Signal.TERRITORY_CREATED, clanId);
             return territory;
         }
     }
@@ -96,6 +106,7 @@ public final class ClanTerritoryService {
     public void markActive(Zone zone) {
         if (zone != null && zone.territoryClanId >= 0) {
             zone.territoryLastActiveAt = System.currentTimeMillis();
+            ClanEconomyMetricsService.gI().markActiveClan(zone.territoryClanId);
         }
     }
 
@@ -115,11 +126,37 @@ public final class ClanTerritoryService {
         for (Map.Entry<Integer, Zone> entry : new ArrayList<>(territories.entrySet())) {
             Zone zone = entry.getValue();
             if (zone != null && zone.getNumOfPlayers() == 0 && now - zone.territoryLastActiveAt >= IDLE_DISPOSE_MS) {
+                long lifetime = Math.max(0L, now - territoryCreatedAt.getOrDefault(
+                        entry.getKey(), zone.territoryLastActiveAt));
                 territories.remove(entry.getKey(), zone);
+                territoryCreatedAt.remove(entry.getKey());
                 zone.map.zones.remove(zone);
                 zone.territoryClanId = -1;
+                ClanEconomyMetricsService.gI().record(
+                        ClanEconomyMetricsService.Signal.TERRITORY_DISPOSED,
+                        lifetime, entry.getKey());
             }
         }
+    }
+
+    public synchronized void disposeClan(int clanId) {
+        Zone zone = territories.remove(clanId);
+        long createdAt = territoryCreatedAt.getOrDefault(clanId,
+                zone == null ? System.currentTimeMillis() : zone.territoryLastActiveAt);
+        territoryCreatedAt.remove(clanId);
+        if (zone == null) {
+            return;
+        }
+        for (Player player : new ArrayList<>(zone.getPlayers())) {
+            if (player != null) {
+                ChangeMapService.gI().changeMapNonSpaceship(player, 5, 400, 336);
+            }
+        }
+        zone.map.zones.remove(zone);
+        zone.territoryClanId = -1;
+        ClanEconomyMetricsService.gI().record(
+                ClanEconomyMetricsService.Signal.TERRITORY_DISPOSED,
+                Math.max(0L, System.currentTimeMillis() - createdAt), clanId);
     }
 
     private int nextAvailableZoneId(nro.models.map.Map map) {

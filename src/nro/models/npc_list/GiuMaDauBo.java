@@ -16,6 +16,7 @@ import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.item.Item;
 import nro.models.clan.ClanShopService;
+import nro.models.clan.ClanTreasuryService;
 import nro.models.utils.Util;
 import nro.models.activity.ActivityService;
 import nro.models.activity.ActivityType;
@@ -140,6 +141,7 @@ public class GiuMaDauBo extends Npc {
         if (!player.event.isClanCapsuleClaimAvailable()) {
             return;
         }
+        Clan clan = player.clan;
 
         Item giftTicket = ItemService.gI().createNewItem((short) ClanShopService.CLAN_GIFT_TICKET_ITEM_ID);
         giftTicket.itemOptions.add(new Item.ItemOption(30, 0));
@@ -148,14 +150,35 @@ public class GiuMaDauBo extends Npc {
             return;
         }
 
-        player.lastClanCheckIn = System.currentTimeMillis();
-        player.clan.capsuleClan += 1;
+        int dayKey = (int) java.time.LocalDate.now(nro.models.utils.TimeUtil.VIETNAM_ZONE).toEpochDay();
+        ClanTreasuryService.CapsuleCreditResult credit = ClanTreasuryService.gI().creditCapsule(
+                clan, player, 1, "CLAN_CHECKIN",
+                clan.id + ":" + player.id + ":" + dayKey, "{\"dayKey\":" + dayKey + "}");
+        if (!credit.success() || !credit.applied()) {
+            InventoryService.gI().removeItemBag(player, giftTicket);
+            InventoryService.gI().sendItemBags(player);
+            if (!credit.success()) {
+                Service.gI().sendThongBao(player, credit.message()
+                        + " Phiếu quà chưa được cấp; bạn có thể thử lại.");
+            } else {
+                player.event.setClanCapsuleClaimAvailable(false);
+                Service.gI().sendThongBao(player, credit.message());
+            }
+            return;
+        }
 
-        for (ClanMember cm : player.clan.getMembers()) {
-            if (cm.id == player.id) {
-                cm.memberPoint += 1;
-                cm.clanPoint += 1;
-                break;
+        player.lastClanCheckIn = System.currentTimeMillis();
+
+        synchronized (clan) {
+            if (player.clan == clan) {
+                for (ClanMember cm : clan.getMembers()) {
+                    if (cm.id == player.id) {
+                        cm.memberPoint += 1;
+                        cm.clanPoint += 1;
+                        break;
+                    }
+                }
+                clan.update();
             }
         }
         player.event.setClanCapsuleClaimAvailable(false);
@@ -164,7 +187,7 @@ public class GiuMaDauBo extends Npc {
         // cannot create an Activity event unless the clan check-in succeeded.
         ActivityService.gI().awardUnique(player, ActivityType.CLAN_CHECKIN, "clan-checkin");
         Service.gI().sendThongBao(player, "Bạn đã điểm danh và nhận được 1 Capsule Bang cùng 1 Phiếu quà bang.");
-        for (ClanMember cm : player.clan.getMembers()) {
+        for (ClanMember cm : clan.getMembers()) {
             Player pl = Client.gI().getPlayer(cm.id);
             if (pl != null) {
                 ClanService.gI().sendMyClan(pl);

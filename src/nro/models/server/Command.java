@@ -29,6 +29,7 @@ import nro.models.consts.ConstPlayer;
 import nro.models.data.LocalManager;
 import nro.models.services.TaskService;
 import nro.models.services.SkillMasteryService;
+import nro.models.clan.ClanTreeAdminCommand;
 
 public class Command {
 
@@ -54,6 +55,7 @@ public class Command {
         adminCommands.put("brl", player -> BrolyManager.gI().showListBoss(player));
         adminCommands.put("getitem", player -> Input.gI().createFormGetItem(player));
         adminCommands.put("hs", player -> Service.gI().releaseCooldownSkill(player));
+        adminCommands.put(ClanTreeAdminCommand.NAME, player -> ClanTreeAdminCommand.execute(player, ""));
         adminCommands.put("d", player -> Service.gI().setPos(player, player.location.x, player.location.y + 10));
         adminCommands.put("a", player -> NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_ADMIN, -1,
                 "|0|Time start: " + ServerManager.timeStart
@@ -65,6 +67,9 @@ public class Command {
     }
 
     private void initParameterizedCommands() {
+        parameterizedCommands.put(ClanTreeAdminCommand.NAME + " ", (player, text) ->
+                ClanTreeAdminCommand.execute(player, text.substring(ClanTreeAdminCommand.NAME.length()).trim()));
+
         parameterizedCommands.put("m", (player, text) -> {
             try {
                 int mapId = Integer.parseInt(text.replace("m", "").trim());

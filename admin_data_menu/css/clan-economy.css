@@ -1,0 +1,187 @@
+#panelClanEconomy {
+  overflow: hidden;
+}
+
+.clan-economy-toolbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  min-height: 54px;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  z-index: 2;
+}
+
+.clan-economy-toolbar label {
+  margin-right: 8px;
+  color: #475569;
+  font-weight: 650;
+}
+
+.clan-economy-toolbar select {
+  width: 116px;
+  height: 34px;
+  margin-right: 7px;
+}
+
+.clan-economy-updated {
+  display: inline-block;
+  margin-left: 10px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.clan-economy-scroll {
+  position: absolute;
+  left: 0;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding: 0 2px 18px;
+}
+
+.clan-economy-intro {
+  position: relative;
+  min-height: 58px;
+  padding: 13px 190px 11px 15px;
+  box-sizing: border-box;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #134e4a;
+}
+
+.clan-economy-intro strong,
+.clan-economy-intro span {
+  display: block;
+}
+
+.clan-economy-intro strong {
+  margin-bottom: 3px;
+  font-size: 15px;
+}
+
+.clan-economy-intro .clan-economy-badge {
+  position: absolute;
+  right: 14px;
+  top: 18px;
+}
+
+.clan-economy-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.clan-economy-badge.healthy { background: #dcfce7; color: #166534; }
+.clan-economy-badge.surplus { background: #fef3c7; color: #92400e; }
+.clan-economy-badge.risk { background: #fee2e2; color: #991b1b; }
+.clan-economy-badge.neutral { background: #e2e8f0; color: #475569; }
+
+#panelClanEconomy .section-title {
+  margin-top: 16px;
+}
+
+.clan-economy-card-row {
+  margin: 0 -5px;
+  overflow: hidden;
+}
+
+.clan-economy-card,
+.clan-economy-flow-card {
+  float: left;
+  width: calc(25% - 10px);
+  min-width: 170px;
+  min-height: 104px;
+  margin: 5px;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.clan-economy-card span,
+.clan-economy-card small,
+.clan-economy-card em {
+  display: block;
+}
+
+.clan-economy-card span { color: #64748b; }
+.clan-economy-card strong { display: inline-block; margin: 7px 5px 4px 0; font-size: 21px; color: #0f172a; }
+.clan-economy-card small { display: inline; color: #64748b; }
+.clan-economy-card em { color: #64748b; font-size: 11px; font-style: normal; }
+
+.clan-economy-flow-card { width: calc(33.333% - 10px); min-height: 118px; }
+.clan-economy-flow-card.healthy { border-color: #86efac; background: #f0fdf4; }
+.clan-economy-flow-card.surplus { border-color: #fcd34d; background: #fffbeb; }
+.clan-economy-flow-card.risk { border-color: #fca5a5; background: #fef2f2; }
+.clan-economy-flow-card.neutral { border-color: #cbd5e1; background: #f8fafc; }
+.clan-economy-flow-card > div { position: relative; min-height: 26px; }
+.clan-economy-flow-card .clan-economy-badge { position: absolute; right: 0; top: -2px; }
+.clan-economy-flow-card p { margin: 12px 0 6px; color: #475569; }
+.clan-economy-flow-card p b:first-child { color: #047857; }
+.clan-economy-flow-card p b { margin-right: 3px; color: #b91c1c; }
+.clan-economy-flow-card small { color: #64748b; }
+
+.clan-economy-columns {
+  overflow: hidden;
+  margin: 0 -6px;
+}
+
+.clan-economy-column {
+  float: left;
+  width: 50%;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+.clan-economy-table-wrap {
+  overflow: auto;
+  max-height: 280px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.clan-economy-table-wrap th,
+.clan-economy-table-wrap td {
+  padding: 0 9px;
+  text-align: left;
+}
+
+.clan-economy-table-wrap td:last-child {
+  white-space: normal;
+  line-height: 17px;
+}
+
+.clan-economy-action-table {
+  max-height: 340px;
+}
+
+.clan-economy-inflow { color: #047857; font-weight: 650; }
+.clan-economy-outflow { color: #b91c1c; font-weight: 650; }
+.clan-economy-empty { margin: 5px; padding: 16px; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 8px; }
+
+.clan-economy-guidance {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border-left: 4px solid #0f766e;
+  background: #f8fafc;
+  color: #475569;
+  line-height: 19px;
+}
+
+@media (max-width: 1080px) {
+  .clan-economy-card { width: calc(50% - 10px); }
+  .clan-economy-flow-card { width: calc(100% - 10px); }
+  .clan-economy-column { float: none; width: 100%; }
+}

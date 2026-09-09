@@ -4,6 +4,8 @@ public class ClanMessage {
     public static final byte BLACK = 0;
     public static final byte RED = 1;
 
+    public static final byte GREEN = 2;
+
     private Clan clan;
 
     public int id;

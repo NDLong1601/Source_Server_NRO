@@ -7,6 +7,8 @@ import nro.models.services.ClanService;
 import java.util.ArrayList;
 import java.util.List;
 import nro.models.player.Player;
+import nro.models.player.PlayerPersistenceComponent;
+import nro.models.player.PlayerPersistenceState;
 import nro.models.server.Client;
 import nro.models.services.Service;
 import nro.models.network.Message;
@@ -60,6 +62,11 @@ public class Clan {
     public int potentialTotal;
     public int potentialUnspent;
     public long progressionVersion;
+    /** Giai đoạn 5B: giá trị hoạt động đã materialize để giai đoạn xếp hạng dùng lại. */
+    public long clanValue;
+    public long clanValueVersion;
+    public int clanValueFormulaVersion;
+    public long clanAchievementScore;
 
     public long lastTimeOpenDoanhTrai;
     public boolean haveGoneDoanhTrai;
@@ -205,23 +212,35 @@ public class Clan {
             return;
         }
         ensureWeeklyContract();
-        if (weeklyContractRewarded || weeklyContractProgress >= weeklyContractTarget) {
+        if (weeklyContractRewarded) {
             return;
         }
-        weeklyContractProgress++;
+        if (weeklyContractProgress < weeklyContractTarget) {
+            weeklyContractProgress++;
+        }
         int milestone = Math.max(1, weeklyContractTarget / 10);
         boolean shouldPersist = weeklyContractProgress % milestone == 0;
         if (weeklyContractProgress >= weeklyContractTarget) {
             weeklyContractProgress = weeklyContractTarget;
+            ClanTreasuryService.CapsuleCreditResult credit = ClanTreasuryService.gI().creditCapsule(
+                    this, player, weeklyContractReward, "WEEKLY_CONTRACT",
+                    id + ":" + weeklyContractWeek,
+                    "{\"week\":\"" + weeklyContractWeek + "\"}");
+            if (!credit.success()) {
+                Service.gI().sendThongBao(player, credit.message());
+                update();
+                return;
+            }
             weeklyContractRewarded = true;
-            capsuleClan += weeklyContractReward;
-            ClanProgressionService.gI().addExp(this, ClanProgressionService.gI().expWeeklyContract());
+            if (credit.applied()) {
+                ClanProgressionService.gI().addExp(this, ClanProgressionService.gI().expWeeklyContract());
+            }
             ClanMember leader = getLeader();
             ClanMessage message = new ClanMessage(this);
             message.type = 0;
-            message.playerId = leader.id;
-            message.playerName = leader.name;
-            message.role = leader.role;
+            message.playerId = leader == null ? (int) player.id : leader.id;
+            message.playerName = leader == null ? player.name : leader.name;
+            message.role = leader == null ? MEMBER : leader.role;
             message.text = "Hợp đồng bang tuần đã hoàn thành, quỹ bang nhận "
                     + Util.numberToMoney(weeklyContractReward) + " Capsule Bang.";
             message.color = ClanMessage.RED;
@@ -699,16 +718,123 @@ public class Clan {
         }
     }
 
-    public void deleteDB(int id) {
-        PreparedStatement ps;
-        try (Connection con = LocalManager.getConnection();) {
-            ps = con.prepareStatement("delete from clan where id = ?");
-            ps.setInt(1, id);
-            ps.executeUpdate();
-            ps.close();
-        } catch (Exception e) {
-            Logger.logException(Clan.class, e, "Có lỗi khi delete clan");
+    public synchronized boolean deleteDB(int id) {
+        if (id != this.id || id < 0) {
+            return false;
         }
+        List<PlayerPersistenceState> saveLocks = acquireMemberSaveLocks();
+        if (saveLocks == null) {
+            Logger.error("Không thể khóa phiên lưu thành viên để giải tán bang " + id + "\n");
+            return false;
+        }
+        try {
+            try (Connection connection = LocalManager.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                try (PreparedStatement lock = connection.prepareStatement(
+                        "SELECT id FROM clan WHERE id=? FOR UPDATE")) {
+                    lock.setInt(1, id);
+                    try (java.sql.ResultSet result = lock.executeQuery()) {
+                        if (!result.next()) {
+                            connection.rollback();
+                            return false;
+                        }
+                    }
+                }
+                try (PreparedStatement unlinkPlayers = connection.prepareStatement(
+                        "UPDATE player SET clan_id=-1 WHERE clan_id=?")) {
+                    unlinkPlayers.setInt(1, id);
+                    unlinkPlayers.executeUpdate();
+                }
+                // Immutable audit/ledger rows and unclaimed clan_pending_reward entitlements are retained.
+                for (String table : ClanDissolutionPolicy.activeStateTables()) {
+                    try (PreparedStatement cleanup = connection.prepareStatement(
+                            "DELETE FROM " + table + " WHERE clan_id=?")) {
+                        cleanup.setInt(1, id);
+                        cleanup.executeUpdate();
+                    }
+                }
+                try (PreparedStatement deleteClan = connection.prepareStatement(
+                        "DELETE FROM clan WHERE id=?")) {
+                    deleteClan.setInt(1, id);
+                    if (deleteClan.executeUpdate() != 1) {
+                        throw new java.sql.SQLException("Không thể xóa bang hội");
+                    }
+                }
+                connection.commit();
+            } catch (Exception error) {
+                connection.rollback();
+                Logger.logException(Clan.class, error, "Transaction giải tán bang " + id);
+                return false;
+            } finally {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (java.sql.SQLException resetError) {
+                    Logger.logException(Clan.class, resetError,
+                            "Không khôi phục được auto-commit sau giải tán bang " + id);
+                }
+            }
+            } catch (Exception error) {
+                Logger.logException(Clan.class, error, "Không mở được transaction giải tán bang " + id);
+                return false;
+            }
+
+            try {
+                ClanTerritoryService.gI().disposeClan(id);
+            } catch (RuntimeException error) {
+                Logger.logException(Clan.class, error, "Dọn lãnh địa sau giải tán bang " + id);
+            }
+            ClanTreeService.gI().disposeClan(id);
+            ClanProgressionService.gI().disposeClan(id);
+            ClanValueService.gI().disposeClan(id);
+            ClanBuffService.gI().disposeClan(id);
+            ClanItemStorageService.gI().disposeClan(id);
+            for (Player member : new ArrayList<>(membersInGame)) {
+                if (member != null && member.clan == this) {
+                    member.clan = null;
+                    member.clanMember = null;
+                    member.getPersistenceState().markDirty(PlayerPersistenceComponent.SOCIAL);
+                    if (!member.isOffline && member.nPoint != null) {
+                        try {
+                            Service.gI().point(member);
+                            ClanService.gI().sendMyClan(member);
+                            ClanService.gI().sendClanId(member);
+                            Service.gI().sendFlagBag(member);
+                            Service.gI().sendThongBao(member, "Bang hội đã được giải tán.");
+                        } catch (RuntimeException error) {
+                            Logger.logException(Clan.class, error,
+                                    "Đồng bộ thành viên sau giải tán bang " + id + ", player=" + member.id);
+                        }
+                    }
+                }
+            }
+            membersInGame.clear();
+            return true;
+        } finally {
+            for (PlayerPersistenceState saveLock : saveLocks) {
+                saveLock.finishSave();
+            }
+        }
+    }
+
+    private List<PlayerPersistenceState> acquireMemberSaveLocks() {
+        List<PlayerPersistenceState> acquired = new ArrayList<>();
+        for (Player member : new ArrayList<>(membersInGame)) {
+            if (member == null || member.clan != this) {
+                continue;
+            }
+            PlayerPersistenceState state = member.getPersistenceState();
+            boolean locked = state.tryBeginSave()
+                    || (state.awaitSaveCompletion(5_000L) && state.tryBeginSave());
+            if (!locked) {
+                for (PlayerPersistenceState previous : acquired) {
+                    previous.finishSave();
+                }
+                return null;
+            }
+            acquired.add(state);
+        }
+        return acquired;
     }
 
     public void updatethanhTichBDKB(int clanId) {

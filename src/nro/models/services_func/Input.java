@@ -619,13 +619,13 @@ public class Input {
                     if (xacNhan.equalsIgnoreCase("OK")) {
                         clan = player.clan;
                         if (clan.isLeader(player)) {
-                            clan.deleteDB(clan.id);
-                            GameRuntime.gI().clans().remove(clan);
-                            player.clan = null;
-                            player.clanMember = null;
-                            ClanService.gI().sendMyClan(player);
-                            ClanService.gI().sendClanId(player);
-                            Service.gI().sendThongBao(player, "Bang hội đã giải tán thành công.");
+                            if (clan.deleteDB(clan.id)) {
+                                GameRuntime.gI().clans().remove(clan);
+                                Service.gI().sendThongBao(player, "Bang hội đã giải tán thành công.");
+                            } else {
+                                Service.gI().sendThongBao(player,
+                                        "Không thể giải tán bang lúc này; dữ liệu bang chưa thay đổi.");
+                            }
                         }
                     }
                 }

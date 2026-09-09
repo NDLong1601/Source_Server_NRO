@@ -554,13 +554,13 @@ public class NpcFactory {
                         switch (select) {
                             case 0 -> {
                                 Clan clan = player.clan;
-                                clan.deleteDB(clan.id);
-                                GameRuntime.gI().clans().remove(clan);
-                                player.clan = null;
-                                player.clanMember = null;
-                                ClanService.gI().sendMyClan(player);
-                                ClanService.gI().sendClanId(player);
-                                Service.gI().sendThongBao(player, "Đã giải tán bang hội.");
+                                if (clan.deleteDB(clan.id)) {
+                                    GameRuntime.gI().clans().remove(clan);
+                                    Service.gI().sendThongBao(player, "Đã giải tán bang hội.");
+                                } else {
+                                    Service.gI().sendThongBao(player,
+                                            "Không thể giải tán bang lúc này; dữ liệu bang chưa thay đổi.");
+                                }
                             }
 
                         }

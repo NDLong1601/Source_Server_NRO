@@ -91,6 +91,10 @@ public final class ClanGiftService {
     }
 
     private void sendGift(Player sender, long receiverId, String requestId) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.GIFT)) {
+            notify(sender, "Tặng quà bang đang tạm khóa.");
+            return;
+        }
         if (!enabled) { notify(sender, "Tặng quà bang đang tạm khóa."); return; }
         if (sender == null || sender.clan == null) { notify(sender, "Bạn cần có bang hội để tặng quà."); return; }
         if (receiverId <= 0 || receiverId == sender.id || !validRequestId(requestId)) {
@@ -99,10 +103,10 @@ public final class ClanGiftService {
         Clan clan = sender.clan;
         ClanMember receiver = clan.getClanMember((int) receiverId);
         if (receiver == null || sender.clanMember == null) { notify(sender, "Người nhận không còn cùng bang hội."); return; }
-        if (minJoinHours > 0 && (!oldEnough(sender.clanMember) || !oldEnough(receiver))) { notify(sender, "Cả hai thành viên cần vào bang ít nhất " + minJoinHours + " giờ."); return; }
-        if (sameAccount(sender.id, receiverId)) { notify(sender, "Không thể tặng quà cho nhân vật cùng tài khoản."); return; }
+        if (minJoinHours > 0 && (!oldEnough(sender.clanMember) || !oldEnough(receiver))) { recordGiftBlocked(clan.id); notify(sender, "Cả hai thành viên cần vào bang ít nhất " + minJoinHours + " giờ."); return; }
+        if (sameAccount(sender.id, receiverId)) { recordGiftBlocked(clan.id); notify(sender, "Không thể tặng quà cho nhân vật cùng tài khoản."); return; }
         long contribution = ClanTreasuryService.gI().getContributionForPlayer(clan.id, sender.id);
-        if (contribution < minContribution) { notify(sender, "Bạn cần thêm " + (minContribution - contribution) + " điểm cống hiến để tặng quà."); return; }
+        if (contribution < minContribution) { recordGiftBlocked(clan.id); notify(sender, "Bạn cần thêm " + (minContribution - contribution) + " điểm cống hiến để tặng quà."); return; }
         Item ticket = InventoryService.gI().findItemBag(sender, ClanShopService.CLAN_GIFT_TICKET_ITEM_ID);
         if (ticket == null || ticket.quantity < 1) {
             notify(sender, "Bạn cần có Phiếu quà bang trong hành trang để tặng quà."); return;
@@ -122,6 +126,7 @@ public final class ClanGiftService {
             }
         }
         if (!result.success) { notify(sender, result.message); return; }
+        ClanEconomyMetricsService.gI().record(ClanEconomyMetricsService.Signal.GIFT_SENT, clan.id);
         notify(sender, "Đã tặng quà bang cho " + receiver.name + ": " + result.rewardText());
         Player online = clan.getPlayerOnline((int) receiverId);
         if (online != null && !online.isOffline) deliverPending(online);
@@ -138,13 +143,16 @@ public final class ClanGiftService {
             try {
                 ensureSchema(connection);
                 if (requestProcessed(connection, requestId)) {
-                    connection.rollback(); return GiftResult.fail("Yêu cầu tặng quà này đã được xử lý.");
+                    connection.rollback();
+                    ClanEconomyMetricsService.gI().record(
+                            ClanEconomyMetricsService.Signal.DUPLICATE_REQUEST, clan.id);
+                    return GiftResult.fail("Yêu cầu tặng quà này đã được xử lý.");
                 }
                 DailyRow sent = lockDaily(connection, clan.id, sender.id, today);
                 DailyRow received = lockDaily(connection, clan.id, receiverId, today);
-                if (sentPerDay > 0 && sent.sent >= sentPerDay) { connection.rollback(); return GiftResult.fail("Bạn đã dùng hết lượt tặng quà hôm nay."); }
-                if (receivedPerDay > 0 && received.received >= receivedPerDay) { connection.rollback(); return GiftResult.fail("Người nhận đã đủ quà hôm nay."); }
-                if (pairExists(connection, clan.id, sender.id, receiverId, today)) { connection.rollback(); return GiftResult.fail("Bạn đã tặng quà cho thành viên này hôm nay."); }
+                if (sentPerDay > 0 && sent.sent >= sentPerDay) { connection.rollback(); recordGiftBlocked(clan.id); return GiftResult.fail("Bạn đã dùng hết lượt tặng quà hôm nay."); }
+                if (receivedPerDay > 0 && received.received >= receivedPerDay) { connection.rollback(); recordGiftBlocked(clan.id); return GiftResult.fail("Người nhận đã đủ quà hôm nay."); }
+                if (pairExists(connection, clan.id, sender.id, receiverId, today)) { connection.rollback(); recordGiftBlocked(clan.id); return GiftResult.fail("Bạn đã tặng quà cho thành viên này hôm nay."); }
                 saveDaily(connection, clan.id, sender.id, today, sent.sent + 1, sent.received);
                 saveDaily(connection, clan.id, receiverId, today, received.sent, received.received + 1);
                 savePair(connection, clan.id, sender.id, receiverId, today);
@@ -153,7 +161,10 @@ public final class ClanGiftService {
                 connection.commit();
                 return GiftResult.ok(gold, ruby);
             } catch (Exception e) {
-                connection.rollback(); Logger.logException(ClanGiftService.class, e, "Transaction tặng quà bang");
+                connection.rollback();
+                ClanEconomyMetricsService.gI().record(
+                        ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
+                Logger.logException(ClanGiftService.class, e, "Transaction tặng quà bang");
                 return GiftResult.fail("Tặng quà thất bại; Phiếu quà chưa bị trừ.");
             } finally { connection.setAutoCommit(true); }
         } catch (Exception e) {
@@ -204,6 +215,9 @@ public final class ClanGiftService {
                             ps.setLong(1, player.id); ps.executeUpdate();
                         }
                         connection.commit();
+                        ClanEconomyMetricsService.gI().record(
+                                ClanEconomyMetricsService.Signal.PENDING_GIFT_DELIVERED,
+                                rewards.size(), player.clan == null ? -1 : player.clan.id);
                         WalletResult walletRestore = player.getWallet().restoreExact(
                                 afterSnapshot,
                                 WalletMutationContext.of(WalletReason.RECOVERY,
@@ -269,6 +283,11 @@ public final class ClanGiftService {
     private static long positiveLong(Properties p, String key, long fallback) { try { return Math.max(1L, Long.parseLong(p.getProperty(key, String.valueOf(fallback)).trim())); } catch (Exception e) { return fallback; } }
     private static long nonNegativeLong(Properties p, String key, long fallback) { try { return Math.max(0L, Long.parseLong(p.getProperty(key, String.valueOf(fallback)).trim())); } catch (Exception e) { return fallback; } }
     private static String rewardText(long gold, int ruby) { return ruby > 0 ? ruby + " ngọc khóa" : gold + " vàng"; }
+
+    private static void recordGiftBlocked(int clanId) {
+        ClanEconomyMetricsService.gI().record(
+                ClanEconomyMetricsService.Signal.GIFT_BLOCKED_POLICY, clanId);
+    }
     private record DailyRow(int sent, int received) { }
     private record PendingReward(long id, long gold, int ruby) { }
     private record GiftResult(boolean success, String message, long gold, int ruby) {

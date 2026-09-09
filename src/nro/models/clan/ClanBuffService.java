@@ -75,6 +75,12 @@ public final class ClanBuffService {
         return INSTANCE;
     }
 
+    public void disposeClan(int clanId) {
+        if (clanId >= 0) {
+            states.remove(clanId);
+        }
+    }
+
     public synchronized void ensureSchema(Connection connection) throws SQLException {
         if (schemaReady) {
             return;
@@ -104,6 +110,9 @@ public final class ClanBuffService {
     /** Caller owns the transaction. The item is consumed only after this succeeds. */
     public Activation activateInTransaction(Connection connection, Clan clan, long actorId, int itemId)
             throws SQLException {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.BUFF)) {
+            return Activation.invalid();
+        }
         ItemDefinition definition = itemDefinition(itemId);
         if (connection == null || clan == null || definition == null) {
             return Activation.invalid();
@@ -181,6 +190,9 @@ public final class ClanBuffService {
     }
 
     public int basisPoints(Player player, ClanProgressionService.Branch branch) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.BUFF)) {
+            return 0;
+        }
         if (player == null || player.clan == null || branch == null) {
             return 0;
         }
@@ -195,6 +207,9 @@ public final class ClanBuffService {
     }
 
     public List<BuffView> activeBuffs(int clanId) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.BUFF)) {
+            return Collections.emptyList();
+        }
         if (clanId < 0) {
             return Collections.emptyList();
         }
@@ -225,6 +240,9 @@ public final class ClanBuffService {
 
     /** Called from Player.update; handles 5-second recovery and expiry refresh. */
     public void tick(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.BUFF)) {
+            return;
+        }
         if (player == null || !player.isPl() || player.nPoint == null) {
             return;
         }

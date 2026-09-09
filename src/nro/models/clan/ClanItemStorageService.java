@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import nro.models.admin.GiftBoxConfigService;
 import nro.models.data.LocalManager;
@@ -45,6 +46,11 @@ public final class ClanItemStorageService {
         return INSTANCE;
     }
 
+    public void disposeClan(int clanId) {
+        pendingRenames.entrySet().removeIf(entry -> entry.getValue() != null
+                && entry.getValue().clanId == clanId);
+    }
+
     public synchronized void ensureSchema(Connection connection) throws SQLException {
         if (schemaReady) {
             return;
@@ -66,6 +72,15 @@ public final class ClanItemStorageService {
     }
 
     public void handleRequest(Player player, byte action, Message message) throws IOException {
+        ClanFeatureFlags flags = ClanFeatureFlags.gI();
+        if (!flags.isEnabled(ClanFeatureFlags.Feature.ITEM_STORAGE)) {
+            notify(player, "Kho vật phẩm bang đang tạm khóa.");
+            return;
+        }
+        if (action == REQUEST_USE && !flags.canMutate(ClanFeatureFlags.Feature.ITEM_STORAGE)) {
+            notify(player, "Kho vật phẩm bang đang ở chế độ chỉ xem; sử dụng vật phẩm tạm khóa.");
+            return;
+        }
         if (action == REQUEST_VIEW) {
             sendStorage(player);
         } else if (action == REQUEST_USE) {
@@ -74,6 +89,14 @@ public final class ClanItemStorageService {
     }
 
     public void purchaseFromOwnerShop(Player player, ItemShop itemShop) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.ITEM_STORAGE)) {
+            notify(player, "Mua vật phẩm vào kho bang đang tạm khóa.");
+            return;
+        }
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.TREASURY)) {
+            notify(player, "Kho bang đang ở chế độ chỉ xem; chưa thể mua vật phẩm.");
+            return;
+        }
         if (!requireClan(player) || itemShop == null || itemShop.temp == null) {
             return;
         }
@@ -94,6 +117,7 @@ public final class ClanItemStorageService {
         synchronized (clan) {
             try (Connection connection = LocalManager.getConnection()) {
                 ensureSchema(connection);
+                ClanTreasuryService.gI().ensureSchema(connection);
                 connection.setAutoCommit(false);
                 try {
                     ClanFunds funds = lockClanFunds(connection, clan.id);
@@ -120,10 +144,24 @@ public final class ClanItemStorageService {
                     updateClanFunds(connection, clan.id, afterFunds);
                     saveStorage(connection, clan.id, slot, itemId, after);
                     saveAudit(connection, clan.id, player.id, "PURCHASE", itemId, 1, after);
+                    byte ledgerCurrency = ledgerCurrency(currency);
+                    long balanceAfter = switch (currency) {
+                        case COST_CLAN_GOLD -> afterFunds.gold();
+                        case COST_CLAN_GEM -> afterFunds.gem();
+                        case COST_CLAN_CAPSULE -> afterFunds.capsule();
+                        default -> throw new SQLException("Loại tiền tệ kho bang không hợp lệ");
+                    };
+                    String sourceId = clan.id + ":" + player.id + ":" + UUID.randomUUID();
+                    ClanTreasuryService.gI().appendLedger(connection, clan.id, player.id, player.name,
+                            "STORAGE_PURCHASE", ledgerCurrency, -cost, balanceAfter, null,
+                            "{\"itemId\":" + itemId + ",\"slot\":" + slot + "}",
+                            ClanTreasuryService.ledgerRequestId("STORAGE_PURCHASE", sourceId, ledgerCurrency));
                     connection.commit();
+                    ClanEconomyMetricsService.gI().markActiveClan(clan.id);
                     clan.capsuleClan = afterFunds.capsule();
                     clan.clanGold = afterFunds.gold();
                     clan.clanGem = afterFunds.gem();
+                    clan.treasuryVersion++;
                     notify(player, "Đã mua " + itemShop.temp.name + " vào ô " + (slot + 1) + " của kho bang.");
                     ClanTreasuryService.gI().sendSnapshot(player);
                 } catch (Exception e) {
@@ -141,6 +179,9 @@ public final class ClanItemStorageService {
     }
 
     public void sendStorage(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.ITEM_STORAGE)) {
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -426,7 +467,8 @@ public final class ClanItemStorageService {
 
     private void updateClanFunds(Connection connection, int clanId, ClanFunds funds) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(
-                "UPDATE clan SET clan_point=?,clan_gold=?,clan_gem=? WHERE id=?")) {
+                "UPDATE clan SET clan_point=?,clan_gold=?,clan_gem=?,"
+                + "treasury_version=treasury_version+1 WHERE id=?")) {
             ps.setInt(1, funds.capsule());
             ps.setLong(2, funds.gold());
             ps.setLong(3, funds.gem());
@@ -541,6 +583,15 @@ public final class ClanItemStorageService {
             case COST_CLAN_GEM -> "Ngọc bang";
             case COST_CLAN_CAPSULE -> "Capsule bang";
             default -> "tiền tệ bang";
+        };
+    }
+
+    private static byte ledgerCurrency(byte storageCurrency) throws SQLException {
+        return switch (storageCurrency) {
+            case COST_CLAN_GOLD -> ClanTreasuryService.CURRENCY_GOLD;
+            case COST_CLAN_GEM -> ClanTreasuryService.CURRENCY_GEM;
+            case COST_CLAN_CAPSULE -> ClanTreasuryService.CURRENCY_CAPSULE;
+            default -> throw new SQLException("Loại tiền tệ kho bang không hợp lệ");
         };
     }
 

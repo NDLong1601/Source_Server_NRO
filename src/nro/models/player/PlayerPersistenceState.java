@@ -94,6 +94,29 @@ public final class PlayerPersistenceState {
         saveVersion = committedSaveVersion;
     }
 
+    /**
+     * Advances the optimistic revision after a narrow JDBC transaction persisted
+     * only the listed components. Other dirty generations deliberately remain
+     * dirty for the normal full-player save.
+     */
+    public synchronized void acknowledgeExternalCommit(long expectedSaveVersion,
+            long committedSaveVersion, PlayerPersistenceComponent... components) {
+        if (expectedSaveVersion < 0L || committedSaveVersion != expectedSaveVersion + 1L) {
+            throw new IllegalArgumentException("Invalid external persistence acknowledgement");
+        }
+        if (saveVersion != expectedSaveVersion) {
+            throw new IllegalStateException("External persistence acknowledgement is stale");
+        }
+        if (components != null) {
+            for (PlayerPersistenceComponent component : components) {
+                if (component != null) {
+                    acknowledged.put(component, versions.get(component));
+                }
+            }
+        }
+        saveVersion = committedSaveVersion;
+    }
+
     public synchronized long saveVersion() {
         return saveVersion;
     }

@@ -3,6 +3,7 @@ package nro.models.npc_list;
 import nro.models.utils.Functions;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanProgressionService;
+import nro.models.clan.ClanRankingService;
 import nro.models.clan.ClanItemStorageService;
 import nro.models.clan.ClanMember;
 import nro.models.consts.ConstNpc;
@@ -52,6 +53,7 @@ public class DrDrief extends Npc {
                         menu.add("Vật phẩm\nkho bang");
                     }
                 }
+                menu.add("Xếp hạng\nbang hội");
                 menu.add("Đảo Kame");
                 menu.add("Từ chối");
                 String[] menus = menu.toArray(String[]::new);
@@ -113,6 +115,8 @@ public class DrDrief extends Npc {
                                     case 4 ->
                                         ShopService.gI().opendShop(player, ClanItemStorageService.OWNER_SHOP_TAG, true);
                                     case 5 ->
+                                        ClanRankingService.gI().sendLegacyBoard(player);
+                                    case 6 ->
                                         ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
                                     default -> {
                                     }
@@ -144,9 +148,18 @@ public class DrDrief extends Npc {
                                     case 2 ->
                                         ShopService.gI().opendShop(player, "SHOP_CLAN", false);
                                     case 3 ->
+                                        ClanRankingService.gI().sendLegacyBoard(player);
+                                    case 4 ->
                                         ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
                                     default -> {
                                     }
+                                }
+                            }
+                        } else {
+                            switch (select) {
+                                case 0 -> ClanRankingService.gI().sendLegacyBoard(player);
+                                case 1 -> ChangeMapService.gI().changeMapBySpaceShip(player, 5, -1, -1);
+                                default -> {
                                 }
                             }
                         }

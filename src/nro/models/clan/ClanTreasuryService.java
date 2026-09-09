@@ -1,6 +1,7 @@
 package nro.models.clan;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import nro.models.data.LocalManager;
 import nro.models.network.Message;
 import nro.models.player.Player;
@@ -37,6 +39,7 @@ public final class ClanTreasuryService {
 
     public static final byte CURRENCY_GOLD = 1;
     public static final byte CURRENCY_GEM = 2;
+    public static final byte CURRENCY_CAPSULE = 3;
 
     private static final int LEDGER_PAGE_SIZE = 50;
     private static final int REQUEST_ID_MAX_LENGTH = 80;
@@ -98,6 +101,16 @@ public final class ClanTreasuryService {
     }
 
     public void handleRequest(Player player, byte action, Message message) throws IOException {
+        ClanFeatureFlags flags = ClanFeatureFlags.gI();
+        if (!flags.isEnabled(ClanFeatureFlags.Feature.TREASURY)) {
+            Service.gI().sendThongBao(player, "Kho bang đang tạm khóa.");
+            return;
+        }
+        if ((action == REQUEST_DEPOSIT_GOLD || action == REQUEST_DEPOSIT_GEM)
+                && !flags.canMutate(ClanFeatureFlags.Feature.TREASURY)) {
+            Service.gI().sendThongBao(player, "Kho bang đang ở chế độ chỉ xem; đóng góp tạm khóa.");
+            return;
+        }
         switch (action) {
             case REQUEST_VIEW:
                 sendTreasuryView(player);
@@ -208,6 +221,8 @@ public final class ClanTreasuryService {
                 }
                 if (isRequestProcessed(connection, clan.id, requestId)) {
                     connection.rollback();
+                    ClanEconomyMetricsService.gI().record(
+                            ClanEconomyMetricsService.Signal.DUPLICATE_REQUEST, clan.id);
                     return DepositResult.failure("Yêu cầu này đã được xử lý trước đó.");
                 }
 
@@ -242,14 +257,17 @@ public final class ClanTreasuryService {
                 updateTreasury(connection, clan.id, nextGold, nextGem, nextVersion);
                 saveContribution(connection, clan.id, player.id, contribution.exists,
                         nextScore, nextDonatedGold, nextDonatedGem);
-                insertLedger(connection, clan.id, player, currency, amount,
-                        currency == CURRENCY_GOLD ? nextGold : nextGem, requestId);
+                appendLedger(connection, clan.id, player.id, player.name, "DEPOSIT", currency, amount,
+                        currency == CURRENCY_GOLD ? nextGold : nextGem, null, "{}", requestId);
                 connection.commit();
+                ClanEconomyMetricsService.gI().markActiveClan(clan.id);
                 return DepositResult.success(remainingGold, (int) remainingGem, nextGold, nextGem, nextVersion,
                         "Đã đóng góp " + amount + (currency == CURRENCY_GOLD ? " vàng" : " ngọc")
                         + " vào quỹ bang. Khoản đóng góp không thể rút lại.");
             } catch (Exception e) {
                 connection.rollback();
+                ClanEconomyMetricsService.gI().record(
+                        ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
                 Logger.logException(ClanTreasuryService.class, e, "Lỗi transaction đóng góp kho bang");
                 return DepositResult.failure("Không thể đóng góp lúc này. Tài sản của bạn không bị trừ.");
             } finally {
@@ -364,26 +382,51 @@ public final class ClanTreasuryService {
         }
     }
 
-    private void insertLedger(Connection connection, int clanId, Player player, byte currency,
-            long amount, long balanceAfter, String requestId) throws SQLException {
+    /** Appends one entry inside the caller's existing transaction. */
+    public void appendLedger(Connection connection, int clanId, long actorId, String actorName,
+            String actionType, byte currency, long amount, long balanceAfter, Long targetId,
+            String metadataJson, String requestId) throws SQLException {
+        if (connection == null || clanId < 0 || requestId == null || requestId.isBlank()
+                || requestId.length() > REQUEST_ID_MAX_LENGTH || actionType == null
+                || actionType.isBlank() || actionType.length() > 32
+                || (currency != CURRENCY_GOLD && currency != CURRENCY_GEM
+                && currency != CURRENCY_CAPSULE)) {
+            throw new SQLException("Dữ liệu sổ cái bang không hợp lệ");
+        }
         try (PreparedStatement ps = connection.prepareStatement("INSERT INTO clan_ledger "
                 + "(clan_id, actor_id, actor_name, action_type, currency_type, amount, balance_after, "
                 + "target_id, metadata_json, request_id) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
             ps.setInt(1, clanId);
-            ps.setLong(2, player.id);
-            ps.setString(3, player.name == null ? "" : player.name);
-            ps.setString(4, "DEPOSIT");
+            ps.setLong(2, actorId);
+            String safeName = actorName == null ? "" : actorName;
+            ps.setString(3, safeName.length() <= 64 ? safeName : safeName.substring(0, 64));
+            ps.setString(4, actionType);
             ps.setByte(5, currency);
             ps.setLong(6, amount);
             ps.setLong(7, balanceAfter);
-            ps.setNull(8, java.sql.Types.BIGINT);
-            ps.setString(9, "{}");
+            if (targetId == null) {
+                ps.setNull(8, java.sql.Types.BIGINT);
+            } else {
+                ps.setLong(8, targetId);
+            }
+            ps.setString(9, metadataJson == null || metadataJson.isBlank() ? "{}" : metadataJson);
             ps.setString(10, requestId);
-            ps.executeUpdate();
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("Không thể ghi sổ cái bang");
+            }
         }
     }
 
+    /** Stable, schema-sized idempotency key for ledger legs derived from another operation. */
+    public static String ledgerRequestId(String namespace, String sourceId, byte currency) {
+        String material = String.valueOf(namespace) + '|' + String.valueOf(sourceId) + '|' + currency;
+        return "clan:" + UUID.nameUUIDFromBytes(material.getBytes(StandardCharsets.UTF_8));
+    }
+
     public void sendSnapshot(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.TREASURY)) {
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -406,6 +449,9 @@ public final class ClanTreasuryService {
     }
 
     public void sendLedgerPage(Player player, long beforeId) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.TREASURY)) {
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -467,6 +513,9 @@ public final class ClanTreasuryService {
     }
 
     public List<LedgerEntry> getRecentLedgerEntries(int clanId, int limit) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.TREASURY)) {
+            return List.of();
+        }
         int safeLimit = Math.max(1, Math.min(50, limit));
         List<LedgerEntry> entries = new ArrayList<>();
         try (Connection connection = LocalManager.getConnection();
@@ -507,7 +556,8 @@ public final class ClanTreasuryService {
 
     /** Cống hiến từ hoạt động bang, tách biệt hoàn toàn với khoản đóng góp quỹ. */
     public void addActivityContribution(int clanId, long playerId, long amount) {
-        if (clanId < 0 || playerId <= 0 || amount <= 0) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.TREASURY)
+                || clanId < 0 || playerId <= 0 || amount <= 0) {
             return;
         }
         try (Connection connection = LocalManager.getConnection()) {
@@ -522,6 +572,91 @@ public final class ClanTreasuryService {
             }
         } catch (Exception e) {
             Logger.logException(ClanTreasuryService.class, e, "Không cộng được cống hiến hoạt động bang");
+        }
+    }
+
+    /** Atomically credits shared Capsule, bumps the treasury revision and writes the ledger. */
+    public CapsuleCreditResult creditCapsule(Clan clan, Player actor, int amount,
+            String actionType, String sourceId, String metadataJson) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.TREASURY)) {
+            return CapsuleCreditResult.fail("Kho bang đang ở chế độ chỉ xem.");
+        }
+        if (clan == null || clan.id < 0 || amount <= 0 || actionType == null
+                || actionType.isBlank() || actionType.length() > 32 || sourceId == null || sourceId.isBlank()) {
+            return CapsuleCreditResult.fail("Yêu cầu cộng Capsule Bang không hợp lệ.");
+        }
+        String requestId = ledgerRequestId(actionType, sourceId, CURRENCY_CAPSULE);
+        synchronized (clan) {
+            try (Connection connection = LocalManager.getConnection()) {
+                ensureSchema(connection);
+                connection.setAutoCommit(false);
+                try {
+                    CapsuleRow row = lockCapsule(connection, clan.id);
+                    if (row == null) {
+                        connection.rollback();
+                        return CapsuleCreditResult.fail("Bang hội không còn tồn tại.");
+                    }
+                    if (isRequestProcessed(connection, clan.id, requestId)) {
+                        connection.rollback();
+                        ClanEconomyMetricsService.gI().record(
+                                ClanEconomyMetricsService.Signal.DUPLICATE_REQUEST, clan.id);
+                        clan.capsuleClan = row.capsule;
+                        clan.treasuryVersion = row.treasuryVersion;
+                        return CapsuleCreditResult.duplicate(row.capsule, row.treasuryVersion);
+                    }
+                    if (row.capsule > Integer.MAX_VALUE - amount || row.treasuryVersion == Long.MAX_VALUE) {
+                        connection.rollback();
+                        return CapsuleCreditResult.fail("Quỹ Capsule Bang đã chạm giới hạn lưu trữ.");
+                    }
+                    int nextCapsule = row.capsule + amount;
+                    long nextVersion = row.treasuryVersion + 1L;
+                    try (PreparedStatement update = connection.prepareStatement(
+                            "UPDATE clan SET clan_point=?,treasury_version=? WHERE id=?")) {
+                        update.setInt(1, nextCapsule);
+                        update.setLong(2, nextVersion);
+                        update.setInt(3, clan.id);
+                        if (update.executeUpdate() != 1) {
+                            throw new SQLException("Không thể cập nhật Capsule Bang");
+                        }
+                    }
+                    appendLedger(connection, clan.id, actor == null ? 0L : actor.id,
+                            actor == null ? "Hệ thống" : actor.name, actionType, CURRENCY_CAPSULE,
+                            amount, nextCapsule, null, metadataJson, requestId);
+                    connection.commit();
+                    ClanEconomyMetricsService.gI().markActiveClan(clan.id);
+                    clan.capsuleClan = nextCapsule;
+                    clan.treasuryVersion = nextVersion;
+                    return CapsuleCreditResult.applied(nextCapsule, nextVersion);
+                } catch (Exception error) {
+                    connection.rollback();
+                    ClanEconomyMetricsService.gI().record(
+                            ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
+                    Logger.logException(ClanTreasuryService.class, error,
+                            "Transaction cộng Capsule Bang: " + actionType);
+                    return CapsuleCreditResult.fail("Không thể cập nhật Capsule Bang lúc này.");
+                } finally {
+                    try {
+                        connection.setAutoCommit(true);
+                    } catch (SQLException resetError) {
+                        Logger.logException(ClanTreasuryService.class, resetError,
+                                "Không khôi phục được auto-commit sau khi cộng Capsule Bang");
+                    }
+                }
+            } catch (Exception error) {
+                Logger.logException(ClanTreasuryService.class, error, "Không mở được transaction Capsule Bang");
+                return CapsuleCreditResult.fail("Không thể kết nối Kho bang.");
+            }
+        }
+    }
+
+    private CapsuleRow lockCapsule(Connection connection, int clanId) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT clan_point,treasury_version FROM clan WHERE id=? FOR UPDATE")) {
+            ps.setInt(1, clanId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? new CapsuleRow(Math.max(0, rs.getInt(1)),
+                        Math.max(0L, rs.getLong(2))) : null;
+            }
         }
     }
 
@@ -566,8 +701,28 @@ public final class ClanTreasuryService {
     private record ContributionRow(boolean exists, long score, long donatedGold, long donatedGem) {
     }
 
+    private record CapsuleRow(int capsule, long treasuryVersion) {
+    }
+
     public static record LedgerEntry(long id, long actorId, String actorName, String actionType,
             byte currencyType, long amount, long balanceAfter, long createdAtSeconds) {
+    }
+
+    public static record CapsuleCreditResult(boolean success, boolean applied, int balance,
+            long treasuryVersion, String message) {
+
+        static CapsuleCreditResult applied(int balance, long treasuryVersion) {
+            return new CapsuleCreditResult(true, true, balance, treasuryVersion, "");
+        }
+
+        static CapsuleCreditResult duplicate(int balance, long treasuryVersion) {
+            return new CapsuleCreditResult(true, false, balance, treasuryVersion,
+                    "Phần thưởng Capsule Bang này đã được ghi nhận trước đó.");
+        }
+
+        static CapsuleCreditResult fail(String message) {
+            return new CapsuleCreditResult(false, false, 0, 0L, message);
+        }
     }
 
     private static final class DepositResult {

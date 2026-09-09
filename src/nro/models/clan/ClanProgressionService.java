@@ -161,6 +161,12 @@ public final class ClanProgressionService {
         }
     }
 
+    public void disposeClan(int clanId) {
+        if (clanId >= 0) {
+            states.remove(clanId);
+        }
+    }
+
     /** Loads and safely backfills one clan. Invoked once during Manager startup. */
     public void loadForClan(Connection connection, Clan clan) throws SQLException {
         ensureSchema(connection);
@@ -222,6 +228,16 @@ public final class ClanProgressionService {
     }
 
     public void handleRequest(Player player, byte action, Message message) throws IOException {
+        ClanFeatureFlags flags = ClanFeatureFlags.gI();
+        if (!flags.isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            notify(player, "Tiến trình bang đang tạm khóa.");
+            return;
+        }
+        if ((action == REQUEST_UPGRADE || action == REQUEST_ALLOCATE)
+                && !flags.canMutate(ClanFeatureFlags.Feature.PROGRESSION)) {
+            notify(player, "Tiến trình bang đang ở chế độ chỉ xem; nâng cấp tạm khóa.");
+            return;
+        }
         switch (action) {
             case REQUEST_VIEW -> sendSnapshot(player);
             case REQUEST_UPGRADE -> upgrade(player);
@@ -239,7 +255,8 @@ public final class ClanProgressionService {
 
     /** Earned activity EXP with an actor that must receive the refreshed snapshot. */
     public boolean addExp(Clan clan, long amount, Player guaranteedRecipient) {
-        if (clan == null || amount <= 0L) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.PROGRESSION)
+                || clan == null || amount <= 0L) {
             return false;
         }
         boolean updated = false;
@@ -272,6 +289,14 @@ public final class ClanProgressionService {
     }
 
     private void upgrade(Player player) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.PROGRESSION)) {
+            notify(player, "Tiến trình bang đang ở chế độ chỉ xem; nâng cấp tạm khóa.");
+            return;
+        }
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.TREASURY)) {
+            notify(player, "Kho bang đang ở chế độ chỉ xem; nâng cấp bang tạm khóa.");
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -282,7 +307,7 @@ public final class ClanProgressionService {
         }
         UpgradeResult result;
         synchronized (clan) {
-            result = persistUpgrade(clan);
+            result = persistUpgrade(clan, player);
         }
         if (!result.success) {
             notify(player, result.message);
@@ -299,7 +324,7 @@ public final class ClanProgressionService {
         upgrade(player);
     }
 
-    private UpgradeResult persistUpgrade(Clan clan) {
+    private UpgradeResult persistUpgrade(Clan clan, Player actor) {
         int level = Clan.normalizeLevel(clan.level);
         if (level >= config.technicalMaxLevel()) {
             return UpgradeResult.fail("Bang đã đạt trần kỹ thuật cấp " + config.technicalMaxLevel() + ".");
@@ -330,10 +355,12 @@ public final class ClanProgressionService {
         int newMaxMember = Math.max(clan.maxMember, memberSlotsForLevel(newLevel));
         try (Connection connection = LocalManager.getConnection()) {
             ensureSchema(connection);
+            ClanTreasuryService.gI().ensureSchema(connection);
             connection.setAutoCommit(false);
             try (PreparedStatement ps = connection.prepareStatement(
                     "UPDATE clan SET level=?, clan_exp=?, clan_point=?, clan_gold=?, clan_gem=?, max_member=?, "
-                    + "potential_total=?, potential_unspent=?, progression_version=progression_version+1 WHERE id=?")) {
+                    + "potential_total=?, potential_unspent=?, progression_version=progression_version+1, "
+                    + "treasury_version=treasury_version+1 WHERE id=?")) {
                 ps.setInt(1, newLevel);
                 ps.setLong(2, newExp);
                 ps.setInt(3, newCapsule);
@@ -348,7 +375,29 @@ public final class ClanProgressionService {
                     return UpgradeResult.fail("Không thể lưu nâng cấp bang.");
                 }
             }
+            String sourceId = clan.id + ":" + newLevel;
+            String metadata = "{\"levelBefore\":" + level + ",\"levelAfter\":" + newLevel + "}";
+            if (capsuleNeed > 0) {
+                ClanTreasuryService.gI().appendLedger(connection, clan.id, actor.id, actor.name,
+                        "CLAN_UPGRADE", ClanTreasuryService.CURRENCY_CAPSULE, -capsuleNeed, newCapsule,
+                        null, metadata, ClanTreasuryService.ledgerRequestId("CLAN_UPGRADE", sourceId,
+                                ClanTreasuryService.CURRENCY_CAPSULE));
+            }
+            if (goldNeed > 0L) {
+                ClanTreasuryService.gI().appendLedger(connection, clan.id, actor.id, actor.name,
+                        "CLAN_UPGRADE", ClanTreasuryService.CURRENCY_GOLD, -goldNeed, newGold,
+                        null, metadata, ClanTreasuryService.ledgerRequestId("CLAN_UPGRADE", sourceId,
+                                ClanTreasuryService.CURRENCY_GOLD));
+            }
+            if (gemNeed > 0L) {
+                ClanTreasuryService.gI().appendLedger(connection, clan.id, actor.id, actor.name,
+                        "CLAN_UPGRADE", ClanTreasuryService.CURRENCY_GEM, -gemNeed, newGem,
+                        null, metadata, ClanTreasuryService.ledgerRequestId("CLAN_UPGRADE", sourceId,
+                                ClanTreasuryService.CURRENCY_GEM));
+            }
             connection.commit();
+            ClanEconomyMetricsService.gI().record(
+                    ClanEconomyMetricsService.Signal.CLAN_LEVEL_UP, clan.id);
             clan.level = newLevel;
             clan.clanExp = newExp;
             clan.capsuleClan = newCapsule;
@@ -358,14 +407,21 @@ public final class ClanProgressionService {
             clan.potentialTotal = newTotal;
             clan.potentialUnspent = newUnspent;
             clan.progressionVersion++;
+            clan.treasuryVersion++;
             return UpgradeResult.ok();
         } catch (Exception e) {
+            ClanEconomyMetricsService.gI().record(
+                    ClanEconomyMetricsService.Signal.TRANSACTION_ROLLBACK, clan.id);
             Logger.logException(ClanProgressionService.class, e, "Không nâng cấp bang");
             return UpgradeResult.fail("Nâng cấp thất bại, hãy thử lại.");
         }
     }
 
     private void allocate(Player player, Branch branch) {
+        if (!ClanFeatureFlags.gI().canMutate(ClanFeatureFlags.Feature.PROGRESSION)) {
+            notify(player, "Tiến trình bang đang ở chế độ chỉ xem; phân bổ điểm tạm khóa.");
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -448,6 +504,9 @@ public final class ClanProgressionService {
     }
 
     public void sendSnapshot(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -487,6 +546,9 @@ public final class ClanProgressionService {
 
     /** Explicit endpoint used by the clan-info tab to refresh buffs independently. */
     public void sendBuffSnapshot(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return;
+        }
         if (!requireClan(player)) {
             return;
         }
@@ -614,6 +676,9 @@ public final class ClanProgressionService {
 
     /** Basis points, 100 = 1%. Option 50/77/103 gain 0.2% per point; the rest gain 1% per point. */
     public int statBasisPoints(Player player, Branch branch, boolean playerVersusPlayer) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return 0;
+        }
         if (player == null || !player.isPl() || player.clan == null || branch == null) {
             return 0;
         }
@@ -623,14 +688,23 @@ public final class ClanProgressionService {
     }
 
     public int mobGoldBasisPoints(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return 0;
+        }
         return statBasisPoints(player, Branch.MOB_GOLD, false);
     }
 
     public int treeYieldBasisPoints(int clanId) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return 0;
+        }
         return 0;
     }
 
     public int pveReductionBasisPoints(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return 0;
+        }
         return 0;
     }
 
@@ -639,6 +713,9 @@ public final class ClanProgressionService {
     }
 
     public int powerGainBasisPoints(Player player) {
+        if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.PROGRESSION)) {
+            return 0;
+        }
         return statBasisPoints(player, Branch.POWER, false);
     }
 

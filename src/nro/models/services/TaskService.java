@@ -13,6 +13,8 @@ import nro.models.consts.ConstTask;
 import nro.models.boss.Boss;
 import nro.models.boss.BossID;
 import nro.models.clan.ClanMember;
+import nro.models.clan.Clan;
+import nro.models.clan.ClanTreasuryService;
 import nro.models.consts.ConstAchievement;
 import nro.models.consts.ConstTaskBadges;
 import nro.models.item.Item;
@@ -1645,25 +1647,47 @@ public class TaskService {
                     return;
                 }
                 int capsuleClan = TaskConfig.getClanCapsuleReward(player.playerTask.clanTask.level);
+                if (player.clan == null) {
+                    Service.gI().sendThongBao(player, "Bạn không còn thuộc bang hội để nhận thưởng nhiệm vụ.");
+                    return;
+                }
+                Clan rewardClan = player.clan;
+                String sourceId = rewardClan.id + ":" + player.id + ":"
+                        + player.playerTask.clanTask.receivedTime + ":" + templateId + ":"
+                        + player.playerTask.clanTask.leftTask;
+                ClanTreasuryService.CapsuleCreditResult credit = ClanTreasuryService.gI().creditCapsule(
+                        rewardClan, player, capsuleClan, "CLAN_TASK", sourceId,
+                        "{\"taskTemplateId\":" + templateId + "}");
+                if (!credit.success()) {
+                    Service.gI().sendThongBao(player, credit.message()
+                            + " Nhiệm vụ vẫn được giữ để bạn nhận lại.");
+                    return;
+                }
                 player.playerTask.clanTask.leftTask--;
                 player.playerTask.clanTask.reset();
-                Service.gI().sendThongBao(player, "Bạn vừa nhận được "
-                        + Util.numberToMoney(capsuleClan) + " capsule bang.");
-                if (player.clan != null) {
-                    player.clan.capsuleClan += capsuleClan;
-                    for (ClanMember cm : player.clan.getMembers()) {
-                        if (cm.id == player.id) {
-                            cm.memberPoint += capsuleClan;
-                            cm.clanPoint += capsuleClan;
-                            break;
+                Service.gI().sendThongBao(player, credit.applied()
+                        ? "Bạn vừa nhận được " + Util.numberToMoney(capsuleClan) + " Capsule Bang."
+                        : credit.message());
+                if (player.clan == rewardClan) {
+                    synchronized (rewardClan) {
+                        if (credit.applied()) {
+                            for (ClanMember cm : rewardClan.getMembers()) {
+                                if (cm.id == player.id) {
+                                    cm.memberPoint += capsuleClan;
+                                    cm.clanPoint += capsuleClan;
+                                    break;
+                                }
+                            }
                         }
+                        rewardClan.update();
                     }
-                    for (ClanMember cm : player.clan.getMembers()) {
+                    for (ClanMember cm : rewardClan.getMembers()) {
                         Player pl = Client.gI().getPlayer(cm.id);
                         if (pl != null) {
-                            ClanService.gI().sendMyClan(player);
+                            ClanService.gI().sendMyClan(pl);
                         }
                     }
+                    ClanTreasuryService.gI().sendSnapshot(player);
                 }
             } else {
                 Service.gI().sendThongBao(player, "Bạn chưa hoàn thành nhiệm vụ");

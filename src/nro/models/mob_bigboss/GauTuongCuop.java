@@ -3,10 +3,13 @@ package nro.models.mob_bigboss;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
+import nro.models.clan.ClanTreasuryService;
 import nro.models.mob.Mob;
 import nro.models.network.Message;
 import nro.models.player.Player;
@@ -179,26 +182,49 @@ public class GauTuongCuop extends Mob {
             }
         }
 
+        Set<Clan> creditedClans = new HashSet<>();
+        for (Map.Entry<Clan, Integer> entry : clanCapsuleMap.entrySet()) {
+            Clan clan = entry.getKey();
+            ClanTreasuryService.CapsuleCreditResult credit = ClanTreasuryService.gI().creditCapsule(
+                    clan, null, entry.getValue(), "CLAN_BOSS",
+                    clan.id + ":" + clan.lastTimeOpenGauTuongCuop,
+                    "{\"boss\":\"GAU_TUONG_CUOP\"}");
+            if (credit.success() && credit.applied()) {
+                creditedClans.add(clan);
+            }
+        }
+
         for (Map.Entry<Player, Integer> entry : playerCapsuleMap.entrySet()) {
             Player player = entry.getKey();
             int capsuleReceived = entry.getValue();
 
+            if (player == null || player.clan == null || !creditedClans.contains(player.clan)) {
+                if (player != null) {
+                    Service.gI().sendThongBao(player,
+                            "Chưa thể ghi phần thưởng Gấu Tướng Cướp vào quỹ bang; vui lòng liên hệ quản trị.");
+                }
+                continue;
+            }
+
             player.lastClanCheckIn = System.currentTimeMillis();
 
-            for (ClanMember cm : player.clan.getMembers()) {
-                if (cm.id == player.id) {
-                    cm.memberPoint += capsuleReceived;
-                    cm.clanPoint += capsuleReceived;
-                    break;
+            synchronized (player.clan) {
+                for (ClanMember cm : player.clan.getMembers()) {
+                    if (cm.id == player.id) {
+                        cm.memberPoint += capsuleReceived;
+                        cm.clanPoint += capsuleReceived;
+                        break;
+                    }
                 }
             }
 
             Service.gI().sendThongBao(player, "Bạn nhận được " + capsuleReceived + " Capsule bang hội từ Gấu Tướng Cướp!");
         }
 
-        for (Map.Entry<Clan, Integer> entry : clanCapsuleMap.entrySet()) {
-            Clan clan = entry.getKey();
-            clan.capsuleClan += entry.getValue();
+        for (Clan clan : creditedClans) {
+            synchronized (clan) {
+                clan.update();
+            }
         }
     }
 

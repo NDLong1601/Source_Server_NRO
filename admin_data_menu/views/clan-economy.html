@@ -1,0 +1,54 @@
+<div id="panelClanEconomy" class="panel">
+  <div class="clan-economy-toolbar" role="region" aria-label="Bộ lọc báo cáo kinh tế bang">
+    <label for="clanEconomyLookback">Khoảng theo dõi</label>
+    <select id="clanEconomyLookback">
+      <option value="7">7 ngày</option>
+      <option value="14" selected>14 ngày</option>
+      <option value="28">28 ngày</option>
+      <option value="90">90 ngày</option>
+    </select>
+    <button type="button" class="primary" onclick="LoadClanEconomyReport()">Tải báo cáo</button>
+    <span id="clanEconomyUpdated" class="clan-economy-updated">Chưa tải dữ liệu</span>
+  </div>
+
+  <div class="clan-economy-scroll">
+    <div class="clan-economy-intro">
+      <div>
+        <strong>Sức khỏe kinh tế bang hội</strong>
+        <span>So sánh nguồn sinh và sink từ sổ cái, kết hợp metric vận hành tổng hợp không chứa ID người chơi.</span>
+      </div>
+      <span id="clanEconomyOverallBadge" class="clan-economy-badge neutral">ĐANG TẢI</span>
+    </div>
+
+    <div class="section-title">Tổng quan hiện tại</div>
+    <div id="clanEconomySummary" class="clan-economy-card-row"></div>
+
+    <div class="section-title">Cân bằng nguồn – sink</div>
+    <div id="clanEconomyFlows" class="clan-economy-card-row"></div>
+
+    <div class="clan-economy-columns">
+      <div class="clan-economy-column">
+        <div class="section-title">Tín hiệu vận hành</div>
+        <div class="clan-economy-table-wrap">
+          <table id="clanEconomySignalTable"></table>
+        </div>
+      </div>
+      <div class="clan-economy-column clan-economy-column-last">
+        <div class="section-title">Phân bố Tiềm năng bang</div>
+        <div class="clan-economy-table-wrap">
+          <table id="clanEconomyPotentialTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Dòng tiền theo hành động</div>
+    <div class="clan-economy-table-wrap clan-economy-action-table">
+      <table id="clanEconomyActionTable"></table>
+    </div>
+
+    <div class="clan-economy-guidance">
+      <strong>Cách đọc cảnh báo:</strong> tỷ lệ sink/source thấp hơn ngưỡng cấu hình nghĩa là tài sản đang sinh nhanh hơn bị tiêu; cao hơn ngưỡng nghĩa là sink có thể quá nặng. “Chưa đủ dữ liệu” không được xem là cân bằng.
+    </div>
+    <div id="clanEconomyMessage" class="message" aria-live="polite"></div>
+  </div>
+</div>

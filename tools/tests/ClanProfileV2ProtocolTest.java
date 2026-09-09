@@ -6,6 +6,10 @@ import java.util.List;
 import nro.models.clan.ClanProfileV2;
 import nro.models.clan.ClanBuffService;
 import nro.models.clan.ClanTreasuryService;
+import nro.models.clan.ClanValueConfig;
+import nro.models.clan.ClanAppearanceConfig;
+import nro.models.clan.ClanAppearancePolicy;
+import nro.models.clan.ClanAppearanceService;
 
 /**
  * Lightweight protocol regression test for clan level/member values that do
@@ -34,7 +38,13 @@ public final class ClanProfileV2ProtocolTest {
         int potentialTotal = 7;
         int potentialUnspent = 2;
         long progressionVersion = 9L;
+        long clanValueVersion = 4L;
         int[] potentialRanks = {5, 4, 3, 2, 1, 0};
+        ClanValueConfig.Score clanValue = new ClanValueConfig.Score(
+                1, 17_000L, 10_000L, 1_500L, 3_000L, 2_000L, 500L);
+        ClanAppearanceService.AppearanceView appearance = new ClanAppearanceService.AppearanceView(
+                true, ClanAppearancePolicy.resolve(ClanAppearanceConfig.from(null),
+                        20, 10, 30_000L, clanValueVersion));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream writer = new DataOutputStream(bytes)) {
             ClanProfileV2.write(writer, clanId, level, maxMember, currentMember,
@@ -44,8 +54,10 @@ public final class ClanProfileV2ProtocolTest {
                     clanExp, expRequired, capsuleRequired, goldRequired, gemRequired,
                     potentialTotal, potentialUnspent, progressionVersion, potentialRanks,
                     List.of(new ClanBuffService.BuffView(2, 10,
-                            System.currentTimeMillis() + 86_400_000L)));
+                            System.currentTimeMillis() + 86_400_000L)),
+                    true, clanValue, clanValueVersion, appearance);
         }
+        assertTrue("profile payload stays within unsigned-short ceiling", bytes.size() <= 65_535);
 
         try (DataInputStream reader = new DataInputStream(
                 new ByteArrayInputStream(bytes.toByteArray()))) {
@@ -73,6 +85,19 @@ public final class ClanProfileV2ProtocolTest {
             for (int i = 0; i < potentialRanks.length; i++) {
                 assertEquals("potentialRank[" + i + "]", potentialRanks[i], profile.potentialRanks[i]);
             }
+            assertTrue("clan value enabled", profile.clanValueEnabled);
+            assertEquals("clan value formula", 1, profile.clanValueFormulaVersion);
+            assertEquals("clan value", 17_000L, profile.clanValue);
+            assertEquals("clan level score", 10_000L, profile.clanLevelScore);
+            assertEquals("potential score", 1_500L, profile.spentPotentialScore);
+            assertEquals("tree score", 3_000L, profile.treeLevelScore);
+            assertEquals("achievement score", 2_000L, profile.achievementScore);
+            assertEquals("weekly score", 500L, profile.weeklyActivityScore);
+            assertEquals("clan value version", clanValueVersion, profile.clanValueVersion);
+            assertTrue("appearance snapshot present", profile.appearance != null);
+            assertTrue("appearance enabled", profile.appearance.enabled());
+            assertEquals("appearance tier", 1, profile.appearance.tierId());
+            assertEquals("appearance resource", "cay_lv_10", profile.appearance.resourceName());
         }
     }
 
@@ -84,6 +109,12 @@ public final class ClanProfileV2ProtocolTest {
 
     private static void assertEquals(String field, long expected, long actual) {
         if (expected != actual) {
+            throw new AssertionError(field + ": expected=" + expected + ", actual=" + actual);
+        }
+    }
+
+    private static void assertEquals(String field, String expected, String actual) {
+        if (!expected.equals(actual)) {
             throw new AssertionError(field + ": expected=" + expected + ", actual=" + actual);
         }
     }
