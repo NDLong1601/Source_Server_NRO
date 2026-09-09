@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import nro.models.database.HistoryTransactionDAO;
+import nro.models.database.PlayerPersistenceSchema;
 import nro.models.boss.Boss_Manager.BossManager;
 import nro.models.admin.AdminSpawnConfigService;
 import nro.models.admin.AdminEventConfigService;
@@ -79,6 +80,11 @@ public class ServerManager {
     private ScheduledExecutorService topUpdater;
 
     public void init() {
+        try {
+            PlayerPersistenceSchema.ensureReady();
+        } catch (SQLException error) {
+            throw new IllegalStateException("Cannot initialize Gate 5 player persistence schema", error);
+        }
         GameRuntime.gI();
         //TaskService.gI().loadTask();
         HistoryTransactionDAO.deleteHistory();

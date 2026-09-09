@@ -104,7 +104,7 @@ public class Zone {
         }
 
         for (Player player : players) {
-            if (player != null && !player.isDie() && player.session != null) {
+            if (player != null && !player.isDie() && player.getSession() != null) {
                 Service.gI().sendAppear(bot, player);
             }
         }

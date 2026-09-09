@@ -725,12 +725,12 @@ public class Mob {
                 player.monsterKillCountAutoTrain++;
             }
 
-            if (player.event.luotNhanNgocMienPhi == 1) {
+            if (player.event.isFreeGemClaimAvailable()) {
                 ItemMap item1 = new ItemMap(zone, 77, 1, x, yEnd, player.id);
                 ItemMap item2 = new ItemMap(zone, 77, 1, x + 10, yEnd, player.id);
                 list.add(item1);
                 list.add(item2);
-                player.event.luotNhanNgocMienPhi = 0;
+                player.event.setFreeGemClaimAvailable(false);
             }
         }
         if (EventManager.gI().isActive("summer") && MapService.gI().AllMap(mapid)) {

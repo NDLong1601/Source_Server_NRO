@@ -16,6 +16,8 @@ public final class InventoryPersistenceSnapshot {
     private final long playerId;
     private final long gold;
     private final int gem;
+    private final int ruby;
+    private final int coupon;
     private final List<Item> itemsBag;
     private final String dataInventoryJson;
     private final String itemsBagJson;
@@ -27,6 +29,8 @@ public final class InventoryPersistenceSnapshot {
         this.playerId = player.id;
         this.gold = gold;
         this.gem = gem;
+        this.ruby = player.inventory.ruby;
+        this.coupon = player.inventory.coupon;
         this.itemsBag = deepCopyItems(itemsBag);
         this.dataInventoryJson = serializeInventory(player, gold, gem);
         this.itemsBagJson = serializeItemsBag(this.itemsBag);
@@ -53,6 +57,9 @@ public final class InventoryPersistenceSnapshot {
         return gem;
     }
 
+    public int getRuby() { return ruby; }
+    public int getCoupon() { return coupon; }
+
     public String getDataInventoryJson() {
         return dataInventoryJson;
     }
@@ -68,7 +75,7 @@ public final class InventoryPersistenceSnapshot {
         }
         List<Item> committedBag = deepCopyItems(itemsBag);
         WalletResult walletRestore = player.getWallet().restoreExact(
-                new WalletSnapshot(gold, gem, player.inventory.ruby, player.inventory.coupon),
+                new WalletSnapshot(gold, gem, ruby, coupon),
                 WalletMutationContext.of(WalletReason.RECOVERY,
                         "inventory-snapshot:" + playerId + ":" + System.identityHashCode(this),
                         "Áp dụng inventory snapshot đã commit"));

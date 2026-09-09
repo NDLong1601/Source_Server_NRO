@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import nro.models.network.Sender;
+import nro.models.player.PlayerAutosavePolicy;
 
 /** Immutable, validated server configuration snapshot. */
 public final class ServerConfig {
@@ -27,11 +28,13 @@ public final class ServerConfig {
     private final int senderMaxMessages;
     private final long senderMaxBytes;
     private final String serverLinks;
+    private final PlayerAutosavePolicy playerAutosavePolicy;
 
     private ServerConfig(byte serverId, String name, String ip, int port,
             byte loginWaitSeconds, int maxConnectionsPerIp, int maxPlayers,
             byte experienceRate, boolean local, boolean test, boolean daoAutoUpdater,
-            int senderMaxMessages, long senderMaxBytes, String serverLinks) {
+            int senderMaxMessages, long senderMaxBytes, String serverLinks,
+            PlayerAutosavePolicy playerAutosavePolicy) {
         this.serverId = serverId;
         this.name = name;
         this.ip = ip;
@@ -46,6 +49,7 @@ public final class ServerConfig {
         this.senderMaxMessages = senderMaxMessages;
         this.senderMaxBytes = senderMaxBytes;
         this.serverLinks = serverLinks;
+        this.playerAutosavePolicy = playerAutosavePolicy;
     }
 
     public static ServerConfig load(Path path) throws IOException {
@@ -74,6 +78,11 @@ public final class ServerConfig {
                 Sender.getDefaultMaxQueueMessages(), 1, 1_000_000);
         long senderBytes = longValue(properties, "server.sender.max_bytes",
                 Sender.getDefaultMaxQueueBytes(), 1, Long.MAX_VALUE);
+        long autosaveRpo = longValue(properties, "player.autosave.rpo_ms", 60_000L,
+                10_000L, 900_000L);
+        long autosaveRetry = longValue(properties, "player.autosave.retry_ms", 5_000L,
+                100L, autosaveRpo);
+        int autosaveAttempts = intValue(properties, "player.autosave.max_attempts", 5, 1, 20);
 
         List<String> links = new ArrayList<>();
         links.add(name + ":" + ip + ":" + port + ":0");
@@ -87,7 +96,8 @@ public final class ServerConfig {
                 booleanValue(properties, "server.local", false),
                 booleanValue(properties, "server.test", false),
                 booleanValue(properties, "server.daoautoupdater", false),
-                senderMessages, senderBytes, String.join(",", links));
+                senderMessages, senderBytes, String.join(",", links),
+                new PlayerAutosavePolicy(autosaveRpo, autosaveRetry, autosaveAttempts));
     }
 
     private static String text(Properties properties, String key, String defaultValue) {
@@ -157,4 +167,5 @@ public final class ServerConfig {
     public int senderMaxMessages() { return senderMaxMessages; }
     public long senderMaxBytes() { return senderMaxBytes; }
     public String serverLinks() { return serverLinks; }
+    public PlayerAutosavePolicy playerAutosavePolicy() { return playerAutosavePolicy; }
 }

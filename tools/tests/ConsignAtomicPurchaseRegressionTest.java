@@ -1390,7 +1390,7 @@ public final class ConsignAtomicPurchaseRegressionTest {
 
         check(result.getOutcome() == ConsignPurchaseResult.Outcome.PERSISTENCE_UNKNOWN,
                 "Test 35: Indeterminate commit has a distinct outcome");
-        check(buyer.persistenceQuarantined, "Test 35: Player is quarantined from stale autosave");
+        check(buyer.isPersistenceQuarantined(), "Test 35: Player is quarantined from stale autosave");
         check(buyer.inventory.gold == 100_000, "Test 35: Unknown outcome is not projected to RAM");
         System.out.println("  [PASS] Test 35: Unknown commit outcome quarantines the player");
     }
@@ -1503,9 +1503,9 @@ public final class ConsignAtomicPurchaseRegressionTest {
     /** Test 40: Fail-closed quarantine prevents logout/autosave from overwriting DB. */
     static void test40_QuarantinedPlayerAutosaveIsSkipped() {
         Player player = createTestPlayer(5040, "Player40", 248, 100_000, 100);
-        player.persistenceQuarantined = true;
+        player.quarantinePersistence();
         PlayerDAO.updatePlayer(player);
-        check(player.persistenceQuarantined, "Test 40: Quarantine remains set after skipped autosave");
+        check(player.isPersistenceQuarantined(), "Test 40: Quarantine remains set after skipped autosave");
         check(player.inventory.gold == 100_000, "Test 40: Skipped autosave leaves RAM untouched");
         System.out.println("  [PASS] Test 40: Quarantined player autosave is skipped");
     }

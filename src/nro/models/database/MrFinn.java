@@ -20,6 +20,7 @@ import nro.models.player.Fusion;
 import nro.models.player.Pet;
 import nro.models.player.PetConfig;
 import nro.models.player.Player;
+import nro.models.player.PlayerEventState;
 import nro.models.player.WalletMutationContext;
 import nro.models.player.WalletReason;
 import nro.models.player.WalletResult;
@@ -45,7 +46,6 @@ import nro.models.utils.TimeUtil;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -204,6 +204,7 @@ public class MrFinn {
 
             // base info
             player.id = rs.getInt("id");
+            long loadedSaveVersion = rs.getLong("save_version");
             player.name = rs.getString("name");
             player.head = rs.getShort("head");
             player.gender = rs.getByte("gender");
@@ -263,31 +264,13 @@ public class MrFinn {
 
             // data điểm danh
             try {
-                Object parsed = JSONValue.parse(rs.getString("checkNhanQua"));
-                int luotNhan = 1;
-                int capsuleBang = 1;
-                LocalDateTime lastCheckIn = null;
-
-                if (parsed instanceof JSONArray arr) {
-                    if (arr.size() > 0) {
-                        luotNhan = Integer.parseInt(String.valueOf(arr.get(0)));
-                    }
-                    if (arr.size() > 1) {
-                        capsuleBang = Integer.parseInt(String.valueOf(arr.get(1)));
-                    }
-                    if (arr.size() > 2 && arr.get(2) != null) {
-                        lastCheckIn = LocalDateTime.parse(String.valueOf(arr.get(2)));
-                    }
-                }
-
-                player.event.luotNhanNgocMienPhi = luotNhan;
-                player.event.luotNhanCapsuleBang = capsuleBang;
-                player.lastCheckIn = lastCheckIn;
+                PlayerEventState eventState = PlayerEventState.fromJson(rs.getString("data_event"));
+                eventState.applyDailyClaimJson(rs.getString("checkNhanQua"));
+                player.event.restoreState(eventState);
             } catch (Exception e) {
-                player.event.luotNhanNgocMienPhi = 1;
-                player.event.luotNhanCapsuleBang = 1;
-                player.lastCheckIn = null;
-                System.err.println("Lỗi đọc checkNhanQua: " + e.getMessage());
+                player.event.restoreState(new PlayerEventState());
+                Logger.error("Không thể migrate PlayerEventState cho playerId=" + player.id
+                        + " errorType=" + e.getClass().getSimpleName() + "\n");
             }
 
             // data tọa độ
@@ -775,12 +758,7 @@ public class MrFinn {
             }
 
             // data nhận ngọc hàng ngày
-            dataArray.add(player.event.luotNhanNgocMienPhi);
-            dataArray.add(player.event.luotNhanCapsuleBang);
-            dataArray.add(player.lastCheckIn != null ? player.lastCheckIn.toString() : null);
-
-            String checkNhanQua = dataArray.toJSONString();
-            dataArray.clear();
+            String checkNhanQua = player.event.state().toDailyClaimJson();
 
             // data trứng bư
             dataArray = (JSONArray) JSONValue.parse(rs.getString("data_mabu_egg"));
@@ -1306,27 +1284,6 @@ public class MrFinn {
             }
 
             try {
-                dataArray = (JSONArray) JSONValue.parse(rs.getString("data_event"));
-
-                if (dataArray != null && dataArray.size() >= 10) {
-                    player.eventPointType1 = Integer.parseInt(String.valueOf(dataArray.get(0)));
-                    player.eventPointType2 = Integer.parseInt(String.valueOf(dataArray.get(1)));
-                    player.eventPointType3 = Integer.parseInt(String.valueOf(dataArray.get(2)));
-                    player.eventPointType4 = Integer.parseInt(String.valueOf(dataArray.get(3)));
-                    player.eventPointType5 = Integer.parseInt(String.valueOf(dataArray.get(4)));
-                    player.eventPointType6 = Integer.parseInt(String.valueOf(dataArray.get(5)));
-
-                    // Gán giá trị cho các biến boolean kiểm tra phần thưởng
-                    player.checkDailyReward = Boolean.parseBoolean(String.valueOf(dataArray.get(6)));
-                    player.checkTopReward1 = Boolean.parseBoolean(String.valueOf(dataArray.get(7)));
-                    player.checkTopReward2 = Boolean.parseBoolean(String.valueOf(dataArray.get(8)));
-                    player.checkTopReward3 = Boolean.parseBoolean(String.valueOf(dataArray.get(9)));
-                } else {
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
                 dataArray = (JSONArray) JSONValue.parse(rs.getString("LearnSkill"));
                 player.LearnSkill.Time = Long.parseLong(String.valueOf(dataArray.get(0)));
                 player.LearnSkill.ItemTemplateSkillId = Short.parseShort(String.valueOf(dataArray.get(1)));
@@ -1476,6 +1433,7 @@ public class MrFinn {
                 player.kanaoQuestRequiredCount = 0;
             }
 
+            player.getPersistenceState().initializeLoaded(loadedSaveVersion);
             PlayerService.gI().dailyLogin(player);// RESET DATA KHI QUA 12H ĐÊM
             BadgesService.normalize(player);
             player.inventory.checkAndUpdateMeRongBadges(player);

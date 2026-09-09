@@ -760,7 +760,7 @@ public class ConsignPurchaseCoordinator {
 
     private ConsignPurchaseResult quarantinePlayer(Player player, String message) {
         if (player != null) {
-            player.persistenceQuarantined = true;
+            player.quarantinePersistence();
             Logger.error("[SEC-04] Quarantined player after indeterminate persistence, playerId=" + player.id);
         }
         return ConsignPurchaseResult.fail(ConsignPurchaseResult.Outcome.PERSISTENCE_UNKNOWN, message);

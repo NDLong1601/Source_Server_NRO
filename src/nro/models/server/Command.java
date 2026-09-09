@@ -103,13 +103,13 @@ public class Command {
             BotManager.gI().bot.add(bot);
 
             for (Player p : player.zone.getPlayers()) {
-                if (p.session != null) {
+                if (p.getSession() != null) {
                     Service.gI().sendAppear(bot, p);
                     Service.gI().sendInfoCharMoiToMe(p, bot);
                 }
             }
 
-            if (player.session != null) {
+            if (player.getSession() != null) {
                 Service.gI().Send_Info_NV(player);
             }
 

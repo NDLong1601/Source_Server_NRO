@@ -23,7 +23,7 @@ public final class PlayerMailbox {
             return false;
         }
         synchronized (queueLock) {
-            if (closed.get() || (player != null && player.isDisposed())) {
+            if (closed.get() || (player != null && !player.acceptsRuntimeWork())) {
                 return false;
             }
             if (!queue.offer(task)) {
@@ -33,7 +33,7 @@ public final class PlayerMailbox {
             }
             // Player.dispose() publishes disposed before it waits for the
             // lifecycle lock. Do not report acceptance if that transition won.
-            if (player != null && player.isDisposed()) {
+            if (player != null && !player.acceptsRuntimeWork()) {
                 queue.clear();
                 return false;
             }
@@ -48,7 +48,7 @@ public final class PlayerMailbox {
         try {
             Object lifecycleLock = player != null ? player.getLifecycleLock() : this;
             synchronized (lifecycleLock) {
-                if (closed.get() || (player != null && player.isDisposed())) {
+                if (closed.get() || (player != null && !player.acceptsRuntimeWork())) {
                     synchronized (queueLock) {
                         queue.clear();
                     }
@@ -86,7 +86,7 @@ public final class PlayerMailbox {
 
     private Runnable pollNext() {
         synchronized (queueLock) {
-            if (closed.get() || (player != null && player.isDisposed())) {
+            if (closed.get() || (player != null && !player.acceptsRuntimeWork())) {
                 queue.clear();
                 return null;
             }

@@ -24,6 +24,7 @@ public final class GameRuntime {
     private final NpcRegistry npcs = new NpcRegistry();
     private final LeaderboardService leaderboards = new LeaderboardService();
     private final WorldTickEngine tickEngine = new WorldTickEngine(worlds);
+    private volatile PlayerAutosaveService playerAutosave;
     private volatile ServerConfig config;
     private volatile boolean initializing;
     private volatile Thread initializingThread;
@@ -77,6 +78,9 @@ public final class GameRuntime {
         NpcFactory.createNpcRongThieng();
         new NonInteractiveNPC().initNonInteractiveNPC();
         tickEngine.start();
+        playerAutosave = new PlayerAutosaveService(
+                () -> Client.gI().getPlayers(), config.playerAutosavePolicy());
+        playerAutosave.start();
         initialized = true;
         Logger.success(Logger.RED + "Gate 4 runtime registries published at revision "
                 + bundle.revision() + "\n");
@@ -101,8 +105,10 @@ public final class GameRuntime {
     public NpcRegistry npcs() { return npcs; }
     public LeaderboardService leaderboards() { return leaderboards; }
     public WorldTickEngine tickEngine() { return tickEngine; }
+    public PlayerAutosaveService playerAutosave() { return playerAutosave; }
 
     public void shutdown() {
+        if (playerAutosave != null) playerAutosave.shutdown();
         tickEngine.shutdown();
     }
 

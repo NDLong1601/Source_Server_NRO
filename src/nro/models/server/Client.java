@@ -188,69 +188,68 @@ public class Client implements Runnable {
         }
 
         synchronized (player.getLifecycleLock()) {
-            if (!player.beforeDispose) {
-                player.beforeDispose = true;
-                try {
-                    player.mapIdBeforeLogout = player.zone != null && player.zone.map != null ? player.zone.map.mapId : -1;
-                    if (player.idNRNM != -1 && player.zone != null && player.location != null) {
-                        ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1, player.location.x, player.location.y, -1);
-                        Service.gI().dropItemMap(player.zone, itemMap);
-                        NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
-                        NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
-                        player.idNRNM = -1;
-                    }
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] mapId/idNRNM cleanup failed for player=" + player.id + ": " + e);
+            try {
+                player.mapIdBeforeLogout = player.zone != null && player.zone.map != null
+                        ? player.zone.map.mapId : -1;
+                if (player.idNRNM != -1 && player.zone != null && player.location != null) {
+                    ItemMap itemMap = new ItemMap(player.zone, player.idNRNM, 1,
+                            player.location.x, player.location.y, -1);
+                    Service.gI().dropItemMap(player.zone, itemMap);
+                    NgocRongNamecService.gI().pNrNamec[player.idNRNM - 353] = "";
+                    NgocRongNamecService.gI().idpNrNamec[player.idNRNM - 353] = -1;
+                    player.idNRNM = -1;
                 }
-                try {
-                    ChangeMapService.gI().exitMap(player);
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] exitMap failed for player=" + player.id + ": " + e);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] mapId/idNRNM cleanup failed for player=" + player.id + ": " + e);
+            }
+            try {
+                ChangeMapService.gI().exitMap(player);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] exitMap failed for player=" + player.id + ": " + e);
+            }
+            try {
+                TransactionService.gI().cancelTrade(player);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] cancelTrade failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.clan != null) {
+                    player.clan.removeMemberOnline(null, player);
                 }
-                try {
-                    TransactionService.gI().cancelTrade(player);
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] cancelTrade failed for player=" + player.id + ": " + e);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] clan.removeMemberOnline failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (SummonDragon.gI().playerSummonShenron != null
+                        && SummonDragon.gI().playerSummonShenron.id == player.id) {
+                    SummonDragon.gI().isPlayerDisconnect = true;
                 }
-                try {
-                    if (player.clan != null) {
-                        player.clan.removeMemberOnline(null, player);
-                    }
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] clan.removeMemberOnline failed for player=" + player.id + ": " + e);
+                if (SummonDragonNamek.gI().playerSummonShenron != null
+                        && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
+                    SummonDragonNamek.gI().isPlayerDisconnect = true;
                 }
-                try {
-                    if (SummonDragon.gI().playerSummonShenron != null
-                            && SummonDragon.gI().playerSummonShenron.id == player.id) {
-                        SummonDragon.gI().isPlayerDisconnect = true;
-                    }
-                    if (SummonDragonNamek.gI().playerSummonShenron != null
-                            && SummonDragonNamek.gI().playerSummonShenron.id == player.id) {
-                        SummonDragonNamek.gI().isPlayerDisconnect = true;
-                    }
-                    if (player.shenronEvent != null) {
-                        player.shenronEvent.isPlayerDisconnect = true;
-                    }
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] dragon/shenron disconnect failed for player=" + player.id + ": " + e);
+                if (player.shenronEvent != null) {
+                    player.shenronEvent.isPlayerDisconnect = true;
                 }
-                try {
-                    if (player.mobMe != null) {
-                        player.mobMe.mobMeDie();
-                    }
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] mobMe.mobMeDie failed for player=" + player.id + ": " + e);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] dragon/shenron disconnect failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.mobMe != null) {
+                    player.mobMe.mobMeDie();
                 }
-                try {
-                    if (player.pet != null) {
-                        if (player.pet.mobMe != null) {
-                            player.pet.mobMe.mobMeDie();
-                        }
-                        ChangeMapService.gI().exitMap(player.pet);
+            } catch (Exception e) {
+                Logger.error("[Client.remove] mobMe.mobMeDie failed for player=" + player.id + ": " + e);
+            }
+            try {
+                if (player.pet != null) {
+                    if (player.pet.mobMe != null) {
+                        player.pet.mobMe.mobMeDie();
                     }
-                } catch (Exception e) {
-                    Logger.error("[Client.remove] pet teardown failed for player=" + player.id + ": " + e);
+                    ChangeMapService.gI().exitMap(player.pet);
                 }
+            } catch (Exception e) {
+                Logger.error("[Client.remove] pet teardown failed for player=" + player.id + ": " + e);
             }
         }
     }

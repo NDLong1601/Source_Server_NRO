@@ -359,9 +359,9 @@ public class PlayerService {
             player.firstTimeLogin = Date.from(Instant.now());
             BadgesTaskService.createAndResetTask(player);
             DailyGiftService.addAndReset(player);
-            player.event.luotNhanNgocMienPhi = 1;
-            player.event.luotNhanCapsuleBang = 1;
-            player.lastCheckIn = null;
+            player.event.setFreeGemClaimAvailable(true);
+            player.event.setClanCapsuleClaimAvailable(true);
+            player.event.setLastCheckIn(null);
             LocalDate VIP_SEASON_END_DATE_FOR_CURRENT_YEAR = LocalDate.of(LocalDate.now().getYear(), Month.JULY, 5);
             LocalDate currentDate = LocalDate.now();
             if (currentDate.isAfter(VIP_SEASON_END_DATE_FOR_CURRENT_YEAR)) {

@@ -27,7 +27,7 @@ public class GiuMaDauBo extends Npc {
     }
 
     private boolean shouldShowClanCheckIn(Player player) {
-        return player.clan == null || player.event.luotNhanCapsuleBang != 0;
+        return player.clan == null || player.event.isClanCapsuleClaimAvailable();
     }
 
     @Override
@@ -137,7 +137,7 @@ public class GiuMaDauBo extends Npc {
             Service.gI().sendThongBao(player, "Bạn cần gia nhập bang hội để điểm danh.");
             return;
         }
-        if (player.event.luotNhanCapsuleBang == 0) {
+        if (!player.event.isClanCapsuleClaimAvailable()) {
             return;
         }
 
@@ -158,7 +158,7 @@ public class GiuMaDauBo extends Npc {
                 break;
             }
         }
-        player.event.luotNhanCapsuleBang = 0;
+        player.event.setClanCapsuleClaimAvailable(false);
         InventoryService.gI().sendItemBags(player);
         // This is after all state mutations, so opening/retrying the NPC menu
         // cannot create an Activity event unless the clan check-in succeeded.

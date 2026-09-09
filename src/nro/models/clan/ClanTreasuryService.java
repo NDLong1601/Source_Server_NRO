@@ -162,7 +162,7 @@ public final class ClanTreasuryService {
                                         "clan-deposit:" + requestId,
                                         "Áp dụng số dư đã commit khi đóng góp bang"));
                         if (!walletRestore.isSuccess()) {
-                            player.persistenceQuarantined = true;
+                            player.quarantinePersistence();
                             Logger.error("[WALLET-01] Quarantined player after clan deposit projection failure, playerId="
                                     + player.id);
                             result = DepositResult.failure(

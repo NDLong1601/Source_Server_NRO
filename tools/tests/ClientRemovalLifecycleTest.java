@@ -11,6 +11,7 @@ public final class ClientRemovalLifecycleTest {
     }
 
     public static void main(String[] args) {
+        GameRuntime.installTemplatesForTesting(java.util.List.of(), java.util.List.of(), java.util.List.of());
         Player player = new Player();
         player.id = 100_002;
         Achievement achievement = player.achievement;

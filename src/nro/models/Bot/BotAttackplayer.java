@@ -206,7 +206,7 @@ public class BotAttackplayer extends Bot {
             this.location.y = newZone.map.spawnY;
             newZone.addBot(this);
             for (Player pl : newZone.getPlayers()) {
-                if (pl != null && pl.session != null) {
+                if (pl != null && pl.getSession() != null) {
                     Service.gI().sendAppear(this, pl);
                 }
             }

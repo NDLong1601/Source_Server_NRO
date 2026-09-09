@@ -177,13 +177,13 @@ public class MoneyLedgerService {
             try {
                 result = executeLocked(player, productType, requestedAmount);
             } catch (RuntimeException ex) {
-                player.persistenceQuarantined = true;
+                player.quarantinePersistence();
                 Logger.error("[SEC-05] Purchase requires recovery, playerId=" + player.id);
                 result = new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
                     "Giao dịch cần kiểm tra; vui lòng đăng nhập lại", 0, 0, null);
             }
         }
-        if (player.persistenceQuarantined && player.getSession() != null
+        if (player.isPersistenceQuarantined() && player.getSession() != null
             && nro.models.server.Client.gI().getPlayerByUser(player.getSession().userId) == player) {
             nro.models.server.Client.gI().kickSession(player.getSession(),
                 nro.models.network.SessionCloseCause.INTERNAL_ERROR);
@@ -196,7 +196,7 @@ public class MoneyLedgerService {
         if (player == null || player.getSession() == null) {
             return new PurchaseResult(PurchaseOutcome.FAILED, "Người chơi không hợp lệ", 0, 0, null);
         }
-        if (player.persistenceQuarantined) {
+        if (player.isPersistenceQuarantined()) {
             return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
                 "Trạng thái giao dịch chưa xác định; vui lòng đăng nhập lại", 0, 0, null);
         }
@@ -265,7 +265,7 @@ public class MoneyLedgerService {
         );
 
         if (debitResult.status() == MoneyLedgerRepository.DebitStatus.UNKNOWN) {
-            player.persistenceQuarantined = true;
+            player.quarantinePersistence();
             return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
                 "Giao dịch cần kiểm tra; vui lòng đăng nhập lại", 0, 0, purchaseKey);
         }
@@ -323,7 +323,7 @@ public class MoneyLedgerService {
         Object playerLock = player.inventory != null ? player.inventory : player;
         synchronized (playerLock) {
             // Verify quarantine
-            if (player.persistenceQuarantined) {
+            if (player.isPersistenceQuarantined()) {
                 return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
                     "Trạng thái giao dịch chưa xác định; vui lòng đăng nhập lại", 0, balanceAfter, purchaseKey);
             }
@@ -437,7 +437,7 @@ public class MoneyLedgerService {
                 // Ambiguous commit check: probe outbox via fresh read
                 {
                     // Indeterminate: quarantine player to prevent dirty autosave overwrite
-                    player.persistenceQuarantined = true;
+                    player.quarantinePersistence();
                     Logger.error("[SEC-05] Quarantined player after ambiguous delivery commit, playerId=" + player.id + ", purchaseKey=" + purchaseKey);
                     return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
                         "Trạng thái giao dịch chưa xác định; vui lòng đăng nhập lại", 0, balanceAfter, purchaseKey);
@@ -452,7 +452,7 @@ public class MoneyLedgerService {
                     WalletMutationContext.of(WalletReason.RECOVERY,
                             "vnd-delivery:" + purchaseKey, "Áp dụng entitlement VND đã commit"));
             if (!walletRestore.isSuccess()) {
-                player.persistenceQuarantined = true;
+                player.quarantinePersistence();
                 Logger.error("[WALLET-01] Quarantined player after VND wallet projection failure, playerId="
                         + player.id + ", purchaseKey=" + purchaseKey);
                 return new PurchaseResult(PurchaseOutcome.PLAYER_QUARANTINED,
@@ -509,10 +509,10 @@ public class MoneyLedgerService {
             for (MoneyLedgerRepository.OutboxRecord rec : pending) {
                 VndEntitlementPayload payload = VndEntitlementPayload.fromJsonString(rec.frozenEntitlementJson());
                 deliverEntitlement(player, rec.productType(), rec.purchaseKey(), payload, player.getSession().vnd, false);
-                if (player.persistenceQuarantined) break;
+                if (player.isPersistenceQuarantined()) break;
             }
         } catch (Exception e) {
-            player.persistenceQuarantined = true;
+            player.quarantinePersistence();
             Logger.logException(MoneyLedgerService.class, e, "[SEC-05] Error recovering pending deliveries for playerId=" + player.id);
         }
     }
@@ -897,17 +897,6 @@ public class MoneyLedgerService {
     }
 
     private static String serializeDataEvent(Player player) {
-        JSONArray arr = new JSONArray();
-        arr.add(player.eventPointType1);
-        arr.add(player.eventPointType2);
-        arr.add(player.eventPointType3);
-        arr.add(player.eventPointType4);
-        arr.add(player.eventPointType5);
-        arr.add(player.eventPointType6);
-        arr.add(player.checkDailyReward);
-        arr.add(player.checkTopReward1);
-        arr.add(player.checkTopReward2);
-        arr.add(player.checkTopReward3);
-        return arr.toJSONString();
+        return player.event.state().toEventJson();
     }
 }

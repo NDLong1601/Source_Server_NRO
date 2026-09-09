@@ -197,7 +197,7 @@ public class MySession extends Session {
         try {
             synchronized (this.playerLifecycleLock) {
                 if (this.player != expectedPlayer || !this.isConnected() || this.isClosed()
-                        || expectedPlayer.isDisposed()) {
+                        || expectedPlayer.isRemovingOrDisposed()) {
                     return false;
                 }
                 Thread currentThread = Thread.currentThread();
@@ -222,7 +222,7 @@ public class MySession extends Session {
                         && this.player == expectedPlayer
                         && this.isConnected()
                         && !this.isClosed()
-                        && !expectedPlayer.isDisposed();
+                        && !expectedPlayer.isRemovingOrDisposed();
             }
         } finally {
             completePlayerTeardown(deferredTeardown[0]);
@@ -289,7 +289,7 @@ public class MySession extends Session {
                                     .recoverPendingDeliveriesOnLogin(loginPlayer))) {
                         return;
                     }
-                    if (pl.persistenceQuarantined) {
+                    if (pl.isPersistenceQuarantined()) {
                         this.close(SessionCloseCause.INTERNAL_ERROR);
                         return;
                     }

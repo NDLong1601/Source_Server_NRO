@@ -1349,13 +1349,13 @@ public class ShopService {
                                     "shop-buyback-rollback:" + player.id + ":" + index,
                                     "Hoàn tiền chuộc vật phẩm không thể thêm vào hành trang"));
                     if (!rollback.isSuccess()) {
-                        player.persistenceQuarantined = true;
+                        player.quarantinePersistence();
                         Logger.error("[WALLET-01] Quarantined player after buyback rollback failure, playerId="
                                 + player.id);
                     }
                 }
                 Service.gI().sendThongBao(player,
-                        player.persistenceQuarantined
+                        player.isPersistenceQuarantined()
                                 ? "Không thể đồng bộ giao dịch; vui lòng đăng nhập lại."
                                 : "Không thể thêm vật phẩm; tài sản đã được hoàn lại.");
                 openShopType8(player, player.idMark.getTagNameShop(), items);

@@ -192,14 +192,17 @@ public class InventoryService {
 
     public void removeItemBag(Player player, int index) {
         this.removeItem(player.inventory.itemsBag, index);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void removeItemBag(Player player, Item item) {
         this.removeItem(player.inventory.itemsBag, item);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void removeItemBody(Player player, int index) {
         this.removeItem(player.inventory.itemsBody, index);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void removeItemPetBody(Player player, int index) {
@@ -208,6 +211,7 @@ public class InventoryService {
 
     public void removeItemBox(Player player, int index) {
         this.removeItem(player.inventory.itemsBox, index);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     private void __________________Giảm_số_lượng_item_______________________() {
@@ -216,14 +220,17 @@ public class InventoryService {
 
     public void subQuantityItemsBag(Player player, Item item, int quantity) {
         subQuantityItem(player.inventory.itemsBag, item, quantity);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void subQuantityItemsBody(Player player, Item item, int quantity) {
         subQuantityItem(player.inventory.itemsBody, item, quantity);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void subQuantityItemsBox(Player player, Item item, int quantity) {
         subQuantityItem(player.inventory.itemsBox, item, quantity);
+        player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
     }
 
     public void subQuantityItem(List<Item> items, Item item, int quantity) {
@@ -1059,6 +1066,7 @@ public class InventoryService {
                 && item.getOptionById(93) == null;
         boolean added = addItemList(player.inventory.itemsBag, item);
         if (added) {
+            player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
             if (isPermanentDragonChild) {
                 player.inventory.checkAndUpdateMeRongBadges(player);
             }
@@ -1070,6 +1078,7 @@ public class InventoryService {
     public boolean addItemBox(Player player, Item item) {
         boolean added = addItemList(player.inventory.itemsBox, item);
         if (added) {
+            player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
             CostumeCollectionService.gI().recordOwnership(player, item);
         }
         return added;

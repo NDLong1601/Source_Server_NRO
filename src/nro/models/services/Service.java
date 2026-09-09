@@ -2799,7 +2799,7 @@ public class Service {
     }
 
     public void sendDanhQuaiNhanNgoc(Player player) {
-        if (player.event.luotNhanNgocMienPhi == 1) {
+        if (player.event.isFreeGemClaimAvailable()) {
             Service.gI().sendThongBao(player, "Hôm nay bạn sẽ nhận được từ 1 đến 2 viên ngọc khi tiêu diệt 1 con quái");
         }
     }
@@ -2821,7 +2821,7 @@ public class Service {
     }
 
     public void sendInfoCharMoiToMe(Player plReceive, BotAttackplayer bot) {
-        if (plReceive == null || plReceive.session == null || bot == null) {
+        if (plReceive == null || plReceive.getSession() == null || bot == null) {
             return;
         }
 
@@ -2897,7 +2897,7 @@ public class Service {
     }
 
     public void sendAppear(BotAttackplayer bot, Player player) {
-        if (bot == null || bot.zone == null || player == null || player.session == null) {
+        if (bot == null || bot.zone == null || player == null || player.getSession() == null) {
             return;
         }
 
@@ -2905,7 +2905,7 @@ public class Service {
     }
 
     public void sendDisappear(BotAttackplayer bot, Player player) {
-        if (player == null || player.session == null || bot == null) {
+        if (player == null || player.getSession() == null || bot == null) {
             return;
         }
 
@@ -2913,7 +2913,7 @@ public class Service {
         try {
             msg = new Message(-6);
             msg.writer().writeInt((int) bot.id);
-            player.session.sendMessage(msg);
+            player.getSession().sendMessage(msg);
             Logger.error("Đã gửi hiệu ứng biến mất của bot " + bot.name + " tới " + player.name);
         } catch (Exception e) {
             Logger.logException(Service.class, e);
@@ -2925,7 +2925,7 @@ public class Service {
     }
 
     public void sendPlayerInfo(Player player) {
-        if (player == null || player.session == null) {
+        if (player == null || player.getSession() == null) {
             return;
         }
 
@@ -2975,7 +2975,7 @@ public class Service {
             msg.writer().writeInt(gauTuong.level);
             msg.writer().writeBoolean(true);
             msg.writer().writeByte(gauTuong.type);
-            p.session.sendMessage(msg);
+            p.getSession().sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             e.printStackTrace();

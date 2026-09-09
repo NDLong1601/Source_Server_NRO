@@ -210,7 +210,7 @@ public final class ClanGiftService {
                                         "clan-gift-claim:" + player.id + ":" + rewards.get(rewards.size() - 1).id,
                                         "Áp dụng quà bang đã commit"));
                         if (!walletRestore.isSuccess()) {
-                            player.persistenceQuarantined = true;
+                            player.quarantinePersistence();
                             Logger.error("[WALLET-01] Quarantined player after clan gift projection failure, playerId="
                                     + player.id);
                             notify(player, "Quà đã được ghi nhận; vui lòng đăng nhập lại để đồng bộ tài sản.");

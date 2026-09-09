@@ -29,6 +29,7 @@ public class Inventory {
     public Iterable<Item> items;
 
     private final PlayerWallet wallet;
+    private volatile Runnable mutationListener = () -> { };
 
     public Inventory() {
         this.wallet = new PlayerWallet(this);
@@ -42,6 +43,14 @@ public class Inventory {
 
     public PlayerWallet getWallet() {
         return this.wallet;
+    }
+
+    public void setMutationListener(Runnable listener) {
+        this.mutationListener = listener == null ? () -> { } : listener;
+    }
+
+    void markChanged() {
+        this.mutationListener.run();
     }
 
     public int getGem() {

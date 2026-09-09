@@ -19,6 +19,10 @@ public final class ServerRuntimeMetrics {
     private final LongAdder tickExceptionCount = new LongAdder();
     private final LongAdder deadlineOverrunCount = new LongAdder();
     private final LongAdder rejectedOverlapCount = new LongAdder();
+    private final LongAdder autosaveSuccessCount = new LongAdder();
+    private final LongAdder autosaveFailureCount = new LongAdder();
+    private final LongAdder autosaveDeadLetterCount = new LongAdder();
+    private final AtomicInteger autosaveBacklog = new AtomicInteger();
 
     private final AtomicInteger senderQueueDepth = new AtomicInteger(0);
     private final AtomicLong senderQueuedBytes = new AtomicLong(0);
@@ -54,6 +58,11 @@ public final class ServerRuntimeMetrics {
     public void recordRejectedOverlap() {
         rejectedOverlapCount.increment();
     }
+
+    public void recordAutosaveSuccess() { autosaveSuccessCount.increment(); }
+    public void recordAutosaveFailure() { autosaveFailureCount.increment(); }
+    public void recordAutosaveDeadLetter() { autosaveDeadLetterCount.increment(); }
+    public void setAutosaveBacklog(int value) { autosaveBacklog.set(Math.max(0, value)); }
 
     public void adjustSenderQueueMetrics(int messageDelta, long byteDelta) {
         int currentDepth = senderQueueDepth.updateAndGet(current -> Math.max(0, current + messageDelta));
@@ -114,6 +123,11 @@ public final class ServerRuntimeMetrics {
     public long getRejectedOverlapCount() {
         return rejectedOverlapCount.sum();
     }
+
+    public long getAutosaveSuccessCount() { return autosaveSuccessCount.sum(); }
+    public long getAutosaveFailureCount() { return autosaveFailureCount.sum(); }
+    public long getAutosaveDeadLetterCount() { return autosaveDeadLetterCount.sum(); }
+    public int getAutosaveBacklog() { return autosaveBacklog.get(); }
 
     public int getSenderQueueDepth() {
         return senderQueueDepth.get();
@@ -182,6 +196,10 @@ public final class ServerRuntimeMetrics {
                 + " tickExceptions=" + getTickExceptionCount()
                 + " tickOverruns=" + getDeadlineOverrunCount()
                 + " rejectedPlayerOverlaps=" + getRejectedOverlapCount()
+                + " autosaveSuccess=" + getAutosaveSuccessCount()
+                + " autosaveFailures=" + getAutosaveFailureCount()
+                + " autosaveDeadLetters=" + getAutosaveDeadLetterCount()
+                + " autosaveBacklog=" + getAutosaveBacklog()
                 + " duplicateCloses=" + getDuplicateCloseAttempts()
                 + " closeCauses=" + getCloseCauseSnapshot()
                 + " protocolErrors=" + getProtocolErrorSnapshot();
@@ -193,6 +211,10 @@ public final class ServerRuntimeMetrics {
         tickExceptionCount.reset();
         deadlineOverrunCount.reset();
         rejectedOverlapCount.reset();
+        autosaveSuccessCount.reset();
+        autosaveFailureCount.reset();
+        autosaveDeadLetterCount.reset();
+        autosaveBacklog.set(0);
         senderQueueDepth.set(0);
         senderQueuedBytes.set(0);
         senderHighWaterMarkBytes.set(0);

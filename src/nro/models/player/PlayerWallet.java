@@ -72,6 +72,7 @@ public final class PlayerWallet {
             case RUBY -> inventory.ruby = (int) amount;
             case COUPON -> inventory.coupon = (int) amount;
         }
+        inventory.markChanged();
     }
 
     /**
@@ -267,6 +268,7 @@ public final class PlayerWallet {
             inventory.gem = (int) nextGem;
             inventory.ruby = (int) nextRuby;
             inventory.coupon = (int) nextCoupon;
+            inventory.markChanged();
 
             return WalletResult.success(Currency.GOLD, 0L, 0L, beforeGold, nextGold, context);
         }
@@ -392,6 +394,7 @@ public final class PlayerWallet {
             inventory.gem = after.getGem();
             inventory.ruby = after.getRuby();
             inventory.coupon = after.getCoupon();
+            inventory.markChanged();
 
             return WalletResult.success(Currency.GOLD, 0L, 0L, current.getGold(), after.getGold(), prepared.getContext());
         }
@@ -423,6 +426,7 @@ public final class PlayerWallet {
             inventory.gem = snapshot.getGem();
             inventory.ruby = snapshot.getRuby();
             inventory.coupon = snapshot.getCoupon();
+            inventory.markChanged();
             return WalletResult.success(Currency.GOLD, 0L, 0L,
                     beforeGold, snapshot.getGold(), context);
         }
@@ -548,6 +552,7 @@ public final class PlayerWallet {
         inventory.gem = snapshot.getGem();
         inventory.ruby = snapshot.getRuby();
         inventory.coupon = snapshot.getCoupon();
+        inventory.markChanged();
     }
 
     private static WalletSnapshot simulate(WalletSnapshot before, List<WalletLeg> legs) {

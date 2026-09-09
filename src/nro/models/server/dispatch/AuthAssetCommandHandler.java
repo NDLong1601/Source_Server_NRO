@@ -317,7 +317,6 @@ public final class AuthAssetCommandHandler implements CommandHandler {
                 player.pet.setClothes.setup();
             }
             ItemTimeService.gI().sendCanAutoPlay(player);
-            player.start();
         } catch (Exception ignored) {
         }
     }

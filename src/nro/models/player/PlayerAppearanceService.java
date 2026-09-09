@@ -19,6 +19,9 @@ public final class PlayerAppearanceService {
     }
 
     public static String percentGold(Player player, int type) {
+        if (player == null) {
+            return "0";
+        }
         try {
             if (type == 0) {
                 double denominator = ChonAiDay_Gold.gI().goldNormar;
@@ -44,6 +47,9 @@ public final class PlayerAppearanceService {
     }
 
     public static String percentGem(Player player, int type) {
+        if (player == null) {
+            return "0";
+        }
         try {
             if (type == 0) {
                 double denominator3 = ChonAiDay_Gem.gI().gemNormar;
@@ -74,11 +80,14 @@ public final class PlayerAppearanceService {
     }
 
     public static byte getAura(Player player) {
+        if (player == null) {
+            return -1;
+        }
         byte auraFromItem = getAuraFromEquippedItem(player);
         if (auraFromItem >= 0) {
             return auraFromItem;
         }
-        if (!player.isPl() || player.Cards.isEmpty()) {
+        if (!player.isPl() || player.Cards == null || player.Cards.isEmpty()) {
             return -1;
         }
         for (Card card : player.Cards) {
@@ -93,7 +102,7 @@ public final class PlayerAppearanceService {
     }
 
     static byte getAuraFromEquippedItem(Player player) {
-        if (!player.isPl() || player.inventory == null || player.inventory.itemsBody == null
+        if (player == null || !player.isPl() || player.inventory == null || player.inventory.itemsBody == null
                 || player.inventory.itemsBody.size() <= InventoryService.PLAYER_AURA_SLOT) {
             return -1;
         }
@@ -110,7 +119,7 @@ public final class PlayerAppearanceService {
     }
 
     public static byte getEffFront(Player player) {
-        if (player.inventory == null) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null) {
             return -1;
         }
         if (player.inventory.itemsBody.isEmpty() || player.inventory.itemsBody.size() < 10) {
@@ -131,36 +140,40 @@ public final class PlayerAppearanceService {
         Item itemGang = player.inventory.itemsBody.get(2);
         Item itemGiay = player.inventory.itemsBody.get(3);
         Item itemNhan = player.inventory.itemsBody.get(4);
+        if (!hasOptions(itemAo) || !hasOptions(itemQuan) || !hasOptions(itemGang)
+                || !hasOptions(itemGiay) || !hasOptions(itemNhan)) {
+            return -1;
+        }
         for (Item.ItemOption io : itemAo.itemOptions) {
-            if (io.optionTemplate.id == 72) {
+            if (io != null && io.optionTemplate != null && io.optionTemplate.id == 72) {
                 levelAo = io.param;
                 optionLevelAo = io;
                 break;
             }
         }
         for (Item.ItemOption io : itemQuan.itemOptions) {
-            if (io.optionTemplate.id == 72) {
+            if (io != null && io.optionTemplate != null && io.optionTemplate.id == 72) {
                 levelQuan = io.param;
                 optionLevelQuan = io;
                 break;
             }
         }
         for (Item.ItemOption io : itemGang.itemOptions) {
-            if (io.optionTemplate.id == 72) {
+            if (io != null && io.optionTemplate != null && io.optionTemplate.id == 72) {
                 levelGang = io.param;
                 optionLevelGang = io;
                 break;
             }
         }
         for (Item.ItemOption io : itemGiay.itemOptions) {
-            if (io.optionTemplate.id == 72) {
+            if (io != null && io.optionTemplate != null && io.optionTemplate.id == 72) {
                 levelGiay = io.param;
                 optionLevelGiay = io;
                 break;
             }
         }
         for (Item.ItemOption io : itemNhan.itemOptions) {
-            if (io.optionTemplate.id == 72) {
+            if (io != null && io.optionTemplate != null && io.optionTemplate.id == 72) {
                 levelNhan = io.param;
                 optionLevelNhan = io;
                 break;
@@ -187,15 +200,9 @@ public final class PlayerAppearanceService {
     }
 
     public static short getHead(Player player) {
-        if (player.isPl() && player.pet != null && player.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || player.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = player.inventory.itemsBody.get(5);
-            Item petItem = player.pet.inventory.itemsBody.get(5);
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1578;
-            }
+        if (player == null) return -1;
+        if (hasMixedFusionCostume(player)) {
+            return 1578;
         }
         if (player.effectSkill != null && player.effectSkill.isBinh) {
             return Player.idOutfitMafuba[player.effectSkill.typeBinh][0];
@@ -235,8 +242,8 @@ public final class PlayerAppearanceService {
                 }
                 return Player.idOutfitFusion[6 + player.gender][0];
             }
-        } else if (player.inventory != null && player.inventory.itemsBody.get(5).isNotNullItem()) {
-            int headId = player.inventory.itemsBody.get(5).template.head;
+        } else if (isUsable(bodySlot(player, 5))) {
+            int headId = bodySlot(player, 5).template.head;
             if (headId != -1) {
                 return (short) headId;
             }
@@ -245,16 +252,9 @@ public final class PlayerAppearanceService {
     }
 
     public static short getBody(Player player) {
-        if (player.isPl() && player.pet != null && player.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || player.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = player.inventory.itemsBody.get(5);
-            Item petItem = player.pet.inventory.itemsBody.get(5);
-
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1581;
-            }
+        if (player == null) return -1;
+        if (hasMixedFusionCostume(player)) {
+            return 1581;
         }
         if (player.effectSkill != null && player.effectSkill.isBinh) {
             return Player.idOutfitMafuba[player.effectSkill.typeBinh][1];
@@ -296,29 +296,22 @@ public final class PlayerAppearanceService {
                 }
                 return Player.idOutfitFusion[6 + player.gender][1];
             }
-        } else if (player.inventory != null && player.inventory.itemsBody.get(5).isNotNullItem()) {
-            int body = player.inventory.itemsBody.get(5).template.body;
+        } else if (isUsable(bodySlot(player, 5))) {
+            int body = bodySlot(player, 5).template.body;
             if (body != -1) {
                 return (short) body;
             }
         }
-        if (player.inventory != null && player.inventory.itemsBody.get(0).isNotNullItem()) {
-            return player.inventory.itemsBody.get(0).template.part;
+        if (isUsable(bodySlot(player, 0))) {
+            return bodySlot(player, 0).template.part;
         }
         return (short) (player.gender == ConstPlayer.NAMEC ? 59 : 57);
     }
 
     public static short getLeg(Player player) {
-        if (player.isPl() && player.pet != null && player.fusion.typeFusion == ConstPlayer.HOP_THE_GOGETA || player.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2 || player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
-            Item item = player.inventory.itemsBody.get(5);
-            Item petItem = player.pet.inventory.itemsBody.get(5);
-
-            boolean hasItem1 = item.isNotNullItem() && (item.template.id == 1693 || item.template.id == 1553);
-            boolean hasItem2 = petItem.isNotNullItem() && (petItem.template.id == 1693 || petItem.template.id == 1553);
-            boolean sameItem = item.isNotNullItem() && petItem.isNotNullItem() && item.template.id == petItem.template.id;
-            if (hasItem1 && hasItem2 && !sameItem) {
-                return 1582;
-            }
+        if (player == null) return -1;
+        if (hasMixedFusionCostume(player)) {
+            return 1582;
         }
         if (player.effectSkill != null && player.effectSkill.isBinh) {
             return Player.idOutfitMafuba[player.effectSkill.typeBinh][2];
@@ -360,20 +353,23 @@ public final class PlayerAppearanceService {
                 }
                 return Player.idOutfitFusion[6 + player.gender][2];
             }
-        } else if (player.inventory != null && player.inventory.itemsBody.get(5).isNotNullItem()) {
-            int leg = player.inventory.itemsBody.get(5).template.leg;
+        } else if (isUsable(bodySlot(player, 5))) {
+            int leg = bodySlot(player, 5).template.leg;
             if (leg != -1) {
                 return (short) leg;
             }
         }
-        if (player.inventory != null && player.inventory.itemsBody.get(1).isNotNullItem()) {
-            return player.inventory.itemsBody.get(1).template.part;
+        if (isUsable(bodySlot(player, 1))) {
+            return bodySlot(player, 1).template.part;
         }
         return (short) (player.gender == 1 ? 60 : 58);
     }
 
     public static short getFlagBag(Player player) {
-        if (player.idMark.isHoldBlackBall()) {
+        if (player == null) {
+            return -1;
+        }
+        if (player.idMark != null && player.idMark.isHoldBlackBall()) {
             return 31;
         } else if (player.idNRNM >= 353 && player.idNRNM <= 359) {
             return 30;
@@ -381,15 +377,11 @@ public final class PlayerAppearanceService {
         if (TaskService.gI().getIdTask(player) == ConstTask.TASK_3_2) {
             return 28;
         }
-        if (player.inventory.itemsBody.size() >= 11) {
-            if (player.inventory.itemsBody.get(8).isNotNullItem()) {
-                return player.inventory.itemsBody.get(8).template.part;
-            }
+        if (isUsable(bodySlot(player, 8))) {
+            return bodySlot(player, 8).template.part;
         }
-        if (player.isPet && player.inventory.itemsBody.size() >= 8) {
-            if (player.inventory.itemsBody.get(7).isNotNullItem()) {
-                return player.inventory.itemsBody.get(7).template.part;
-            }
+        if (player.isPet && isUsable(bodySlot(player, 7))) {
+            return bodySlot(player, 7).template.part;
         }
         if (player.clan != null) {
             return (short) player.clan.imgId;
@@ -398,7 +390,8 @@ public final class PlayerAppearanceService {
     }
 
     public static short getMount(Player player) {
-        if (player.inventory.itemsBody.isEmpty() || player.inventory.itemsBody.size() < 10) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null
+                || player.inventory.itemsBody.size() < 10) {
             return -1;
         }
         Item item = player.inventory.itemsBody.get(9);
@@ -419,5 +412,49 @@ public final class PlayerAppearanceService {
                 return value != null ? value : -1;
             }
         }
+    }
+
+    private static boolean hasMixedFusionCostume(Player player) {
+        if (player == null || !player.isPl() || player.pet == null || player.fusion == null
+                || !isSupportedFusion(player.fusion.typeFusion)) {
+            return false;
+        }
+        Item playerItem = bodySlot(player, 5);
+        Item petItem = bodySlot(player.pet, 5);
+        if (!isUsable(playerItem) || !isUsable(petItem)) {
+            return false;
+        }
+        boolean supportedPlayerItem = isFusionCostume(playerItem.template.id);
+        boolean supportedPetItem = isFusionCostume(petItem.template.id);
+        return supportedPlayerItem && supportedPetItem
+                && playerItem.template.id != petItem.template.id;
+    }
+
+    private static boolean isSupportedFusion(byte typeFusion) {
+        return typeFusion == ConstPlayer.HOP_THE_GOGETA
+                || typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE
+                || typeFusion == ConstPlayer.HOP_THE_PORATA
+                || typeFusion == ConstPlayer.HOP_THE_PORATA2
+                || typeFusion == ConstPlayer.HOP_THE_PORATA3;
+    }
+
+    private static boolean isFusionCostume(short templateId) {
+        return templateId == 1693 || templateId == 1553;
+    }
+
+    private static Item bodySlot(Player player, int slot) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null
+                || slot < 0 || slot >= player.inventory.itemsBody.size()) {
+            return null;
+        }
+        return player.inventory.itemsBody.get(slot);
+    }
+
+    private static boolean isUsable(Item item) {
+        return item != null && item.template != null && item.isNotNullItem();
+    }
+
+    private static boolean hasOptions(Item item) {
+        return isUsable(item) && item.itemOptions != null;
     }
 }

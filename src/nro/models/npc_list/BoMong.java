@@ -77,15 +77,15 @@ public class BoMong extends Npc {
                             Input.gI().createFormTradeGem(player);
                         }
                         case 3 -> {
-                            if (player.lastCheckIn != null) {
-                                LocalDate last = player.lastCheckIn.toLocalDate();
+                            if (player.event.getLastCheckIn() != null) {
+                                LocalDate last = player.event.getLastCheckIn().toLocalDate();
                                 LocalDate today = LocalDate.now();
                                 if (last.isEqual(today)) {
                                     Service.gI().sendThongBao(player, "Bạn đã điểm danh hôm nay rồi!");
                                     return;
                                 }
                             }
-                            player.lastCheckIn = LocalDateTime.now();
+                            player.event.setLastCheckIn(LocalDateTime.now());
                             player.getWallet().tryCreditExact(Currency.GEM, 10000, WalletMutationContext.of(WalletReason.TASK_REWARD, "Thưởng Bò Mộng")).requireSuccess();
                             Item item457 = ItemService.gI().createNewItem((short) 457);
                             item457.quantity = 100;

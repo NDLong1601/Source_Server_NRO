@@ -105,7 +105,7 @@ public final class EquipmentOptionService {
             return;
         }
         if (target.isDie() || target.effectSkill.burnSource == null
-                || target.effectSkill.burnSource.beforeDispose) {
+                || target.effectSkill.burnSource.isRemovingOrDisposed()) {
             clearPlayerBurn(target);
             return;
         }
@@ -127,7 +127,7 @@ public final class EquipmentOptionService {
             return;
         }
         if (target.isDie() || target.effectSkill.burnSource == null
-                || target.effectSkill.burnSource.beforeDispose) {
+                || target.effectSkill.burnSource.isRemovingOrDisposed()) {
             clearMobBurn(target);
             return;
         }
