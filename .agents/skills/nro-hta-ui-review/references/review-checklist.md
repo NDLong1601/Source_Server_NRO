@@ -86,7 +86,7 @@ when their omission could be mistaken for incomplete verification.
 
 ## Evidence Before Delivery
 
-- [ ] `node tools/check_admin_data_menu.js` passes after any modular admin-menu change.
+- [ ] `node tools/validation/check_admin_data_menu.js` passes after any modular admin-menu change.
 - [ ] The actual affected `.hta` was opened for behavior, keyboard/focus, ActiveX,
   file/process, or window-layout changes.
 - [ ] Success, failure, disabled, and cancellation paths relevant to the change were

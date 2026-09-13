@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import nro.config.ConfigPaths;
 import nro.models.data.LocalManager;
 import nro.models.network.Message;
 import nro.models.consts.ConstPlayer;
@@ -836,10 +837,10 @@ public final class ClanProgressionService {
         private final Properties values = new Properties();
 
         Config() {
-            try (FileInputStream input = new FileInputStream("data/clan_progression.properties")) {
+            try (FileInputStream input = new FileInputStream(ConfigPaths.clan("clan_progression.properties").toFile())) {
                 values.load(input);
             } catch (Exception e) {
-                Logger.error("Không đọc được data/clan_progression.properties, dùng giá trị mặc định.\n");
+                Logger.error("Không đọc được config/clan/clan_progression.properties, dùng giá trị mặc định.\n");
             }
         }
 

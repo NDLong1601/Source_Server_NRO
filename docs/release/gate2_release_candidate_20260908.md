@@ -8,7 +8,7 @@ Gate 2 (RUN-01 through RUN-08) is packaged and running as a local release candid
 
 - Release JAR: `20.jar`
 - SHA-256: `9CA47E8616398F9DCC2E0EAA41D61D5BE1B565F46505C8BA5D4A2F13FBFAF02E`
-- Canonical full build: `tools/server_control.ps1 -Action build`
+- Canonical full build: `tools/server/server_control.ps1 -Action build`
 - Packaged classes: 848
 - Immediate rollback backup: `20.jar.bak_20260908_230920`
 - Immediate backup SHA-256: `5ECCECFB306CC2ED77DB0DEB4A9CD480E72FC8FE69D0042EA061E59F9D41F688`

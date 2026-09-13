@@ -35,7 +35,7 @@ Triệu chứng thường gặp:
 java.util.zip.ZipException: invalid entry size
 ```
 
-Không tiếp tục vá class vào một archive đang bị nghi hỏng. Khôi phục JAR tốt rồi build lại qua `tools/server_control.ps1`. Controller sử dụng cập nhật ZIP an toàn, tạo backup, kiểm tra kết quả và rollback khi thất bại.
+Không tiếp tục vá class vào một archive đang bị nghi hỏng. Khôi phục JAR tốt rồi build lại qua `tools/server/server_control.ps1`. Controller sử dụng cập nhật ZIP an toàn, tạo backup, kiểm tra kết quả và rollback khi thất bại.
 
 ### 2.3 Partial build làm source và runtime khác nhau
 
@@ -61,7 +61,7 @@ java -version
 javac -version
 java -jar .\lib\lombok.jar --version
 Get-FileHash -Algorithm SHA256 -LiteralPath .\20.jar
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action status
 ```
 
 Ghi lại:
@@ -81,7 +81,7 @@ So sánh cả source và file build:
 ```powershell
 git log --date=iso --stat -- .\20.jar
 git log --date=iso --stat -- .\src .\tools .\lib\lombok.jar
-git log -p -- .\tools\server_control.ps1
+git log -p -- .\tools\server\server_control.ps1
 ```
 
 Với file nghi vấn cụ thể:
@@ -103,8 +103,8 @@ Nguyên tắc phân tích:
 ### Bước 1: Dừng server
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action stop
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action stop
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action status
 ```
 
 Xác nhận cổng `14445` đã được giải phóng trước khi thay JAR.
@@ -112,7 +112,7 @@ Xác nhận cổng `14445` đã được giải phóng trước khi thay JAR.
 ### Bước 2: Full build
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action build
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action build
 ```
 
 Build hợp lệ phải thực hiện đầy đủ:
@@ -141,8 +141,8 @@ Thêm tên tất cả class vừa sửa vào biểu thức kiểm tra. Với inn
 ### Bước 4: Khởi động và kiểm tra log
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action start
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action start
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action status
 ```
 
 Yêu cầu tối thiểu:
@@ -172,13 +172,13 @@ Kích thước và số packet có thể thay đổi khi thêm dữ liệu, như
 Kiểm tra kết nối thông thường:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\codex_protocol_probe.ps1 -Zoom 1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\codex_protocol_probe.ps1 -Zoom 1
 ```
 
 Kiểm tra reconnect khi client không gửi lại loại/phiên bản theo nhánh cũ:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\codex_protocol_probe.ps1 -SkipClientType -Zoom 1 -IconId 16187
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\codex_protocol_probe.ps1 -SkipClientType -Zoom 1 -IconId 16187
 ```
 
 Probe phải xác nhận packet item, thứ tự reload/append và khả năng lấy icon. Nếu probe lỗi, không bàn giao JAR dù server vẫn mở cổng.
@@ -292,10 +292,10 @@ Nếu chỉ tài khoản B lỗi, kiểm tra theo thứ tự:
 Nếu JAR mới không khởi động hoặc test A → B thất bại:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action stop
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action stop
 Copy-Item -LiteralPath '.\20.jar.bak_<timestamp>' -Destination '.\20.jar' -Force
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action start
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action start
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action status
 ```
 
 Trước khi copy:

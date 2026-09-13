@@ -113,7 +113,7 @@ from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = Path({project_root_literal})
-sys.path.insert(0, str(PROJECT_ROOT / "costume-tools"))
+sys.path.insert(0, str(PROJECT_ROOT / "tools" / "costumes" / "scripts"))
 
 from full_body_hd_builder import BodyFrameConfig, CostumeConfig, SheetConfig, run
 

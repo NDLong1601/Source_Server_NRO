@@ -703,7 +703,7 @@
 
     function OpenAdminDataMenu() {
       ShowToast("Đang mở Admin Data...");
-      var launcher = rootDir + "\\tools\\HtaTaskbarLauncher.exe";
+      var launcher = rootDir + "\\tools\\launcher\\HtaTaskbarLauncher.exe";
       var hta = rootDir + "\\admin_data_menu.hta";
       var ico = rootDir + "\\assets\\icons\\admin_menu.ico";
       if (fso.FileExists(launcher) && fso.FileExists(hta)) {
@@ -946,7 +946,7 @@
     }
 
     function ReadConfigValue(key, def) {
-      var path = rootDir + "\\Config.properties";
+      var path = rootDir + "\\config\\Config.properties";
       if (!fso.FileExists(path)) return def;
       var text = ReadFileUtf8Safe(path);
       var lines = text.split(/\r?\n/);

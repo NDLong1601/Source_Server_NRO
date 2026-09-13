@@ -93,7 +93,7 @@ public final class ClanPhase5CRankingTest {
     }
 
     private static void verifyDeployedRollout() {
-        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("data", "clan_features.properties"));
+        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("config", "clan", "clan_features.properties"));
         assertTrue("phase 5C ranking enabled", flags.isEnabled(ClanFeatureFlags.Feature.RANKING));
         assertFalse("phase 5C ranking is read-only", flags.canMutate(ClanFeatureFlags.Feature.RANKING));
         assertTrue("phase 5D appearance enabled after rollout", flags.isEnabled(ClanFeatureFlags.Feature.APPEARANCE));

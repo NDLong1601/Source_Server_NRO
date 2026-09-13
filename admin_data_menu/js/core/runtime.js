@@ -13,7 +13,7 @@ function GetRootDir() {
 function RunAdmin(action, params) {
   adminRequestId++;
   var requestPath = rootDir + "\\logs\\admin_data_result_" + (new Date().getTime()) + "_" + adminRequestId + ".txt";
-  var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + requestPath + '" -Encoded "1"';
+  var cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + rootDir + '\\tools\\admin\\admin_data.ps1" -Action "' + SafeArg(action) + '" -Output "' + requestPath + '" -Encoded "1"';
   for (var key in params) {
     cmd += " -" + key + ' "' + SafeArg(EncodeArg(params[key])) + '"';
   }

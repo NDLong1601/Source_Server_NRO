@@ -37,7 +37,7 @@ approved. A large source image looking good at 100% is not approval.
 
    ```powershell
    python .agents/skills/nro-ai-costume/scripts/new_nro_ai_costume_plan.py \
-     --project-dir costume-tools/projects/<slug> \
+     --project-dir tools/costumes/projects/<slug> \
      --slug <slug> --name "Cải trang ..." --description "..."
    ```
 
@@ -59,14 +59,14 @@ approved. A large source image looking good at 100% is not approval.
 
    ```powershell
    python .agents/skills/nro-ai-costume/scripts/validate_nro_ai_costume_plan.py \
-     --plan costume-tools/projects/<slug>/ai-motion/motion-plan.json
+     --plan tools/costumes/projects/<slug>/ai-motion/motion-plan.json
    ```
 
 7. Audit live IDs before allocating new IDs. Only then create a builder entry point; this step does not run the builder:
 
    ```powershell
    python .agents/skills/nro-ai-costume/scripts/emit_full_body_builder.py \
-     --plan costume-tools/projects/<slug>/ai-motion/motion-plan.json \
+     --plan tools/costumes/projects/<slug>/ai-motion/motion-plan.json \
      --item-id <itemId> --head-part-id <headPartId> \
      --first-body-image-id <firstImageId> \
      --transparent-image-id <transparentImageId> \

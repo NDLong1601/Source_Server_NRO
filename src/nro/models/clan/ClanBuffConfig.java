@@ -5,12 +5,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Validated effect, duration and recovery settings for temporary clan buffs. */
 public final class ClanBuffConfig {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_buff.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_buff.properties");
     private static final int MIN_ITEM_ID = 2252;
     private static final int MAX_ITEM_ID = 2269;
 

@@ -1,6 +1,6 @@
 # Draft slot plan for an NRO full-body costume
 
-This is an authoring plan, not an authoritative client state table. It is based on the full-body sets in `costume-tools/projects/tokitou-muichirou`, `shinazugawa-sanemi`, and `tengen-uzui`. Confirm the final mapping in the actual client before deployment.
+This is an authoring plan, not an authoritative client state table. It is based on the full-body sets in `tools/costumes/projects/tokitou-muichirou`, `shinazugawa-sanemi`, and `tengen-uzui`. Confirm the final mapping in the actual client before deployment.
 
 ## Stage 0: approve art direction and idle at x1
 

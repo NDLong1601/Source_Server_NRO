@@ -71,7 +71,7 @@ Quan sát preview trước khi tiếp tục. Sửa manifest/ảnh nếu sprite b
 - Tăng `data/map/version.txt` (được nạp thành `DataGame.vsMap`) khi thêm hoặc
   sửa `mob_template`, vì danh sách mob template nằm trong gói `updateMap`.
   Chỉ tăng `DataGame.vsData` khi nội dung `data/update_data/*` thực sự thay đổi.
-- Build bằng `tools/server_control.ps1 -Action build` sau khi server dừng, rồi start/restart theo quy trình dự án. Không restart ngoài phạm vi người dùng đã cho phép.
+- Build bằng `tools/server/server_control.ps1 -Action build` sau khi server dừng, rồi start/restart theo quy trình dự án. Không restart ngoài phạm vi người dùng đã cho phép.
 - Xác nhận startup log nạp đủ template, map và mở cổng; `server-error.log` không có lỗi liên quan.
 
 ### 5. Kiểm tra bắt buộc
@@ -87,7 +87,7 @@ Khi server chạy, kiểm tra cả bốn zoom:
 
 ```powershell
 1..4 | ForEach-Object {
-  powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex_protocol_probe.ps1 -Zoom $_ -MobId <id>
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools/server/codex_protocol_probe.ps1 -Zoom $_ -MobId <id>
 }
 ```
 

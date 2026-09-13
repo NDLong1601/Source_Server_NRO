@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import nro.config.ConfigPaths;
 import nro.models.data.LocalManager;
 import nro.models.item.Item;
 import nro.models.network.Message;
@@ -43,7 +44,7 @@ public final class ClanTreeService {
     private static final ClanTreeService INSTANCE = new ClanTreeService();
 
     private final Map<Integer, ClanTreeState> cache = new ConcurrentHashMap<>();
-    private final ClanTreeConfig config = ClanTreeConfig.load(Path.of("data", "clan_tree.properties"));
+    private final ClanTreeConfig config = ClanTreeConfig.load(ConfigPaths.clan("clan_tree.properties"));
     private volatile boolean schemaReady;
 
     private ClanTreeService() {

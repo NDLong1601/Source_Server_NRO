@@ -85,7 +85,7 @@ Các quan hệ cha/con cũng được lưu cùng nhau. Ví dụ:
 
 ### File cấu hình
 
-Với Combine, hệ thống lưu nguyên trạng byte của `combine.properties`. Với sự kiện và tỉ lệ TNSM, hệ thống lưu `Config.properties`. Hoàn tác sẽ đưa đúng file về nội dung trước thao tác, kể cả định dạng và xuống dòng.
+Với Combine, hệ thống lưu nguyên trạng byte của `config/combine.properties`. Với sự kiện và tỉ lệ TNSM, hệ thống lưu `config/Config.properties`. Hoàn tác sẽ đưa đúng file về nội dung trước thao tác, kể cả định dạng và xuống dòng.
 
 ## Khi nào cần Restart server
 
@@ -130,11 +130,11 @@ Các file triển khai:
 
 ```text
 admin_data_menu.hta
-tools/admin_data.ps1
+tools/admin/admin_data.ps1
 sql/database team2026.sql
 ```
 
-Trong `tools/admin_data.ps1`, các hàm chính gồm:
+Trong `tools/admin/admin_data.ps1`, các hàm chính gồm:
 
 ```text
 Ensure-AuditSchema      Tạo bảng lịch sử nếu chưa tồn tại

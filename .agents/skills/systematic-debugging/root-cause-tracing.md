@@ -98,7 +98,7 @@ npm test 2>&1 | grep 'DEBUG git init'
 
 If something appears during tests but you don't know which test:
 
-List the repository's candidate tests with `rg --files tools/tests map-tools/tests`, then run the smallest repository-native test or controlled probe one at a time until the first polluter is isolated. Follow root `AGENTS.md` for Java/PowerShell commands and stop before any database mutation, service restart, or `20.jar` deployment that the user did not authorize. Record the exact command and the first observable state change.
+List the repository's candidate tests with `rg --files tools/tests tools/maps/tests`, then run the smallest repository-native test or controlled probe one at a time until the first polluter is isolated. Follow root `AGENTS.md` for Java/PowerShell commands and stop before any database mutation, service restart, or `20.jar` deployment that the user did not authorize. Record the exact command and the first observable state change.
 
 ## Real Example: Empty projectDir
 

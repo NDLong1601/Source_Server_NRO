@@ -278,10 +278,10 @@ Hàm này phải được gọi khi load nhân vật, trước cộng điểm, t
 
 Khuyến nghị chia thành hai lớp:
 
-- `activity.properties`: chỉ chứa kill switch và tham số hạ tầng, ví dụ tần suất poll; dùng được ngay cả khi database config lỗi;
+- `config/activity.properties`: chỉ chứa kill switch và tham số hạ tầng, ví dụ tần suất poll; dùng được ngay cả khi database config lỗi;
 - database: nguồn sự thật của rule gameplay, nguồn điểm, mốc và quà.
 
-Ví dụ `activity.properties`:
+Ví dụ `config/activity.properties`:
 
 ```properties
 activity.enabled=false
@@ -613,7 +613,7 @@ Các file dự kiến:
 - `admin_data_menu/js/tabs/activity.js`;
 - `admin_data_menu/js/components/reward-editor.js` để tách trình chỉnh reward dùng chung;
 - `admin_data_menu/css/activity.css` chỉ khi class chung chưa đủ;
-- `tools/admin_data.ps1` cho backend;
+- `tools/admin/admin_data.ps1` cho backend;
 - `sql/activity_config.sql` cho DDL chính thức.
 
 Script tab phải được load trước `admin_data_menu/js/core/app.js`. View có đúng một root:
@@ -781,7 +781,7 @@ Rollback không xóa version mới; chỉ đổi con trỏ runtime và tạo aud
 
 ## 14. API HTA → PowerShell
 
-HTA hiện gọi `tools/admin_data.ps1` qua `RunAdmin(action, params)`, encode tham số rồi nhận TSV. Giữ đúng mô hình này.
+HTA hiện gọi `tools/admin/admin_data.ps1` qua `RunAdmin(action, params)`, encode tham số rồi nhận TSV. Giữ đúng mô hình này.
 
 ### 14.1 Action đọc
 
@@ -808,7 +808,7 @@ HTA hiện gọi `tools/admin_data.ps1` qua `RunAdmin(action, params)`, encode t
 | `resetactivityplayer` | reset phạm vi ngày/tuần/source |
 | `setactivityclaim` | sửa trạng thái một tier theo hỗ trợ |
 
-Các action ghi được allow-list trong `$mutationActions` và `Get-AuditSummary` ở `tools/admin_data.ps1`. Năng Động dùng audit riêng `activity_admin_audit`, thay vì cơ chế `Get-AuditContext`/undo chung, để không có thao tác hoàn tác mù trên state player.
+Các action ghi được allow-list trong `$mutationActions` và `Get-AuditSummary` ở `tools/admin/admin_data.ps1`. Năng Động dùng audit riêng `activity_admin_audit`, thay vì cơ chế `Get-AuditContext`/undo chung, để không có thao tác hoàn tác mù trên state player.
 
 ### 14.3 Payload
 
@@ -868,7 +868,7 @@ Backend không được tin validation JavaScript. PowerShell phải parse và v
 - tổng JSON có giới hạn kích thước;
 - không cho reward rỗng hoặc kind không biết.
 
-Có thể tái sử dụng và tổng quát hóa validation từ `Convert-GiftBoxPayload` trong `tools/admin_data.ps1`.
+Có thể tái sử dụng và tổng quát hóa validation từ `Convert-GiftBoxPayload` trong `tools/admin/admin_data.ps1`.
 
 ### 15.5 Publish
 
@@ -884,7 +884,7 @@ Tab Admin là HTA local nhưng vẫn phải coi input là không tin cậy.
 
 - Chỉ chấp nhận action nằm trong switch allow-list.
 - Dùng parser số và `SqlString` hiện có; không ghép trực tiếp JSON chưa chuẩn hóa.
-- Không trả mật khẩu database hoặc nội dung `Config.properties` ra UI.
+- Không trả mật khẩu database hoặc nội dung `config/Config.properties` ra UI.
 - Snapshot các bảng config trước publish/rollback.
 - Snapshot `player.data_point` và `player.data_activity` trước chỉnh người chơi.
 - Audit ghi action, summary, status, reason, version, player ID và result.
@@ -967,7 +967,7 @@ Sửa:
 - `sql/activity_config.sql`;
 - migration thêm `player.data_activity`;
 - seed version cấu hình mặc định ở trạng thái disabled + shadow;
-- `activity.properties`.
+- `config/activity.properties`.
 
 Không chỉnh hàng loạt `data_point` bằng thao tác mù. Migration cần kiểm tra JSON hợp lệ và backup trước.
 
@@ -978,7 +978,7 @@ Không chỉnh hàng loạt `data_point` bằng thao tác mù. Migration cần k
 - `admin_data_menu/js/tabs/activity.js`;
 - `admin_data_menu/js/components/reward-editor.js`;
 - `admin_data_menu/css/activity.css` nếu cần;
-- `tools/admin_data.ps1`;
+- `tools/admin/admin_data.ps1`;
 - `admin_data_menu/help/HUONG_DAN_HE_THONG_NANG_DONG.md`.
 
 ### 18.4 Client nâng cao, không bắt buộc cho MVP
@@ -1083,7 +1083,7 @@ Mục tiêu:
 
 Đã hoàn thành backend Admin và publish snapshot cấu hình revision `4` (01/09/2026). Snapshot này bổ sung 14 source rule có thể cấu hình nhưng giữ nguyên cân bằng mặc định và an toàn: `enabled=true`, `shadowMode=true`, `rewardEnabled=false`.
 
-- `tools/activity_admin_backend.ps1` được dot-source bởi `tools/admin_data.ps1`; các action đọc/ghi ở Mục 14 đã có trong switch allow-list.
+- `tools/admin/activity_admin_backend.ps1` được dot-source bởi `tools/admin/admin_data.ps1`; các action đọc/ghi ở Mục 14 đã có trong switch allow-list.
 - Source rule được runtime Java đọc từ `sources`: bật/tắt nguồn, category, điểm/lần, cap nguồn và cap nhóm. `key` và `dedupePolicy` là bất biến để hook server không bị lệch hợp đồng.
 - Config được normalize trước khi lưu: kiểm tra timezone/reset/cap, 14 source key, tier/`claimBit` đã từng publish, reward item/option, ngưỡng và dữ liệu JSON. Version cũ chưa có `sources` vẫn tự dùng default để tương thích.
 - `saveactivitydraft`, `publishactivityconfig` và `rollbackactivityconfig` dùng `expectedRevision`; publish/rollback đổi con trỏ runtime trong transaction. Mở `rewardEnabled=true` chỉ hợp lệ từ runtime shadow an toàn, khi draft đồng thời tắt `shadowMode`, emergency disable tắt và request có xác nhận `ENABLE_ACTIVITY_REWARDS`.
@@ -1095,7 +1095,7 @@ Các gate Phase 4 chỉ phục vụ đợt rollout và đã được loại bỏ
 live ổn định. Kiểm tra trạng thái production hiện tại bằng cổng live:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.ps1 -FailOnIssue
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\check_activity_live.ps1 -FailOnIssue
 ```
 
 Kết quả đã xác minh: build Java 17 thành công, `ActivityCoreTest` pass, server mở cổng `14445`, log xác nhận `Loaded Activity Points config revision 4`; save draft/publish/list version/player/log đều đi qua backend thành công. Chưa chạy mutation vào player thật và chưa bật quà.
@@ -1111,7 +1111,7 @@ Mục tiêu:
 - preview reward;
 - màn hình hỗ trợ player.
 
-Chạy `node tools/check_admin_data_menu.js` sau mọi thay đổi view/script.
+Chạy `node tools/validation/check_admin_data_menu.js` sau mọi thay đổi view/script.
 
 #### Trạng thái triển khai hiện tại
 
@@ -1126,7 +1126,7 @@ Chạy `node tools/check_admin_data_menu.js` sau mọi thay đổi view/script.
 
 Các file UI mới là `admin_data_menu/views/activity.html`, `admin_data_menu/js/tabs/activity.js`, `admin_data_menu/js/components/reward-editor.js` và `admin_data_menu/css/activity.css`. Tab truyền `PayloadJson` qua `RunAdmin(..., Encoded=1)`, vì vậy dùng đúng API validation/optimistic revision của Giai đoạn 4, không có validation chỉ ở JavaScript.
 
-Đã kiểm tra cú pháp JScript, script order, registry, nav, DOM ID và request JSON encoded. `node tools/check_admin_data_menu.js` hiện còn dừng ở inline style đã tồn tại trong `admin_data_menu/views/npc-creator.html`; tab Năng Động không có inline style và vượt qua kiểm tra tích hợp độc lập. Không sửa file ngoài phạm vi Năng Động trong giai đoạn này.
+Đã kiểm tra cú pháp JScript, script order, registry, nav, DOM ID và request JSON encoded. `node tools/validation/check_admin_data_menu.js` hiện còn dừng ở inline style đã tồn tại trong `admin_data_menu/views/npc-creator.html`; tab Năng Động không có inline style và vượt qua kiểm tra tích hợp độc lập. Không sửa file ngoài phạm vi Năng Động trong giai đoạn này.
 
 ### Giai đoạn 6 — Client nâng cao, 0.5–1.5 ngày, tùy chọn
 
@@ -1187,16 +1187,16 @@ Mục tiêu:
 
 #### Kết quả triển khai (01/09/2026)
 
-- Trong đợt rollout đã dùng gate Phase 7 để kiểm tra Phase 3/4, cổng server, runtime Admin, emergency flag, JAR và client hai tab. Gate theo Phase đã được loại bỏ sau khi hệ thống chuyển sang vận hành live; cổng `tools/check_activity_live.ps1` là kiểm tra production hiện hành.
+- Trong đợt rollout đã dùng gate Phase 7 để kiểm tra Phase 3/4, cổng server, runtime Admin, emergency flag, JAR và client hai tab. Gate theo Phase đã được loại bỏ sau khi hệ thống chuyển sang vận hành live; cổng `tools/admin/check_activity_live.ps1` là kiểm tra production hiện hành.
 - Gate đã đạt với revision runtime `4`: `enabled=true`, `shadowMode=true`, `rewardEnabled=false`, `emergencyDisabled=false`; server Java nghe cổng `14445`, có 14 nguồn, 5 mốc ngày và 2 mốc tuần.
 - `Game1` và `Game2` vẫn mirror; Unity log không còn lỗi `ActivityScreen` sau lần import gần nhất.
 - Theo yêu cầu, **không build/export client** trong Giai đoạn 7. Test được thực hiện trực tiếp trong Unity Editor.
-- `tools/check_admin_data_menu.js` tổng thể hiện vẫn dừng ở inline style có sẵn của `npc-creator.html`; đây là lỗi ngoài phạm vi tab Năng động. QA gate mới kiểm trực tiếp backend/runtime của Năng động để không bỏ sót phần cần test.
+- `tools/validation/check_admin_data_menu.js` tổng thể hiện vẫn dừng ở inline style có sẵn của `npc-creator.html`; đây là lỗi ngoài phạm vi tab Năng động. QA gate mới kiểm trực tiếp backend/runtime của Năng động để không bỏ sót phần cần test.
 
 Kiểm tra trạng thái live hiện tại:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.ps1 -FailOnIssue
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\check_activity_live.ps1 -FailOnIssue
 ```
 
 Kết quả `rewards-live` xác nhận runtime đã publish đúng cấu hình production,
@@ -1223,7 +1223,7 @@ Sau khi các kịch bản trên được duyệt, hệ thống vẫn chỉ nên 
 - Dùng gate production sau mỗi thay đổi runtime:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.ps1 -FailOnIssue
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\check_activity_live.ps1 -FailOnIssue
 ```
 
 - Trong Admin, để mở quà ở các đợt sau: tắt **Shadow mode**, bật **Cho phép phát quà**, lưu draft, sau đó publish và nhập chính xác `ENABLE_ACTIVITY_REWARDS`. Nút **Tắt / mở khẩn cấp** vẫn dừng ngay tính năng mà không xóa tiến trình.
@@ -1297,7 +1297,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_activity_live.
 Lệnh kiểm tra cấu trúc Admin:
 
 ```powershell
-node .\tools\check_admin_data_menu.js
+node .\tools\validation\check_admin_data_menu.js
 ```
 
 ### 20.5 Test client
@@ -1314,10 +1314,10 @@ node .\tools\check_admin_data_menu.js
 Theo `BUILD_JAVA_STANDARD.md`:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action stop
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action build
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action start
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action stop
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action build
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action start
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action status
 ```
 
 Phải full compile Java 17, kiểm tra class activity trong `20.jar`, giữ backup JAR và không dùng `jar uf` thủ công.

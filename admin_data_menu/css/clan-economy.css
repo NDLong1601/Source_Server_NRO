@@ -1,301 +1,98 @@
-#panelClanEconomy {
-  overflow: hidden;
-}
-
-.clan-economy-mode-tabs {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  height: 40px;
-  padding: 3px;
-  box-sizing: border-box;
-  border: 1px solid #cbd5e1;
-  border-radius: 9px;
-  background: #f8fafc;
-}
-
-.clan-economy-mode-tab {
-  display: inline-block;
-  width: auto;
-  height: 32px;
-  margin: 0 3px 0 0;
-  padding: 0 15px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #475569;
-  font-weight: 700;
-}
-
-.clan-economy-mode-tab:hover {
-  border-color: #99f6e4;
-  background: #ecfeff;
-  color: #0f766e;
-}
-
-.clan-economy-mode-tab.active {
-  border-color: #0f766e;
-  background: #0f766e;
-  color: #ffffff;
-}
-
-.clan-economy-view {
-  position: absolute;
-  left: 0;
-  top: 50px;
-  right: 0;
-  bottom: 0;
-  display: none;
-}
-
-.clan-economy-view.active {
-  display: block;
-}
-
-.clan-economy-toolbar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  min-height: 54px;
-  box-sizing: border-box;
-  padding: 9px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #ffffff;
-  z-index: 2;
-}
-
-.clan-economy-toolbar label {
-  margin-right: 8px;
-  color: #475569;
-  font-weight: 650;
-}
-
-.clan-economy-toolbar select {
-  width: 116px;
-  height: 34px;
-  margin-right: 7px;
-}
-
-.clan-economy-updated {
-  display: inline-block;
-  margin-left: 10px;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.clan-economy-scroll {
-  position: absolute;
-  left: 0;
-  top: 64px;
-  right: 0;
-  bottom: 0;
-  overflow: auto;
-  padding: 0 2px 18px;
-}
-
-.clan-economy-intro {
-  position: relative;
-  min-height: 58px;
-  padding: 13px 190px 11px 15px;
-  box-sizing: border-box;
-  border: 1px solid #99f6e4;
-  border-radius: 8px;
-  background: #f0fdfa;
-  color: #134e4a;
-}
-
-.clan-economy-intro strong,
-.clan-economy-intro span {
-  display: block;
-}
-
-.clan-economy-intro strong {
-  margin-bottom: 3px;
-  font-size: 15px;
-}
-
-.clan-economy-intro .clan-economy-badge {
-  position: absolute;
-  right: 14px;
-  top: 18px;
-}
-
-.clan-economy-badge {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .03em;
-}
-
-.clan-economy-badge.healthy { background: #dcfce7; color: #166534; }
-.clan-economy-badge.surplus { background: #fef3c7; color: #92400e; }
-.clan-economy-badge.risk { background: #fee2e2; color: #991b1b; }
-.clan-economy-badge.neutral { background: #e2e8f0; color: #475569; }
-
-#panelClanEconomy .section-title {
-  margin-top: 16px;
-}
-
-.clan-economy-card-row {
-  margin: 0 -5px;
-  overflow: hidden;
-}
-
-.clan-economy-card,
-.clan-economy-flow-card {
-  float: left;
-  width: calc(25% - 10px);
-  min-width: 170px;
-  min-height: 104px;
-  margin: 5px;
-  padding: 12px;
-  box-sizing: border-box;
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.clan-economy-card span,
-.clan-economy-card small,
-.clan-economy-card em {
-  display: block;
-}
-
-.clan-economy-card span { color: #64748b; }
-.clan-economy-card strong { display: inline-block; margin: 7px 5px 4px 0; font-size: 21px; color: #0f172a; }
-.clan-economy-card small { display: inline; color: #64748b; }
-.clan-economy-card em { color: #64748b; font-size: 11px; font-style: normal; }
-
-.clan-economy-flow-card { width: calc(33.333% - 10px); min-height: 118px; }
-.clan-economy-flow-card.healthy { border-color: #86efac; background: #f0fdf4; }
-.clan-economy-flow-card.surplus { border-color: #fcd34d; background: #fffbeb; }
-.clan-economy-flow-card.risk { border-color: #fca5a5; background: #fef2f2; }
-.clan-economy-flow-card.neutral { border-color: #cbd5e1; background: #f8fafc; }
-.clan-economy-flow-card > div { position: relative; min-height: 26px; }
-.clan-economy-flow-card .clan-economy-badge { position: absolute; right: 0; top: -2px; }
-.clan-economy-flow-card p { margin: 12px 0 6px; color: #475569; }
-.clan-economy-flow-card p b:first-child { color: #047857; }
-.clan-economy-flow-card p b { margin-right: 3px; color: #b91c1c; }
-.clan-economy-flow-card small { color: #64748b; }
-
-.clan-economy-columns {
-  overflow: hidden;
-  margin: 0 -6px;
-}
-
-.clan-economy-column {
-  float: left;
-  width: 50%;
-  padding: 0 6px;
-  box-sizing: border-box;
-}
-
-.clan-economy-table-wrap {
-  overflow: auto;
-  max-height: 280px;
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.clan-economy-table-wrap th,
-.clan-economy-table-wrap td {
-  padding: 0 9px;
-  text-align: left;
-}
-
-.clan-economy-table-wrap td:last-child {
-  white-space: normal;
-  line-height: 17px;
-}
-
-.clan-economy-action-table {
-  max-height: 340px;
-}
-
-.clan-economy-inflow { color: #047857; font-weight: 650; }
-.clan-economy-outflow { color: #b91c1c; font-weight: 650; }
-.clan-economy-empty { margin: 5px; padding: 16px; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 8px; }
-
-.clan-economy-guidance {
-  margin-top: 14px;
-  padding: 11px 13px;
-  border-left: 4px solid #0f766e;
-  background: #f8fafc;
-  color: #475569;
-  line-height: 19px;
-}
-
-.clan-config-tabs {
-  margin-bottom: 0;
-}
-
-.clan-config-columns {
-  top: 58px;
-}
-
-#clanEconomyConfigView .left-pane {
-  width: 50%;
-}
-
-#clanEconomyConfigView .right-pane {
-  width: 48%;
-}
-
-.clan-config-search-label {
-  display: inline-block;
-  margin: 0 7px 0 1px;
-  color: #475569;
-  font-weight: 650;
-  vertical-align: middle;
-}
-
-#clanConfigSearch {
-  width: 55%;
-}
-
-#clanConfigTable th:first-child { width: 47%; }
-#clanConfigTable th:nth-child(2) { width: 35%; }
-#clanConfigTable th:last-child { width: 18%; }
-
-#clanConfigTable tr.selected td {
-  background: #ccfbf1;
-  color: #134e4a;
-  font-weight: 650;
-}
-
-#clanConfigTable tr:focus td {
-  background: #ecfeff;
-  outline: 2px solid #0f766e;
-  outline-offset: -2px;
-}
-
-#clanConfigValue {
-  min-height: 66px;
-}
-
-#clanConfigDescription {
-  min-height: 58px;
-}
-
-.clan-config-warning {
-  margin-top: 10px;
-  padding: 9px 11px;
-  border-left: 4px solid #d97706;
-  background: #fffbeb;
-  color: #78350f;
-  line-height: 18px;
-}
-
-@media (max-width: 1080px) {
-  .clan-economy-card { width: calc(50% - 10px); }
-  .clan-economy-flow-card { width: calc(100% - 10px); }
-  .clan-economy-column { float: none; width: 100%; }
-  #clanEconomyConfigView .left-pane,
-  #clanEconomyConfigView .right-pane { width: auto; }
+#panelClanEconomy { overflow: hidden; }
+#clanConfigDetail, #clanConfigScheduleHint, #clanConfigColorPreview, #clanConfigColorPicker { display: none; }
+.clan-config-tabs { margin: 0 0 8px; padding: 6px 8px; min-height: 42px; max-height: 98px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow-x: hidden; overflow-y: auto; white-space: normal; }
+#panelClanEconomy .clan-config-group { display: inline-block; vertical-align: top; width: auto; min-height: 28px; height: auto; margin: 2px 4px 3px 0; padding: 5px 10px; text-align: center; white-space: nowrap; line-height: 16px; font-size: 11px; border: 1px solid #dbe3ed; border-radius: 14px; background: #ffffff; color: #475569; cursor: pointer; outline: none; }
+#panelClanEconomy .clan-config-group small { display: inline-block; margin-left: 6px; padding: 0 5px; min-width: 14px; border-radius: 7px; text-align: center; font-size: 10px; line-height: 14px; background: #e2e8f0; color: #475569; }
+#panelClanEconomy .clan-config-group:hover { border-color: #99f6e4; background: #ecfeff; color: #0f766e; }
+#panelClanEconomy .clan-config-group:hover small { background: #ccfbf1; color: #0f766e; }
+#panelClanEconomy .clan-config-group:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.35); }
+#panelClanEconomy .clan-config-group.active { border-color: #0f766e; background: #0f766e; color: #ffffff; font-weight: 700; box-shadow: 0 2px 5px rgba(15, 118, 110, 0.2); }
+#panelClanEconomy .clan-config-group.active:focus { outline: none; box-shadow: 0 0 0 2px #0f766e, 0 2px 5px rgba(15, 118, 110, 0.3); }
+#panelClanEconomy .clan-config-group.active small { background: #134e4a; color: #ccfbf1; }
+.clan-config-header { position: relative; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; margin-bottom: 8px; min-height: 38px; box-sizing: border-box; }
+.clan-config-reload { position: absolute; right: 12px; top: 8px; }
+.clan-config-summary { color: #0f766e; font-weight: 700; font-size: 11px; margin-right: 120px; }
+.clan-config-notice { margin-top: 2px; font-size: 10px; line-height: 15px; color: #64748b; margin-right: 120px; }
+.clan-config-workspace { position: absolute; left: 0; right: 0; top: 155px; bottom: 48px; }
+.clan-config-list, .clan-config-editor { position: absolute; top: 0; bottom: 0; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #fff; box-sizing: border-box; }
+.clan-config-list { left: 0; width: 34%; }
+.clan-config-editor { left: calc(34% + 10px); right: 0; }
+.clan-config-pane-title { padding: 9px 12px; height: 36px; box-sizing: border-box; font-size: 11px; font-weight: 700; letter-spacing: .05em; color: #475569; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+.clan-config-items { position: absolute; left: 0; right: 0; top: 36px; bottom: 0; overflow: auto; }
+#panelClanEconomy .clan-config-item { display: block; width: 100%; height: auto; min-height: 72px; padding: 10px 12px; text-align: left; white-space: normal; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; background: #fff; }
+.clan-config-item strong, .clan-config-item span, .clan-config-item small { display: block; line-height: 17px; word-wrap: break-word; }
+.clan-config-item strong { font-size: 12px; color: #334155; }
+.clan-config-item span { margin-top: 4px; font-size: 12px; color: #0f766e; }
+.clan-config-item small { font-size: 10px; color: #64748b; }
+.clan-config-item em { font-size: 10px; font-style: normal; font-weight: 700; color: #92400e; }
+#panelClanEconomy .clan-config-item:hover { background: #f0fdfa; }
+#panelClanEconomy .clan-config-item.selected { background: #e6fffa; border-left: 4px solid #0f766e; padding-left: 8px; }
+.clan-config-editor-scroll { position: absolute; top: 0; right: 0; left: 0; bottom: 84px; overflow: auto; padding: 16px; }
+.clan-config-eyebrow { font-size: 11px; color: #0f766e; font-weight: 700; }
+#clanConfigName { margin: 4px 0 5px; font-size: 18px; line-height: 24px; color: #0f172a; }
+.clan-config-key { color: #64748b; font-family: Consolas, monospace; font-size: 11px; word-wrap: break-word; }
+.clan-config-comparison { margin: 12px 0 10px; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; }
+.clan-config-comparison > div { float: left; width: 50%; padding: 8px 10px; box-sizing: border-box; }
+.clan-config-comparison span { display: block; color: #64748b; font-size: 10px; }
+.clan-config-comparison strong { display: block; margin-top: 4px; font-size: 12px; font-weight: 600; line-height: 18px; word-wrap: break-word; }
+.clan-config-description { margin: 10px 0; line-height: 18px; color: #475569; font-size: 12px; }
+.clan-config-fields { margin: 0 -5px; }
+.clan-config-field { display: inline-block; vertical-align: top; width: 50%; box-sizing: border-box; padding: 0 5px 7px; }
+.clan-config-field label { min-height: 26px; margin: 6px 0 3px; font-size: 11px; line-height: 15px; }
+.clan-config-field.schedule { width: 25%; }
+.clan-config-field.schedule label { min-height: 0; }
+.clan-config-bool { margin: 8px 5px; }
+.clan-config-bool button { min-width: 84px; margin-right: 6px; }
+.clan-config-bool button.active { border: 2px solid #0f766e; background: #ccfbf1; color: #134e4a; font-weight: 700; }
+.clan-config-range { margin-top: 6px; color: #64748b; font-size: 11px; line-height: 17px; }
+.clan-config-file-info { margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; line-height: 17px; font-size: 11px; color: #64748b; word-wrap: break-word; }
+.clan-config-error { margin-top: 8px; color: #b91c1c; line-height: 17px; font-size: 12px; }
+.clan-config-schedule-hint { padding: 8px; border-left: 3px solid #d97706; background: #fffbeb; color: #78350f; line-height: 17px; font-size: 11px; margin-bottom: 8px; }
+#clanConfigColorPicker { margin-top: 10px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; }
+.clan-color-picker-header { font-size: 10px; font-weight: 700; letter-spacing: .05em; color: #334155; margin-bottom: 8px; overflow: hidden; }
+.clan-color-hex-badge { float: right; padding: 1px 8px; border-radius: 4px; background: #0f766e; color: #fff; font-family: Consolas, monospace; font-size: 12px; font-weight: 700; }
+.clan-color-swatch-bar { margin-bottom: 10px; overflow: hidden; }
+.clan-color-active-swatch { float: left; width: 34px; height: 34px; border-radius: 6px; border: 2px solid #cbd5e1; margin-right: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+.clan-color-palette { overflow: hidden; padding-top: 2px; }
+.color-swatch { display: inline-block; width: 22px; height: 22px; margin: 2px 3px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.25); cursor: pointer; padding: 0; vertical-align: top; outline: none; }
+.color-swatch:hover { border-color: #0f766e; box-shadow: 0 0 0 2px #0f766e; }
+.color-swatch.c-gold { background: #FFD700; }
+.color-swatch.c-orange { background: #FF9800; }
+.color-swatch.c-red { background: #FF3333; }
+.color-swatch.c-coral { background: #FF5252; }
+.color-swatch.c-pink { background: #FF69B4; }
+.color-swatch.c-purple { background: #C56CFF; }
+.color-swatch.c-royal-purple { background: #8E24AA; }
+.color-swatch.c-cyan { background: #00E5FF; }
+.color-swatch.c-blue { background: #55A8FF; }
+.color-swatch.c-emerald { background: #00E676; }
+.color-swatch.c-green { background: #39B96E; }
+.color-swatch.c-amber { background: #D7A83A; }
+.color-swatch.c-white { background: #FFFFFF; border: 1px solid #cbd5e1; }
+.color-swatch.c-silver { background: #CFD8DC; }
+.color-swatch.c-dark { background: #37474F; }
+.clan-color-sliders { margin-top: 6px; }
+.clan-color-slider-row { display: block; margin-bottom: 6px; white-space: nowrap; }
+.slider-label { display: inline-block; width: 62px; font-size: 11px; font-weight: 700; color: #475569; }
+.clan-color-slider-row input[type="range"] { width: calc(100% - 130px); height: 16px; vertical-align: middle; cursor: pointer; }
+.slider-number { display: inline-block; width: 44px; height: 22px; margin-left: 8px; text-align: center; font-size: 11px; font-weight: 700; font-family: Consolas, monospace; vertical-align: middle; box-sizing: border-box; }
+.clan-config-color-preview { margin-top: 10px; }
+.clan-config-color-preview > div { padding: 12px 8px; text-align: center; font-weight: 700; }
+.clan-config-color-preview small { display: block; margin-top: 4px; color: #64748b; font-size: 10px; }
+.clan-config-day { background: #b8d39a; border: 1px solid #829e66; }
+.clan-config-night { background: #17263b; border: 1px solid #334155; }
+.clan-config-editor-actions { position: absolute; bottom: 0; left: 0; right: 0; height: 84px; box-sizing: border-box; padding: 8px 12px; border-top: 1px solid #cbd5e1; background: #f8fafc; }
+#clanConfigEditState { font-size: 11px; line-height: 16px; min-height: 20px; color: #475569; }
+.clan-config-editor-actions button { margin: 4px 4px 0 0; padding: 0 10px; font-size: 12px; }
+.clan-config-message { position: absolute; left: 0; bottom: 0; right: 0; height: 42px; overflow: auto; padding: 5px 2px; box-sizing: border-box; color: #475569; font-size: 12px; line-height: 17px; }
+.clan-config-empty { padding: 20px 10px; color: #64748b; font-size: 12px; line-height: 20px; }
+#panelClanEconomy button:focus, #panelClanEconomy input:focus { outline: 2px solid #0f766e; outline-offset: -2px; }
+#panelClanEconomy .clan-config-group:focus, #panelClanEconomy .color-swatch:focus { outline: none; }
+#panelClanEconomy button:disabled { cursor: default; color: #94a3b8; border-color: #e2e8f0; background: #f1f5f9; }
+@media screen and (max-width: 1240px) {
+  .clan-config-list { width: 38%; }
+  .clan-config-editor { left: calc(38% + 8px); }
+  .clan-config-editor-scroll { padding: 12px; }
+  .clan-config-field.schedule { width: 33.333%; }
+  .clan-config-editor-actions button { font-size: 11px; padding: 0 6px; }
 }

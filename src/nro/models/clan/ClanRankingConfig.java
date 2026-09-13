@@ -5,12 +5,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Bounded phase-5C ranking configuration. */
 public final class ClanRankingConfig {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_ranking.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_ranking.properties");
     private static final int PROTOCOL_MAX_PAGE_SIZE = 50;
     private static final int PROTOCOL_MAX_PAGE = 65_535;
 

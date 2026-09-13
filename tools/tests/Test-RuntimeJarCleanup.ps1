@@ -8,7 +8,7 @@ $testRoot = Join-Path $ServerRoot ('output\jar-cleanup-test-' + [Guid]::NewGuid(
 $tokens = $null
 $parseErrors = $null
 $controller = [Management.Automation.Language.Parser]::ParseFile(
-    (Join-Path $ServerRoot 'tools\server_control.ps1'), [ref]$tokens, [ref]$parseErrors)
+    (Join-Path $ServerRoot 'tools\server\server_control.ps1'), [ref]$tokens, [ref]$parseErrors)
 if ($parseErrors.Count -gt 0) { throw 'Cannot parse server_control.ps1' }
 $function = $controller.Find({
     param($node)

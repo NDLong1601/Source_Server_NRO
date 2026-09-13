@@ -24,9 +24,11 @@
 /backups/sec03_trade_ledger_*/
 
 # Costume tool scratch output
-/costume-tools/backups/
-/costume-tools/tmp-*.tsv
-/costume-tools/projects/*/staging-root/
+/tools/costumes/backups/
+/tools/costumes/tmp-*.tsv
+/tools/costumes/projects/*/staging-root/
+__pycache__/
+*.py[cod]
 
 # Re-creatable NPC preview and diagnostic output
 /output/

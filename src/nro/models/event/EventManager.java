@@ -17,6 +17,7 @@ import nro.models.event_list.LunarNewYear;
 import nro.models.event_list.Default;
 import nro.models.event_list.InternationalWomensDay;
 import nro.models.admin.AdminEventConfigService;
+import nro.config.ConfigPaths;
 
 public class EventManager {
 
@@ -77,7 +78,7 @@ public class EventManager {
     private Set<String> loadActiveEvents() {
         Properties properties = new Properties();
         String configuredEvents = "none";
-        try (FileInputStream input = new FileInputStream("Config.properties")) {
+        try (FileInputStream input = new FileInputStream(ConfigPaths.server().toFile())) {
             properties.load(input);
             configuredEvents = properties.getProperty("server.event", configuredEvents);
         } catch (IOException e) {

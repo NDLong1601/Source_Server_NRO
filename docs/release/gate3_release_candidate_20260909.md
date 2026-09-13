@@ -16,7 +16,7 @@ and a new runtime canary because deploying Gate 3 restarted the server.
 
 - Release JAR: `20.jar`
 - SHA-256: `57A7E72C1F04F8674C0346D9CA063A3A0F55D953B04EB364A4D5555456D13D03`
-- Canonical full build: `tools/server_control.ps1 -Action build`
+- Canonical full build: `tools/server/server_control.ps1 -Action build`
 - Classes updated by build: 871
 - Class entries in final JAR: 3,711
 - Immediate rollback backup: `20.jar.bak_20260909_003734`

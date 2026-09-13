@@ -449,7 +449,7 @@ function SaveTaskReward() {
 
 RegisterTab({
   id: "taskconfig", view: "task-config.html", panelId: "panelTaskConfig", navId: "navTaskConfig",
-  title: "Cấu hình Nhiệm vụ", subtitle: "Runtime task.properties và template nhiệm vụ trong database",
+  title: "Cấu hình Nhiệm vụ", subtitle: "Runtime config/task.properties và template nhiệm vụ trong database",
   onOpen: function () { LoadTaskConfig(); },
   onRefresh: function () { LoadTaskConfig(); },
   onLayout: function () { UpdateConfigColumnsOffset("panelTaskConfig", "taskConfigTabs"); }

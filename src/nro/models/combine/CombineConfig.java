@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Util;
 
 /**
@@ -20,7 +21,7 @@ import nro.models.utils.Util;
  */
 public final class CombineConfig {
 
-    private static final Path CONFIG_PATH = Paths.get("combine.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.combine();
     private static final long RELOAD_INTERVAL_MS = 1_000L;
     private static volatile Properties values = new Properties();
     private static volatile long loadedModifiedTime = Long.MIN_VALUE;

@@ -55,8 +55,8 @@ public final class ClanPhase5AContractTest {
     }
 
     private static void verifyDeployedConfiguration() {
-        ClanTreeConfig tree = ClanTreeConfig.load(Path.of("data", "clan_tree.properties"));
-        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("data", "clan_features.properties"));
+        ClanTreeConfig tree = ClanTreeConfig.load(Path.of("config", "clan", "clan_tree.properties"));
+        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("config", "clan", "clan_features.properties"));
         assertEquals("deployed tree max", 20, tree.maxLevel());
         assertEquals("deployed production cap", 24L * 60L * 60L * 1_000L, tree.productionCapMs());
         assertTrue("deployed tree mutations", flags.canMutate(ClanFeatureFlags.Feature.TREE));

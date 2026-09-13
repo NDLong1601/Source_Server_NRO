@@ -20,7 +20,7 @@ Implement the item end to end. Treat database rows, Java behavior, client templa
 1. Confirm the template ID is unused in both `sql/team2026.sql` and the live database.
 2. Add a complete `item_template` row to the SQL dump. Keep IDs contiguous because `ItemService.getTemplate(id)` indexes `Manager.ITEM_TEMPLATES` by list position.
 3. Use the same `TYPE`, flags, and option conventions as the nearest working consumable. Type `29` is the normal support/consumable group in this server.
-4. Save the same row through `tools/admin_data.ps1 -Action saveitem` when the task authorizes updating the live admin data.
+4. Save the same row through `tools/admin/admin_data.ps1 -Action saveitem` when the task authorizes updating the live admin data.
 5. Re-query the row and verify every field, especially `id`, `TYPE`, `icon_id`, description, and power requirement.
 
 ## Implement use behavior

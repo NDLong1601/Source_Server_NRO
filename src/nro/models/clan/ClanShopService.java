@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.data.LocalManager;
 import nro.models.item.Item;
 import nro.models.network.Message;
@@ -58,7 +59,7 @@ public final class ClanShopService {
 
     public synchronized void loadConfig() {
         Properties properties = new Properties();
-        try (FileInputStream input = new FileInputStream("data/clan_shop.properties")) {
+        try (FileInputStream input = new FileInputStream(ConfigPaths.clan("clan_shop.properties").toFile())) {
             properties.load(input);
         } catch (Exception ignored) {
             // The defaults below intentionally keep a safe, small catalogue.

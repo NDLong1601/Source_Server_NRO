@@ -319,7 +319,7 @@ Luật nâng cấp đã chốt khi triển khai:
 
 - Mọi cấp chỉ chuyển sang `UPGRADING` khi người chơi bấm **Nâng cấp** và server xác nhận đã đủ điều kiện, không tự bắt đầu hoặc tăng cấp ngay. Nếu còn thiếu, server trả đúng loại và số lượng còn thiếu. Trong thời gian chờ, cây không nhận thêm nước/phân cho cấp hiện tại để tránh tiêu hao nhầm; thành viên quay lại các map train để chuẩn bị tài nguyên cho cấp sau.
 - Khi hết thời gian, người chơi lại gần/chạm trực tiếp vào cây và chọn **Hoàn tất nâng cấp**. Server mới trừ bộ điều kiện của cấp cũ, tăng một cấp và đồng bộ cho toàn bang.
-- Thời gian được cấu hình tại `data/clan_tree.properties` theo cấp đích; lịch mặc định từ cấp 1 đến 20 cộng đúng 90 ngày:
+- Thời gian được cấu hình tại `config/clan/clan_tree.properties` theo cấp đích; lịch mặc định từ cấp 1 đến 20 cộng đúng 90 ngày:
 
 | Cấp đích | Ngày chờ mỗi cấp | Tổng ngày nhóm |
 |---|---:|---:|
@@ -663,7 +663,7 @@ Trong Bang hội > Thành viên:
 - Mỗi cặp người gửi/người nhận chỉ được tặng một lần trong cùng ngày Việt Nam.
 - Request chưa từng được xử lý.
 
-Giới hạn đang áp dụng theo `data/clan_gift.properties`:
+Giới hạn đang áp dụng theo `config/clan/clan_gift.properties`:
 
 | Hạn mức | Giá trị |
 |---|---:|
@@ -1216,7 +1216,7 @@ clan.potential.costPerRank=1
 clan.potential.defaultMaxRank=20
 ~~~
 
-Runtime hiện tách cấu hình chính sang `data/clan_progression.properties`, `data/clan_tree.properties` và `data/clan_gift.properties`. Tẩy điểm/cooldown vẫn chưa mở; nếu triển khai sau phải bổ sung cấu hình và giao thức riêng.
+Runtime hiện tách cấu hình chính sang `config/clan/clan_progression.properties`, `config/clan/clan_tree.properties` và `config/clan/clan_gift.properties`. Tẩy điểm/cooldown vẫn chưa mở; nếu triển khai sau phải bổ sung cấu hình và giao thức riêng.
 
 ## 21. Kế hoạch mã nguồn
 
@@ -1325,7 +1325,7 @@ Migration cần:
 - Hoàn tất `ClanTreeService` và migration `20260904_add_clan_tree.sql`: trạng thái cây chung, tiến độ thành viên theo ngày, khóa đồng bộ, giới hạn 5 lượt tưới/ngày, cooldown 500 ms, bón phân, sinh trưởng, sản lượng tích lũy và nút nhận thưởng vào quỹ bang. Luồng tăng cấp đã đổi từ tăng ngay sang hai trạng thái thời gian `upgrade_started_at`/`upgrade_ready_at`; packet 127 action `104` đồng bộ hai mốc này và action `110` hoàn tất nâng cấp ở server.
 - Luồng thao tác chuẩn nay nằm ngay trên Cây bang ở `x=900, y=192`: khi đến gần client hiện nút tương tác; chạm cây từ xa sẽ tự chạy lại gần rồi mở menu **Tưới cây / Bón phân / Nâng cấp / Nhận thưởng / Kêu gọi chăm**. Khi đang chờ, menu thay các nút chăm bằng đếm ngược hoặc **Hoàn tất nâng cấp**. Toàn bộ mục và handler Cây bang trong NPC Dr. Drief đã được gỡ; màn hình/tab Cây bang trong bảng Bang hội cũng đã được loại bỏ khỏi Game1 và Game2.
 - Nhãn cây chỉ vẽ chữ, không nền và không viền: ban ngày dùng chữ vàng, ban đêm dùng chữ trắng, dựa trên chính trạng thái hiệu ứng ngày/đêm của client. Khi cây đang nâng, dòng đếm ngược riêng cũng chỉ hiển thị chữ ngay dưới tên.
-- Thời gian 19 lần nâng được tách sang `data/clan_tree.properties` với dãy cấp đích `1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,8,9,11,13`, tổng đúng 90 ngày. Trong lúc nâng server chặn tưới/bón để không mất vật phẩm nhưng vẫn tính sản lượng; hết giờ người chơi xác nhận tại cây để nhận cấp mới.
+- Thời gian 19 lần nâng được tách sang `config/clan/clan_tree.properties` với dãy cấp đích `1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,8,9,11,13`, tổng đúng 90 ngày. Trong lúc nâng server chặn tưới/bón để không mất vật phẩm nhưng vẫn tính sản lượng; hết giờ người chơi xác nhận tại cây để nhận cấp mới.
 - Chat bang có ClanMessage type 4 riêng với nút **Giúp tưới**; yêu cầu tồn tại 2 giờ và tạo lại sau 10 phút. Nút xác thực lại bang, hạn mức ngày, thời hạn và vật phẩm ở server.
 - Đã thêm 20 sprite `cay_lv_01` đến `cay_lv_20` vào `data/img_by_name/x1` đến `x4`, metadata ảnh `n_frame = 1`, hiển thị cho một cây duy nhất trong map 153 theo cấp hiện tại. Ngày 04/09/2026, toàn bộ 80 file từng được thay bằng bộ nguồn `C:\Users\PC\Downloads\cay_tach_20_khong_lv` và Game1/Game2 dùng `IMAGE_SET_VERSION = 2`. Bản thay thế ngày 10/09/2026 dùng bộ `C:\Users\PC\Downloads\bo_cay_20_cap_tach_nen` làm nguồn x4 rồi sinh lại đúng tỷ lệ x1/x2/x3/x4; client tăng `IMAGE_SET_VERSION = 3` để tự xóa đúng cache RMS của 20 ảnh cây cũ.
 - Điều chỉnh theo quyết định sau giai đoạn 2: `ClanService.createClan` chỉ khởi tạo cây sau khi bản ghi bang đã được lưu, nên bang mới luôn có Cây bang cấp 1 ngay lập tức. Khi server khởi động, mọi bang cũ chưa có bản ghi `clan_tree` cũng được backfill cấp 1 bằng `INSERT IGNORE`; cây đã có tiến độ không bị reset. Khi vào lãnh địa, snapshot được gửi tự động và client chỉ vẽ một cây tại neo mặt đất `x=900, y=192`.
@@ -1336,7 +1336,7 @@ Migration cần:
 - Cải thiện theo UAT sau giai đoạn 3: server gửi snapshot trực tiếp cho người vừa tưới/bón rồi đồng bộ các thành viên online theo `clanId` thay vì phụ thuộc cùng tham chiếu đối tượng Clan. Client tự yêu cầu lại snapshot khi đang ở Lãnh địa bang nếu packet đến muộn.
 - Nâng cây chuyển sang thao tác chủ động bằng action `111`: nút **Nâng cấp** chỉ có trong menu tương tác trực tiếp tại cây. Nếu thiếu điều kiện, server liệt kê đúng số **Bình nước**, **Phân bón**, **Điểm sinh trưởng** và **cấp bang** còn thiếu; đủ điều kiện mới ghi mốc bắt đầu/kết thúc và chạy lịch chờ 90 ngày đã phân bổ.
 
-Xác minh triển khai: `tools/server_control.ps1 -Action build` biên dịch thành công (724 class cập nhật vào `20.jar`); server khởi chạy lại và đang nghe cổng 14445. Startup đã nạp 287 ảnh theo tên, gồm 20 ảnh Cây bang. Luồng login lại tại map 153 đã được vá ở server và có cơ chế tự yêu cầu lại snapshot ở source Game1/Game2. Cần thực hiện UAT hai nhân vật cho các tình huống đồng thời, rời bang trong map 153 và reset ngày trước khi phát hành rộng.
+Xác minh triển khai: `tools/server/server_control.ps1 -Action build` biên dịch thành công (724 class cập nhật vào `20.jar`); server khởi chạy lại và đang nghe cổng 14445. Startup đã nạp 287 ảnh theo tên, gồm 20 ảnh Cây bang. Luồng login lại tại map 153 đã được vá ở server và có cơ chế tự yêu cầu lại snapshot ở source Game1/Game2. Cần thực hiện UAT hai nhân vật cho các tình huống đồng thời, rời bang trong map 153 và reset ngày trước khi phát hành rộng.
 
 Xác minh bổ sung cho luồng tương tác/thời gian nâng: toàn bộ source client Game1 và Game2 biên dịch bằng đúng response file Roslyn của Unity với mã thoát `0`; cấu hình có đúng 19 giá trị và tổng `90` ngày. Server build lại thành công 724 class, cập nhật `20.jar`, tự nâng schema hiện hữu không lỗi và khởi động lại trên cổng `14445`. UAT cần kiểm tra cả hai pha sáng/tối, chạm cây từ xa, nút tương tác khi đứng gần, chặn tưới/bón lúc đang nâng, đếm ngược và hoàn tất nhận cấp.
 
@@ -1350,7 +1350,7 @@ Xác minh bổ sung cho luồng tương tác/thời gian nâng: toàn bộ sourc
 
 #### Kết quả triển khai và điều chỉnh — 04–05/09/2026
 
-- Thêm `ClanProgressionService` và cấu hình tập trung `data/clan_progression.properties`. Công thức EXP/Capsule dùng lần lượt `round(baseExp × L^1.55)` và `round(baseCapsule × L^1.35)`; vàng bắt đầu từ cấp 5, ngọc tại lần nâng lên các mốc cấp 10. Tất cả giá trị kinh tế, rank tối đa và hiệu lực nhánh đều có thể đổi trong file cấu hình rồi khởi động lại server.
+- Thêm `ClanProgressionService` và cấu hình tập trung `config/clan/clan_progression.properties`. Công thức EXP/Capsule dùng lần lượt `round(baseExp × L^1.55)` và `round(baseCapsule × L^1.35)`; vàng bắt đầu từ cấp 5, ngọc tại lần nâng lên các mốc cấp 10. Tất cả giá trị kinh tế, rank tối đa và hiệu lực nhánh đều có thể đổi trong file cấu hình rồi khởi động lại server.
 - Migration `20260904_add_clan_progression.sql` cùng cơ chế tự tạo schema bổ sung `clan_exp`, `potential_total`, `potential_unspent`, `progression_version`, bảng `clan_potential` và `clan_potential_audit`. Bang cũ được backfill đúng `max(0, level - 1) × 5 - điểm đã dùng`, không phát trùng khi restart.
 - Clan EXP chỉ sinh từ hoạt động: tưới cây `10`, bón phân `30`, hoàn tất hợp đồng tuần `250` theo cấu hình; đóng góp vàng/ngọc không sinh EXP. Bang chủ nâng cấp qua transaction server, trừ đúng EXP/Capsule/Vàng/Ngọc và nhận đúng 5 điểm khi lên một cấp; slot thành viên tăng thêm 1 theo mỗi cấp bang, tối đa 50.
 - Bang mới được tạo ở cấp 1 nên có `0` điểm; tổng điểm ở cấp 5 là `20`, không phải `25`, theo `max(0, level - 1) × 5`. Mỗi lần tăng cấp thực tế cộng thêm đúng 5 điểm. Giới hạn thành viên bắt đầu ở 10 và tăng 1 theo mỗi cấp (`10 + level - 1`), tối đa 50; startup chỉ backfill tăng các bang cũ đang thấp hơn công thức, không làm giảm giá trị cao hơn đã lưu.
@@ -1401,7 +1401,7 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 #### Kết quả triển khai 5B — 09/09/2026
 
 - Đã triển khai Clan Value phía server theo đúng công thức hoạt động: `cấp bang × 1.000 + điểm tiềm năng đã dùng × 100 + cấp cây × 500 + điểm thành tựu + hoạt động tuần có trần`. Số dư Vàng/Ngọc/Capsule bang không tham gia công thức, nên nạp tài sản vào quỹ không làm tăng giá trị.
-- Công thức và các trần được tách vào `data/clan_value.properties`; mọi phép nhân/cộng đều bão hòa ở `Long.MAX_VALUE`, dữ liệu âm bị chuẩn hóa về `0`, hoạt động tuần bị chặn đồng thời bởi mục tiêu tuần và trần cấu hình.
+- Công thức và các trần được tách vào `config/clan/clan_value.properties`; mọi phép nhân/cộng đều bão hòa ở `Long.MAX_VALUE`, dữ liệu âm bị chuẩn hóa về `0`, hoạt động tuần bị chặn đồng thời bởi mục tiêu tuần và trần cấu hình.
 - Database có thêm `clan_value`, `clan_value_version`, `clan_value_formula_version`, `clan_achievement_score` và index `idx_clan_value`. Startup tự backfill giá trị cho bang cũ; migration phát hành nằm tại `sql/migrations/20260909_add_clan_value.sql`.
 - Packet `127` action `126` trả snapshot detail v1 gồm tổng điểm, năm thành phần và version. Hồ sơ bang mở rộng lên version `6` với cùng dữ liệu; prefix cũ được giữ nguyên và payload vẫn dưới giới hạn 65.535 byte.
 - Feature flag `value` đã bật độc lập; tại thời điểm hoàn tất 5B, `ranking` và `appearance` vẫn tắt để không rollout sớm 5C/5D. Clan Value không cấp thêm buff chiến đấu.
@@ -1410,7 +1410,7 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 #### Kết quả triển khai 5C — 09/09/2026
 
 - Bảng xếp hạng đọc từ Clan Value do server tính ở 5B; không dùng số dư quỹ và không phát buff chiến đấu theo hạng. Thứ tự được khóa ổn định theo Clan Value giảm dần, cấp bang giảm dần, cấp cây giảm dần, thời điểm thành lập tăng dần rồi ID bang tăng dần.
-- Snapshot bảng được dựng từ registry bang đang hoạt động, làm mới ngay khi revision Clan Value đổi và tối đa sau 30 giây với thay đổi phụ. Cấu hình `data/clan_ranking.properties` giới hạn mặc định 20 dòng/trang, tối đa 50 dòng, trang tối đa 1.000 và top tương thích tối đa 50 dòng.
+- Snapshot bảng được dựng từ registry bang đang hoạt động, làm mới ngay khi revision Clan Value đổi và tối đa sau 30 giây với thay đổi phụ. Cấu hình `config/clan/clan_ranking.properties` giới hạn mặc định 20 dòng/trang, tối đa 50 dòng, trang tối đa 1.000 và top tương thích tối đa 50 dòng.
 - Packet `127` action `127` trả payload detail v1 có thông tin trang, tổng số bang/trang, hạng của bang người xem, version/thời điểm snapshot và các dòng xếp hạng. Trang/kích thước trang từ client đều được chuẩn hóa; kiểm thử biên với tên UTF dài xác nhận payload dưới 65.535 byte.
 - Dr. Drief tại map 153 có mục **Xếp hạng bang hội** cho cả người có và chưa có bang. Client hiện tại nhận bảng qua giao diện top `-96`; client mới có thể dùng action phân trang `127` mà không thay đổi hợp đồng cũ.
 - Feature flag `ranking.enabled=true`, `ranking.mutations_enabled=false`; tại thời điểm hoàn tất 5C, `appearance` của 5D tiếp tục tắt. Không có migration, asset hoặc cache-version mới trong 5C.
@@ -1419,7 +1419,7 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 #### Kết quả triển khai 5D — 09/09/2026
 
 - Ngoại hình Cây bang là phần thưởng mỹ thuật tự động, không mua/chọn từ client và không cộng chỉ số. Bốn bậc mặc định là **Mầm xanh**, **Cổ thụ**, **Linh thụ**, **Thần mộc**; mỗi bậc chỉ mở khi đồng thời đạt Clan Value, cấp bang và cấp cây. Mốc đầu tiên giữ đúng thiết kế cấp bang 20, cây cấp 10 và 30.000 Clan Value.
-- Toàn bộ ngưỡng, màu nhấn, kiểu aura, resource prefix và version nằm trong `data/clan_appearance.properties`. Cấu hình được giới hạn bốn bậc, chuẩn hóa đơn điệu, lọc control character/resource prefix và chặn resource cây ở cấp 1–20.
+- Toàn bộ ngưỡng, màu nhấn, kiểu aura, resource prefix và version nằm trong `config/clan/clan_appearance.properties`. Cấu hình được giới hạn bốn bậc, chuẩn hóa đơn điệu, lọc control character/resource prefix và chặn resource cây ở cấp 1–20.
 - Sprite nền dùng lại 80 PNG `cay_lv_01..20` đã phát hành đủ x1–x4; không tạo alias theo người chơi nên không làm rò cache giữa tài khoản A/B. Kiểm thử đọc ảnh xác nhận toàn bộ file hợp lệ, database đăng ký đủ 20 tên resource và bang hiện có ánh xạ tới resource hợp lệ.
 - Packet `127` action wire `128` trả snapshot appearance detail v1 gồm bậc/tổng bậc, danh hiệu, resource, màu, aura, Clan Value/version, visual revision và phần còn thiếu tới mốc kế tiếp. Snapshot Cây bang tăng detail lên v2 và hồ sơ bang tăng lên v7; prefix cũ được giữ nguyên để client cũ bỏ qua phần nối đuôi an toàn.
 - Khi client hiện tại chạm Cây bang, server gửi thông báo bậc hiện tại và điều kiện còn thiếu; sprite theo cấp cây tiếp tục hoạt động. Màu nhấn/aura cấu trúc cần client tiêu thụ metadata appearance v1 mới hiển thị đầy đủ; repository server không sửa hoặc phụ thuộc dự án client.
@@ -1429,7 +1429,7 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 #### Kết quả triển khai 5E — 09/09/2026
 
 - Admin Data có thêm tab **Kinh tế bang** với các cửa sổ cố định 7/14/28/90 ngày. Báo cáo chỉ đọc gồm tổng quan tài sản/Clan Value, dòng tiền theo Vàng–Ngọc–Capsule, cảnh báo cân bằng, phân bố điểm tiềm năng, phần thưởng chờ và tín hiệu vận hành; dữ liệu xuất TSV được escape trước khi render trong HTA.
-- Nguồn/sink được tổng hợp trực tiếp từ `clan_ledger`, không tạo một sổ tài sản thứ hai. Ngưỡng cảnh báo theo từng loại tiền, cửa sổ mặc định/tối đa, chu kỳ flush và thời gian lưu được cấu hình tại `data/clan_economy.properties`; tham số lookback được ép kiểu và giới hạn trước khi đi vào truy vấn.
+- Nguồn/sink được tổng hợp trực tiếp từ `clan_ledger`, không tạo một sổ tài sản thứ hai. Ngưỡng cảnh báo theo từng loại tiền, cửa sổ mặc định/tối đa, chu kỳ flush và thời gian lưu được cấu hình tại `config/clan/clan_economy.properties`; tham số lookback được ép kiểu và giới hạn trước khi đi vào truy vấn.
 - Metrics vận hành được gom theo ngày và khóa tín hiệu hữu hạn: tưới/bón, đạt sức sống, thu hoạch, tăng cấp cây/bang, quà gửi/bị chặn/phát chờ, request trùng, transaction rollback và vòng đời khu bang. Bảng `clan_economy_metric` chỉ lưu tổng số/số lượng; bảng `clan_economy_active_clan` chỉ lưu `clan_id + ngày`, không lưu player/actor/request ID. Flush nền dùng batch UPSERT bão hòa số, tự gộp lại số liệu nếu database lỗi và dọn dữ liệu quá hạn theo cấu hình.
 - Migration `sql/migrations/20260909_add_clan_economy_metrics.sql` được startup áp dụng trước khi metrics chạy. Feature flag `economy_metrics.enabled=true`, `economy_metrics.mutations_enabled=false`; 5E không thêm packet, asset, cache version, dependency telemetry hay thay đổi dự án client.
 - Backend/HTA vượt kiểm tra PowerShell 5, kiểm tra cấu trúc 23 view/37 script và truy vấn báo cáo thật 14 ngày (22 dòng, không có lỗi). Index báo cáo `(created_at, currency_type, action_type)` được thêm idempotent cho `clan_ledger`. Kiểm thử Java 5A–5E, schema/index/UPSERT rollback, Gate 5 và probe protocol thường/reconnect đều đạt; packet lớn nhất 65.521 byte. Build Java 17 cuối cập nhật 948 class vào `20.jar`, SHA-256 `4A1A50AAB739A1287BEE774B05A07204C9CDEAC2451DB90C83E01FEEB5B00CFA`; backup `20.jar.bak_20260909_193342`. Server PID 19060 nghe cổng `14445`, MySQL nghe cổng `3307`, `server-error.log` trống.
@@ -1449,11 +1449,11 @@ Dọn dẹp sau giai đoạn 1–3 ngày 04/09/2026: xóa mã chết của form/
 - Tài khoản có `is_admin` và đang là thành viên của một bang có thể nhập `setcay <cấp>` trong khung chat, ví dụ `setcay 10`. Cấp hợp lệ được lấy từ `max_tree_level`, hiện là 1–20; dữ liệu thiếu, không phải số hoặc vượt biên đều bị từ chối trước khi truy cập database.
 - Lệnh chỉ chỉnh Cây bang của chính bang mà admin đang tham gia. Server chốt sản lượng theo cấp cũ, giữ nguyên tiến độ/tài nguyên/sản lượng đã tích lũy, hủy lượt nâng cấp đang chờ, tăng version và lưu bằng câu SQL tham số hóa. Nếu lưu thất bại, cache được khôi phục về trạng thái trước lệnh.
 - Sau khi lưu, server làm mới Clan Value, invalidation bảng xếp hạng và gửi lại snapshot Cây bang/Clan Value/appearance cho client. Log audit chỉ ghi actor ID, clan ID và cấp cũ/mới.
-- Cấp cây chỉ là một trong ba điều kiện mở bậc 5D. Để thấy **Cổ thụ**, **Linh thụ** hoặc **Thần mộc**, bang vẫn phải đồng thời đạt cấp bang và Clan Value tương ứng trong `data/clan_appearance.properties`.
+- Cấp cây chỉ là một trong ba điều kiện mở bậc 5D. Để thấy **Cổ thụ**, **Linh thụ** hoặc **Thần mộc**, bang vẫn phải đồng thời đạt cấp bang và Clan Value tương ứng trong `config/clan/clan_appearance.properties`.
 
 #### Thay bộ ảnh Cây bang — 10/09/2026
 
-- Bộ nguồn `C:\Users\PC\Downloads\bo_cay_20_cap_tach_nen` có đủ 20 ảnh RGBA nền trong suốt. Ảnh nguồn được coi là x4; `tools/install_clan_tree_images.ps1` tạo 80 file đích bằng bicubic chất lượng cao, với kích thước x2/x3/x4 đúng 2/3/4 lần x1 và giữ cùng anchor.
+- Bộ nguồn `C:\Users\PC\Downloads\bo_cay_20_cap_tach_nen` có đủ 20 ảnh RGBA nền trong suốt. Ảnh nguồn được coi là x4; `tools/assets/install_clan_tree_images.ps1` tạo 80 file đích bằng bicubic chất lượng cao, với kích thước x2/x3/x4 đúng 2/3/4 lần x1 và giữ cùng anchor.
 - Bộ cũ đã được lưu tại `artifacts/clan_tree_assets_backup_20260910_000912` trước khi thay. Test 5D kiểm tra đủ 80 file, alpha góc và tỷ lệ zoom; Game1/Game2 tăng `IMAGE_SET_VERSION` lên 3 để cache cũ không che bộ ảnh mới.
 
 Mỗi giai đoạn nên có feature flag để tắt độc lập khi có lỗi.

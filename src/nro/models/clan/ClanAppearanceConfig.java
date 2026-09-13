@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Validated cosmetic milestones for phase 5D. */
 public final class ClanAppearanceConfig {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_appearance.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_appearance.properties");
     private static final int MAX_TIERS = 4;
     private static final int MAX_RESOURCE_LEVEL = 20;
     private static final Pattern SAFE_RESOURCE_PREFIX = Pattern.compile("[a-z0-9_]{1,32}");

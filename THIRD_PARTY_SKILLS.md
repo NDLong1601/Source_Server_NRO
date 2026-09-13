@@ -121,7 +121,7 @@ Local modifications by skill:
 
 | Skill | Adaptation |
 | --- | --- |
-| `test-driven-development` | Stable-seam trigger; `tools/tests` and `map-tools/tests`; Java 17/Ant and HTA gates; controlled-probe fallback; no framework migration or automatic subagent delegation |
+| `test-driven-development` | Stable-seam trigger; `tools/tests` and `tools/maps/tests`; Java 17/Ant and HTA gates; controlled-probe fallback; no framework migration or automatic subagent delegation |
 | `observability-and-instrumentation` | Explicit observability trigger; existing Java diagnostics first; no automatic telemetry dependencies; NRO command/JDBC/session boundaries; redacted fields and safe controlled verification |
 
 ### Stage 3 - On-Demand Security Modeling
@@ -144,7 +144,7 @@ pack was not installed. The wrapper:
 - targets `admin_data_menu.hta`, `server_menu.hta`, and their HTML/CSS/JScript files;
 - prohibits unsupported React, Tailwind, ES module, CSS custom property, and modern
   browser assumptions;
-- requires `node tools/check_admin_data_menu.js` after modular admin UI changes;
+- requires `node tools/validation/check_admin_data_menu.js` after modular admin UI changes;
 - distinguishes static browser rendering from actual HTA/ActiveX behavior verification.
 
 Completed static gates:
@@ -160,7 +160,7 @@ Completed static gates:
 - Preserved attribution and the full MIT notice in `.agents/THIRD_PARTY_NOTICES.md`.
 - Kept review requests read-only and prevented the skill from authorizing server builds,
   restarts, database mutations, JAR deployment, dependencies, or Java/game changes.
-- Ran `node tools/check_admin_data_menu.js` as a baseline check. It stops on a pre-existing
+- Ran `node tools/validation/check_admin_data_menu.js` as a baseline check. It stops on a pre-existing
   inline style at `admin_data_menu/views/item-options.html:11`, introduced by commit
   `4d59b059e`; Stage 5 does not modify the admin UI or that file.
 

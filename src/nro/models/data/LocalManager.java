@@ -12,6 +12,7 @@ import nro.models.data.ResultSetImpl;
 import java.io.IOException;
 import nro.models.utils.Logger;
 import nro.models.data.LocalResultSet;
+import nro.config.ConfigPaths;
 
 public class LocalManager {
 
@@ -58,7 +59,7 @@ public class LocalManager {
     private static void loadProperties() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("Config.properties"));
+            properties.load(new FileInputStream(ConfigPaths.server().toFile()));
             Object value;
             if ((value = properties.get("database.driver")) != null) {
                 LocalManager.DRIVER = String.valueOf(value);

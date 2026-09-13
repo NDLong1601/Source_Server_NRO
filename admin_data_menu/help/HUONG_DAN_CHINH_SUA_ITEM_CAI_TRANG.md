@@ -4,12 +4,12 @@ Tài liệu này tóm tắt các phần quan trọng trong source để bạn c�
 
 ## 1. Tổng Quan Luồng Dữ Liệu
 
-Khi server khởi động bằng `run.bat`, file `20.jar` sẽ đọc cấu hình database trong `Config.properties`, sau đó load dữ liệu từ MySQL.
+Khi server khởi động bằng `run.bat`, file `20.jar` sẽ đọc cấu hình database trong `config/Config.properties`, sau đó load dữ liệu từ MySQL.
 
 Luồng chính:
 
 ```text
-Config.properties
+config/Config.properties
   -> database team2026
   -> Manager.loadDatabase()
   -> item_template, item_option_template, shop, item_shop, item_shop_option
@@ -29,7 +29,7 @@ Lưu ý rất quan trọng:
 File:
 
 ```text
-Config.properties
+config/Config.properties
 ```
 
 Phần cần chú ý:
@@ -865,4 +865,4 @@ database.user=root
 database.pass=
 ```
 
-Nếu MySQL của bạn đổi port/user/pass thì sửa lại `Config.properties`.
+Nếu MySQL của bạn đổi port/user/pass thì sửa lại `config/Config.properties`.

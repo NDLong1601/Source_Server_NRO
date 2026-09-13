@@ -11,8 +11,8 @@
 | Load template | `src/nro/models/server/Manager.java` |
 | Gửi command 11 | `src/nro/models/data/DataGame.java` |
 | Spawn map | `map_template.mobs` trong DB/release map |
-| Probe giao thức | `tools/codex_protocol_probe.ps1` |
-| Build/runtime | `tools/server_control.ps1`, `20.jar` |
+| Probe giao thức | `tools/server/codex_protocol_probe.ps1` |
+| Build/runtime | `tools/server/server_control.ps1`, `20.jar` |
 
 ## ID và template
 
@@ -103,9 +103,9 @@ Trước build/restart:
 Quy trình repository:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/server_control.ps1 -Action stop
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/server_control.ps1 -Action build
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/server_control.ps1 -Action start
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/server/server_control.ps1 -Action stop
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/server/server_control.ps1 -Action build
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/server/server_control.ps1 -Action start
 ```
 
 Chỉ chạy stop/start khi yêu cầu cho phép triển khai. Xác nhận `logs/menu_status.txt`, `logs/server.log`, `logs/server-error.log` và cổng cấu hình.
@@ -114,7 +114,7 @@ Probe từng zoom:
 
 ```powershell
 1..4 | ForEach-Object {
-  powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex_protocol_probe.ps1 -Zoom $_ -MobId <id>
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools/server/codex_protocol_probe.ps1 -Zoom $_ -MobId <id>
 }
 ```
 

@@ -5,12 +5,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Immutable, overflow-safe scoring rules for phase-5B Clan Value. */
 public final class ClanValueConfig {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_value.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_value.properties");
 
     private final int formulaVersion;
     private final long clanLevelWeight;

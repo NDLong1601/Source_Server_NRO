@@ -8,12 +8,13 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Independent rollout switches for clan subsystems. */
 public final class ClanFeatureFlags {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_features.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_features.properties");
     private static final ClanFeatureFlags INSTANCE = load(DEFAULT_PATH);
 
     public enum Feature {

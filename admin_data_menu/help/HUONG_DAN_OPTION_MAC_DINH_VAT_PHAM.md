@@ -31,7 +31,7 @@ item_template
 
 ### Backend quản trị
 
-- `tools/admin_data.ps1`: các action đọc/lưu preset, validate dữ liệu và audit.
+- `tools/admin/admin_data.ps1`: các action đọc/lưu preset, validate dữ liệu và audit.
 
 Các action chính:
 
@@ -141,7 +141,7 @@ Khi lưu option trực tiếp trong khu vực **Option item shop**, hệ thống
 
 ## 7. Phần thưởng nhiệm vụ
 
-Phần thưởng nhiệm vụ vẫn lưu danh sách ID vật phẩm trong `task.properties`, ví dụ:
+Phần thưởng nhiệm vụ vẫn lưu danh sách ID vật phẩm trong `config/task.properties`, ví dụ:
 
 ```properties
 task.reward.main.1.items=14,15,16,17,18,19,20
@@ -187,7 +187,7 @@ item_shop_option
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\admin_data.ps1 `
+  -File .\tools\admin\admin_data.ps1 `
   -Action listitemdefaultoptionitems
 ```
 
@@ -195,7 +195,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\admin_data.ps1 `
+  -File .\tools\admin\admin_data.ps1 `
   -Action listitemdefaultoptions `
   -Id 14
 ```
@@ -252,7 +252,7 @@ Preset mặc định không tự động ghi đè các option được thêm th�
 Chạy:
 
 ```powershell
-node tools/check_admin_data_menu.js
+node tools/validation/check_admin_data_menu.js
 ```
 
 Kiểm tra các file:
@@ -306,4 +306,4 @@ Giftcode, SHOP, phần thưởng nhiệm vụ, drop Mob/Boss và vật phẩm s�
 - Nhập option bổ sung nếu cần; option trùng ID sẽ ghi đè giá trị mặc định.
 - Tắt checkbox để chỉ dùng option riêng của ngữ cảnh đó.
 
-SHOP dùng `option_mode=0` (mặc định), `1` (riêng) hoặc `2` (mặc định + bổ sung). Giftcode lưu cờ `useDefaultOptions`; phần thưởng nhiệm vụ lưu cấu hình theo từng item trong `task.properties`; drop Mob/Boss và sự kiện lưu cấu hình tương tự trong JSON database.
+SHOP dùng `option_mode=0` (mặc định), `1` (riêng) hoặc `2` (mặc định + bổ sung). Giftcode lưu cờ `useDefaultOptions`; phần thưởng nhiệm vụ lưu cấu hình theo từng item trong `config/task.properties`; drop Mob/Boss và sự kiện lưu cấu hình tương tự trong JSON database.

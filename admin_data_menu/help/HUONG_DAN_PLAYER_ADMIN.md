@@ -7,7 +7,7 @@ Mở `admin_menu.bat`, sau đó dùng hai tab mới:
 
 ## 1. Cấu hình Player toàn server
 
-Các giá trị thật được lưu tại `player.properties`. Giao diện phân biệt hai phạm vi:
+Các giá trị thật được lưu tại `config/player.properties`. Giao diện phân biệt hai phạm vi:
 
 Mỗi giá trị được đặt trong một tab con theo đúng nhóm cấu hình. Các tab con được sinh tự động từ catalog nên khi backend có thêm nhóm mới, giao diện cũng tự hiển thị nhóm đó.
 

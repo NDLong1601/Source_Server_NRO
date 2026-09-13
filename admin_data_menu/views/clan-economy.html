@@ -1,100 +1,92 @@
 <div id="panelClanEconomy" class="panel">
-  <div class="clan-economy-mode-tabs" role="tablist" aria-label="Chế độ quản lý bang">
-    <button id="clanEconomyReportTab" type="button" class="clan-economy-mode-tab active" role="tab" aria-selected="true" onclick="SelectClanEconomyMode('report')">Báo cáo kinh tế</button>
-    <button id="clanEconomyConfigTab" type="button" class="clan-economy-mode-tab" role="tab" aria-selected="false" onclick="SelectClanEconomyMode('config')">Cấu hình bang</button>
+  <div id="clanConfigTabs" class="player-config-tabs clan-config-tabs" role="navigation" aria-label="Nhóm cấu hình bang"></div>
+  <div id="clanConfigHeader" class="clan-config-header">
+    <button type="button" class="clan-config-reload" onclick="LoadClanConfig()">Tải lại từ file</button>
+    <div id="clanConfigSummary" class="clan-config-summary" aria-live="polite">Chưa tải cấu hình</div>
+    <div class="clan-config-notice">Lưu chỉ ghi vào file; cần khởi động lại server để áp dụng đầy đủ. Phần sửa chưa lưu sẽ mất khi đóng menu.</div>
+    <input type="hidden" id="clanConfigSearch" value="">
   </div>
-
-  <div id="clanEconomyReportView" class="clan-economy-view active" role="tabpanel">
-    <div class="clan-economy-toolbar" role="region" aria-label="Bộ lọc báo cáo kinh tế bang">
-      <label for="clanEconomyLookback">Khoảng theo dõi</label>
-      <select id="clanEconomyLookback">
-        <option value="7">7 ngày</option>
-        <option value="14" selected>14 ngày</option>
-        <option value="28">28 ngày</option>
-        <option value="90">90 ngày</option>
-      </select>
-      <button type="button" class="primary" onclick="LoadClanEconomyReport()">Tải báo cáo</button>
-      <span id="clanEconomyUpdated" class="clan-economy-updated">Chưa tải dữ liệu</span>
+  <div id="clanConfigWorkspace" class="clan-config-workspace">
+    <div class="clan-config-list">
+      <div id="clanConfigResultCount" class="clan-config-pane-title" aria-live="polite">DANH SÁCH</div>
+      <div id="clanConfigTable" class="clan-config-items"></div>
     </div>
-
-    <div class="clan-economy-scroll">
-      <div class="clan-economy-intro">
-        <div>
-          <strong>Sức khỏe kinh tế bang hội</strong>
-          <span>So sánh nguồn sinh và sink từ sổ cái, kết hợp metric vận hành tổng hợp không chứa ID người chơi.</span>
-        </div>
-        <span id="clanEconomyOverallBadge" class="clan-economy-badge neutral">ĐANG TẢI</span>
-      </div>
-
-      <div class="section-title">Tổng quan hiện tại</div>
-      <div id="clanEconomySummary" class="clan-economy-card-row"></div>
-
-      <div class="section-title">Cân bằng nguồn – sink</div>
-      <div id="clanEconomyFlows" class="clan-economy-card-row"></div>
-
-      <div class="clan-economy-columns">
-        <div class="clan-economy-column">
-          <div class="section-title">Tín hiệu vận hành</div>
-          <div class="clan-economy-table-wrap">
-            <table id="clanEconomySignalTable"></table>
+    <div class="clan-config-editor">
+      <div id="clanConfigEditorScroll" class="clan-config-editor-scroll">
+        <div id="clanConfigEmpty" class="clan-config-empty">Chọn một cấu hình ở danh sách để chỉnh sửa.</div>
+        <div id="clanConfigDetail">
+          <div id="clanConfigCategory" class="clan-config-eyebrow"></div>
+          <h2 id="clanConfigName"></h2>
+          <div id="clanConfigProperty" class="clan-config-key"></div>
+          <div class="clan-config-comparison">
+            <div><span>Đã lưu trong cấu hình</span><strong id="clanConfigSaved"></strong></div>
+            <div><span>Mặc định server</span><strong id="clanConfigDefault"></strong></div>
           </div>
-        </div>
-        <div class="clan-economy-column clan-economy-column-last">
-          <div class="section-title">Phân bố Tiềm năng bang</div>
-          <div class="clan-economy-table-wrap">
-            <table id="clanEconomyPotentialTable"></table>
+          <p id="clanConfigDescription" class="clan-config-description"></p>
+          <div id="clanConfigScheduleHint" class="clan-config-schedule-hint"></div>
+          <label id="clanConfigValueLabel" for="clanConfigValue">Giá trị mới</label>
+          <input type="text" id="clanConfigValue" onkeyup="ClanConfigEditorChanged()" onchange="ClanConfigEditorChanged()" aria-describedby="clanConfigRange clanConfigError" autocomplete="off">
+          <div id="clanConfigFields" class="clan-config-fields"></div>
+          <div id="clanConfigColorPicker" class="clan-config-color-picker">
+            <div class="clan-color-picker-header">
+              <span class="clan-color-picker-title">BẢNG CHỌN MÀU RGB</span>
+              <span id="clanColorHexBadge" class="clan-color-hex-badge">0xFFE082</span>
+            </div>
+            <div class="clan-color-swatch-bar">
+              <div id="clanColorActiveSwatch" class="clan-color-active-swatch"></div>
+              <div class="clan-color-palette" role="group" aria-label="Bảng màu gợi ý">
+                <button type="button" class="color-swatch c-gold" title="Vàng kim (0xFFD700)" onclick="PickClanPresetColor('0xFFD700')"></button>
+                <button type="button" class="color-swatch c-orange" title="Cam rực (0xFF9800)" onclick="PickClanPresetColor('0xFF9800')"></button>
+                <button type="button" class="color-swatch c-red" title="Đỏ lửa (0xFF3333)" onclick="PickClanPresetColor('0xFF3333')"></button>
+                <button type="button" class="color-swatch c-coral" title="Đỏ san hô (0xFF5252)" onclick="PickClanPresetColor('0xFF5252')"></button>
+                <button type="button" class="color-swatch c-pink" title="Hồng phấn (0xFF69B4)" onclick="PickClanPresetColor('0xFF69B4')"></button>
+                <button type="button" class="color-swatch c-purple" title="Tím thần bí (0xC56CFF)" onclick="PickClanPresetColor('0xC56CFF')"></button>
+                <button type="button" class="color-swatch c-royal-purple" title="Tím hoàng gia (0x8E24AA)" onclick="PickClanPresetColor('0x8E24AA')"></button>
+                <button type="button" class="color-swatch c-cyan" title="Lam thiên thanh (0x00E5FF)" onclick="PickClanPresetColor('0x00E5FF')"></button>
+                <button type="button" class="color-swatch c-blue" title="Xanh lam (0x55A8FF)" onclick="PickClanPresetColor('0x55A8FF')"></button>
+                <button type="button" class="color-swatch c-emerald" title="Lục bảo (0x00E676)" onclick="PickClanPresetColor('0x00E676')"></button>
+                <button type="button" class="color-swatch c-green" title="Xanh mầm (0x39B96E)" onclick="PickClanPresetColor('0x39B96E')"></button>
+                <button type="button" class="color-swatch c-amber" title="Cổ thụ (0xD7A83A)" onclick="PickClanPresetColor('0xD7A83A')"></button>
+                <button type="button" class="color-swatch c-white" title="Trắng tinh (0xFFFFFF)" onclick="PickClanPresetColor('0xFFFFFF')"></button>
+                <button type="button" class="color-swatch c-silver" title="Bạc khói (0xCFD8DC)" onclick="PickClanPresetColor('0xCFD8DC')"></button>
+                <button type="button" class="color-swatch c-dark" title="Hắc kim (0x37474F)" onclick="PickClanPresetColor('0x37474F')"></button>
+              </div>
+            </div>
+            <div class="clan-color-sliders">
+              <div class="clan-color-slider-row red">
+                <span class="slider-label">R (Đỏ):</span>
+                <input type="range" id="clanColorSliderR" min="0" max="255" value="255" oninput="ClanColorSliderMoved()" onchange="ClanColorSliderMoved()">
+                <input type="text" id="clanColorNumR" class="slider-number" maxlength="3" value="255" onkeyup="ClanColorNumChanged()" onchange="ClanColorNumChanged()">
+              </div>
+              <div class="clan-color-slider-row green">
+                <span class="slider-label">G (Lục):</span>
+                <input type="range" id="clanColorSliderG" min="0" max="255" value="224" oninput="ClanColorSliderMoved()" onchange="ClanColorSliderMoved()">
+                <input type="text" id="clanColorNumG" class="slider-number" maxlength="3" value="224" onkeyup="ClanColorNumChanged()" onchange="ClanColorNumChanged()">
+              </div>
+              <div class="clan-color-slider-row blue">
+                <span class="slider-label">B (Lam):</span>
+                <input type="range" id="clanColorSliderB" min="0" max="255" value="130" oninput="ClanColorSliderMoved()" onchange="ClanColorSliderMoved()">
+                <input type="text" id="clanColorNumB" class="slider-number" maxlength="3" value="130" onkeyup="ClanColorNumChanged()" onchange="ClanColorNumChanged()">
+              </div>
+            </div>
           </div>
+          <div id="clanConfigColorPreview" class="clan-config-color-preview">
+            <div class="clan-config-day"><span id="clanConfigColorDay">Mẫu màu ban ngày</span></div>
+            <div class="clan-config-night"><span id="clanConfigColorNight">Mẫu màu ban đêm</span></div>
+            <small id="clanConfigPreviewNote">Mẫu màu tham khảo trong game.</small>
+          </div>
+          <div id="clanConfigRange" class="clan-config-range"></div>
+          <div id="clanConfigError" class="clan-config-error" role="alert"></div>
+          <div class="clan-config-file-info">File: <span id="clanConfigFile"></span><br>Áp dụng: <span id="clanConfigScope"></span></div>
         </div>
       </div>
-
-      <div class="section-title">Dòng tiền theo hành động</div>
-      <div class="clan-economy-table-wrap clan-economy-action-table">
-        <table id="clanEconomyActionTable"></table>
-      </div>
-
-      <div class="clan-economy-guidance">
-        <strong>Cách đọc cảnh báo:</strong> tỷ lệ sink/source thấp hơn ngưỡng cấu hình nghĩa là tài sản đang sinh nhanh hơn bị tiêu; cao hơn ngưỡng nghĩa là sink có thể quá nặng. “Chưa đủ dữ liệu” không được xem là cân bằng.
-      </div>
-      <div id="clanEconomyMessage" class="message" aria-live="polite"></div>
-    </div>
-  </div>
-
-  <div id="clanEconomyConfigView" class="clan-economy-view" role="tabpanel">
-    <div id="clanConfigTabs" class="player-config-tabs clan-config-tabs"></div>
-    <div class="columns clan-config-columns">
-      <div class="left-pane">
-        <div class="toolbar">
-          <label class="clan-config-search-label" for="clanConfigSearch">Tìm cấu hình</label>
-          <input type="text" id="clanConfigSearch" placeholder="Tìm tên, khóa hoặc file" onkeyup="FilterClanConfigRows()">
-          <button type="button" onclick="LoadClanConfig()">Tải lại</button>
-        </div>
-        <div class="table-wrap"><table id="clanConfigTable"></table></div>
-      </div>
-      <div class="right-pane">
-        <div class="section-title">Chi tiết cấu hình bang</div>
-        <input type="hidden" id="clanConfigKey">
-        <div class="row">
-          <div class="cell"><label for="clanConfigCategory">Nhóm</label><input type="text" id="clanConfigCategory" readonly></div>
-          <div class="cell"><label for="clanConfigFile">File cấu hình</label><input type="text" id="clanConfigFile" readonly></div>
-        </div>
-        <label for="clanConfigName">Tên cấu hình</label><input type="text" id="clanConfigName" readonly>
-        <div class="row">
-          <div class="cell"><label for="clanConfigProperty">Khóa thuộc tính</label><input type="text" id="clanConfigProperty" readonly></div>
-          <div class="cell"><label for="clanConfigKind">Kiểu dữ liệu</label><input type="text" id="clanConfigKind" readonly></div>
-        </div>
-        <div class="row">
-          <div class="cell"><label for="clanConfigDefault">Giá trị mặc định</label><input type="text" id="clanConfigDefault" readonly></div>
-          <div class="cell"><label for="clanConfigScope">Phạm vi áp dụng</label><input type="text" id="clanConfigScope" readonly></div>
-        </div>
-        <label for="clanConfigValue">Giá trị đang dùng</label><textarea id="clanConfigValue" placeholder="Chọn một cấu hình ở bảng bên trái"></textarea>
-        <label for="clanConfigDescription">Mô tả và đơn vị</label><textarea id="clanConfigDescription" readonly></textarea>
-        <div class="actions">
-          <button type="button" class="primary" onclick="SaveClanConfig()">Lưu cấu hình</button>
-          <button type="button" onclick="ResetClanConfig()">Về mặc định</button>
-        </div>
-        <div class="clan-config-warning"><strong>Lưu ý:</strong> thay đổi được ghi ngay vào file nhưng phần lớn dịch vụ bang chỉ nạp cấu hình khi server khởi động. Hãy dùng nút Restart sau khi hoàn tất các chỉnh sửa liên quan.</div>
-        <div id="clanConfigMessage" class="message" aria-live="polite"></div>
+      <div class="clan-config-editor-actions">
+        <div id="clanConfigEditState" aria-live="polite">Chưa chọn cấu hình</div>
+        <button id="clanConfigSave" type="button" class="primary" onclick="SaveClanConfig()" disabled>Lưu mục này</button>
+        <button id="clanConfigDiscard" type="button" onclick="DiscardClanConfig()" disabled>Hủy sửa</button>
+        <button id="clanConfigReset" type="button" onclick="ResetClanConfig()" disabled>Về mặc định</button>
       </div>
     </div>
   </div>
+  <div id="clanConfigMessage" class="clan-config-message" aria-live="polite"></div>
 </div>

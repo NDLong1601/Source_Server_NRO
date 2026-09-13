@@ -1,375 +1,464 @@
-var clanEconomyRows = [];
-var clanEconomyMode = "report";
 var clanConfigRows = [];
 var filteredClanConfigRows = [];
 var selectedClanConfigKey = "";
 var selectedClanConfigCategory = "";
+var clanConfigDrafts = {};
+var clanConfigStructuredCount = 0;
+var clanConfigBusy = false;
 
-function SelectClanEconomyMode(mode) {
-  clanEconomyMode = mode == "config" ? "config" : "report";
-  var reportActive = clanEconomyMode == "report";
-  document.getElementById("clanEconomyReportView").className = "clan-economy-view" + (reportActive ? " active" : "");
-  document.getElementById("clanEconomyConfigView").className = "clan-economy-view" + (reportActive ? "" : " active");
-  document.getElementById("clanEconomyReportTab").className = "clan-economy-mode-tab" + (reportActive ? " active" : "");
-  document.getElementById("clanEconomyConfigTab").className = "clan-economy-mode-tab" + (reportActive ? "" : " active");
-  document.getElementById("clanEconomyReportTab").setAttribute("aria-selected", reportActive ? "true" : "false");
-  document.getElementById("clanEconomyConfigTab").setAttribute("aria-selected", reportActive ? "false" : "true");
-  if (reportActive) {
-    if (!clanEconomyRows || clanEconomyRows.length < 2) LoadClanEconomyReport();
-  } else {
-    if (!clanConfigRows || clanConfigRows.length < 2) LoadClanConfig();
-    UpdateConfigColumnsOffset("panelClanEconomy", "clanConfigTabs");
-  }
-  AdjustTableOffsets();
+function ClanConfigText(id, text) {
+  document.getElementById(id).innerText = text;
 }
 
 function ClanConfigCategories() {
   var categories = [];
-  var seen = {};
   for (var i = 1; i < clanConfigRows.length; i++) {
-    var category = clanConfigRows[i][1];
-    if (category && !seen[category]) {
-      seen[category] = true;
-      categories.push(category);
-    }
+    if (!ArrayContains(categories, clanConfigRows[i][1])) categories.push(clanConfigRows[i][1]);
   }
   return categories;
 }
 
+function ClanConfigFold(text) {
+  return ("" + text).toLowerCase()
+    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a").replace(/[èéẹẻẽêềếệểễ]/g, "e")
+    .replace(/[ìíịỉĩ]/g, "i").replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o")
+    .replace(/[ùúụủũưừứựửữ]/g, "u").replace(/[ỳýỵỷỹ]/g, "y").replace(/đ/g, "d");
+}
+
+function ClanConfigSearchMatches(row, query) {
+  return ClanConfigFold(row.join(" ")).indexOf(ClanConfigFold(Trim(query))) >= 0;
+}
+
+function ClanConfigDraftCount() {
+  var count = 0;
+  for (var key in clanConfigDrafts) if (clanConfigDrafts.hasOwnProperty(key)) count++;
+  return count;
+}
+
 function RenderClanConfigTabs() {
+  var container = document.getElementById("clanConfigTabs");
+  if (!container) return;
+  var scrollTop = container.scrollTop;
+  var focused = document.activeElement ? document.activeElement.id : "";
   var categories = ClanConfigCategories();
-  var categoryExists = false;
-  for (var i = 0; i < categories.length; i++) {
-    if (categories[i] == selectedClanConfigCategory) categoryExists = true;
+  if ((!selectedClanConfigCategory || !ArrayContains(categories, selectedClanConfigCategory)) && categories.length > 0) {
+    selectedClanConfigCategory = categories[0];
   }
-  if (!categoryExists) selectedClanConfigCategory = categories.length ? categories[0] : "";
   var html = "";
   for (var c = 0; c < categories.length; c++) {
-    var active = categories[c] == selectedClanConfigCategory ? " active" : "";
-    html += '<button type="button" class="player-config-tab' + active + '" onclick="SelectClanConfigCategory(' + c + ')">' + Html(categories[c]) + '</button>';
+    var count = 0;
+    for (var r = 1; r < clanConfigRows.length; r++) if (clanConfigRows[r][1] == categories[c]) count++;
+    var active = categories[c] == selectedClanConfigCategory;
+    html += '<button type="button" id="clanConfigGroup_' + c + '" class="clan-config-group' + (active ? ' active' : '') + '" aria-pressed="' + active + '" onclick="SelectClanConfigCategory(' + c + ')" title="' + HtmlAttr(categories[c]) + ' (' + count + ' cấu hình)">' + Html(categories[c]) + '<small>' + count + '</small></button>';
   }
-  document.getElementById("clanConfigTabs").innerHTML = html;
-  UpdateConfigColumnsOffset("panelClanEconomy", "clanConfigTabs");
+  container.innerHTML = html;
+  container.scrollTop = scrollTop;
+  if (focused && focused.indexOf("clanConfigGroup_") == 0 && document.getElementById(focused)) document.getElementById(focused).focus();
+  LayoutClanConfig();
 }
 
 function SelectClanConfigCategory(index) {
-  var categories = ClanConfigCategories();
-  if (!categories[index]) return;
-  selectedClanConfigCategory = categories[index];
-  selectedClanConfigKey = "";
-  ClearClanConfigSelection();
-  RenderClanConfigTabs();
+  var cats = ClanConfigCategories();
+  selectedClanConfigCategory = cats[index] || (cats.length > 0 ? cats[0] : "");
+  Set("clanConfigSearch", "");
+  document.getElementById("clanConfigTable").scrollTop = 0;
   FilterClanConfigRows();
-  if (filteredClanConfigRows.length > 1) PickFilteredClanConfig(1);
+  if (filteredClanConfigRows.length > 1) PickClanConfigByKey(filteredClanConfigRows[1][0]);
+  LayoutClanConfig();
 }
 
-function LoadClanConfig() {
-  var text = RunAdmin("listclanconfig", {});
-  if (IsAdminError(text)) {
-    clanConfigRows = [];
-    filteredClanConfigRows = [];
-    document.getElementById("clanConfigTabs").innerHTML = "";
-    document.getElementById("clanConfigTable").innerHTML = '<tbody><tr><td>Không thể tải danh mục cấu hình bang.</td></tr></tbody>';
-    ClearClanConfigSelection();
-    Msg("clanConfigMessage", StatusText(text));
+function LoadClanConfig(keepDrafts, feedback) {
+  if (clanConfigBusy) return;
+  if (!keepDrafts && ClanConfigDraftCount() && !window.confirm("Tải lại sẽ bỏ " + ClanConfigDraftCount() + " mục chưa lưu. Tiếp tục?")) return;
+  clanConfigBusy = true;
+  var text;
+  try { text = RunAdmin("listclanconfig", {}); }
+  catch (e) { text = "ERROR\tKhông thể chạy lệnh tải cấu hình bang."; }
+  clanConfigBusy = false;
+  if (IsAdminError(text) || !text || text.indexOf("key\tcategory\t") < 0) {
+    Msg("clanConfigMessage", (feedback ? feedback + " " : "") + "Không tải được cấu hình; dữ liệu đang sửa vẫn được giữ. Hãy thử Tải lại.");
     return;
   }
+  if (!keepDrafts) clanConfigDrafts = {};
   clanConfigRows = ParseTsv(text);
-  RenderClanConfigTabs();
+  if (!selectedClanConfigCategory && !selectedClanConfigKey) selectedClanConfigCategory = clanConfigRows.length > 1 ? clanConfigRows[1][1] : "";
   FilterClanConfigRows();
-  var restored = false;
-  if (selectedClanConfigKey) {
-    for (var i = 1; i < clanConfigRows.length; i++) {
-      if (clanConfigRows[i][0] == selectedClanConfigKey) {
-        PickClanConfigByKey(selectedClanConfigKey);
-        restored = true;
-        break;
-      }
-    }
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  if (!row && filteredClanConfigRows.length > 1) row = filteredClanConfigRows[1];
+  selectedClanConfigKey = row ? row[0] : "";
+  RenderClanConfigEditor();
+  FilterClanConfigRows();
+  Msg("clanConfigMessage", feedback || "Đã tải cấu hình từ file. Giá trị này chưa phản ánh trạng thái đã nạp trong server đang chạy.");
+  LayoutClanConfig();
+}
+
+function ClanConfigValueSummary(row, value) {
+  if (row[5] == "shop-item") {
+    var parts = value.split(",");
+    return "Tầng " + parts[0] + " · Kho " + parts[1] + " · Giá " + FormatNumber(parts[4] || "") + " Capsule";
   }
-  if (!restored && filteredClanConfigRows.length > 1) PickFilteredClanConfig(1);
-  Msg("clanConfigMessage", clanConfigRows.length > 1 ? "Đã tải " + (clanConfigRows.length - 1) + " cấu hình bang." : "Không có cấu hình bang để hiển thị.");
-  AdjustTableOffsets();
+  if (row[5] == "int-list") return value.split(",").length + " mốc nâng cấp · ngày";
+  return FormatAdminValue(value, row[5], row[0]);
 }
 
 function FilterClanConfigRows() {
-  var q = Trim(V("clanConfigSearch")).toLowerCase();
+  var list = document.getElementById("clanConfigTable");
+  var scrollTop = list.scrollTop;
+  var focused = document.activeElement ? document.activeElement.id : "";
+  var categories = ClanConfigCategories();
+  if ((!selectedClanConfigCategory || !ArrayContains(categories, selectedClanConfigCategory)) && categories.length > 0) {
+    selectedClanConfigCategory = categories[0];
+  }
   filteredClanConfigRows = [clanConfigRows[0] || []];
   for (var i = 1; i < clanConfigRows.length; i++) {
-    if (clanConfigRows[i][1] != selectedClanConfigCategory) continue;
-    if (!q || clanConfigRows[i].join(" ").toLowerCase().indexOf(q) >= 0) filteredClanConfigRows.push(clanConfigRows[i]);
+    var row = clanConfigRows[i];
+    if (row[1] == selectedClanConfigCategory) filteredClanConfigRows.push(row);
   }
-  var html = "<thead><tr><th>Cấu hình</th><th>Giá trị</th><th>File</th></tr></thead><tbody>";
+  var html = "";
   for (var r = 1; r < filteredClanConfigRows.length; r++) {
-    var row = filteredClanConfigRows[r];
-    var selected = row[0] == selectedClanConfigKey ? ' class="selected"' : "";
-    var ariaSelected = row[0] == selectedClanConfigKey ? "true" : "false";
-    var formatted = FormatAdminValue(row[3], row[5], row[0]);
-    html += '<tr id="clanConfigRow_' + r + '"' + selected + ' tabindex="0" role="button" aria-selected="' + ariaSelected + '" onclick="PickFilteredClanConfig(' + r + ')" onkeydown="ClanConfigRowKeyDown(' + r + ')"><td title="' + HtmlAttr(row[8]) + '">' + Html(row[2]) + '</td><td title="' + HtmlAttr(formatted) + '">' + Html(formatted) + '</td><td title="' + HtmlAttr(row[7]) + '">' + Html(row[7].replace("clan_", "").replace(".properties", "")) + '</td></tr>';
+    var item = filteredClanConfigRows[r];
+    var active = item[0] == selectedClanConfigKey;
+    html += '<button type="button" id="clanConfigRow_' + r + '" class="clan-config-item' + (active ? ' selected' : '') + '" aria-pressed="' + active + '" onclick="PickFilteredClanConfig(' + r + ')"><strong>' + Html(item[2]) + '</strong><small>' + Html(item[1]) + '</small><span>' + Html(ClanConfigValueSummary(item, item[3])) + '</span><em id="clanConfigDirty_' + r + '">' + (clanConfigDrafts.hasOwnProperty(item[0]) ? 'Chưa lưu' : '') + '</em></button>';
   }
-  if (filteredClanConfigRows.length == 1) html += '<tr><td colspan="3">Không có cấu hình phù hợp trong nhóm này.</td></tr>';
-  document.getElementById("clanConfigTable").innerHTML = html + "</tbody>";
+  if (filteredClanConfigRows.length < 2) html = '<div class="clan-config-empty">Không có cấu hình trong nhóm này.</div>';
+  list.innerHTML = html;
+  list.scrollTop = scrollTop;
+  ClanConfigText("clanConfigResultCount", (filteredClanConfigRows.length - 1) + " MỤC");
+  RenderClanConfigTabs();
+  UpdateClanConfigEditState();
+  if (focused && focused.indexOf("clanConfigRow_") == 0 && document.getElementById(focused)) document.getElementById(focused).focus();
 }
 
 function PickFilteredClanConfig(index) {
-  if (!filteredClanConfigRows[index]) return;
-  PickClanConfigByKey(filteredClanConfigRows[index][0]);
-}
-
-function ClanConfigRowKeyDown(index) {
-  if (event.keyCode != 13 && event.keyCode != 32) return;
-  PickFilteredClanConfig(index);
-  var row = document.getElementById("clanConfigRow_" + index);
-  if (row) row.focus();
-  event.returnValue = false;
+  if (filteredClanConfigRows[index]) PickClanConfigByKey(filteredClanConfigRows[index][0]);
 }
 
 function PickClanConfigByKey(key) {
-  for (var i = 1; i < clanConfigRows.length; i++) {
-    var row = clanConfigRows[i];
-    if (row[0] != key) continue;
-    selectedClanConfigKey = key;
-    if (selectedClanConfigCategory != row[1]) {
-      selectedClanConfigCategory = row[1];
-      RenderClanConfigTabs();
-    }
-    Set("clanConfigKey", row[0]);
-    Set("clanConfigCategory", row[1]);
-    Set("clanConfigName", row[2]);
-    Set("clanConfigValue", FormatClanConfigEditValue(row[3], row[5]));
-    Set("clanConfigDefault", FormatAdminValue(row[4], row[5], row[0]));
-    Set("clanConfigKind", ConfigKindLabel(row[5]));
-    Set("clanConfigScope", row[6]);
-    Set("clanConfigFile", row[7]);
-    Set("clanConfigProperty", row[8]);
-    Set("clanConfigDescription", row[9]);
-    FilterClanConfigRows();
-    return;
+  if (!FindConfigRow(clanConfigRows, key)) return;
+  selectedClanConfigKey = key;
+  RenderClanConfigEditor();
+  FilterClanConfigRows();
+}
+
+function ClanConfigFieldLabels(row) {
+  if (row[5] == "shop-item") return ["Tầng hàng (1–3)", "Trần tồn kho (vật phẩm)", "Phí nhập / món (Capsule bang)", "Phí nhập / món (Vàng bang)", "Giá mua (Capsule cá nhân)", "Cống hiến tối thiểu", "Giới hạn mua / ngày"];
+  var labels = [];
+  if (row[5] == "int-list") {
+    for (var i = 0; i < parseInt(row[12], 10); i++) labels.push("Cấp " + (i + 2) + " · ngày");
   }
+  return labels;
 }
 
-function ClearClanConfigSelection() {
-  Set("clanConfigKey", "");
-  Set("clanConfigCategory", selectedClanConfigCategory);
-  Set("clanConfigName", "");
-  Set("clanConfigValue", "");
-  Set("clanConfigDefault", "");
-  Set("clanConfigKind", "");
-  Set("clanConfigScope", "");
-  Set("clanConfigFile", "");
-  Set("clanConfigProperty", "");
-  Set("clanConfigDescription", "");
-}
-
-function FormatClanConfigEditValue(value, kind) {
-  if (kind == "shop-item" || kind == "int-list") return FormatNumberList(value);
-  return FormatConfigEditValue(value, kind);
-}
-
-function NormalizeClanConfigEditValue(value, kind) {
-  if (kind == "shop-item" || kind == "int-list") return NormalizeNumberList(value);
-  return NormalizeConfigEditValue(value, kind);
-}
-
-function SaveClanConfig() {
-  if (!V("clanConfigKey")) {
-    Msg("clanConfigMessage", "Chọn một cấu hình bang trước khi lưu.");
-    return;
+// Accept Vietnamese thousands grouping, but never turn an accidental 1.5 into 15.
+function ClanConfigNormalizeValue(value, kind) {
+  var text = Trim(value);
+  if (kind == "int-list" || kind == "shop-item") {
+    var parts = text.split(",");
+    for (var i = 0; i < parts.length; i++) parts[i] = ClanConfigNormalizeValue(parts[i], "int");
+    return parts.join(",");
   }
-  var row = FindConfigRow(clanConfigRows, V("clanConfigKey"));
-  var kind = row ? row[5] : "";
-  var result = RunAdmin("saveclanconfig", {
-    ConfigKey: V("clanConfigKey"),
-    ConfigValue: NormalizeClanConfigEditValue(V("clanConfigValue"), kind)
-  });
-  Msg("clanConfigMessage", StatusText(result));
-  if (!IsAdminError(result)) LoadClanConfig();
+  if (IsIntegerConfigKind(kind) && /^\d{1,3}(\.\d{3})+$/.test(text)) return text.replace(/\./g, "");
+  if (kind == "bool") return text == "1" ? "true" : (text == "0" ? "false" : text.toLowerCase());
+  if (kind == "hex-color" && /^0x[0-9a-f]{6}$/i.test(text)) return "0x" + text.substring(2).toUpperCase();
+  return text;
 }
 
-function ResetClanConfig() {
-  if (!V("clanConfigKey")) {
-    Msg("clanConfigMessage", "Chọn một cấu hình bang trước khi khôi phục.");
-    return;
+// Decimal strings retain all 64-bit digits; JavaScript Number cannot represent Long.MAX_VALUE.
+function ClanConfigCompareInteger(left, right) {
+  left = left.replace(/^0+(?=\d)/, "");
+  right = right.replace(/^0+(?=\d)/, "");
+  if (left.length != right.length) return left.length < right.length ? -1 : 1;
+  return left == right ? 0 : (left < right ? -1 : 1);
+}
+
+function ClanConfigValidateValue(row, value) {
+  var kind = row[5];
+  if (/[\x00-\x1F\x7F]/.test(value)) return "Không được chứa ký tự điều khiển hoặc xuống dòng.";
+  if (kind == "bool") return /^(true|false)$/.test(value) ? "" : "Chọn Bật hoặc Tắt.";
+  if (kind == "java-text") return value.length > 0 && value.length <= 64 ? "" : "Nhập từ 1 đến 64 ký tự.";
+  if (kind == "hex-color") return /^0x[0-9A-Fa-f]{6}$/.test(value) ? "" : "Nhập màu theo dạng 0xRRGGBB, ví dụ 0xFFE082.";
+  if (kind == "resource-prefix") return /^[a-z0-9_]{1,32}$/.test(value) ? "" : "Chỉ nhập 1–32 ký tự a-z, 0-9 và gạch dưới; không nhập đường dẫn.";
+  if (kind == "decimal") {
+    if (!/^\d*\.?\d+$/.test(value)) return "Dùng dấu chấm cho số thập phân, ví dụ 1.40.";
+    return Number(value) >= Number(row[10]) && Number(value) <= Number(row[11]) ? "" : "Giá trị phải từ " + row[10] + " đến " + row[11] + ".";
   }
-  if (!window.confirm("Đưa " + V("clanConfigName") + " về mặc định " + V("clanConfigDefault") + "?")) return;
-  var result = RunAdmin("resetclanconfig", { ConfigKey: V("clanConfigKey") });
-  Msg("clanConfigMessage", StatusText(result));
-  if (!IsAdminError(result)) LoadClanConfig();
-}
-
-function ClanEconomyRows(section) {
-  var result = [];
-  for (var i = 1; i < clanEconomyRows.length; i++) {
-    if (clanEconomyRows[i][0] == section) result.push(clanEconomyRows[i]);
+  var parts = kind == "shop-item" || kind == "int-list" ? value.split(",") : [value];
+  var expected = kind == "shop-item" || kind == "int-list" ? parseInt(row[12], 10) : 1;
+  if (parts.length != expected) return "Cần đúng " + expected + " giá trị.";
+  var labels = ClanConfigFieldLabels(row);
+  var shopMin = ["1", "1", "0", "0", "1", "0", "1"];
+  var shopMax = ["3", "1000000", "2147483647", "9223372036854775807", "2147483647", "9223372036854775807", "2147483647"];
+  for (var p = 0; p < parts.length; p++) {
+    var name = labels[p] || "Giá trị";
+    var min = kind == "shop-item" ? shopMin[p] : row[10];
+    var max = kind == "shop-item" ? shopMax[p] : row[11];
+    if (!/^\d+$/.test(parts[p])) return name + ": nhập số nguyên không âm (không dùng số thập phân).";
+    if (ClanConfigCompareInteger(parts[p], min) < 0 || ClanConfigCompareInteger(parts[p], max) > 0) return name + ": phải từ " + FormatNumber(min) + " đến " + FormatNumber(max) + ".";
   }
-  return result;
-}
-
-function ClanEconomyRow(section, key) {
-  var rows = ClanEconomyRows(section);
-  for (var i = 0; i < rows.length; i++) if (rows[i][1] == key) return rows[i];
-  return null;
-}
-
-function ClanEconomyLabel(key, fallback) {
-  var labels = {
-    "total_clans": "Tổng bang", "active_clans": "Bang có hoạt động",
-    "active_clan_days": "Ngày-bang hoạt động", "current_gold": "Số dư Vàng",
-    "current_gem": "Số dư Ngọc", "current_capsule": "Số dư Capsule",
-    "average_value": "Clan Value trung bình", "average_level": "Cấp bang trung bình",
-    "pending_rewards": "Quà đang chờ phát",
-    "TREE_WATER": "Tưới cây", "TREE_FERTILIZE": "Bón phân",
-    "TREE_VITALITY_REACHED": "Đạt đủ Sức sống ngày", "TREE_HARVEST": "Thu hoạch cây",
-    "TREE_LEVEL_UP": "Cây lên cấp", "CLAN_LEVEL_UP": "Bang lên cấp",
-    "GIFT_SENT": "Quà đã gửi", "GIFT_BLOCKED_POLICY": "Quà bị chặn theo luật",
-    "PENDING_GIFT_DELIVERED": "Quà chờ đã phát", "DUPLICATE_REQUEST": "Request lặp",
-    "TRANSACTION_ROLLBACK": "Transaction rollback", "TERRITORY_CREATED": "Khu bang được tạo",
-    "TERRITORY_DISPOSED": "Khu bang được giải phóng",
-    "ATTACK": "Sức đánh", "HP": "HP", "KI": "KI", "LUCK": "May mắn",
-    "POWER": "Tiềm năng/Sức mạnh", "MOB_GOLD": "Vàng từ quái"
-  };
-  return labels[key] || fallback || key;
-}
-
-function ClanEconomyUnit(key, fallback) {
-  var units = {
-    "total_clans": "bang", "active_clans": "bang", "active_clan_days": "ngày-bang",
-    "current_gold": "vàng", "current_gem": "ngọc", "current_capsule": "capsule",
-    "average_value": "điểm", "average_level": "cấp", "pending_rewards": "quà"
-  };
-  return units[key] || fallback || "";
-}
-
-function ClanEconomyStatusClass(status) {
-  if (status == "BALANCED" || status == "OK") return "healthy";
-  if (status == "SURPLUS_RISK") return "surplus";
-  if (status == "DEFICIT_RISK" || status == "WARNING") return "risk";
-  return "neutral";
-}
-
-function ClanEconomyStatusLabel(status) {
-  if (status == "BALANCED") return "TRONG NGƯỠNG";
-  if (status == "SURPLUS_RISK") return "DƯ NGUỒN SINH";
-  if (status == "DEFICIT_RISK") return "SINK QUÁ CAO";
-  if (status == "WARNING") return "CẦN THEO DÕI";
-  if (status == "OK") return "ỔN ĐỊNH";
-  return "CHƯA ĐỦ DỮ LIỆU";
-}
-
-function ClanEconomyNumber(value) {
-  return FormatNumber(value == null || value === "" ? "0" : value);
-}
-
-function ClanEconomyMetricNote(row, activeClanDays) {
-  var key = row[1], events = parseInt(row[3], 10) || 0, amount = parseInt(row[4], 10) || 0;
-  if (key == "TREE_WATER" || key == "TREE_FERTILIZE") {
-    return activeClanDays > 0 ? (Math.round(events * 100 / activeClanDays) / 100) + " lượt/ngày-bang" : "Chưa có mẫu ngày-bang";
-  }
-  if (key == "TREE_VITALITY_REACHED") {
-    return activeClanDays > 0 ? Math.round(events * 100 / activeClanDays) + "% ngày-bang đạt mục tiêu" : "Chưa có mẫu ngày-bang";
-  }
-  if ((key == "TREE_LEVEL_UP" || key == "TERRITORY_DISPOSED") && events > 0) {
-    return "Trung bình " + FormatDurationMs(Math.floor(amount / events));
-  }
-  if (row[6]) return row[6].replace(/\|/g, "·");
   return "";
 }
 
-function RenderClanEconomySummary() {
-  var keys = ["total_clans", "active_clans", "current_gold", "current_gem", "current_capsule", "average_value", "pending_rewards"];
+function ClanToHex2(n) {
+  var s = Number(n).toString(16).toUpperCase();
+  return s.length < 2 ? "0" + s : s;
+}
+
+function SyncClanColorPickerFromValue(hex) {
+  if (!/^0x[0-9A-Fa-f]{6}$/.test(hex)) return;
+  var r = parseInt(hex.substring(2, 4), 16);
+  var g = parseInt(hex.substring(4, 6), 16);
+  var b = parseInt(hex.substring(6, 8), 16);
+  Set("clanColorSliderR", r);
+  Set("clanColorSliderG", g);
+  Set("clanColorSliderB", b);
+  Set("clanColorNumR", r);
+  Set("clanColorNumG", g);
+  Set("clanColorNumB", b);
+  var formatted = "0x" + hex.substring(2).toUpperCase();
+  var badge = document.getElementById("clanColorHexBadge");
+  if (badge) badge.innerText = formatted;
+  var swatch = document.getElementById("clanColorActiveSwatch");
+  if (swatch) swatch.style.backgroundColor = "#" + hex.substring(2);
+}
+
+function ClanColorSliderMoved() {
+  var r = Math.min(255, Math.max(0, parseInt(V("clanColorSliderR"), 10) || 0));
+  var g = Math.min(255, Math.max(0, parseInt(V("clanColorSliderG"), 10) || 0));
+  var b = Math.min(255, Math.max(0, parseInt(V("clanColorSliderB"), 10) || 0));
+  Set("clanColorNumR", r);
+  Set("clanColorNumG", g);
+  Set("clanColorNumB", b);
+  var hex = "0x" + ClanToHex2(r) + ClanToHex2(g) + ClanToHex2(b);
+  Set("clanConfigValue", hex);
+  var badge = document.getElementById("clanColorHexBadge");
+  if (badge) badge.innerText = hex;
+  var swatch = document.getElementById("clanColorActiveSwatch");
+  if (swatch) swatch.style.backgroundColor = "#" + hex.substring(2);
+  ClanConfigEditorChanged();
+}
+
+function ClanColorNumChanged() {
+  var r = Math.min(255, Math.max(0, parseInt(V("clanColorNumR"), 10) || 0));
+  var g = Math.min(255, Math.max(0, parseInt(V("clanColorNumG"), 10) || 0));
+  var b = Math.min(255, Math.max(0, parseInt(V("clanColorNumB"), 10) || 0));
+  Set("clanColorSliderR", r);
+  Set("clanColorSliderG", g);
+  Set("clanColorSliderB", b);
+  var hex = "0x" + ClanToHex2(r) + ClanToHex2(g) + ClanToHex2(b);
+  Set("clanConfigValue", hex);
+  var badge = document.getElementById("clanColorHexBadge");
+  if (badge) badge.innerText = hex;
+  var swatch = document.getElementById("clanColorActiveSwatch");
+  if (swatch) swatch.style.backgroundColor = "#" + hex.substring(2);
+  ClanConfigEditorChanged();
+}
+
+function PickClanPresetColor(hex) {
+  Set("clanConfigValue", hex);
+  SyncClanColorPickerFromValue(hex);
+  ClanConfigEditorChanged();
+}
+
+function RenderClanConfigEditor() {
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  document.getElementById("clanConfigEmpty").style.display = row ? "none" : "block";
+  document.getElementById("clanConfigDetail").style.display = row ? "block" : "none";
+  document.getElementById("clanConfigEditorScroll").scrollTop = 0;
+  clanConfigStructuredCount = 0;
+  if (!row) { UpdateClanConfigEditState(); return; }
+  ClanConfigText("clanConfigCategory", row[1]);
+  ClanConfigText("clanConfigName", row[2]);
+  ClanConfigText("clanConfigProperty", row[8]);
+  ClanConfigText("clanConfigSaved", FormatAdminValue(row[3], row[5], row[0]));
+  ClanConfigText("clanConfigDefault", FormatAdminValue(row[4], row[5], row[0]));
+  ClanConfigText("clanConfigDescription", row[9]);
+  ClanConfigText("clanConfigFile", "data/" + row[7]);
+  ClanConfigText("clanConfigScope", ConfigScopeLabel(row[6]));
+  var value = clanConfigDrafts.hasOwnProperty(row[0]) ? clanConfigDrafts[row[0]] : row[3];
+  var labels = ClanConfigFieldLabels(row);
+  var parts = value.split(",");
+  var structured = labels.length > 0 && parts.length == labels.length;
+  document.getElementById("clanConfigValue").style.display = structured || row[5] == "bool" ? "none" : "block";
+  document.getElementById("clanConfigValueLabel").style.display = structured || row[5] == "bool" ? "none" : "block";
+  Set("clanConfigValue", value);
   var html = "";
-  for (var i = 0; i < keys.length; i++) {
-    var row = ClanEconomyRow("SUMMARY", keys[i]);
-    if (!row) continue;
-    html += '<div class="clan-economy-card"><span>' + Html(ClanEconomyLabel(row[1], row[2])) + '</span>' +
-      '<strong>' + Html(ClanEconomyNumber(row[3])) + '</strong><small>' + Html(ClanEconomyUnit(row[1], row[4])) + '</small>' +
-      (row[6] ? '<em>' + Html(row[6].replace(/\|/g, "·")) + '</em>' : "") + '</div>';
+  if (structured) {
+    clanConfigStructuredCount = labels.length;
+    for (var i = 0; i < labels.length; i++) {
+      html += '<div class="clan-config-field' + (row[5] == "int-list" ? ' schedule' : '') + '"><label for="clanConfigPart_' + i + '">' + Html(labels[i]) + '</label><input type="text" id="clanConfigPart_' + i + '" value="' + HtmlAttr(parts[i]) + '" onkeyup="ClanConfigEditorChanged()" onchange="ClanConfigEditorChanged()" aria-describedby="clanConfigError"></div>';
+    }
+  } else if (row[5] == "bool") {
+    html = '<div class="clan-config-bool" role="group" aria-label="Bật hoặc tắt chức năng"><button id="clanConfigBoolOn" type="button" onclick="SetClanConfigBool(true)">Bật</button><button id="clanConfigBoolOff" type="button" onclick="SetClanConfigBool(false)">Tắt</button></div>';
   }
-  document.getElementById("clanEconomySummary").innerHTML = html || '<div class="clan-economy-empty">Chưa có dữ liệu tổng quan.</div>';
+  document.getElementById("clanConfigFields").innerHTML = html;
+
+  var pickerEl = document.getElementById("clanConfigColorPicker");
+  if (pickerEl) {
+    if (row[5] == "hex-color") {
+      pickerEl.style.display = "block";
+      SyncClanColorPickerFromValue(value);
+    } else {
+      pickerEl.style.display = "none";
+    }
+  }
+
+  var range = row[5] == "resource-prefix" ? "Bộ ảnh phải tồn tại đủ x1–x4 trước khi lưu." : (row[10] !== "" && row[11] !== "" ? "Giới hạn: " + row[10] + " – " + row[11] + (structured ? " cho mỗi ô." : ".") : "Kiểu dữ liệu: " + ConfigKindLabel(row[5]));
+  if (IsIntegerConfigKind(row[5])) range += " Có thể dùng dấu chấm phân cách hàng nghìn.";
+  ClanConfigText("clanConfigRange", range);
+  var schedule = row[0].indexOf("tree.upgrade_days_") == 0;
+  document.getElementById("clanConfigScheduleHint").style.display = schedule ? "block" : "none";
+  if (schedule) {
+    var maximum = FindConfigRow(clanConfigRows, "tree.max_tree_level");
+    ClanConfigText("clanConfigScheduleHint", "Trần cấp cây đã lưu: " + (maximum ? maximum[3] : "20") + ". Lịch đang chỉnh áp dụng cho trần cấp " + (labels.length + 1) + ". Các ô là thời gian của từng lần nâng, không phải thời gian cộng dồn.");
+  }
+  UpdateClanConfigPreview(row, value);
+  ClanConfigText("clanConfigError", ClanConfigValidateValue(row, ClanConfigNormalizeValue(value, row[5])));
+  UpdateClanConfigEditState();
 }
 
-function RenderClanEconomyFlows() {
-  var rows = ClanEconomyRows("FLOW"), html = "", overall = "BALANCED";
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i], statusClass = ClanEconomyStatusClass(row[5]);
-    if (row[5] == "DEFICIT_RISK") overall = "DEFICIT_RISK";
-    else if (row[5] == "SURPLUS_RISK" && overall != "DEFICIT_RISK") overall = "SURPLUS_RISK";
-    else if (row[5] == "NO_FLOW" && overall == "BALANCED") overall = "NO_FLOW";
-    var currencyLabel = row[1] == "0" ? "Vàng bang" : (row[1] == "1" ? "Ngọc bang" : "Capsule bang");
-    html += '<div class="clan-economy-flow-card ' + statusClass + '"><div><strong>' + Html(currencyLabel) + '</strong>' +
-      '<span class="clan-economy-badge ' + statusClass + '">' + Html(ClanEconomyStatusLabel(row[5])) + '</span></div>' +
-      '<p><b>+' + Html(ClanEconomyNumber(row[3])) + '</b> nguồn sinh <b>−' + Html(ClanEconomyNumber(row[4])) + '</b> sink</p>' +
-      '<small>' + Html((row[6] || "").replace(/\|/g, "·")) + '</small></div>';
+function ClanConfigEditorValue(row) {
+  if (clanConfigStructuredCount) {
+    var parts = [];
+    for (var i = 0; i < clanConfigStructuredCount; i++) parts.push(V("clanConfigPart_" + i));
+    return ClanConfigNormalizeValue(parts.join(","), row[5]);
   }
-  document.getElementById("clanEconomyFlows").innerHTML = html;
-  var badge = document.getElementById("clanEconomyOverallBadge");
-  badge.className = "clan-economy-badge " + ClanEconomyStatusClass(overall);
-  badge.innerText = overall == "BALANCED" ? "KINH TẾ TRONG NGƯỠNG" : ClanEconomyStatusLabel(overall);
+  return ClanConfigNormalizeValue(V("clanConfigValue"), row[5]);
 }
 
-function RenderClanEconomySignals() {
-  var rows = ClanEconomyRows("SIGNAL"), activeRow = ClanEconomyRow("SUMMARY", "active_clan_days");
-  var activeClanDays = activeRow ? (parseInt(activeRow[3], 10) || 0) : 0;
-  var html = "<thead><tr><th>Tín hiệu</th><th>Số lượt</th><th>Diễn giải</th></tr></thead><tbody>";
-  for (var i = 0; i < rows.length; i++) {
-    html += "<tr><td>" + Html(ClanEconomyLabel(rows[i][1], rows[i][2])) + "</td><td>" +
-      Html(ClanEconomyNumber(rows[i][3])) + "</td><td>" + Html(ClanEconomyMetricNote(rows[i], activeClanDays)) + "</td></tr>";
+function ClanConfigEditorChanged() {
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  if (!row) return;
+  var value = ClanConfigEditorValue(row);
+  if (value == ClanConfigNormalizeValue(row[3], row[5])) delete clanConfigDrafts[row[0]];
+  else clanConfigDrafts[row[0]] = value;
+  ClanConfigText("clanConfigError", ClanConfigValidateValue(row, value));
+  if (row[5] == "hex-color" && /^0x[0-9A-Fa-f]{6}$/.test(value)) {
+    SyncClanColorPickerFromValue(value);
   }
-  document.getElementById("clanEconomySignalTable").innerHTML = html + (rows.length ? "" : '<tr><td colspan="3">Chưa có metric trong cửa sổ.</td></tr>') + "</tbody>";
+  UpdateClanConfigPreview(row, value);
+  UpdateClanConfigEditState();
 }
 
-function RenderClanEconomyPotential() {
-  var rows = ClanEconomyRows("POTENTIAL");
-  var html = "<thead><tr><th>Nhánh</th><th>Tổng bậc</th><th>Số bang</th><th>Phân bố</th></tr></thead><tbody>";
-  for (var i = 0; i < rows.length; i++) {
-    html += "<tr><td>" + Html(ClanEconomyLabel(rows[i][1], rows[i][2])) + "</td><td>" + Html(ClanEconomyNumber(rows[i][3])) +
-      "</td><td>" + Html(ClanEconomyNumber(rows[i][4])) + "</td><td>" + Html((rows[i][6] || "").replace(/\|/g, "·")) + "</td></tr>";
-  }
-  document.getElementById("clanEconomyPotentialTable").innerHTML = html + (rows.length ? "" : '<tr><td colspan="4">Chưa có điểm Tiềm năng đã phân bổ.</td></tr>') + "</tbody>";
+function SetClanConfigBool(enabled) {
+  Set("clanConfigValue", enabled ? "true" : "false");
+  ClanConfigEditorChanged();
 }
 
-function RenderClanEconomyActions() {
-  var rows = ClanEconomyRows("ACTION");
-  var html = "<thead><tr><th>Hành động</th><th>Nguồn sinh</th><th>Sink</th><th>Tiền tệ / giao dịch</th></tr></thead><tbody>";
-  for (var i = 0; i < rows.length; i++) {
-    html += "<tr><td>" + Html(rows[i][2]) + "</td><td class=\"clan-economy-inflow\">+" + Html(ClanEconomyNumber(rows[i][3])) +
-      "</td><td class=\"clan-economy-outflow\">−" + Html(ClanEconomyNumber(rows[i][4])) + "</td><td>" + Html((rows[i][6] || "").replace(/\|/g, "·")) + "</td></tr>";
+function UpdateClanConfigPreview(row, value) {
+  if (row[5] == "bool") {
+    var normalized = ClanConfigNormalizeValue(value, "bool");
+    var on = document.getElementById("clanConfigBoolOn");
+    var off = document.getElementById("clanConfigBoolOff");
+    on.className = normalized == "true" ? "active" : "";
+    off.className = normalized == "false" ? "active" : "";
+    on.setAttribute("aria-pressed", normalized == "true" ? "true" : "false");
+    off.setAttribute("aria-pressed", normalized == "false" ? "true" : "false");
   }
-  document.getElementById("clanEconomyActionTable").innerHTML = html + (rows.length ? "" : '<tr><td colspan="4">Chưa có giao dịch sổ cái trong cửa sổ.</td></tr>') + "</tbody>";
+  var color = row[5] == "hex-color" && /^0x[0-9A-Fa-f]{6}$/.test(value);
+  document.getElementById("clanConfigColorPreview").style.display = color ? "block" : "none";
+  if (color) {
+    var hexCss = "#" + value.substring(2);
+    var dayEl = document.getElementById("clanConfigColorDay");
+    var nightEl = document.getElementById("clanConfigColorNight");
+    var noteEl = document.getElementById("clanConfigPreviewNote");
+    dayEl.style.color = hexCss;
+    nightEl.style.color = hexCss;
+    if (row[0].indexOf("chat.") == 0) {
+      var sampleText = "Mẫu tin nhắn chat bang";
+      if (row[0] == "chat.leader_color") sampleText = "[Bang Chủ] SonGoku: Chào mừng toàn thể thành viên bang!";
+      else if (row[0] == "chat.deputy_color") sampleText = "[Phó Bang] Vegeta: Anh em tập trung làm nhiệm vụ bang.";
+      else if (row[0] == "chat.member_color") sampleText = "[Thành Viên] Gohan: Em vừa cống hiến 50.000 vàng.";
+      else if (row[0] == "chat.tree_color") sampleText = "[Cây Bang] Cây Đậu Thần đã đạt cấp 10! Thu hoạch ngay.";
+      else if (row[0] == "chat.notify_color") sampleText = "[Thông Báo] Bang hội đã được thăng lên cấp 5!";
+      dayEl.innerText = sampleText;
+      nightEl.innerText = sampleText;
+      if (noteEl) noteEl.innerText = "Mẫu hiển thị trên nền sáng và nền tối trong khung chat bang.";
+    } else {
+      dayEl.innerText = "Mẫu màu chữ mốc ngoại hình (Ban ngày)";
+      nightEl.innerText = "Mẫu màu chữ mốc ngoại hình (Ban đêm)";
+      if (noteEl) noteEl.innerText = "Mẫu màu tham khảo trong game.";
+    }
+  }
 }
 
-function LoadClanEconomyReport() {
-  var lookback = V("clanEconomyLookback");
-  if (!/^(7|14|28|90)$/.test(lookback)) lookback = "14";
-  Msg("clanEconomyMessage", "Đang tổng hợp dữ liệu kinh tế bang...");
-  var text = RunAdmin("getclaneconomy", { LookbackDays: lookback });
-  if (IsAdminError(text)) {
-    clanEconomyRows = [];
-    Msg("clanEconomyMessage", "Không thể tải báo cáo. Chi tiết kỹ thuật đã được ghi vào admin_data.log.");
-    document.getElementById("clanEconomyOverallBadge").className = "clan-economy-badge risk";
-    document.getElementById("clanEconomyOverallBadge").innerText = "KHÔNG KHẢ DỤNG";
+function UpdateClanConfigEditState() {
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  var dirty = row && clanConfigDrafts.hasOwnProperty(row[0]);
+  document.getElementById("clanConfigSave").disabled = !dirty || clanConfigBusy;
+  document.getElementById("clanConfigDiscard").disabled = !dirty || clanConfigBusy;
+  document.getElementById("clanConfigReset").disabled = !row || clanConfigBusy;
+  ClanConfigText("clanConfigEditState", !row ? "Chưa chọn cấu hình" : (dirty ? "Có thay đổi chưa lưu · chỉ lưu mục đang chọn" : "Chưa có thay đổi ở mục này"));
+  ClanConfigText("clanConfigSummary", Math.max(0, clanConfigRows.length - 1) + " cấu hình · " + ClanConfigCategories().length + " nhóm · " + ClanConfigDraftCount() + " mục chưa lưu");
+  for (var i = 1; i < filteredClanConfigRows.length; i++) {
+    var badge = document.getElementById("clanConfigDirty_" + i);
+    if (badge) badge.innerText = clanConfigDrafts.hasOwnProperty(filteredClanConfigRows[i][0]) ? "Chưa lưu" : "";
+  }
+}
+
+function DiscardClanConfig() {
+  if (!selectedClanConfigKey || clanConfigBusy) return;
+  delete clanConfigDrafts[selectedClanConfigKey];
+  RenderClanConfigEditor();
+  UpdateClanConfigEditState();
+  Msg("clanConfigMessage", "Đã hủy phần sửa của mục đang chọn; không thay đổi file.");
+}
+
+function SaveClanConfig() {
+  if (clanConfigBusy) return;
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  if (!row) return;
+  ClanConfigEditorChanged();
+  var value = ClanConfigEditorValue(row);
+  var error = ClanConfigValidateValue(row, value);
+  if (error) {
+    ClanConfigText("clanConfigError", error);
+    Msg("clanConfigMessage", "Chưa lưu: " + error);
+    document.getElementById(clanConfigStructuredCount ? "clanConfigPart_0" : "clanConfigValue").focus();
     return;
   }
-  clanEconomyRows = ParseTsv(text);
-  RenderClanEconomySummary();
-  RenderClanEconomyFlows();
-  RenderClanEconomySignals();
-  RenderClanEconomyPotential();
-  RenderClanEconomyActions();
-  var generated = ClanEconomyRow("META", "generated_at");
-  document.getElementById("clanEconomyUpdated").innerText = generated ? "Cập nhật " + FormatDateTime(generated[3]) : "Đã tải dữ liệu";
-  Msg("clanEconomyMessage", "Đã tải báo cáo " + lookback + " ngày. Số liệu tài chính đọc từ sổ cái bất biến; metric vận hành được gom theo ngày.");
+  if (!clanConfigDrafts.hasOwnProperty(row[0])) return;
+  WriteClanConfigAction("saveclanconfig", { ConfigKey: row[0], ConfigValue: value });
+}
+
+function ResetClanConfig() {
+  if (clanConfigBusy) return;
+  var row = FindConfigRow(clanConfigRows, selectedClanConfigKey);
+  if (!row || !window.confirm("Đưa “" + row[2] + "” về mặc định server?\n\n" + row[4] + "\n\nThao tác này ghi ngay vào file và bỏ phần sửa của mục này.")) return;
+  WriteClanConfigAction("resetclanconfig", { ConfigKey: row[0] });
+}
+
+function WriteClanConfigAction(action, params) {
+  clanConfigBusy = true;
+  UpdateClanConfigEditState();
+  var text;
+  try { text = RunAdmin(action, params); }
+  catch (e) { text = "ERROR\tKhông thể ghi cấu hình. Hãy kiểm tra quyền truy cập file."; }
+  clanConfigBusy = false;
+  if (text && text.indexOf("OK\t") == 0) {
+    delete clanConfigDrafts[params.ConfigKey];
+    LoadClanConfig(true, StatusText(text));
+  } else {
+    ClanConfigText("clanConfigError", StatusText(text || "ERROR\tKhông nhận được kết quả; tải lại để kiểm tra trước khi thử lưu tiếp."));
+    Msg("clanConfigMessage", StatusText(text || "ERROR\tKhông nhận được kết quả."));
+  }
+  UpdateClanConfigEditState();
+}
+
+function LayoutClanConfig() {
+  var header = document.getElementById("clanConfigHeader");
+  var workspace = document.getElementById("clanConfigWorkspace");
+  if (!workspace) return;
+  var top = 175;
+  if (header) {
+    top = header.offsetTop + header.offsetHeight + 8;
+  }
+  workspace.style.top = top + "px";
 }
 
 RegisterTab({
   id: "claneconomy", view: "clan-economy.html", panelId: "panelClanEconomy", navId: "navClanEconomy",
-  title: "Kinh tế & cấu hình bang", subtitle: "Theo dõi nguồn–sink và quản lý chỉ số, tính năng, Cây bang, cửa hàng, quà và buff",
-  onOpen: function () { SelectClanEconomyMode(clanEconomyMode); },
-  onRefresh: function () {
-    if (clanEconomyMode == "config") LoadClanConfig();
-    else LoadClanEconomyReport();
-  },
-  onLayout: function () {
-    if (clanEconomyMode == "config") UpdateConfigColumnsOffset("panelClanEconomy", "clanConfigTabs");
-  }
+  title: "Cấu hình bang", subtitle: "Chức năng, Cây bang, cửa hàng, quà, buff và ngoại hình",
+  onOpen: function () { LoadClanConfig(); },
+  onRefresh: function () { LoadClanConfig(); },
+  onLayout: function () { LayoutClanConfig(); }
 });

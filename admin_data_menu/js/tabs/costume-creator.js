@@ -281,7 +281,7 @@ function LoadCostumeCreatorItem(itemId) {
 }
 
 function EnsureCostumeCreatorDraftFolder() {
-  var toolDir = rootDir + "\\costume-tools";
+  var toolDir = rootDir + "\\tools\\costumes";
   var projectDir = toolDir + "\\projects";
   if (!fso.FolderExists(toolDir)) fso.CreateFolder(toolDir);
   if (!fso.FolderExists(projectDir)) fso.CreateFolder(projectDir);

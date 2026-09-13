@@ -12,9 +12,9 @@ Mục tiêu của dự án là phát triển nội dung NRO theo hướng có th
 | `data/` | Dữ liệu runtime và asset x1–x4 cho icon, mob, map, background và part nhân vật. |
 | `sql/` | Database gốc, migration và script rollback cho các nội dung mới. |
 | `admin_data_menu.hta` + `admin_data_menu/` | Giao diện quản trị dữ liệu game: item, shop, boss, mob, event, nhiệm vụ, map, NPC, cải trang… |
-| `server_menu.hta`, `run.bat`, `tools/server_control.ps1` | Dashboard, script build, start/stop/restart, theo dõi trạng thái và log server. |
-| `map-tools/` | Công cụ tạo, kiểm tra, preview và phát hành map có snapshot/rollback. |
-| `costume-tools/` | Workspace lưu draft và mapping asset cho cải trang. |
+| `server_menu.hta`, `run.bat`, `tools/server/server_control.ps1` | Dashboard, script build, start/stop/restart, theo dõi trạng thái và log server. |
+| `tools/maps/` | Công cụ tạo, kiểm tra, preview và phát hành map có snapshot/rollback. |
+| `tools/costumes/` | Workspace lưu draft và mapping asset cho cải trang. |
 | `assets/` | Asset nguồn, atlas và ảnh preview phục vụ quy trình tạo mob/codex. |
 
 ## Các hệ thống đã phát triển
@@ -74,14 +74,14 @@ Mục tiêu của dự án là phát triển nội dung NRO theo hướng có th
 
 ## Chạy và build nhanh
 
-Yêu cầu chính: Windows, PowerShell, Java/JDK 17, dependency trong `lib/` và database đã được cấu hình trong `Config.properties`.
+Yêu cầu chính: Windows, PowerShell, Java/JDK 17, dependency trong `lib/` và database đã được cấu hình trong `config/Config.properties`.
 
 ```powershell
 # Mở dashboard điều khiển server
 .\run.bat
 
 # Build đầy đủ source Java và cập nhật 20.jar an toàn
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server_control.ps1 -Action build
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\server\server_control.ps1 -Action build
 
 # Khởi động / xem trạng thái server
 .\run.bat start
@@ -97,8 +97,8 @@ Trước khi thay đổi Java, asset hoặc dữ liệu runtime, đọc [BUILD_J
 
 - [Quy trình build Java](BUILD_JAVA_STANDARD.md)
 - [Cấu trúc menu quản trị](admin_data_menu/README.md)
-- [Công cụ tạo map](map-tools/README.md)
-- [Workspace cải trang](costume-tools/README.md)
+- [Công cụ tạo map](tools/maps/README.md)
+- [Workspace cải trang](tools/costumes/README.md)
 
 ---
 

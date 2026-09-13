@@ -8,7 +8,7 @@ Với pool option của Bông tai cấp 2, Bông tai cấp 3 và trang bị Thi�
 
 Bộ chọn trực quan này cũng được dùng lại trong tab **Chỉ số trang bị**. Khi thêm hoặc sửa một dòng option shop, tìm theo ID/tên rồi tick một option; bộ chọn chỉ giữ một option vì mỗi dòng trong `item_shop_option` có Param riêng.
 
-Các thay đổi trong `combine.properties` được server kiểm tra lại tối đa mỗi 1 giây. Sau khi bản Java mới đã được build/deploy một lần, các lần chỉnh tỉ lệ tiếp theo không cần restart server.
+Các thay đổi trong `config/combine.properties` được server kiểm tra lại tối đa mỗi 1 giây. Sau khi bản Java mới đã được build/deploy một lần, các lần chỉnh tỉ lệ tiếp theo không cần restart server.
 
 Quy ước nhập:
 
@@ -47,7 +47,7 @@ Trước thay đổi này, `PhaLeHoaTrangBi` hiển thị một bộ tỉ lệ c
 - `Combine`: trạng thái phiên ghép của người chơi: item đang chọn, vàng/ngọc, tỉ lệ và nguyên liệu.
 - `CombineService`: mở tab, điều hướng `showInfo/startCombine`, gửi hiệu ứng và nội dung NPC.
 - `CombineSystem`: công thức giá, nguyên liệu, tỉ lệ theo cấp và ánh xạ option đá pha lê.
-- `CombineConfig`: đọc `combine.properties`, fallback an toàn và tự reload.
+- `CombineConfig`: đọc `config/combine.properties`, fallback an toàn và tự reload.
 
 ### Trang bị và sao pha lê
 

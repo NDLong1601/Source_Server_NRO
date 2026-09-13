@@ -74,7 +74,7 @@ requested scope.
 
 - Read `BUILD_JAVA_STANDARD.md` completely before changing Java build behavior or
   producing a new `20.jar`.
-- Use `tools/server_control.ps1 -Action build` as the canonical full-build entry point.
+- Use `tools/server/server_control.ps1 -Action build` as the canonical full-build entry point.
 - A partial compile is diagnostic only and is never a releasable build.
 - Stop the server before replacing `20.jar`; preserve a known-good backup and verify
   the resulting archive before restart.
@@ -95,7 +95,7 @@ requested scope.
 
 - Discover and use the repository's existing test seam before introducing a new test
   framework. Java regression programs live under `tools/tests`; Python map tests live
-  under `map-tools/tests`.
+  under `tools/maps/tests`.
 - Apply test-first development to behavior changes where a stable seam exists. Do not
   force a Java test framework migration for a small fix.
 - Verify the narrowest relevant behavior first, then run the broader repository gate
@@ -113,7 +113,7 @@ requested scope.
 - Keep UI recommendations compatible with HTA: prioritize information hierarchy,
   keyboard access, visible focus, readable density, form feedback, contrast, and
   resilient text layout.
-- After changing the modular admin menu, run `node tools/check_admin_data_menu.js`.
+- After changing the modular admin menu, run `node tools/validation/check_admin_data_menu.js`.
 - Playwright/Chromium can validate static HTML concepts but is not proof that ActiveX
   or HTA-specific behavior works. Verify the actual HTA when behavior changes.
 

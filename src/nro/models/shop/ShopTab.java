@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Collections;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 
 public class ShopTab {
 
     private static String expectedIp;
 
     static {
-        try (FileInputStream fis = new FileInputStream("Config.properties")) {
+        try (FileInputStream fis = new FileInputStream(ConfigPaths.server().toFile())) {
             Properties prop = new Properties();
             prop.load(fis);
             expectedIp = prop.getProperty("server.ip", "").trim();

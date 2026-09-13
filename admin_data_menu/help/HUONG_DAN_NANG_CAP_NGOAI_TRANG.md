@@ -23,7 +23,7 @@ Chức năng có độ khả thi cao vì server đã có sẵn phần lớn nề
 - Cơ chế lưu option theo từng vật phẩm.
 - Option `72 - Cấp #` dùng để lưu cấp cường hóa.
 - Option `209 - Bị rớt cấp # lần` dùng để lưu lịch sử tụt cấp.
-- Cấu hình runtime qua `combine.properties`.
+- Cấu hình runtime qua `config/combine.properties`.
 - Vật phẩm `987 - Đá bảo vệ` đã có và đang được dùng trong cường hóa trang bị thường.
 - Các option của mọi vật phẩm đang mặc đều được cộng vào chỉ số nhân vật trong `NPoint`.
 
@@ -153,10 +153,10 @@ File:
 
 ```text
 src/nro/models/combine/CombineConfig.java
-combine.properties
+config/combine.properties
 ```
 
-`CombineConfig` kiểm tra thay đổi của `combine.properties` tối đa mỗi giây. Vì vậy sau khi code Java đã được build và deploy một lần, admin có thể điều chỉnh:
+`CombineConfig` kiểm tra thay đổi của `config/combine.properties` tối đa mỗi giây. Vì vậy sau khi code Java đã được build và deploy một lần, admin có thể điều chỉnh:
 
 - Tỉ lệ.
 - Số đá.
@@ -511,7 +511,7 @@ Không được trừ item khi người chơi bấm sử dụng theo cách này.
 
 ---
 
-## 8. Cấu hình `combine.properties` đề xuất
+## 8. Cấu hình `config/combine.properties` đề xuất
 
 Các ID trong ví dụ dưới đây là placeholder. Phải thay bằng ID thật sau khi kiểm tra SQL dump và database đang chạy.
 
@@ -1244,7 +1244,7 @@ Nếu không tăng version item, client cũ có thể:
 - Hiển thị sai tên/icon.
 - Không mở được SHOP có item ID mới dù server không báo exception rõ ràng.
 
-Nếu chỉ thay nội dung `combine.properties` mà không thêm template hoặc sửa icon thì không cần tăng cache version.
+Nếu chỉ thay nội dung `config/combine.properties` mà không thêm template hoặc sửa icon thì không cần tăng cache version.
 
 ---
 
@@ -1264,14 +1264,14 @@ Trước khi thêm SHOP, dùng admin tool để kiểm tra shop/tag/tab:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\admin_data.ps1 `
+  -File .\tools\admin\admin_data.ps1 `
   -Action listshops `
   -Output <FILE_KET_QUA>
 ```
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\admin_data.ps1 `
+  -File .\tools\admin\admin_data.ps1 `
   -Action listtabs `
   -ShopId <SHOP_ID> `
   -Output <FILE_KET_QUA>
@@ -1279,7 +1279,7 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\admin_data.ps1 `
+  -File .\tools\admin\admin_data.ps1 `
   -Action listshopitems `
   -TabId <TAB_ID> `
   -Output <FILE_KET_QUA>
@@ -1685,7 +1685,7 @@ Không nên mở toàn bộ bốn nhóm và tất cả option cùng lúc trên p
 - Kiểm tra JAR.
 - Không restart khi còn người chơi online.
 - Backup database và JAR hiện tại.
-- Deploy theo quy trình `tools/server_control.ps1` của repository.
+- Deploy theo quy trình `tools/server/server_control.ps1` của repository.
 - Theo dõi log khởi động và log nâng cấp.
 
 ---
@@ -1714,7 +1714,7 @@ Không coi việc source compile thành công là hoàn tất nếu `20.jar` run
 Trước production:
 
 - Backup `20.jar`.
-- Backup `combine.properties`.
+- Backup `config/combine.properties`.
 - Backup các bảng item/shop đã sửa.
 - Lưu danh sách item ID và icon ID mới.
 
@@ -1770,7 +1770,7 @@ Không chạy SQL xóa hàng loạt option 72 nếu chưa phân biệt được 
 - [ ] Thêm audit log.
 - [ ] Thêm dispatch vào `CombineService`.
 - [ ] Thêm menu Bà Hạt Mít ở mọi map liên quan.
-- [ ] Bổ sung cấu hình `combine.properties`.
+- [ ] Bổ sung cấu hình `config/combine.properties`.
 - [ ] Nếu cần, mở rộng `CombineConfig` để đọc map `id:value`.
 
 ---
@@ -1878,4 +1878,3 @@ Phương án nên chọn cho phiên bản đầu:
 17. Thêm cooldown, lock theo phiên Combine và audit log.
 18. Thêm template theo ID liên tục, icon đủ x1-x4 và tăng cache version.
 19. Rollout từng category, không bật toàn bộ ngay trên production.
-

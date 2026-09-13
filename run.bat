@@ -13,7 +13,7 @@ if /i "%~1"=="exprestart" goto control
 if /i "%~1"=="build" goto control
 if /i "%~1"=="openlogs" goto control
 
-start "" "%~dp0tools\HtaTaskbarLauncherV2.exe" "%~dp0server_menu.hta" "%~dp0assets\icons\server_menu_v2.ico"
+start "" "%~dp0tools\launcher\HtaTaskbarLauncherV2.exe" "%~dp0server_menu.hta" "%~dp0assets\icons\server_menu_v2.ico"
 exit /b
 
 :control
@@ -32,5 +32,5 @@ shift /1
 goto collect_value
 
 :run_control
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\server_control.ps1" -Action "%MENU_ACTION%" -Value "%MENU_VALUE%"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\server\server_control.ps1" -Action "%MENU_ACTION%" -Value "%MENU_VALUE%"
 exit /b %errorlevel%

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 
 /**
  * Central runtime configuration for player defaults and server-wide limits.
@@ -16,7 +17,7 @@ import java.util.Properties;
  */
 public final class PlayerConfig {
 
-    private static final Path CONFIG_PATH = Paths.get("player.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.player();
     private static final long RELOAD_INTERVAL_MS = 1_000L;
 
     private static final long[] DEFAULT_POWER_LIMITS = {

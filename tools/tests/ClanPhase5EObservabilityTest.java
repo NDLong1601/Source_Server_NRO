@@ -65,11 +65,11 @@ public final class ClanPhase5EObservabilityTest {
     }
 
     private static void verifyDeployedContract() throws Exception {
-        ClanEconomyConfig config = ClanEconomyConfig.load(Path.of("data", "clan_economy.properties"));
+        ClanEconomyConfig config = ClanEconomyConfig.load(Path.of("config", "clan", "clan_economy.properties"));
         assertTrue("lookback choices include 28 days", config.maxLookbackDays() >= 28);
         assertTrue("retention covers lookback", config.retentionDays() >= config.maxLookbackDays());
 
-        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("data", "clan_features.properties"));
+        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("config", "clan", "clan_features.properties"));
         assertTrue("5E metrics enabled", flags.isEnabled(ClanFeatureFlags.Feature.ECONOMY_METRICS));
         assertFalse("5E has no client mutation surface",
                 flags.canMutate(ClanFeatureFlags.Feature.ECONOMY_METRICS));

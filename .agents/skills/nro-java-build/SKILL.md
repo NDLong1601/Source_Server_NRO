@@ -36,7 +36,7 @@ Build the server as one release unit: Java source, configuration, database data,
 ### 3. Package and Deploy Safely
 
 - Stop the server before replacing `20.jar`.
-- Run `tools/server_control.ps1 -Action build` as the canonical build entry point.
+- Run `tools/server/server_control.ps1 -Action build` as the canonical build entry point.
 - Keep the existing JAR as a timestamped backup until verification passes.
 - Update ZIP entries through the controller's safe archive path; do not use raw `jar uf` for the release build.
 - Roll back automatically or manually if packaging, verification, or startup fails.

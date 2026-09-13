@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import nro.config.ConfigPaths;
 import nro.models.data.LocalManager;
 import nro.models.utils.Logger;
 
@@ -27,7 +28,7 @@ import nro.models.utils.Logger;
 public final class ActivityConfigService {
 
     private static final ActivityConfigService INSTANCE = new ActivityConfigService();
-    private static final Path CONFIG_PATH = Paths.get("activity.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.activity();
     private static final Gson GSON = new Gson();
 
     private final AtomicReference<ActivityConfig> current = new AtomicReference<>(ActivityConfig.defaults());

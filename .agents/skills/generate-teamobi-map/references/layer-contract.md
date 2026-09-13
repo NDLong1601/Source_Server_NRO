@@ -23,7 +23,7 @@ For custom theme series (e.g. **Infinity Castle**):
 
 * **Single Authoritative Master Source:**
   All maps in the series (e.g., Map 201, Map 202, Map 203, ...) use the **SAME** authoritative master image:
-  `map-tools/assets/infinity_castle/background/background.png`
+  `tools/maps/assets/infinity_castle/background/background.png`
 * **Shared Visual Identity:**
   - Do NOT split the background into separate left/right cropped images for different maps.
   - Do NOT create separate or divergent background files for Map 201 vs Map 202.
@@ -34,7 +34,7 @@ For custom theme series (e.g. **Infinity Castle**):
     $$\text{scale} = \max\left(\frac{\text{mapWidthPixels}}{\text{backgroundWidth}}, \frac{\text{mapHeightPixels}}{\text{backgroundHeight}}\right)$$
   - **Aspect Ratio Preservation:** The source aspect ratio is strictly preserved.
   - **Center Crop:** The uniformly scaled image is center-cropped to the exact map dimensions ($W_{\text{px}} \times H_{\text{px}}$).
-  - **Non-Destructive:** The master source asset in `map-tools/assets/` is never modified or overwritten.
+  - **Non-Destructive:** The master source asset in `tools/maps/assets/` is never modified or overwritten.
 
 ---
 

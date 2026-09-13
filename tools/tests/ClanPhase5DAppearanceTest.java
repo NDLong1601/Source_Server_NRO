@@ -19,6 +19,7 @@ public final class ClanPhase5DAppearanceTest {
         verifyConfigurationSanitization();
         verifyProtocolRoundTripAndCeiling();
         verifyDeployedRolloutAndAssets();
+        verifyDayNightReadableLabelAndEndgameTreeScale();
         System.out.println("ClanPhase5DAppearanceTest: PASS");
     }
 
@@ -103,7 +104,7 @@ public final class ClanPhase5DAppearanceTest {
     }
 
     private static void verifyDeployedRolloutAndAssets() throws Exception {
-        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("data", "clan_features.properties"));
+        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("config", "clan", "clan_features.properties"));
         assertTrue("phase 5D appearance enabled", flags.isEnabled(ClanFeatureFlags.Feature.APPEARANCE));
         assertFalse("phase 5D is automatic/read-only",
                 flags.canMutate(ClanFeatureFlags.Feature.APPEARANCE));
@@ -131,6 +132,38 @@ public final class ClanPhase5DAppearanceTest {
                     assertEquals("tree asset height follows zoom: " + asset,
                             baseHeight * zoom, image.getHeight());
                 }
+            }
+        }
+    }
+
+    /**
+     * The tree label must not reuse foliage green, which becomes unreadable on
+     * both the daytime terrain and the night tint.  Endgame trees must also be
+     * visibly larger than their early-game counterparts at every client zoom.
+     */
+    private static void verifyDayNightReadableLabelAndEndgameTreeScale() throws Exception {
+        ClanAppearanceConfig config = ClanAppearanceConfig.load();
+        int[] expectedHeights = {
+            60, 66, 72, 77, 83, 89, 95, 101, 106, 112,
+            118, 124, 129, 135, 141, 147, 153, 158, 164, 170
+        };
+        assertEquals("new tree resource namespace", "cay_lv_v4_19", config.resourceName(19));
+        assertEquals("day/night readable young-tree accent", 0xFFE082,
+                config.tier(0).accentRgb());
+
+        for (int zoom = 1; zoom <= 4; zoom++) {
+            int previousHeight = 0;
+            for (int level = 1; level <= expectedHeights.length; level++) {
+                Path asset = Path.of("data", "img_by_name", "x" + zoom,
+                        config.resourceName(level) + ".png");
+                var image = ImageIO.read(asset.toFile());
+                assertTrue("linearly enlarged tree asset exists: " + asset,
+                        image != null && image.getWidth() > 0);
+                assertEquals("tree height at level " + level + " zoom x" + zoom,
+                        expectedHeights[level - 1] * zoom, image.getHeight());
+                assertTrue("tree height grows at level " + level + " zoom x" + zoom,
+                        image.getHeight() > previousHeight);
+                previousHeight = image.getHeight();
             }
         }
     }

@@ -58,13 +58,13 @@ public final class ClanPhase5BValueTest {
     }
 
     private static void verifyDeployedConfiguration() {
-        ClanValueConfig.Score score = ClanValueConfig.load(Path.of("data", "clan_value.properties"))
+        ClanValueConfig.Score score = ClanValueConfig.load(Path.of("config", "clan", "clan_value.properties"))
                 .score(10, 15, 6, 2_000L, 500, 1_000);
         assertEquals("deployed formula", 17_000L, score.totalValue());
     }
 
     private static void verifyDeployedRollout() {
-        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("data", "clan_features.properties"));
+        ClanFeatureFlags flags = ClanFeatureFlags.load(Path.of("config", "clan", "clan_features.properties"));
         assertTrue("phase 5B value enabled", flags.isEnabled(ClanFeatureFlags.Feature.VALUE));
         assertTrue("phase 5B value refresh enabled", flags.canMutate(ClanFeatureFlags.Feature.VALUE));
         assertTrue("phase 5C ranking enabled after rollout", flags.isEnabled(ClanFeatureFlags.Feature.RANKING));

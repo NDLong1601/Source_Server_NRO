@@ -13,7 +13,7 @@ Write a failing test before writing the code that makes it pass. For bug fixes, 
 
 - Read root `AGENTS.md` and the applicable NRO-specific skill first; they own protocol, cache, asset, data, build, deployment, and runtime verification.
 - Apply RED -> GREEN -> REFACTOR to behavior changes only when a stable seam exists. If no stable automated seam exists, use a controlled probe and document its limits instead of introducing a framework migration.
-- Java regression programs live under `tools/tests`; Python map tests live under `map-tools/tests`. Discover the neighboring convention and the documented command before adding or running a test.
+- Java regression programs live under `tools/tests`; Python map tests live under `tools/maps/tests`. Discover the neighboring convention and the documented command before adding or running a test.
 - This repository targets Java 17 and uses Ant/NetBeans. Do not introduce npm, Maven, Gradle, Jest, or another framework solely to satisfy this workflow.
 - Tests must not mutate production databases, deploy or replace `20.jar`, restart services, or cross into client projects unless the user-authorized NRO workflow explicitly requires it.
 - For packet/cache changes, retain the 65,535-byte payload ceiling, reconnect/skip-client-type probes where applicable, cache version checks, and the A -> B -> A relogin verification required by root `AGENTS.md`.
@@ -28,7 +28,7 @@ Write a failing test before writing the code that makes it pass. For bug fixes, 
 
 **When NOT to use:** Pure configuration changes, documentation updates, or static content changes that have no behavioral impact.
 
-**Related:** For HTA changes, combine the smallest testable seam with `node tools/check_admin_data_menu.js` when applicable and verify behavior in the actual Windows HTA runtime; Chromium alone is not proof of ActiveX/JScript compatibility.
+**Related:** For HTA changes, combine the smallest testable seam with `node tools/validation/check_admin_data_menu.js` when applicable and verify behavior in the actual Windows HTA runtime; Chromium alone is not proof of ActiveX/JScript compatibility.
 
 ## Discover the Stack First
 
@@ -328,7 +328,7 @@ Unit tests alone are not enough for `admin_data_menu.hta`, `server_menu.hta`, or
 1. RED: reproduce with the smallest JScript/helper seam or static checker
 2. INSPECT: identify whether the failure is HTML, CSS, JScript, ActiveX, or data
 3. GREEN: implement the minimum source change
-4. VERIFY STATIC: run `node tools/check_admin_data_menu.js` after modular admin-menu changes
+4. VERIFY STATIC: run `node tools/validation/check_admin_data_menu.js` after modular admin-menu changes
 5. VERIFY RUNTIME: open the actual HTA and exercise the changed behavior when required
 ```
 

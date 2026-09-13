@@ -14,9 +14,9 @@ Use these paths and invariants for `C:\Users\PC\Music\source-server-nro\source-s
 | Item template delivery and cache version | `src/nro/models/data/DataGame.java`, `src/nro/models/data/ItemData.java` |
 | Shop packet serialization | `src/nro/models/shop/ShopService.java` |
 | Shop database loading | `src/nro/models/database/ShopDAO.java` |
-| Admin data backend | `tools/admin_data.ps1` |
+| Admin data backend | `tools/admin/admin_data.ps1` |
 | Admin items tab | `admin_data_menu/js/tabs/items.js`, `admin_data_menu/views/items.html` |
-| Runtime build/control | `tools/server_control.ps1`, `20.jar` |
+| Runtime build/control | `tools/server/server_control.ps1`, `20.jar` |
 | Icons | `data/icon/x1` through `data/icon/x4` |
 
 ## Known working references
@@ -37,10 +37,10 @@ Use these paths and invariants for `C:\Users\PC\Music\source-server-nro\source-s
 ## Useful admin reads
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin_data.ps1 -Action listitems -Output <file> -Search <item-id>
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin_data.ps1 -Action listshops -Output <file>
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin_data.ps1 -Action listtabs -Output <file> -ShopId <shop-id>
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin_data.ps1 -Action listshopitems -Output <file> -TabId <tab-id>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\admin_data.ps1 -Action listitems -Output <file> -Search <item-id>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\admin_data.ps1 -Action listshops -Output <file>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\admin_data.ps1 -Action listtabs -Output <file> -ShopId <shop-id>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\admin\admin_data.ps1 -Action listshopitems -Output <file> -TabId <tab-id>
 ```
 
 These commands rewrite the rolling `logs/admin_data.log`. Preserve user activity and remove only diagnostic files created by the current task.

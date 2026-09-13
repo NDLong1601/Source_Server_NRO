@@ -8,6 +8,7 @@ import nro.models.player_system.Template.AchievementTemplate;
 import nro.models.player_system.Template.ItemOptionTemplate;
 import nro.models.player_system.Template.ItemTemplate;
 import nro.models.data.DataGame;
+import nro.config.ConfigPaths;
 import nro.models.network.Sender;
 import nro.models.npc.NonInteractiveNPC;
 import nro.models.npc.NpcFactory;
@@ -56,7 +57,7 @@ public final class GameRuntime {
         initializingThread = Thread.currentThread();
         try {
         try {
-            config = ServerConfig.load(Path.of("Config.properties"));
+            config = ServerConfig.load(ConfigPaths.server());
         } catch (IOException | IllegalArgumentException error) {
             throw new IllegalStateException("Cannot load validated server configuration", error);
         }

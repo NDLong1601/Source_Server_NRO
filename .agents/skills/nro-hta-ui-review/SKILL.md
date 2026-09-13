@@ -100,7 +100,7 @@ For a full review or before delivering implemented UI changes, read
 - After any modular admin-menu change, run:
 
   ```powershell
-  node tools/check_admin_data_menu.js
+  node tools/validation/check_admin_data_menu.js
   ```
 
   This checks referenced assets, JavaScript parsing, duplicate globals/functions, tab

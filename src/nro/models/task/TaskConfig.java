@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.item.Item;
 import nro.models.consts.ConstTask;
 import org.json.simple.JSONArray;
@@ -19,7 +20,7 @@ import org.json.simple.JSONValue;
 
 public final class TaskConfig {
 
-    private static final Path CONFIG_PATH = Paths.get("task.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.task();
     private static final long RELOAD_INTERVAL_MS = 1_000L;
     private static volatile Properties values = new Properties();
     private static volatile long loadedModifiedTime = Long.MIN_VALUE;

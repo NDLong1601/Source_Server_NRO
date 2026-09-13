@@ -42,7 +42,7 @@ The engine strictly separates **Tile Space** from **Pixel Space**:
 ## 4. Shared Theme Background Contract (Cover Mode)
 
 For custom theme series (e.g. **Infinity Castle**):
-* **Single Authoritative Master Source:** `map-tools/assets/infinity_castle/background/background.png`.
+* **Single Authoritative Master Source:** `tools/maps/assets/infinity_castle/background/background.png`.
 * **Universal Shared Identity:** All maps in the series (Map 201, Map 202, ...) share the **same background visual identity** and same runtime `bgId`.
 * **Uniform Cover Scale & Center Crop:**
   $$\text{scale} = \max\left(\frac{\text{mapWidthPixels}}{\text{backgroundWidth}}, \frac{\text{mapHeightPixels}}{\text{backgroundHeight}}\right)$$
@@ -53,7 +53,7 @@ For custom theme series (e.g. **Infinity Castle**):
 
 ## 5. Background Item & Layer Contract
 
-All background props must reference valid template IDs in [`map-tools/output/bg_item_registry.json`](../../../../map-tools/output/bg_item_registry.json).
+All background props must reference valid template IDs in [`tools/maps/output/bg_item_registry.json`](../../../tools/maps/output/bg_item_registry.json).
 
 ### Layer Ordering:
 * **Layer 1 (Deep Background):** Distant mountains, far fortress halls, distant clouds.
@@ -72,7 +72,7 @@ Natural Language Prompt / Request
                ↓
 Write semantic `teamobi-map-plan.json` (widthTiles <= 127)
                ↓
-Run compiler: `python map-tools/tools/compile_map_plan.py <plan.json>`
+Run compiler: `python tools/maps/scripts/compile_map_plan.py <plan.json>`
                ↓
 Inspect `validation-report.json` and dual previews (`preview_clean.png`, `preview_debug.png`)
                ↓

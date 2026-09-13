@@ -1,0 +1,20 @@
+{
+  "items": {
+    "2077": "Cải trang Black Parten",
+    "2078": "Cải trang Captain America",
+    "2079": "Cải trang Spider Man",
+    "2080": "Cải trang Hulk",
+    "2081": "Cải trang Iron Man",
+    "2082": "Cải trang Gojo"
+  },
+  "partRange": [
+    2180,
+    2197
+  ],
+  "imageRange": [
+    26175,
+    26368
+  ],
+  "installSql": "install_all.sql",
+  "rollbackSql": "rollback_all.sql"
+}

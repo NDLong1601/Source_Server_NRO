@@ -5,12 +5,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 import nro.models.utils.Logger;
 
 /** Validated retention and balancing thresholds for phase 5E. */
 public final class ClanEconomyConfig {
 
-    private static final Path DEFAULT_PATH = Path.of("data", "clan_economy.properties");
+    private static final Path DEFAULT_PATH = ConfigPaths.clan("clan_economy.properties");
 
     private final int defaultLookbackDays;
     private final int maxLookbackDays;

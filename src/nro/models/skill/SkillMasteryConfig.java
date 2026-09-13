@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 
 /**
  * Cấu hình nóng cho hệ thống thành thạo kỹ năng. File được kiểm tra thay đổi
@@ -13,7 +14,7 @@ import java.util.Properties;
  */
 public final class SkillMasteryConfig {
 
-    private static final Path CONFIG_PATH = Paths.get("skill_mastery.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.skillMastery();
     private static final long RELOAD_INTERVAL_MS = 1_000L;
     private static final int BASE_LEVEL = 7;
 

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
+import nro.config.ConfigPaths;
 
 /**
  * Runtime configuration for combat disciples (Player.pet), not cosmetic pets.
@@ -14,7 +15,7 @@ import java.util.Properties;
  */
 public final class PetConfig {
 
-    private static final Path CONFIG_PATH = Paths.get("pet.properties");
+    private static final Path CONFIG_PATH = ConfigPaths.pet();
     private static final long RELOAD_INTERVAL_MS = 1_000L;
 
     private static volatile Properties values = new Properties();

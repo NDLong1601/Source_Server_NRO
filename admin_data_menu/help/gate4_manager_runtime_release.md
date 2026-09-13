@@ -50,7 +50,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\tests\Test-SEC07Prod
 Gate 4 full-compiles production source bằng Java 17, chạy characterization tests cho
 config/registry/reload/clan/tick/leaderboard, rồi kiểm tra dependency và kích thước
 compatibility facade. Release JAR vẫn phải được tạo bằng
-`tools/server_control.ps1 -Action build`, sau khi server đã dừng.
+`tools/server/server_control.ps1 -Action build`, sau khi server đã dừng.
 
 ## Rollback
 

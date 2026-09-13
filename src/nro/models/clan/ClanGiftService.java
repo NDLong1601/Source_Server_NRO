@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.io.FileInputStream;
+import nro.config.ConfigPaths;
 import nro.models.data.LocalManager;
 import nro.models.item.Item;
 import nro.models.network.Message;
@@ -47,7 +48,7 @@ public final class ClanGiftService {
 
     public synchronized void loadConfig() {
         Properties properties = new Properties();
-        try (FileInputStream input = new FileInputStream("data/clan_gift.properties")) { properties.load(input); }
+        try (FileInputStream input = new FileInputStream(ConfigPaths.clan("clan_gift.properties").toFile())) { properties.load(input); }
         catch (Exception ignored) { }
         enabled = Boolean.parseBoolean(properties.getProperty("enabled", "true"));
         sentPerDay = nonNegative(properties, "sent_per_day", 0);
