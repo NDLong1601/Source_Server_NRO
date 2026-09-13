@@ -1,54 +1,100 @@
 <div id="panelClanEconomy" class="panel">
-  <div class="clan-economy-toolbar" role="region" aria-label="Bộ lọc báo cáo kinh tế bang">
-    <label for="clanEconomyLookback">Khoảng theo dõi</label>
-    <select id="clanEconomyLookback">
-      <option value="7">7 ngày</option>
-      <option value="14" selected>14 ngày</option>
-      <option value="28">28 ngày</option>
-      <option value="90">90 ngày</option>
-    </select>
-    <button type="button" class="primary" onclick="LoadClanEconomyReport()">Tải báo cáo</button>
-    <span id="clanEconomyUpdated" class="clan-economy-updated">Chưa tải dữ liệu</span>
+  <div class="clan-economy-mode-tabs" role="tablist" aria-label="Chế độ quản lý bang">
+    <button id="clanEconomyReportTab" type="button" class="clan-economy-mode-tab active" role="tab" aria-selected="true" onclick="SelectClanEconomyMode('report')">Báo cáo kinh tế</button>
+    <button id="clanEconomyConfigTab" type="button" class="clan-economy-mode-tab" role="tab" aria-selected="false" onclick="SelectClanEconomyMode('config')">Cấu hình bang</button>
   </div>
 
-  <div class="clan-economy-scroll">
-    <div class="clan-economy-intro">
-      <div>
-        <strong>Sức khỏe kinh tế bang hội</strong>
-        <span>So sánh nguồn sinh và sink từ sổ cái, kết hợp metric vận hành tổng hợp không chứa ID người chơi.</span>
-      </div>
-      <span id="clanEconomyOverallBadge" class="clan-economy-badge neutral">ĐANG TẢI</span>
+  <div id="clanEconomyReportView" class="clan-economy-view active" role="tabpanel">
+    <div class="clan-economy-toolbar" role="region" aria-label="Bộ lọc báo cáo kinh tế bang">
+      <label for="clanEconomyLookback">Khoảng theo dõi</label>
+      <select id="clanEconomyLookback">
+        <option value="7">7 ngày</option>
+        <option value="14" selected>14 ngày</option>
+        <option value="28">28 ngày</option>
+        <option value="90">90 ngày</option>
+      </select>
+      <button type="button" class="primary" onclick="LoadClanEconomyReport()">Tải báo cáo</button>
+      <span id="clanEconomyUpdated" class="clan-economy-updated">Chưa tải dữ liệu</span>
     </div>
 
-    <div class="section-title">Tổng quan hiện tại</div>
-    <div id="clanEconomySummary" class="clan-economy-card-row"></div>
+    <div class="clan-economy-scroll">
+      <div class="clan-economy-intro">
+        <div>
+          <strong>Sức khỏe kinh tế bang hội</strong>
+          <span>So sánh nguồn sinh và sink từ sổ cái, kết hợp metric vận hành tổng hợp không chứa ID người chơi.</span>
+        </div>
+        <span id="clanEconomyOverallBadge" class="clan-economy-badge neutral">ĐANG TẢI</span>
+      </div>
 
-    <div class="section-title">Cân bằng nguồn – sink</div>
-    <div id="clanEconomyFlows" class="clan-economy-card-row"></div>
+      <div class="section-title">Tổng quan hiện tại</div>
+      <div id="clanEconomySummary" class="clan-economy-card-row"></div>
 
-    <div class="clan-economy-columns">
-      <div class="clan-economy-column">
-        <div class="section-title">Tín hiệu vận hành</div>
-        <div class="clan-economy-table-wrap">
-          <table id="clanEconomySignalTable"></table>
+      <div class="section-title">Cân bằng nguồn – sink</div>
+      <div id="clanEconomyFlows" class="clan-economy-card-row"></div>
+
+      <div class="clan-economy-columns">
+        <div class="clan-economy-column">
+          <div class="section-title">Tín hiệu vận hành</div>
+          <div class="clan-economy-table-wrap">
+            <table id="clanEconomySignalTable"></table>
+          </div>
+        </div>
+        <div class="clan-economy-column clan-economy-column-last">
+          <div class="section-title">Phân bố Tiềm năng bang</div>
+          <div class="clan-economy-table-wrap">
+            <table id="clanEconomyPotentialTable"></table>
+          </div>
         </div>
       </div>
-      <div class="clan-economy-column clan-economy-column-last">
-        <div class="section-title">Phân bố Tiềm năng bang</div>
-        <div class="clan-economy-table-wrap">
-          <table id="clanEconomyPotentialTable"></table>
+
+      <div class="section-title">Dòng tiền theo hành động</div>
+      <div class="clan-economy-table-wrap clan-economy-action-table">
+        <table id="clanEconomyActionTable"></table>
+      </div>
+
+      <div class="clan-economy-guidance">
+        <strong>Cách đọc cảnh báo:</strong> tỷ lệ sink/source thấp hơn ngưỡng cấu hình nghĩa là tài sản đang sinh nhanh hơn bị tiêu; cao hơn ngưỡng nghĩa là sink có thể quá nặng. “Chưa đủ dữ liệu” không được xem là cân bằng.
+      </div>
+      <div id="clanEconomyMessage" class="message" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div id="clanEconomyConfigView" class="clan-economy-view" role="tabpanel">
+    <div id="clanConfigTabs" class="player-config-tabs clan-config-tabs"></div>
+    <div class="columns clan-config-columns">
+      <div class="left-pane">
+        <div class="toolbar">
+          <label class="clan-config-search-label" for="clanConfigSearch">Tìm cấu hình</label>
+          <input type="text" id="clanConfigSearch" placeholder="Tìm tên, khóa hoặc file" onkeyup="FilterClanConfigRows()">
+          <button type="button" onclick="LoadClanConfig()">Tải lại</button>
         </div>
+        <div class="table-wrap"><table id="clanConfigTable"></table></div>
+      </div>
+      <div class="right-pane">
+        <div class="section-title">Chi tiết cấu hình bang</div>
+        <input type="hidden" id="clanConfigKey">
+        <div class="row">
+          <div class="cell"><label for="clanConfigCategory">Nhóm</label><input type="text" id="clanConfigCategory" readonly></div>
+          <div class="cell"><label for="clanConfigFile">File cấu hình</label><input type="text" id="clanConfigFile" readonly></div>
+        </div>
+        <label for="clanConfigName">Tên cấu hình</label><input type="text" id="clanConfigName" readonly>
+        <div class="row">
+          <div class="cell"><label for="clanConfigProperty">Khóa thuộc tính</label><input type="text" id="clanConfigProperty" readonly></div>
+          <div class="cell"><label for="clanConfigKind">Kiểu dữ liệu</label><input type="text" id="clanConfigKind" readonly></div>
+        </div>
+        <div class="row">
+          <div class="cell"><label for="clanConfigDefault">Giá trị mặc định</label><input type="text" id="clanConfigDefault" readonly></div>
+          <div class="cell"><label for="clanConfigScope">Phạm vi áp dụng</label><input type="text" id="clanConfigScope" readonly></div>
+        </div>
+        <label for="clanConfigValue">Giá trị đang dùng</label><textarea id="clanConfigValue" placeholder="Chọn một cấu hình ở bảng bên trái"></textarea>
+        <label for="clanConfigDescription">Mô tả và đơn vị</label><textarea id="clanConfigDescription" readonly></textarea>
+        <div class="actions">
+          <button type="button" class="primary" onclick="SaveClanConfig()">Lưu cấu hình</button>
+          <button type="button" onclick="ResetClanConfig()">Về mặc định</button>
+        </div>
+        <div class="clan-config-warning"><strong>Lưu ý:</strong> thay đổi được ghi ngay vào file nhưng phần lớn dịch vụ bang chỉ nạp cấu hình khi server khởi động. Hãy dùng nút Restart sau khi hoàn tất các chỉnh sửa liên quan.</div>
+        <div id="clanConfigMessage" class="message" aria-live="polite"></div>
       </div>
     </div>
-
-    <div class="section-title">Dòng tiền theo hành động</div>
-    <div class="clan-economy-table-wrap clan-economy-action-table">
-      <table id="clanEconomyActionTable"></table>
-    </div>
-
-    <div class="clan-economy-guidance">
-      <strong>Cách đọc cảnh báo:</strong> tỷ lệ sink/source thấp hơn ngưỡng cấu hình nghĩa là tài sản đang sinh nhanh hơn bị tiêu; cao hơn ngưỡng nghĩa là sink có thể quá nặng. “Chưa đủ dữ liệu” không được xem là cân bằng.
-    </div>
-    <div id="clanEconomyMessage" class="message" aria-live="polite"></div>
   </div>
 </div>

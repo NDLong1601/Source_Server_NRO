@@ -141,14 +141,30 @@ public final class Sender implements Runnable {
     }
 
     public void sendMessage(Message msg) {
+        enqueueMessage(msg, 0L, true);
+    }
+
+    /**
+     * Enqueues retryable data without consuming the reserved queue headroom.
+     * Optional asset preloads may be requested again by the client, so they
+     * must yield instead of closing an otherwise healthy session.
+     */
+    public boolean trySendMessage(Message msg, long reservedQueueBytes) {
+        if (reservedQueueBytes < 0L) {
+            throw new IllegalArgumentException("reservedQueueBytes must not be negative");
+        }
+        return enqueueMessage(msg, reservedQueueBytes, false);
+    }
+
+    private boolean enqueueMessage(Message msg, long reservedQueueBytes, boolean closeOnOverflow) {
         ISession currentSession = this.session;
         if (this.closed.get() || currentSession == null
                 || !currentSession.isConnected() || currentSession.isClosed() || msg == null) {
-            return;
+            return false;
         }
         byte[] data = msg.getData();
         if (rejectOversizedPayload(msg, data, currentSession)) {
-            return;
+            return false;
         }
 
         QueuedFrame frame = new QueuedFrame(msg.command, data);
@@ -156,11 +172,14 @@ public final class Sender implements Runnable {
         synchronized (this.queueLock) {
             if (this.closed.get() || this.session == null
                     || !this.session.isConnected() || this.session.isClosed()) {
-                return;
+                return false;
             }
             int nextCount = this.queuedMessages.get() + 1;
             long nextBytes = this.queuedBytes.get() + frame.getWireSize();
-            if (nextCount > this.maxQueueMessages || nextBytes > this.maxQueueBytes
+            long byteLimit = closeOnOverflow
+                    ? this.maxQueueBytes
+                    : Math.max(0L, this.maxQueueBytes - Math.min(this.maxQueueBytes, reservedQueueBytes));
+            if (nextCount > this.maxQueueMessages || nextBytes > byteLimit
                     || !this.messages.offer(frame)) {
                 overflow = true;
             } else {
@@ -171,12 +190,13 @@ public final class Sender implements Runnable {
             }
         }
 
-        if (overflow) {
+        if (overflow && closeOnOverflow) {
             ServerRuntimeMetrics.gI().recordSenderOverflow();
             ServerRuntimeMetrics.gI().recordSlowConsumer();
             this.close();
             currentSession.close(SessionCloseCause.SLOW_CONSUMER);
         }
+        return !overflow;
     }
 
     public void setSend(IMessageSendCollect sendCollect) {

@@ -44,6 +44,7 @@ public class DataGame {
     private static final int MAX_PRELOADED_PLAYER_ICONS = 192;
     private static final int PLAYER_ICON_PRELOAD_RETRY_COUNT = 2;
     private static final int PLAYER_ICON_PRELOAD_RETRY_DELAY_MS = 900;
+    private static final long PLAYER_ICON_PRELOAD_QUEUE_RESERVE_BYTES = 512L * 1024L;
     private static final int[] INFINITY_CASTLE_MOB_IDS = {
         110, 111, 119, 120, 121, 122, 123, 124, 125, 126
     };
@@ -419,23 +420,36 @@ public class DataGame {
     }
 
     public static void sendItemBGTemplate(MySession session, int id) {
-        if (!session.isAssetReady()) {
-            return;
+        sendItemBGTemplate(session, id, true);
+    }
+
+    private static boolean sendItemBGTemplate(MySession session, int id, boolean direct) {
+        if (session == null || !session.isConnected() || !session.isAssetReady()) {
+            return false;
         }
-        Message msg;
+        Message msg = null;
         try {
             final byte[] bg_temp = FileIO.readFile("data/item_bg_temp/x" + session.zoomLevel + "/" + id + ".png");
             if (bg_temp == null) {
-                return;
+                return false;
             }
             msg = new Message(-32);
             msg.writer().writeShort(id);
             msg.writer().writeInt(bg_temp.length);
             msg.writer().write(bg_temp);
-            session.sendMessage(msg);
-            msg.cleanup();
+            if (direct) {
+                session.doSendMessage(msg);
+            } else {
+                session.sendMessage(msg);
+            }
+            return session.isConnected();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
+            return false;
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 
@@ -490,14 +504,20 @@ public class DataGame {
         // Some clients do not request every custom mob after their cached map
         // data changes. Proactively replace all Infinity Castle MobTemplate.data
         // entries so a missing request cannot leave only the default shadow.
+        // These packets exceed the bounded sender queue at zoom x2..x4, so use
+        // the synchronized direct path where socket backpressure limits output.
         for (int mobId : INFINITY_CASTLE_MOB_IDS) {
-            requestMobTemplate(session, mobId);
+            if (!requestMobTemplate(session, mobId, true)) {
+                return;
+            }
         }
 
         // Both background halves are shared by maps 187..190. Send them before
         // map-info so the client never falls back to the default Earth backdrop.
-        sendItemBGTemplate(session, 516);
-        sendItemBGTemplate(session, 565);
+        if (!sendItemBGTemplate(session, 516, true)) {
+            return;
+        }
+        sendItemBGTemplate(session, 565, true);
     }
 
     public static void sendDataItemBG(MySession session) {
@@ -524,25 +544,37 @@ public class DataGame {
     }
 
     public static void sendIcon(MySession session, int id) {
-        if (!session.isAssetReady()) {
-            return;
+        sendIcon(session, id, false);
+    }
+
+    private static boolean sendIcon(MySession session, int id, boolean optionalPreload) {
+        if (session == null || !session.isAssetReady()) {
+            return false;
         }
-        Message msg;
+        Message msg = null;
         try {
             final byte[] icon = FileIO.readFile("data/icon/x" + session.zoomLevel + "/" + id + ".png");
 
             if (icon == null) {
-                return;
+                return true;
             }
 
             msg = new Message(-67);
             msg.writer().writeInt(id);
             msg.writer().writeInt(icon.length);
             msg.writer().write(icon);
+            if (optionalPreload) {
+                return session.trySendMessage(msg, PLAYER_ICON_PRELOAD_QUEUE_RESERVE_BYTES);
+            }
             session.sendMessage(msg);
-            msg.cleanup();
+            return session.isConnected();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 
@@ -606,7 +638,9 @@ public class DataGame {
             if (sent >= MAX_PRELOADED_PLAYER_ICONS) {
                 break;
             }
-            sendIcon(session, iconId);
+            if (!sendIcon(session, iconId, true)) {
+                break;
+            }
             sent++;
         }
     }
@@ -724,10 +758,14 @@ public class DataGame {
     }
 
     public static void requestMobTemplate(MySession session, int id) {
-        if (!session.isAssetReady()) {
-            return;
+        requestMobTemplate(session, id, false);
+    }
+
+    private static boolean requestMobTemplate(MySession session, int id, boolean direct) {
+        if (session == null || !session.isConnected() || !session.isAssetReady()) {
+            return false;
         }
-        Message msg;
+        Message msg = null;
         try {
 //            if (!session.check && id > 106) {
 //                byte[] mob = FileIO.readFile("data/mob/x" + session.zoomLevel + "/" + 0);
@@ -741,15 +779,24 @@ public class DataGame {
             final byte[] mob = FileIO.readFile("data/mob/x" + session.zoomLevel + "/" + id);
             if (mob == null) {
                 Logger.errorln("[MobAsset] Missing mob asset ID " + id + " x" + session.zoomLevel);
-                return;
+                return false;
             }
             msg = new Message(11);
             msg.writer().writeByte(id);
             msg.writer().write(mob);
-            session.sendMessage(msg);
-            msg.cleanup();
+            if (direct) {
+                session.doSendMessage(msg);
+            } else {
+                session.sendMessage(msg);
+            }
+            return session.isConnected();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e, "Cannot send mob asset ID " + id);
+            return false;
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 

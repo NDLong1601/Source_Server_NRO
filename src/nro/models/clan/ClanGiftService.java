@@ -128,6 +128,7 @@ public final class ClanGiftService {
         if (!result.success) { notify(sender, result.message); return; }
         ClanEconomyMetricsService.gI().record(ClanEconomyMetricsService.Signal.GIFT_SENT, clan.id);
         notify(sender, "Đã tặng quà bang cho " + receiver.name + ": " + result.rewardText());
+        sendGiftAnnouncement(clan, sender, receiver, result.rewardText());
         Player online = clan.getPlayerOnline((int) receiverId);
         if (online != null && !online.isOffline) deliverPending(online);
     }
@@ -253,6 +254,23 @@ public final class ClanGiftService {
     private static int dayKey() { return (int) LocalDate.now(nro.models.utils.TimeUtil.VIETNAM_ZONE).toEpochDay(); }
     private static boolean validRequestId(String value) { return value != null && !value.isBlank() && value.length() <= REQUEST_ID_MAX; }
     private static void notify(Player player, String text) { if (player != null) Service.gI().sendThongBao(player, text); }
+
+    private void sendGiftAnnouncement(Clan clan, Player sender, ClanMember receiver, String reward) {
+        if (clan == null || sender == null || receiver == null) return;
+        ClanMessage message = new ClanMessage(clan);
+        message.type = 0;
+        message.playerId = (int) sender.id;
+        message.playerName = "Quà bang";
+        message.role = sender.clanMember == null ? Clan.MEMBER : sender.clanMember.role;
+        message.text = giftAnnouncement(sender.name, receiver.name, reward);
+        message.color = ClanMessage.GREEN;
+        clan.addClanMessage(message);
+        clan.sendMessageClan(message);
+    }
+
+    static String giftAnnouncement(String senderName, String receiverName, String reward) {
+        return senderName + " đã tặng quà bang cho " + receiverName + ": " + reward + ".";
+    }
 
     private boolean sameAccount(long senderId, long receiverId) {
         try (Connection connection = LocalManager.getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT account_id FROM player WHERE id IN (?,?)")) {

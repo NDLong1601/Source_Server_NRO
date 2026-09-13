@@ -474,6 +474,18 @@ public final class ClanTreeService {
                                 sendSnapshot(player, state, memberState(player, state));
                                 return;
                             }
+                            ClanMember harvestingMember = clan.getClanMember((int) player.id);
+                            if (harvestingMember == null) {
+                                notify(player, "Bạn không còn thuộc bang hội này.");
+                                return;
+                            }
+                            if (state.pendingCapsule > 0
+                                    && !harvestingMember.canCreditClanContribution(state.pendingCapsule)) {
+                                notify(player, "Điểm đóng góp Capsule đã chạm giới hạn lưu trữ; chưa thể thu hoạch.");
+                                return;
+                            }
+                            String projectedMembers = clan.serializeMembersForPersistence(
+                                    harvestingMember.id, state.pendingCapsule);
                             Item giftBox = ItemService.gI().createNewItem(
                                     (short) ClanShopService.CLAN_GIFT_BOX_ITEM_ID);
                             giftBox.itemOptions.add(new Item.ItemOption(30, 0));
@@ -487,7 +499,7 @@ public final class ClanTreeService {
                                     (int) player.getWallet().getBalance(nro.models.player.Currency.GEM), committedBag);
                             long expectedSaveVersion = persistence.saveVersion();
                             HarvestResult result = persistHarvest(player, clan, state, expectedTreeVersion,
-                                    expectedSaveVersion, inventory);
+                                    expectedSaveVersion, inventory, projectedMembers);
                             if (!result.success) {
                                 if (result.reloadTree) {
                                     cache.remove(clan.id, state);
@@ -506,6 +518,13 @@ public final class ClanTreeService {
                             clan.clanGold = result.clanGold;
                             clan.capsuleClan = result.clanCapsule;
                             clan.treasuryVersion = result.treasuryVersion;
+                            if (result.capsule > 0 && !harvestingMember.creditClanContribution(result.capsule)) {
+                                player.quarantinePersistence();
+                                Logger.error("[CLAN-TREE] Member capsule projection failed after commit, clanId="
+                                        + clan.id + ", playerId=" + player.id);
+                                notify(player, "Thu hoạch đã được ghi nhận; vui lòng đăng nhập lại để đồng bộ điểm đóng góp.");
+                                return;
+                            }
                             try {
                                 inventory.applyTo(player);
                                 persistence.acknowledgeExternalCommit(expectedSaveVersion,
@@ -524,7 +543,8 @@ public final class ClanTreeService {
                             sendClanNotice(clan, player.name + " đã thu hoạch Cây bang: +" + result.gold
                                     + " vàng bang" + (result.capsule > 0
                                     ? ", +" + result.capsule + " Capsule Bang." : "."));
-                            ClanTreasuryService.gI().sendSnapshot(player);
+                            ClanTreasuryService.gI().refreshOnlineClanSnapshots(clan, player);
+                            clan.sendMyClanForAllMember();
                             broadcastSnapshot(clan, state);
                         }
                     }
@@ -536,7 +556,8 @@ public final class ClanTreeService {
     }
 
     private HarvestResult persistHarvest(Player player, Clan clan, ClanTreeState state,
-            long expectedTreeVersion, long expectedSaveVersion, InventoryPersistenceSnapshot inventory) {
+            long expectedTreeVersion, long expectedSaveVersion, InventoryPersistenceSnapshot inventory,
+            String projectedMembers) {
         try (Connection connection = LocalManager.getConnection()) {
             ensureSchema(connection);
             ClanTreasuryService.gI().ensureSchema(connection);
@@ -568,7 +589,8 @@ public final class ClanTreeService {
                 long nextTreasuryVersion = funds.treasuryVersion + 1L;
                 long nextTreeVersion = state.version + 1L;
                 updateTreeAfterHarvest(connection, state, expectedTreeVersion, nextTreeVersion);
-                updateClanAfterHarvest(connection, clan.id, nextGold, nextCapsule, nextTreasuryVersion);
+                updateClanAfterHarvest(connection, clan.id, nextGold, nextCapsule, nextTreasuryVersion,
+                        projectedMembers);
                 updatePlayerBagAfterHarvest(connection, player.id, clan.id, expectedSaveVersion, inventory);
                 String sourceId = clan.id + ":" + nextTreeVersion;
                 String metadata = "{\"treeLevel\":" + state.level + ",\"treeVersion\":"
@@ -929,13 +951,14 @@ public final class ClanTreeService {
     }
 
     private void updateClanAfterHarvest(Connection connection, int clanId, long gold,
-            int capsule, long treasuryVersion) throws SQLException {
+            int capsule, long treasuryVersion, String projectedMembers) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(
-                "UPDATE clan SET clan_gold=?,clan_point=?,treasury_version=? WHERE id=?")) {
+                "UPDATE clan SET clan_gold=?,clan_point=?,treasury_version=?,members=? WHERE id=?")) {
             ps.setLong(1, gold);
             ps.setInt(2, capsule);
             ps.setLong(3, treasuryVersion);
-            ps.setInt(4, clanId);
+            ps.setString(4, projectedMembers);
+            ps.setInt(5, clanId);
             if (ps.executeUpdate() != 1) {
                 throw new SQLException("Không thể cập nhật quỹ bang khi thu hoạch");
             }

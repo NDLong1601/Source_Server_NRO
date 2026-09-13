@@ -2,6 +2,57 @@
   overflow: hidden;
 }
 
+.clan-economy-mode-tabs {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 40px;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.clan-economy-mode-tab {
+  display: inline-block;
+  width: auto;
+  height: 32px;
+  margin: 0 3px 0 0;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #475569;
+  font-weight: 700;
+}
+
+.clan-economy-mode-tab:hover {
+  border-color: #99f6e4;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.clan-economy-mode-tab.active {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.clan-economy-view {
+  position: absolute;
+  left: 0;
+  top: 50px;
+  right: 0;
+  bottom: 0;
+  display: none;
+}
+
+.clan-economy-view.active {
+  display: block;
+}
+
 .clan-economy-toolbar {
   position: absolute;
   left: 0;
@@ -180,8 +231,71 @@
   line-height: 19px;
 }
 
+.clan-config-tabs {
+  margin-bottom: 0;
+}
+
+.clan-config-columns {
+  top: 58px;
+}
+
+#clanEconomyConfigView .left-pane {
+  width: 50%;
+}
+
+#clanEconomyConfigView .right-pane {
+  width: 48%;
+}
+
+.clan-config-search-label {
+  display: inline-block;
+  margin: 0 7px 0 1px;
+  color: #475569;
+  font-weight: 650;
+  vertical-align: middle;
+}
+
+#clanConfigSearch {
+  width: 55%;
+}
+
+#clanConfigTable th:first-child { width: 47%; }
+#clanConfigTable th:nth-child(2) { width: 35%; }
+#clanConfigTable th:last-child { width: 18%; }
+
+#clanConfigTable tr.selected td {
+  background: #ccfbf1;
+  color: #134e4a;
+  font-weight: 650;
+}
+
+#clanConfigTable tr:focus td {
+  background: #ecfeff;
+  outline: 2px solid #0f766e;
+  outline-offset: -2px;
+}
+
+#clanConfigValue {
+  min-height: 66px;
+}
+
+#clanConfigDescription {
+  min-height: 58px;
+}
+
+.clan-config-warning {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-left: 4px solid #d97706;
+  background: #fffbeb;
+  color: #78350f;
+  line-height: 18px;
+}
+
 @media (max-width: 1080px) {
   .clan-economy-card { width: calc(50% - 10px); }
   .clan-economy-flow-card { width: calc(100% - 10px); }
   .clan-economy-column { float: none; width: 100%; }
+  #clanEconomyConfigView .left-pane,
+  #clanEconomyConfigView .right-pane { width: auto; }
 }

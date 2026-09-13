@@ -62,6 +62,23 @@ public class ClanMember {
         this.joinTime = (int) (System.currentTimeMillis() / 1000);
     }
 
+    /**
+     * Attributes a shared-clan Capsule reward to the member who earned it.
+     * This is contribution history only; personal Capsule remains separate.
+     */
+    public boolean creditClanContribution(int amount) {
+        if (!canCreditClanContribution(amount)) {
+            return false;
+        }
+        this.clanPoint += amount;
+        return true;
+    }
+
+    public boolean canCreditClanContribution(int amount) {
+        return amount > 0
+                && this.clanPoint <= Integer.MAX_VALUE - amount;
+    }
+
     public int getNumDateFromJoinTimeToToday() {
         return (int) TimeUtil.diffDate(new Date(), new Date(this.joinTime * 1000L), TimeUtil.DAY);
     }

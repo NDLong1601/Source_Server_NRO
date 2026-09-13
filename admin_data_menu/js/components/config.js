@@ -16,8 +16,9 @@ function ConfigKindLabel(kind) {
   var labels = {
     "bool": "Bật / tắt", "int": "Số nguyên", "positive-int": "Số nguyên dương", "long": "Số nguyên lớn",
     "milliseconds": "Thời lượng", "percent": "Tỉ lệ phần trăm", "wide-percent": "Tỉ lệ phần trăm", "map-id-list": "Danh sách Map ID",
-    "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sách 5 giá trị", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
-    "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option"
+    "int-list": "Danh sách số nguyên", "long-list-4": "Danh sách 4 mốc", "int-list-5": "Danh sách 5 giá trị", "type-list": "Danh sách loại đệ tử", "weights-3": "Ba trọng số",
+    "skill-pool": "Checklist kỹ năng", "skill-level": "Cấp kỹ năng", "item-id": "ID vật phẩm", "option-id": "ID option",
+    "decimal": "Số thập phân", "java-text": "Văn bản", "hex-color": "Màu 0xRRGGBB", "shop-item": "7 chỉ số cửa hàng"
   };
   return labels[kind] || kind;
 }

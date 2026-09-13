@@ -149,13 +149,23 @@ public final class AuthAssetCommandHandler implements CommandHandler {
                 case 7 -> DataGame.updateSkill(session);
                 case 8 -> ItemData.updateItem(session);
                 case 10 -> DataGame.sendMapTemp(session, message.reader().readUnsignedByte());
-                case 13 -> finishInitialMapLoad(player);
+                case 13 -> {
+                    Player initialMapPlayer = player;
+                    runInitialMapLoad(session, initialMapPlayer, () -> finishInitialMapLoad(initialMapPlayer));
+                }
                 default -> {
                 }
             }
         } catch (IOException e) {
             Logger.logException(AuthAssetCommandHandler.class, e);
         }
+    }
+
+    static boolean runInitialMapLoad(MySession session, Player player, Runnable initialMapLoad) {
+        if (session == null || player == null || initialMapLoad == null) {
+            return false;
+        }
+        return session.runPlayerLifecycleStepIfOwned(player, initialMapLoad);
     }
 
     private void finishInitialMapLoad(Player player) {

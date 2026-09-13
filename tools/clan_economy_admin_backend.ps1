@@ -1,4 +1,4 @@
-# Read-only phase 5E backend. Dot-sourced by admin_data.ps1 and by pure tests.
+﻿# Read-only phase 5E backend. Dot-sourced by admin_data.ps1 and by pure tests.
 
 function Get-ClanEconomyPropertyMap {
     param([string]$Path)
@@ -13,6 +13,432 @@ function Get-ClanEconomyPropertyMap {
         $result[$key] = $value
     }
     $result
+}
+
+function New-ClanConfigEntry {
+    param(
+        [string]$Key,
+        [string]$File,
+        [string]$Property,
+        [string]$Category,
+        [string]$Name,
+        [string]$Default,
+        [string]$Kind,
+        [string]$Minimum,
+        [string]$Maximum,
+        [int]$ListCount,
+        [string]$Scope,
+        [string]$Description
+    )
+    [pscustomobject]@{
+        Key = $Key; File = $File; Property = $Property; Category = $Category;
+        Name = $Name; Default = $Default; Kind = $Kind; Minimum = $Minimum;
+        Maximum = $Maximum; ListCount = $ListCount; Scope = $Scope;
+        Description = $Description
+    }
+}
+
+function Get-ClanConfigCatalog {
+    $rows = New-Object System.Collections.Generic.List[object]
+    $restart = "Restart server"
+
+    $features = @(
+        [pscustomobject]@{ Key="territory"; Name="Khu bang"; Default="true" },
+        [pscustomobject]@{ Key="treasury"; Name="Kho bạc bang"; Default="true" },
+        [pscustomobject]@{ Key="tree"; Name="Cây bang"; Default="true" },
+        [pscustomobject]@{ Key="progression"; Name="Tiến trình bang"; Default="true" },
+        [pscustomobject]@{ Key="shop"; Name="Cửa hàng bang"; Default="true" },
+        [pscustomobject]@{ Key="gift"; Name="Quà thành viên"; Default="true" },
+        [pscustomobject]@{ Key="item_storage"; Name="Kho vật phẩm bang"; Default="true" },
+        [pscustomobject]@{ Key="buff"; Name="Buff toàn bang"; Default="true" },
+        [pscustomobject]@{ Key="value"; Name="Clan Value"; Default="false" },
+        [pscustomobject]@{ Key="ranking"; Name="Xếp hạng bang"; Default="false" },
+        [pscustomobject]@{ Key="appearance"; Name="Ngoại hình Cây bang"; Default="false" },
+        [pscustomobject]@{ Key="economy_metrics"; Name="Metric kinh tế bang"; Default="false" }
+    )
+    foreach ($feature in $features) {
+        $rows.Add((New-ClanConfigEntry -Key ("features." + $feature.Key + ".enabled") -File "clan_features.properties" -Property ($feature.Key + ".enabled") -Category "Công tắc chức năng" -Name ("Bật " + $feature.Name) -Default $feature.Default -Kind "bool" -Minimum "" -Maximum "" -ListCount 0 -Scope $restart -Description ("Cho phép server đọc và hiển thị chức năng " + $feature.Name + ".")))
+        $rows.Add((New-ClanConfigEntry -Key ("features." + $feature.Key + ".mutations_enabled") -File "clan_features.properties" -Property ($feature.Key + ".mutations_enabled") -Category "Công tắc chức năng" -Name ("Cho phép thay đổi " + $feature.Name) -Default $feature.Default -Kind "bool" -Minimum "" -Maximum "" -ListCount 0 -Scope $restart -Description "Tắt để giữ phần đọc/snapshot nhưng chặn các thao tác làm thay đổi tài sản hoặc trạng thái."))
+    }
+
+    $progression = @(
+        @("base_exp", "EXP cơ sở để lên cấp bang", "100", "long", "0", "9223372036854775807", "Chi phí EXP được nhân theo cấp hiện tại."),
+        @("base_capsule", "Capsule cơ sở để lên cấp bang", "100", "int", "0", "2147483647", "Chi phí Capsule bang được nhân theo cấp hiện tại."),
+        @("gold_base", "Vàng cơ sở để lên cấp bang", "100000", "long", "0", "9223372036854775807", "Chi phí Vàng bang từ cấp 5 trở lên."),
+        @("gem_per_ten_levels", "Ngọc mỗi mốc 10 cấp", "5", "int", "0", "1000000", "Số Ngọc bang nhân với bậc 10 tại các mốc cấp."),
+        @("technical_max_level", "Cấp bang kỹ thuật tối đa", "1000", "int", "1", "1000", "Trần cấp bang phía server."),
+        @("exp_tree_water", "EXP khi tưới Cây bang", "10", "int", "0", "1000000", "Clan EXP nhận cho một lần tưới hợp lệ."),
+        @("exp_tree_fertilize", "EXP khi bón phân", "30", "int", "0", "1000000", "Clan EXP nhận cho một lần bón phân hợp lệ."),
+        @("exp_weekly_contract", "EXP hợp đồng tuần", "250", "int", "0", "100000000", "Clan EXP nhận khi hoàn tất hợp đồng tuần." )
+    )
+    foreach ($item in $progression) {
+        $rows.Add((New-ClanConfigEntry -Key ("progression." + $item[0]) -File "clan_progression.properties" -Property $item[0] -Category "Tiến trình & chi phí" -Name $item[1] -Default $item[2] -Kind $item[3] -Minimum $item[4] -Maximum $item[5] -ListCount 0 -Scope $restart -Description $item[6]))
+    }
+    $branches = @(
+        @("attack", "Sức đánh"), @("hp", "HP"), @("ki", "KI"),
+        @("luck", "May mắn"), @("power", "Tiềm năng / Sức mạnh"), @("mob_gold", "Vàng từ quái")
+    )
+    foreach ($branch in $branches) {
+        $property = $branch[0] + "_max_rank"
+        $rows.Add((New-ClanConfigEntry -Key ("progression." + $property) -File "clan_progression.properties" -Property $property -Category "Tiềm năng bang" -Name ("Bậc tối đa: " + $branch[1]) -Default "20" -Kind "int" -Minimum "0" -Maximum "100" -ListCount 0 -Scope $restart -Description "Số bậc tối đa thành viên bang có thể phân bổ cho nhánh này."))
+    }
+
+    $buffs = @(
+        @("hp_regen_percent", "Hồi HP mỗi nhịp", "1", "Phần trăm HP tối đa được hồi khi buff đang hoạt động."),
+        @("ki_regen_percent", "Hồi KI mỗi nhịp", "1", "Phần trăm KI tối đa được hồi khi buff đang hoạt động."),
+        @("attack_percent", "Buff Sức đánh", "10", "Phần trăm Sức đánh cộng cho toàn bộ thành viên online."),
+        @("luck_percent", "Buff May mắn", "10", "Phần trăm May mắn cộng cho toàn bộ thành viên online."),
+        @("power_percent", "Buff Tiềm năng / Sức mạnh", "15", "Phần trăm Tiềm năng và Sức mạnh cộng cho toàn bộ thành viên."),
+        @("mob_gold_percent", "Buff Vàng từ quái", "20", "Phần trăm Vàng rơi từ quái cộng cho toàn bộ thành viên.")
+    )
+    foreach ($buff in $buffs) {
+        $rows.Add((New-ClanConfigEntry -Key ("buff." + $buff[0]) -File "clan_buff.properties" -Property $buff[0] -Category "Buff toàn bang" -Name $buff[1] -Default $buff[2] -Kind "percent" -Minimum "0" -Maximum "100" -ListCount 0 -Scope $restart -Description $buff[3]))
+    }
+    $durations = @(
+        @("short_duration_days", "Thời hạn gói ngắn", "1"),
+        @("medium_duration_days", "Thời hạn gói vừa", "3"),
+        @("long_duration_days", "Thời hạn gói dài", "7")
+    )
+    foreach ($duration in $durations) {
+        $rows.Add((New-ClanConfigEntry -Key ("buff." + $duration[0]) -File "clan_buff.properties" -Property $duration[0] -Category "Buff toàn bang" -Name $duration[1] -Default $duration[2] -Kind "positive-int" -Minimum "1" -Maximum "365" -ListCount 0 -Scope $restart -Description "Số ngày cộng thêm khi dùng vật phẩm buff tương ứng; thời gian được cộng dồn."))
+    }
+    $rows.Add((New-ClanConfigEntry -Key "buff.recovery_interval_seconds" -File "clan_buff.properties" -Property "recovery_interval_seconds" -Category "Buff toàn bang" -Name "Chu kỳ hồi HP/KI" -Default "5" -Kind "positive-int" -Minimum "1" -Maximum "60" -ListCount 0 -Scope $restart -Description "Số giây giữa hai nhịp hồi HP/KI khi buff tương ứng đang hoạt động."))
+
+    $treeSettings = @(
+        @("water_item_id", "ID vật phẩm tưới cây", "456", "item-id", "0", "32767", "Template ID vật phẩm dùng để tưới Cây bang."),
+        @("fertilizer_item_id", "ID vật phẩm phân bón", "1094", "item-id", "0", "32767", "Template ID vật phẩm dùng để bón Cây bang."),
+        @("daily_water_limit", "Giới hạn tưới mỗi ngày", "5", "int", "0", "127", "Số lần tưới tối đa của mỗi thành viên trong ngày."),
+        @("daily_fertilizer_limit", "Giới hạn bón phân mỗi ngày", "2", "int", "0", "127", "Số lần bón phân tối đa của mỗi thành viên trong ngày."),
+        @("action_cooldown_ms", "Hồi chiêu thao tác cây", "500", "milliseconds", "0", "3600000", "Khoảng chờ tối thiểu giữa hai thao tác Cây bang."),
+        @("help_cooldown_minutes", "Hồi chiêu trợ giúp", "10", "int", "0", "43200", "Số phút chờ giữa hai lần trợ giúp Cây bang."),
+        @("help_duration_minutes", "Thời hạn lời gọi trợ giúp", "120", "int", "0", "43200", "Số phút một lời gọi trợ giúp còn hiệu lực."),
+        @("production_cap_hours", "Trần giờ tích lũy sản lượng", "24", "positive-int", "1", "8760", "Số giờ sản lượng tối đa có thể tích lũy."),
+        @("hourly_gold_per_level", "Vàng mỗi giờ / cấp cây", "5000", "long", "0", "9223372036854775807", "Sản lượng Vàng cơ sở theo giờ và cấp Cây bang."),
+        @("hourly_capsule_per_5_levels", "Capsule mỗi giờ / 5 cấp cây", "1", "int", "0", "1000000", "Sản lượng Capsule theo giờ cho mỗi 5 cấp Cây bang."),
+        @("growth_base", "Tăng trưởng cơ sở", "100", "long", "1", "1000000000", "Nền công thức điểm tăng trưởng cần để lên cấp cây."),
+        @("growth_exponent", "Số mũ tăng trưởng", "1.40", "decimal", "0.10", "10", "Số mũ làm chi phí tăng trưởng tăng theo cấp cây."),
+        @("water_required_base", "Nước yêu cầu cơ sở", "20", "int", "0", "1000000", "Nền công thức lượng nước yêu cầu."),
+        @("water_required_per_level", "Nước tăng thêm mỗi cấp", "10", "int", "0", "1000000", "Lượng nước cộng thêm theo từng cấp cây."),
+        @("fertilizer_levels_per_unit", "Số cấp cho một đơn vị phân", "3", "positive-int", "1", "127", "Tỷ lệ cấp cây dùng để tính lượng phân cần."),
+        @("clan_levels_per_tree_level", "Cấp bang cho một cấp cây", "2", "positive-int", "1", "127", "Tỷ lệ cấp bang tối thiểu để mở cấp Cây bang."),
+        @("growth_per_water_base", "Tăng trưởng mỗi lần tưới", "10", "int", "0", "1000000", "Điểm tăng trưởng cơ sở từ một lần tưới."),
+        @("growth_per_water_level_bonus_cap", "Trần cộng tăng trưởng theo cấp", "10", "int", "0", "1000000", "Trần điểm cộng thêm theo cấp Cây bang cho mỗi lần tưới."),
+        @("fertilizer_growth_multiplier", "Hệ số tăng trưởng phân bón", "5", "int", "0", "1000000", "Hệ số nhân điểm tăng trưởng khi bón phân.")
+    )
+    foreach ($tree in $treeSettings) {
+        $category = if ($tree[0] -like "hourly_*" -or $tree[0] -like "growth_*" -or $tree[0] -like "*_required_*" -or $tree[0] -eq "fertilizer_growth_multiplier") { "Cây bang - Sản lượng" } else { "Cây bang - Hoạt động" }
+        $rows.Add((New-ClanConfigEntry -Key ("tree." + $tree[0]) -File "clan_tree.properties" -Property $tree[0] -Category $category -Name $tree[1] -Default $tree[2] -Kind $tree[3] -Minimum $tree[4] -Maximum $tree[5] -ListCount 0 -Scope $restart -Description $tree[6]))
+    }
+    $rows.Add((New-ClanConfigEntry -Key "tree.upgrade_days_to_levels_2_20" -File "clan_tree.properties" -Property "upgrade_days_to_levels_2_20" -Category "Cây bang - Nâng cấp" -Name "Số ngày nâng cây cấp 2 → 20" -Default "1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,8,9,11,13" -Kind "int-list" -Minimum "0" -Maximum "3650" -ListCount 19 -Scope $restart -Description "Đúng 19 số ngày cho các cấp đích 2 đến 20; có thể dùng 0 ở môi trường test."))
+
+    $giftSettings = @(
+        @("enabled", "Bật quà thành viên", "true", "bool", "", "", "Công tắc riêng của dịch vụ quà thành viên."),
+        @("sent_per_day", "Số quà gửi tối đa / ngày", "0", "int", "0", "2147483647", "0 nghĩa là không giới hạn tổng; luật một người nhận mỗi ngày vẫn áp dụng."),
+        @("received_per_day", "Số quà nhận tối đa / ngày", "0", "int", "0", "2147483647", "0 nghĩa là không giới hạn tổng số quà được nhận."),
+        @("minimum_join_hours", "Giờ tham gia tối thiểu", "0", "int", "0", "2147483647", "Số giờ thành viên phải ở trong bang trước khi được tặng quà."),
+        @("minimum_contribution", "Cống hiến tối thiểu", "0", "long", "0", "9223372036854775807", "Điểm cống hiến tối thiểu của người gửi."),
+        @("bound_gem_chance_percent", "Tỉ lệ nhận Ngọc khóa", "15", "percent", "0", "100", "Tỉ lệ phần trăm nhánh quà Ngọc khóa."),
+        @("gold_base", "Vàng quà cơ sở", "100000", "long", "1", "9223372036854775807", "Vàng cơ sở nhân theo cấp bang và bậc sức mạnh người nhận.")
+    )
+    foreach ($gift in $giftSettings) {
+        $rows.Add((New-ClanConfigEntry -Key ("gift." + $gift[0]) -File "clan_gift.properties" -Property $gift[0] -Category "Quà thành viên" -Name $gift[1] -Default $gift[2] -Kind $gift[3] -Minimum $gift[4] -Maximum $gift[5] -ListCount 0 -Scope $restart -Description $gift[6]))
+    }
+
+    $rows.Add((New-ClanConfigEntry -Key "shop.enabled" -File "clan_shop.properties" -Property "enabled" -Category "Cửa hàng bang" -Name "Bật Cửa hàng bang" -Default "true" -Kind "bool" -Minimum "" -Maximum "" -ListCount 0 -Scope $restart -Description "Công tắc riêng của dịch vụ Cửa hàng bang."))
+    for ($tier = 1; $tier -le 3; $tier++) {
+        $defaultLevel = if ($tier -eq 1) { "3" } elseif ($tier -eq 2) { "10" } else { "15" }
+        $rows.Add((New-ClanConfigEntry -Key ("shop.tier." + $tier + ".clanLevel") -File "clan_shop.properties" -Property ("tier." + $tier + ".clanLevel") -Category "Cửa hàng bang" -Name ("Cấp bang mở tầng " + $tier) -Default $defaultLevel -Kind "positive-int" -Minimum "1" -Maximum "1000" -ListCount 0 -Scope $restart -Description "Cấp bang tối thiểu để mở tầng hàng tương ứng."))
+    }
+    $shopNames = @{
+        2252="Buff Vàng quái 1 ngày"; 2253="Buff Vàng quái 3 ngày"; 2254="Buff Vàng quái 7 ngày";
+        2255="Buff Tiềm năng/Sức mạnh 1 ngày"; 2256="Buff Tiềm năng/Sức mạnh 3 ngày"; 2257="Buff Tiềm năng/Sức mạnh 7 ngày";
+        2258="Buff hồi HP 1 ngày"; 2259="Buff hồi HP 3 ngày"; 2260="Buff hồi HP 7 ngày";
+        2261="Buff hồi KI 1 ngày"; 2262="Buff hồi KI 3 ngày"; 2263="Buff hồi KI 7 ngày";
+        2264="Buff May mắn 1 ngày"; 2265="Buff May mắn 3 ngày"; 2266="Buff May mắn 7 ngày";
+        2267="Buff Sức đánh 1 ngày"; 2268="Buff Sức đánh 3 ngày"; 2269="Buff Sức đánh 7 ngày";
+        2270="Rút ngắn nâng cây 12 giờ"; 2271="Rút ngắn nâng cây 24 giờ"; 2272="Vé đổi tên bang"
+    }
+    for ($itemId = 2252; $itemId -le 2272; $itemId++) {
+        if ($itemId -ge 2272) { $defaultRow = "3,3,30,1500000,20,300,1" }
+        elseif ($itemId -ge 2269) { $defaultRow = "3,5,20,1000000,15,300,1" }
+        elseif ($itemId -ge 2261) { $defaultRow = "2,8,12,500000,8,100,2" }
+        else { $defaultRow = "1,12,6,250000,4,0,3" }
+        $itemCategory = if ($itemId -le 2269) { "Cửa hàng bang - Vật phẩm buff" } else { "Cửa hàng bang - Vật phẩm hỗ trợ" }
+        $rows.Add((New-ClanConfigEntry -Key ("shop.item." + $itemId) -File "clan_shop.properties" -Property ("item." + $itemId) -Category $itemCategory -Name ($shopNames[$itemId] + " (#" + $itemId + ")") -Default $defaultRow -Kind "shop-item" -Minimum "" -Maximum "" -ListCount 7 -Scope $restart -Description "Theo thứ tự: tầng, trần tồn kho, phí nhập Capsule bang, phí nhập Vàng bang, giá Capsule cá nhân, cống hiến tối thiểu, giới hạn mua/ngày."))
+    }
+
+    $valueSettings = @(
+        @("formula_version", "Phiên bản công thức", "1", "int", "1", "255", "Phiên bản ghi cùng Clan Value để đối chiếu dữ liệu."),
+        @("clan_level_weight", "Trọng số cấp bang", "1000", "long", "0", "9223372036854775807", "Điểm Clan Value cho mỗi cấp bang."),
+        @("spent_potential_weight", "Trọng số Tiềm năng đã dùng", "100", "long", "0", "9223372036854775807", "Điểm Clan Value cho mỗi bậc Tiềm năng đã phân bổ."),
+        @("tree_level_weight", "Trọng số cấp Cây bang", "500", "long", "0", "9223372036854775807", "Điểm Clan Value cho mỗi cấp Cây bang."),
+        @("weekly_activity_weight", "Trọng số hoạt động tuần", "1", "long", "0", "9223372036854775807", "Điểm Clan Value cho mỗi đơn vị tiến độ tuần hợp lệ."),
+        @("clan_level_cap", "Trần cấp bang tính điểm", "1000", "int", "0", "2147483647", "Trần dữ liệu cấp bang đưa vào công thức."),
+        @("spent_potential_cap", "Trần Tiềm năng tính điểm", "10000", "int", "0", "2147483647", "Trần tổng bậc Tiềm năng đã dùng đưa vào công thức."),
+        @("tree_level_cap", "Trần cấp cây tính điểm", "1000", "int", "0", "2147483647", "Trần cấp Cây bang đưa vào công thức."),
+        @("weekly_activity_cap", "Trần hoạt động tuần tính điểm", "1000", "int", "0", "2147483647", "Trần tiến độ hoạt động tuần đưa vào công thức."),
+        @("achievement_score_cap", "Trần điểm thành tựu", "1000000", "long", "0", "9223372036854775807", "Trần điểm thành tựu đưa vào Clan Value.")
+    )
+    foreach ($value in $valueSettings) {
+        $rows.Add((New-ClanConfigEntry -Key ("value." + $value[0]) -File "clan_value.properties" -Property $value[0] -Category "Clan Value" -Name $value[1] -Default $value[2] -Kind $value[3] -Minimum $value[4] -Maximum $value[5] -ListCount 0 -Scope $restart -Description $value[6]))
+    }
+
+    $rankingSettings = @(
+        @("default_page_size", "Số dòng mặc định / trang", "20", "int", "1", "50", "Kích thước trang khi client không gửi giá trị hợp lệ."),
+        @("max_page_size", "Số dòng tối đa / trang", "50", "int", "1", "50", "Giới hạn 50 để bảo vệ packet command 127."),
+        @("max_page", "Trang tối đa", "1000", "int", "0", "65535", "Chỉ số trang lớn nhất server chấp nhận."),
+        @("refresh_seconds", "Chu kỳ làm mới xếp hạng", "30", "positive-int", "1", "3600", "Số giây giữ cache bảng xếp hạng."),
+        @("legacy_top_size", "Số dòng bảng xếp hạng cũ", "50", "int", "1", "50", "Số bang gửi cho client dùng giao diện xếp hạng cũ.")
+    )
+    foreach ($ranking in $rankingSettings) {
+        $rows.Add((New-ClanConfigEntry -Key ("ranking." + $ranking[0]) -File "clan_ranking.properties" -Property $ranking[0] -Category "Xếp hạng bang" -Name $ranking[1] -Default $ranking[2] -Kind $ranking[3] -Minimum $ranking[4] -Maximum $ranking[5] -ListCount 0 -Scope $restart -Description $ranking[6]))
+    }
+
+    $appearanceDefaults = @(
+        @("Mầm xanh", "Khởi nguyên", "0", "1", "1", "0x39B96E", "0"),
+        @("Cổ thụ", "Bền vững", "30000", "20", "10", "0xD7A83A", "1"),
+        @("Linh thụ", "Phồn thịnh", "75000", "40", "15", "0x55A8FF", "2"),
+        @("Thần mộc", "Huyền thoại", "120000", "60", "20", "0xC56CFF", "3")
+    )
+    for ($tierIndex = 0; $tierIndex -lt 4; $tierIndex++) {
+        $tierLabel = "Mốc ngoại hình " + ($tierIndex + 1)
+        $tierValues = $appearanceDefaults[$tierIndex]
+        $appearanceEntries = @(
+            @("name", "Tên mốc", $tierValues[0], "java-text", "", "", "Tên hiển thị của mốc ngoại hình."),
+            @("title", "Danh hiệu", $tierValues[1], "java-text", "", "", "Danh hiệu hiển thị cùng ngoại hình Cây bang."),
+            @("value", "Clan Value tối thiểu", $tierValues[2], "long", "0", "9223372036854775807", "Clan Value tối thiểu để mở mốc."),
+            @("clan_level", "Cấp bang tối thiểu", $tierValues[3], "int", "0", "1000", "Cấp bang tối thiểu để mở mốc."),
+            @("tree_level", "Cấp cây tối thiểu", $tierValues[4], "int", "0", "20", "Cấp Cây bang tối thiểu để mở mốc."),
+            @("accent_rgb", "Màu nhấn RGB", $tierValues[5], "hex-color", "", "", "Màu nhấn 0xRRGGBB gửi tới client."),
+            @("aura_style", "Kiểu hào quang", $tierValues[6], "int", "0", "15", "Mã kiểu hào quang từ 0 đến 15.")
+        )
+        foreach ($appearance in $appearanceEntries) {
+            $property = "tier_" + $tierIndex + "_" + $appearance[0]
+            $rows.Add((New-ClanConfigEntry -Key ("appearance." + $property) -File "clan_appearance.properties" -Property $property -Category $tierLabel -Name $appearance[1] -Default $appearance[2] -Kind $appearance[3] -Minimum $appearance[4] -Maximum $appearance[5] -ListCount 0 -Scope $restart -Description $appearance[6]))
+        }
+    }
+
+    $economySettings = @(
+        @("lookback_default_days", "Cửa sổ báo cáo mặc định", "14", "positive-int", "1", "365", "Số ngày dùng khi không truyền bộ lọc báo cáo."),
+        @("lookback_max_days", "Cửa sổ báo cáo tối đa", "90", "positive-int", "7", "365", "Số ngày tối đa cho một lần tổng hợp báo cáo."),
+        @("retention_days", "Số ngày giữ metric", "180", "positive-int", "7", "730", "Thời gian lưu dữ liệu metric kinh tế tổng hợp."),
+        @("flush_interval_seconds", "Chu kỳ ghi metric", "15", "positive-int", "5", "300", "Số giây giữa hai lần gom và ghi metric vận hành."),
+        @("gold_sink_ratio_min_percent", "Vàng: sink/source tối thiểu", "70", "wide-percent", "0", "1000", "Thấp hơn ngưỡng này được cảnh báo dư nguồn sinh."),
+        @("gold_sink_ratio_max_percent", "Vàng: sink/source tối đa", "110", "wide-percent", "0", "1000", "Cao hơn ngưỡng này được cảnh báo sink quá nặng."),
+        @("gem_sink_ratio_min_percent", "Ngọc: sink/source tối thiểu", "50", "wide-percent", "0", "1000", "Thấp hơn ngưỡng này được cảnh báo dư nguồn sinh."),
+        @("gem_sink_ratio_max_percent", "Ngọc: sink/source tối đa", "150", "wide-percent", "0", "1000", "Cao hơn ngưỡng này được cảnh báo sink quá nặng."),
+        @("capsule_sink_ratio_min_percent", "Capsule: sink/source tối thiểu", "70", "wide-percent", "0", "1000", "Thấp hơn ngưỡng này được cảnh báo dư nguồn sinh."),
+        @("capsule_sink_ratio_max_percent", "Capsule: sink/source tối đa", "130", "wide-percent", "0", "1000", "Cao hơn ngưỡng này được cảnh báo sink quá nặng.")
+    )
+    foreach ($economy in $economySettings) {
+        $rows.Add((New-ClanConfigEntry -Key ("economy." + $economy[0]) -File "clan_economy.properties" -Property $economy[0] -Category "Giám sát kinh tế" -Name $economy[1] -Default $economy[2] -Kind $economy[3] -Minimum $economy[4] -Maximum $economy[5] -ListCount 0 -Scope "Báo cáo ngay; metric sau restart" -Description $economy[6]))
+    }
+    $rows.ToArray()
+}
+
+function Get-ClanConfigEntry {
+    param([string]$Key)
+    Get-ClanConfigCatalog | Where-Object { $_.Key -eq $Key } | Select-Object -First 1
+}
+
+function ConvertFrom-ClanJavaPropertyText {
+    param([string]$Value)
+    if ($null -eq $Value) { return "" }
+    [regex]::Replace($Value, '\\u([0-9A-Fa-f]{4})', {
+        param($match)
+        [char][Convert]::ToInt32($match.Groups[1].Value, 16)
+    })
+}
+
+function ConvertTo-ClanJavaPropertyText {
+    param([string]$Value)
+    $builder = New-Object System.Text.StringBuilder
+    foreach ($character in $Value.ToCharArray()) {
+        $code = [int][char]$character
+        if ($character -eq '\') { [void]$builder.Append('\\') }
+        elseif ($code -ge 32 -and $code -le 126) { [void]$builder.Append($character) }
+        else { [void]$builder.Append(("\u{0:X4}" -f $code)) }
+    }
+    $builder.ToString()
+}
+
+function Assert-ClanConfigValue {
+    param([object]$Entry, [string]$Value)
+    if ($null -eq $Entry) { throw "Khóa cấu hình bang không hợp lệ." }
+    $text = if ($null -eq $Value) { "" } else { $Value.Trim() }
+    if ($text -match '[\x00-\x1F\x7F]') { throw "Giá trị cấu hình không được chứa ký tự điều khiển hoặc xuống dòng." }
+    if ($Entry.Kind -eq "bool") {
+        $normalized = $text.ToLowerInvariant()
+        if ($normalized -notin @("true", "false", "1", "0")) { throw "$($Entry.Name) chỉ nhận true/false hoặc 1/0." }
+        return $(if ($normalized -in @("true", "1")) { "true" } else { "false" })
+    }
+    if ($Entry.Kind -eq "java-text") {
+        if ([string]::IsNullOrWhiteSpace($text) -or $text.Length -gt 64) { throw "$($Entry.Name) phải có từ 1 đến 64 ký tự." }
+        return ConvertTo-ClanJavaPropertyText $text
+    }
+    if ($Entry.Kind -eq "hex-color") {
+        if ($text -notmatch '^0x[0-9A-Fa-f]{6}$') { throw "$($Entry.Name) phải theo dạng 0xRRGGBB." }
+        return ("0x" + $text.Substring(2).ToUpperInvariant())
+    }
+    if ($Entry.Kind -eq "decimal") {
+        $number = 0D
+        if (-not [double]::TryParse($text, [Globalization.NumberStyles]::AllowDecimalPoint, [Globalization.CultureInfo]::InvariantCulture, [ref]$number)) { throw "$($Entry.Name) phải là số thập phân dùng dấu chấm." }
+        if ($number -lt [double]$Entry.Minimum -or $number -gt [double]$Entry.Maximum) { throw "$($Entry.Name) phải từ $($Entry.Minimum) đến $($Entry.Maximum)." }
+        return $number.ToString("0.######", [Globalization.CultureInfo]::InvariantCulture)
+    }
+    if ($Entry.Kind -eq "int-list") {
+        $parts = @($text -split ',')
+        if ($parts.Count -ne $Entry.ListCount) { throw "$($Entry.Name) phải có đúng $($Entry.ListCount) số, phân cách bằng dấu phẩy." }
+        $normalizedParts = New-Object System.Collections.Generic.List[string]
+        foreach ($part in $parts) {
+            $item = $part.Trim()
+            if ($item -notmatch '^\d+$') { throw "$($Entry.Name) chỉ nhận số nguyên không âm." }
+            $number = [decimal]$item
+            if ($number -lt [decimal]$Entry.Minimum -or $number -gt [decimal]$Entry.Maximum) { throw "Mỗi giá trị của $($Entry.Name) phải từ $($Entry.Minimum) đến $($Entry.Maximum)." }
+            $normalizedParts.Add($number.ToString("0"))
+        }
+        return ($normalizedParts -join ',')
+    }
+    if ($Entry.Kind -eq "shop-item") {
+        $parts = @($text -split ',')
+        if ($parts.Count -ne 7) { throw "$($Entry.Name) phải có đúng 7 số theo định dạng Cửa hàng bang." }
+        $limits = @(
+            @(1, 3), @(1, 1000000), @(0, 2147483647), @(0, 9223372036854775807),
+            @(1, 2147483647), @(0, 9223372036854775807), @(1, 2147483647)
+        )
+        $normalizedParts = New-Object System.Collections.Generic.List[string]
+        for ($index = 0; $index -lt 7; $index++) {
+            $item = $parts[$index].Trim()
+            if ($item -notmatch '^\d+$') { throw "$($Entry.Name): thành phần $($index + 1) phải là số nguyên không âm." }
+            $number = [decimal]$item
+            if ($number -lt [decimal]$limits[$index][0] -or $number -gt [decimal]$limits[$index][1]) { throw "$($Entry.Name): thành phần $($index + 1) nằm ngoài giới hạn an toàn." }
+            $normalizedParts.Add($number.ToString("0"))
+        }
+        return ($normalizedParts -join ',')
+    }
+    if ($text -notmatch '^\d+$') { throw "$($Entry.Name) phải là số nguyên không âm." }
+    $integer = [decimal]$text
+    if ($integer -lt [decimal]$Entry.Minimum -or $integer -gt [decimal]$Entry.Maximum) { throw "$($Entry.Name) phải từ $($Entry.Minimum) đến $($Entry.Maximum)." }
+    $integer.ToString("0")
+}
+
+function Get-ClanConfigPath {
+    param([object]$Entry, [string]$DataRoot)
+    if ($null -eq $Entry -or $Entry.File -notmatch '^clan_[a-z_]+\.properties$') { throw "Tệp cấu hình bang không nằm trong whitelist." }
+    if ([string]::IsNullOrWhiteSpace($DataRoot)) { throw "Thiếu thư mục dữ liệu cấu hình bang." }
+    $rootPath = [System.IO.Path]::GetFullPath($DataRoot)
+    $targetPath = [System.IO.Path]::GetFullPath((Join-Path $rootPath $Entry.File))
+    $prefix = $rootPath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+    if (-not $targetPath.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw "Tệp cấu hình bang nằm ngoài thư mục data được phép." }
+    $targetPath
+}
+
+function Get-ClanConfigEffectiveValue {
+    param([object]$Entry, [hashtable]$Map)
+    if ($Map.ContainsKey($Entry.Property)) { return [string]$Map[$Entry.Property] }
+    [string]$Entry.Default
+}
+
+function Assert-ClanConfigRelationships {
+    param([object]$Entry, [string]$ValidatedValue, [string]$DataRoot)
+    $path = Get-ClanConfigPath -Entry $Entry -DataRoot $DataRoot
+    $map = Get-ClanEconomyPropertyMap -Path $path
+    $map[$Entry.Property] = $ValidatedValue
+    $catalog = @(Get-ClanConfigCatalog | Where-Object { $_.File -eq $Entry.File })
+    $effective = @{}
+    foreach ($candidate in $catalog) { $effective[$candidate.Property] = Get-ClanConfigEffectiveValue -Entry $candidate -Map $map }
+
+    if ($Entry.File -eq "clan_buff.properties") {
+        if ([int]$effective["short_duration_days"] -gt [int]$effective["medium_duration_days"] -or [int]$effective["medium_duration_days"] -gt [int]$effective["long_duration_days"]) { throw "Thời hạn buff phải theo thứ tự gói ngắn ≤ gói vừa ≤ gói dài." }
+    }
+    if ($Entry.File -eq "clan_shop.properties") {
+        if ([int]$effective["tier.1.clanLevel"] -gt [int]$effective["tier.2.clanLevel"] -or [int]$effective["tier.2.clanLevel"] -gt [int]$effective["tier.3.clanLevel"]) { throw "Cấp mở tầng Cửa hàng bang phải tăng dần từ tầng 1 đến tầng 3." }
+    }
+    if ($Entry.File -eq "clan_ranking.properties") {
+        if ([int]$effective["default_page_size"] -gt [int]$effective["max_page_size"] -or [int]$effective["legacy_top_size"] -gt [int]$effective["max_page_size"]) { throw "Số dòng mặc định và bảng cũ không được vượt số dòng tối đa mỗi trang." }
+    }
+    if ($Entry.File -eq "clan_economy.properties") {
+        if ([int]$effective["lookback_default_days"] -gt [int]$effective["lookback_max_days"]) { throw "Cửa sổ báo cáo mặc định không được vượt cửa sổ tối đa." }
+        if ([int]$effective["retention_days"] -lt [int]$effective["lookback_max_days"]) { throw "Số ngày giữ metric phải lớn hơn hoặc bằng cửa sổ báo cáo tối đa." }
+        foreach ($currency in @("gold", "gem", "capsule")) {
+            if ([int]$effective[$currency + "_sink_ratio_min_percent"] -gt [int]$effective[$currency + "_sink_ratio_max_percent"]) { throw "Ngưỡng sink/source tối thiểu của $currency không được vượt ngưỡng tối đa." }
+        }
+    }
+    if ($Entry.File -eq "clan_appearance.properties") {
+        foreach ($suffix in @("value", "clan_level", "tree_level")) {
+            $previous = -1L
+            for ($tier = 0; $tier -lt 4; $tier++) {
+                $current = [long]$effective["tier_${tier}_$suffix"]
+                if ($current -lt $previous) { throw "Các mốc ngoại hình phải tăng dần theo $suffix." }
+                $previous = $current
+            }
+        }
+    }
+}
+
+function Set-ClanConfigPropertyValue {
+    param([string]$Path, [string]$Property, [string]$Value, [switch]$Remove)
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path -LiteralPath $Path) {
+        foreach ($line in [System.IO.File]::ReadAllLines($Path, [System.Text.Encoding]::UTF8)) { $lines.Add($line) }
+    }
+    $found = $false
+    for ($index = $lines.Count - 1; $index -ge 0; $index--) {
+        if ($lines[$index] -match ("^\s*" + [regex]::Escape($Property) + "\s*=")) {
+            if ($Remove) { $lines.RemoveAt($index) } else { $lines[$index] = "$Property=$Value" }
+            $found = $true
+        }
+    }
+    if (-not $Remove -and -not $found) { $lines.Add("$Property=$Value") }
+    $encoding = New-Object System.Text.UTF8Encoding($false)
+    $temporaryPath = "$Path.admin-$PID-$([Guid]::NewGuid().ToString('N')).tmp"
+    try {
+        [System.IO.File]::WriteAllText($temporaryPath, ($lines -join [Environment]::NewLine) + [Environment]::NewLine, $encoding)
+        Move-Item -LiteralPath $temporaryPath -Destination $Path -Force
+    } finally {
+        if (Test-Path -LiteralPath $temporaryPath) { Remove-Item -LiteralPath $temporaryPath -Force }
+    }
+}
+
+function List-ClanConfig {
+    param([string]$DataRoot = (Join-Path $Root "data"))
+    $maps = @{}
+    $rows = New-Object System.Collections.Generic.List[string]
+    $rows.Add("key`tcategory`tname`tvalue`tdefault`tkind`tscope`tfile`tproperty`tdescription")
+    foreach ($entry in (Get-ClanConfigCatalog)) {
+        if (-not $maps.ContainsKey($entry.File)) {
+            $maps[$entry.File] = Get-ClanEconomyPropertyMap -Path (Get-ClanConfigPath -Entry $entry -DataRoot $DataRoot)
+        }
+        $rawValue = Get-ClanConfigEffectiveValue -Entry $entry -Map $maps[$entry.File]
+        $value = if ($entry.Kind -eq "java-text") { ConvertFrom-ClanJavaPropertyText $rawValue } else { $rawValue }
+        $default = [string]$entry.Default
+        $cells = @($entry.Key, $entry.Category, $entry.Name, $value, $default, $entry.Kind, $entry.Scope, $entry.File, $entry.Property, $entry.Description)
+        for ($index = 0; $index -lt $cells.Count; $index++) { $cells[$index] = ([string]$cells[$index]) -replace '[\x00-\x1F\x7F]', ' ' }
+        $rows.Add(($cells -join "`t"))
+    }
+    $rows -join "`r`n"
+}
+
+function Save-ClanConfig {
+    param([string]$Key = $ConfigKey, [string]$Value = $ConfigValue, [string]$DataRoot = (Join-Path $Root "data"))
+    $entry = Get-ClanConfigEntry -Key $Key
+    if ($null -eq $entry) { throw "Khóa cấu hình bang không hợp lệ: $Key" }
+    $validated = Assert-ClanConfigValue -Entry $entry -Value $Value
+    Assert-ClanConfigRelationships -Entry $entry -ValidatedValue $validated -DataRoot $DataRoot
+    $path = Get-ClanConfigPath -Entry $entry -DataRoot $DataRoot
+    Set-ClanConfigPropertyValue -Path $path -Property $entry.Property -Value $validated
+    "OK`tĐã lưu $($entry.Name) trong $($entry.File). Restart server để áp dụng đầy đủ."
+}
+
+function Reset-ClanConfig {
+    param([string]$Key = $ConfigKey, [string]$DataRoot = (Join-Path $Root "data"))
+    $entry = Get-ClanConfigEntry -Key $Key
+    if ($null -eq $entry) { throw "Khóa cấu hình bang không hợp lệ: $Key" }
+    $validatedDefault = Assert-ClanConfigValue -Entry $entry -Value ([string]$entry.Default)
+    Assert-ClanConfigRelationships -Entry $entry -ValidatedValue $validatedDefault -DataRoot $DataRoot
+    $path = Get-ClanConfigPath -Entry $entry -DataRoot $DataRoot
+    Set-ClanConfigPropertyValue -Path $path -Property $entry.Property -Value "" -Remove
+    "OK`tĐã đưa $($entry.Name) về mặc định $($entry.Default). Restart server để áp dụng đầy đủ."
 }
 
 function Get-ClanEconomyConfigInteger {

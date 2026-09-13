@@ -21,6 +21,7 @@ import nro.models.services.TaskService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services_func.Input;
 import nro.models.clan.ClanTerritoryService;
+import nro.models.clan.ClanRankingService;
 import nro.models.services.PlayerService;
 import nro.models.skill.Skill;
 import nro.models.utils.Logger;
@@ -105,8 +106,10 @@ public class QuyLaoKame extends Npc {
                 if (ruacon != null && ruacon.quantity >= 1) {
                     menu.add("Giao\nRùa con");
                 }
+                menu.add("Xếp hạng\nbang hội");
             } else {
                 menu.add("Giao\nLân con");
+                menu.add("Xếp hạng\nbang hội");
             }
             String[] menus = menu.toArray(String[]::new);
             if (!TaskService.gI().checkDoneTaskTalkNpc(player, this)) {
@@ -122,7 +125,11 @@ public class QuyLaoKame extends Npc {
         }
 
         if (player.canReward) {
-            RewardService.gI().rewardLancon(player);
+            if (select == 0) {
+                RewardService.gI().rewardLancon(player);
+            } else if (select == 1) {
+                ClanRankingService.gI().sendLegacyBoard(player);
+            }
             return;
         }
 
@@ -172,7 +179,14 @@ public class QuyLaoKame extends Npc {
                 handleKOLQuest(player, true);
                 break;
             case 4:
-                handleTradeRuacon(player);
+                if (InventoryService.gI().findItemBag(player, 874) != null) {
+                    handleTradeRuacon(player);
+                } else {
+                    ClanRankingService.gI().sendLegacyBoard(player);
+                }
+                break;
+            case 5:
+                ClanRankingService.gI().sendLegacyBoard(player);
                 break;
         }
     }

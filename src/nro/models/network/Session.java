@@ -213,6 +213,15 @@ public class Session implements ISession {
         }
     }
 
+    /**
+     * Sends retryable data only when it fits without using queue capacity
+     * reserved for required protocol and gameplay messages.
+     */
+    public boolean trySendMessage(Message msg, long reservedQueueBytes) {
+        return this.isConnected() && msg != null && !this.isClosed()
+                && this.sender != null && this.sender.trySendMessage(msg, reservedQueueBytes);
+    }
+
     @Override
     public void doSendMessage(Message msg) throws Exception {
         try {

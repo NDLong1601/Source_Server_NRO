@@ -22,28 +22,26 @@ import nro.models.utils.Util;
 public final class ClanBuffService {
 
     public static final long DAY_MILLIS = 24L * 60L * 60L * 1_000L;
-    public static final long RECOVERY_INTERVAL_MILLIS = 5_000L;
 
     private static final ClanBuffService INSTANCE = new ClanBuffService();
     private final Map<Integer, BuffState> states = new ConcurrentHashMap<>();
+    private final ClanBuffConfig config = ClanBuffConfig.load();
     private volatile boolean schemaReady;
 
     public enum BuffType {
-        HP_REGEN(0, "Hồi HP", 1),
-        KI_REGEN(1, "Hồi KI", 1),
-        ATTACK(2, "Sức đánh", 10),
-        LUCK(3, "May mắn", 10),
-        POWER(4, "Tiềm năng, sức mạnh", 15),
-        MOB_GOLD(5, "Vàng từ quái", 20);
+        HP_REGEN(0, "Hồi HP"),
+        KI_REGEN(1, "Hồi KI"),
+        ATTACK(2, "Sức đánh"),
+        LUCK(3, "May mắn"),
+        POWER(4, "Tiềm năng, sức mạnh"),
+        MOB_GOLD(5, "Vàng từ quái");
 
         public final int wireId;
         public final String displayName;
-        public final int percent;
 
-        BuffType(int wireId, String displayName, int percent) {
+        BuffType(int wireId, String displayName) {
             this.wireId = wireId;
             this.displayName = displayName;
-            this.percent = percent;
         }
 
         static BuffType fromWireId(int id) {
@@ -140,7 +138,7 @@ public final class ClanBuffService {
                 + "ON DUPLICATE KEY UPDATE effect_percent=VALUES(effect_percent),expires_at=VALUES(expires_at),version=version+1")) {
             upsert.setInt(1, clan.id);
             upsert.setInt(2, definition.type.wireId);
-            upsert.setInt(3, definition.type.percent);
+            upsert.setInt(3, config.effectPercent(definition.type.wireId));
             upsert.setLong(4, after);
             upsert.executeUpdate();
         }
@@ -186,7 +184,8 @@ public final class ClanBuffService {
             }
         }
         sendClanNotice(clan, actor.name + " đã kích hoạt " + activation.type.displayName
-                + " bang +" + activation.type.percent + "% trong " + activation.days + " ngày.");
+                + " bang +" + config.effectPercent(activation.type.wireId)
+                + "% trong " + activation.days + " ngày.");
     }
 
     public int basisPoints(Player player, ClanProgressionService.Branch branch) {
@@ -203,7 +202,8 @@ public final class ClanBuffService {
             case MOB_GOLD -> BuffType.MOB_GOLD;
             default -> null;
         };
-        return type == null || !isActive(player.clan.id, type) ? 0 : type.percent * 100;
+        return type == null || !isActive(player.clan.id, type)
+                ? 0 : config.effectPercent(type.wireId) * 100;
     }
 
     public List<BuffView> activeBuffs(int clanId) {
@@ -219,7 +219,8 @@ public final class ClanBuffService {
         for (BuffType type : BuffType.values()) {
             BuffEntry entry = state.entries.get(type);
             if (entry != null && entry.expiresAt > now) {
-                result.add(new BuffView(type.wireId, type.percent, entry.expiresAt));
+                result.add(new BuffView(type.wireId,
+                        config.effectPercent(type.wireId), entry.expiresAt));
             }
         }
         return result;
@@ -233,12 +234,12 @@ public final class ClanBuffService {
         for (BuffType type : BuffType.values()) {
             BuffEntry entry = state == null ? null : state.entries.get(type);
             long expiresAt = entry != null && entry.expiresAt > now ? entry.expiresAt : 0L;
-            result.add(new BuffView(type.wireId, type.percent, expiresAt));
+            result.add(new BuffView(type.wireId, config.effectPercent(type.wireId), expiresAt));
         }
         return result;
     }
 
-    /** Called from Player.update; handles 5-second recovery and expiry refresh. */
+    /** Called from Player.update; handles configured recovery ticks and expiry refresh. */
     public void tick(Player player) {
         if (!ClanFeatureFlags.gI().isEnabled(ClanFeatureFlags.Feature.BUFF)) {
             return;
@@ -258,7 +259,8 @@ public final class ClanBuffService {
             }
         }
         if (player.clan == null || player.isDie()
-                || !Util.canDoWithTime(player.lastClanBuffRecoveryAt, RECOVERY_INTERVAL_MILLIS)) {
+                || !Util.canDoWithTime(player.lastClanBuffRecoveryAt,
+                        config.recoveryIntervalMillis())) {
             return;
         }
         boolean hpActive = (mask & (1 << BuffType.HP_REGEN.wireId)) != 0;
@@ -266,14 +268,20 @@ public final class ClanBuffService {
         boolean hpChanged = false;
         boolean kiChanged = false;
         if (hpActive && player.nPoint.hp < player.nPoint.hpMax) {
-            long amount = Math.max(1L, player.nPoint.hpMax / 100L);
-            player.nPoint.setHp(Math.min(player.nPoint.hpMax, player.nPoint.hp + amount));
-            hpChanged = true;
+            long amount = recoveryAmount(player.nPoint.hpMax,
+                    config.effectPercent(BuffType.HP_REGEN.wireId));
+            if (amount > 0L) {
+                player.nPoint.setHp(Math.min(player.nPoint.hpMax, player.nPoint.hp + amount));
+                hpChanged = true;
+            }
         }
         if (kiActive && player.nPoint.mp < player.nPoint.mpMax) {
-            long amount = Math.max(1L, player.nPoint.mpMax / 100L);
-            player.nPoint.setMp(Math.min(player.nPoint.mpMax, player.nPoint.mp + amount));
-            kiChanged = true;
+            long amount = recoveryAmount(player.nPoint.mpMax,
+                    config.effectPercent(BuffType.KI_REGEN.wireId));
+            if (amount > 0L) {
+                player.nPoint.setMp(Math.min(player.nPoint.mpMax, player.nPoint.mp + amount));
+                kiChanged = true;
+            }
         }
         player.lastClanBuffRecoveryAt = System.currentTimeMillis();
         if (hpChanged) {
@@ -329,30 +337,40 @@ public final class ClanBuffService {
         return loaded;
     }
 
-    private static ItemDefinition itemDefinition(int itemId) {
+    private ItemDefinition itemDefinition(int itemId) {
+        int days = config.durationDaysForItem(itemId);
+        if (days <= 0) {
+            return null;
+        }
         if (itemId >= 2252 && itemId <= 2254) {
-            return new ItemDefinition(BuffType.MOB_GOLD, daysForOffset(itemId - 2252));
+            return new ItemDefinition(BuffType.MOB_GOLD, days);
         }
         if (itemId >= 2255 && itemId <= 2257) {
-            return new ItemDefinition(BuffType.POWER, daysForOffset(itemId - 2255));
+            return new ItemDefinition(BuffType.POWER, days);
         }
         if (itemId >= 2258 && itemId <= 2260) {
-            return new ItemDefinition(BuffType.HP_REGEN, daysForOffset(itemId - 2258));
+            return new ItemDefinition(BuffType.HP_REGEN, days);
         }
         if (itemId >= 2261 && itemId <= 2263) {
-            return new ItemDefinition(BuffType.KI_REGEN, daysForOffset(itemId - 2261));
+            return new ItemDefinition(BuffType.KI_REGEN, days);
         }
         if (itemId >= 2264 && itemId <= 2266) {
-            return new ItemDefinition(BuffType.LUCK, daysForOffset(itemId - 2264));
+            return new ItemDefinition(BuffType.LUCK, days);
         }
         if (itemId >= 2267 && itemId <= 2269) {
-            return new ItemDefinition(BuffType.ATTACK, daysForOffset(itemId - 2267));
+            return new ItemDefinition(BuffType.ATTACK, days);
         }
         return null;
     }
 
-    private static int daysForOffset(int offset) {
-        return offset == 0 ? 1 : offset == 1 ? 3 : 7;
+    private static long recoveryAmount(long maximum, int percent) {
+        if (maximum <= 0L || percent <= 0) {
+            return 0L;
+        }
+        long wholePercent = maximum / 100L;
+        long remainder = maximum % 100L;
+        long amount = wholePercent * percent + remainder * percent / 100L;
+        return Math.max(1L, amount);
     }
 
     private static boolean isOnlineMember(Player player, Clan clan) {

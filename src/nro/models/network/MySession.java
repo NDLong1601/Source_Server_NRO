@@ -189,7 +189,7 @@ public class MySession extends Session {
         }
     }
 
-    protected final boolean runPlayerLifecycleStepIfOwned(Player expectedPlayer, Runnable action) {
+    public final boolean runPlayerLifecycleStepIfOwned(Player expectedPlayer, Runnable action) {
         if (expectedPlayer == null || action == null) {
             return false;
         }

@@ -54,8 +54,10 @@ public class Controller implements IMessageHandler {
 
         CommandContext context = new CommandContext(mySession, message);
         try {
-            DispatchResult result = dispatcher.dispatch(context);
-            if (result == DispatchResult.LEGACY_FALLBACK) {
+            DispatchResult[] result = new DispatchResult[1];
+            boolean playerStillOwned = runCommandIfPlayerOwned(
+                    mySession, context.player(), () -> result[0] = dispatcher.dispatch(context));
+            if (playerStillOwned && result[0] == DispatchResult.LEGACY_FALLBACK) {
                 errorReporter.recordUnknown(context);
             }
         } catch (IOException malformedPacket) {
@@ -65,6 +67,36 @@ public class Controller implements IMessageHandler {
         } finally {
             dispose(message);
         }
+    }
+
+    static boolean runCommandIfPlayerOwned(
+            MySession session, Player player, CommandAction action) throws Exception {
+        if (session == null || action == null) {
+            return false;
+        }
+        if (player == null) {
+            action.run();
+            return true;
+        }
+
+        Exception[] failure = new Exception[1];
+        boolean playerStillOwned = session.runPlayerLifecycleStepIfOwned(player, () -> {
+            try {
+                action.run();
+            } catch (Exception error) {
+                failure[0] = error;
+            }
+        });
+        if (failure[0] != null) {
+            throw failure[0];
+        }
+        return playerStillOwned;
+    }
+
+    @FunctionalInterface
+    interface CommandAction {
+
+        void run() throws Exception;
     }
 
     private static void dispose(Message message) {

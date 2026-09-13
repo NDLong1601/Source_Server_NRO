@@ -6287,6 +6287,8 @@ function Get-AuditSummary {
         "resetplayerconfig" { "Khôi phục cấu hình Player $ConfigKey về mặc định" }
         "savepetconfig" { "Đổi cấu hình Đệ tử $ConfigKey = $ConfigValue" }
         "resetpetconfig" { "Khôi phục cấu hình Đệ tử $ConfigKey về mặc định" }
+        "saveclanconfig" { "Đổi cấu hình bang $ConfigKey = $ConfigValue" }
+        "resetclanconfig" { "Khôi phục cấu hình bang $ConfigKey về mặc định" }
         "saveskillmasterygeneral" { "Lưu cấu hình thành thạo skill toàn server" }
         "resetskillmasterygeneral" { "Khôi phục cấu hình thành thạo skill toàn server" }
         "saveskillmasteryskill" {
@@ -6481,6 +6483,15 @@ function Get-AuditContext {
                 $fileSnapshots.Add([pscustomobject]@{ path="pet.properties"; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
             }
         }
+        { $_ -in @("saveclanconfig", "resetclanconfig") } {
+            $entry = Get-ClanConfigEntry -Key $ConfigKey
+            if ($null -eq $entry) { throw "Khóa cấu hình bang không hợp lệ: $ConfigKey" }
+            $relativePath = "data\$($entry.File)"
+            $configPath = Get-ClanConfigPath -Entry $entry -DataRoot (Join-Path $Root "data")
+            if (Test-Path -LiteralPath $configPath) {
+                $fileSnapshots.Add([pscustomobject]@{ path=$relativePath; contentBase64=[Convert]::ToBase64String([IO.File]::ReadAllBytes($configPath)) })
+            }
+        }
         { $_ -in @("saveskillmasterygeneral", "resetskillmasterygeneral", "saveskillmasteryskill", "resetskillmasteryskill") } {
             $configPath = Join-Path $Root "skill_mastery.properties"
             if (Test-Path $configPath) {
@@ -6576,7 +6587,9 @@ function Undo-AuditEntry {
     }
     foreach ($fileSnapshot in @($payload.fileSnapshots)) {
         $relativePath = [string]$fileSnapshot.path
-        if ($relativePath -notin @("Config.properties", "combine.properties", "player.properties", "pet.properties", "task.properties", "skill_mastery.properties")) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
+        $allowedFileSnapshots = @("Config.properties", "combine.properties", "player.properties", "pet.properties", "task.properties", "skill_mastery.properties")
+        $allowedFileSnapshots += @(Get-ClanConfigCatalog | ForEach-Object { "data\$($_.File)" } | Select-Object -Unique)
+        if ($relativePath -notin $allowedFileSnapshots) { throw "Snapshot chứa đường dẫn file không hợp lệ." }
         [IO.File]::WriteAllBytes((Join-Path $Root $relativePath), [Convert]::FromBase64String([string]$fileSnapshot.contentBase64))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$payload.configBase64)) {
@@ -6603,7 +6616,7 @@ $mutationActions = @(
     "savecostumecollectionachievement", "deletecostumecollectionachievement", "savefishbookentry",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
     "saveadminmob", "deleteadminmob", "savecombineconfig", "resetcombineconfig", "setevent", "setexp",
-    "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveplayercore", "rescueplayer",
+    "saveplayerconfig", "resetplayerconfig", "savepetconfig", "resetpetconfig", "saveclanconfig", "resetclanconfig", "saveplayercore", "rescueplayer",
     "saveskillmasterygeneral", "resetskillmasterygeneral", "saveskillmasteryskill", "resetskillmasteryskill",
     "saveeventconfig", "saveeventboss", "deleteeventboss", "saveeventitem", "deleteeventitem",
     "savetaskreward", "savekanaotaskconfig",
@@ -6737,6 +6750,9 @@ try {
         "listpetconfig" { List-PetConfig }
         "savepetconfig" { Save-PetConfig }
         "resetpetconfig" { Reset-PetConfig }
+        "listclanconfig" { List-ClanConfig }
+        "saveclanconfig" { Save-ClanConfig }
+        "resetclanconfig" { Reset-ClanConfig }
         "listskillmastery" { Get-SkillMasteryPayload }
         "saveskillmasterygeneral" { Save-SkillMasteryGeneral }
         "resetskillmasterygeneral" { Reset-SkillMasteryGeneral }

@@ -576,28 +576,7 @@ public class Clan {
     }
 
     public void insert() {
-        JSONArray dataArray = new JSONArray();
-        JSONObject dataObject = new JSONObject();
-        for (ClanMember cm : this.members) {
-            dataObject.put("id", cm.id);
-            dataObject.put("name", cm.name);
-            dataObject.put("head", cm.head);
-            dataObject.put("body", cm.body);
-            dataObject.put("leg", cm.leg);
-            dataObject.put("role", cm.role);
-            dataObject.put("donate", cm.donate);
-            dataObject.put("receive_donate", cm.receiveDonate);
-            dataObject.put("member_point", cm.memberPoint);
-            dataObject.put("clan_point", cm.clanPoint);
-            dataObject.put("join_time", cm.joinTime);
-            dataObject.put("ask_pea_time", cm.timeAskPea);
-            dataObject.put("power", cm.powerPoint);
-            dataArray.add(dataObject.toJSONString());
-            dataObject.clear();
-        }
-
-        String member = dataArray.toJSONString();
-        dataArray.clear();
+        String member = serializeMembersForPersistence();
 
         String topBanDoKhoBau = "[" + levelDoneBanDoKhoBau + "," + thoiGianHoanThanhBDKB + "]";
 
@@ -639,33 +618,11 @@ public class Clan {
     }
 
     public void update() {
-        JSONArray dataArray = new JSONArray();
-        JSONObject dataObject = new JSONObject();
-        for (ClanMember cm : this.members) {
-            dataObject.put("id", cm.id);
-            dataObject.put("name", cm.name);
-            dataObject.put("head", cm.head);
-            dataObject.put("body", cm.body);
-            dataObject.put("leg", cm.leg);
-            dataObject.put("role", cm.role);
-            dataObject.put("donate", cm.donate);
-            dataObject.put("receive_donate", cm.receiveDonate);
-            dataObject.put("member_point", cm.memberPoint);
-            dataObject.put("clan_point", cm.clanPoint);
-            dataObject.put("join_time", cm.joinTime);
-            dataObject.put("ask_pea_time", cm.timeAskPea);
-            dataObject.put("power", cm.powerPoint);
-            dataArray.add(dataObject.toJSONString());
-            dataObject.clear();
-        }
-
-        String member = dataArray.toJSONString();
+        String member = serializeMembersForPersistence();
         String topBanDoKhoBau = "[" + levelDoneBanDoKhoBau + "," + thoiGianHoanThanhBDKB + "]";
 
         String thongTinLeader = "[" + getLeader().id + "," + getLeader().name + "," + getLeader().head + ","
                 + getLeader().body + "," + getLeader().leg + "]";
-
-        dataArray.clear();
 
         PreparedStatement ps = null;
         try (Connection con = LocalManager.getConnection();) {
@@ -704,6 +661,39 @@ public class Clan {
                 e.printStackTrace();
             }
         }
+    }
+
+    String serializeMembersForPersistence() {
+        return serializeMembersForPersistence(-1, 0);
+    }
+
+    String serializeMembersForPersistence(int creditedMemberId, int capsuleAmount) {
+        JSONArray dataArray = new JSONArray();
+        JSONObject dataObject = new JSONObject();
+        for (ClanMember cm : this.members) {
+            int projectedMemberPoint = cm.memberPoint;
+            int projectedClanPoint = cm.clanPoint;
+            if (cm.id == creditedMemberId && capsuleAmount > 0) {
+                projectedClanPoint = Math.addExact(projectedClanPoint, capsuleAmount);
+            }
+            dataObject.put("id", cm.id);
+            dataObject.put("name", cm.name);
+            dataObject.put("head", cm.head);
+            dataObject.put("body", cm.body);
+            dataObject.put("leg", cm.leg);
+            dataObject.put("role", cm.role);
+            dataObject.put("donate", cm.donate);
+            dataObject.put("receive_donate", cm.receiveDonate);
+            dataObject.put("member_point", projectedMemberPoint);
+            dataObject.put("clan_point", projectedClanPoint);
+            dataObject.put("join_time", cm.joinTime);
+            dataObject.put("ask_pea_time", cm.timeAskPea);
+            dataObject.put("power", cm.powerPoint);
+            dataArray.add(dataObject.toJSONString());
+            dataObject.clear();
+        }
+
+        return dataArray.toJSONString();
     }
 
     /** Lưu riêng tên bang để thao tác đổi tên không ghi đè dữ liệu thành viên. */
