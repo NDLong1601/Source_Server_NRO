@@ -55,6 +55,19 @@ public final class NangCapNgoaiTrang {
         return CombineConfig.getInt("appearance.upgrade.star2ItemId", DEFAULT_STAR_2_ID);
     }
 
+    /** Shows the boss source for the stone required by each appearance category. */
+    public static String getStoneSourceGuide(AppearanceUpgradeCategory category) {
+        if (category == null) {
+            return "";
+        }
+        return switch (category) {
+            case COSTUME -> "Đá Huyễn Trang: Boss Hành Tinh Lạnh (8%, x2–5; May mắn 100% sẽ x2 số đá).";
+            case FOLLOW_PET -> "Đá Linh Thú: Boss Hành Tinh Lạnh (10%, x2–5; May mắn 100% sẽ x2 số đá).";
+            case BACK -> "Đá Thiên Vũ: Boss Fide (10%, x2–5; May mắn 100% sẽ x2 số đá).";
+            case MOUNT -> "Đá Phi Hành: Boss Hành Tinh Tương Lai (10%, x2–5; May mắn 100% sẽ x2 số đá).";
+        };
+    }
+
     public static int getUpgradeLevel(Item item) {
         if (item == null || item.itemOptions == null) {
             return 0;
@@ -406,6 +419,10 @@ public final class NangCapNgoaiTrang {
 
         if (plan.cloverBonus > 0) {
             sb.append("|6|Cỏ may mắn: +").append((int) plan.cloverBonus).append("% tỉ lệ\n");
+        }
+
+        if (plan.stoneEnabled) {
+            sb.append("|6|").append(getStoneSourceGuide(sel.category)).append("\n");
         }
 
         if (plan.extraOptionsCount > 0) {

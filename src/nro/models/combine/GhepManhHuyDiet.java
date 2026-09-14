@@ -46,6 +46,20 @@ public class GhepManhHuyDiet {
 
     private static final String[] SET_NAMES = {"Áo", "Quần", "Giày", "Găng", "Nhẫn"};
 
+    /** Source hint kept beside the recipe so the combine panel follows loot balance. */
+    public static String getDropSourceGuide(int recipeIndex) {
+        return switch (recipeIndex) {
+            case 0, 1 -> "Nguồn mảnh: Boss Hành Tinh Tương Lai – 12% nhận 1 mảnh Áo/Quần ngẫu nhiên.";
+            case 2, 3, 4 -> "Nguồn mảnh: Boss Hành Tinh Lạnh – 12% nhận 1 mảnh Giày/Găng/Nhẫn ngẫu nhiên.";
+            default -> "Nguồn mảnh: chưa xác định.";
+        };
+    }
+
+    private static String getAllDropSourceGuides() {
+        return "Mảnh Áo/Quần: Boss Hành Tinh Tương Lai (12%)\n"
+                + "Mảnh Giày/Găng/Nhẫn: Boss Hành Tinh Lạnh (12%)";
+    }
+
     /**
      * Kiểm tra 1 item có phải là mảnh Hủy Diệt không (ID 2027–2046)
      */
@@ -155,7 +169,8 @@ public class GhepManhHuyDiet {
 
         if (player.combineNew.itemsCombine.size() != 4) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU,
-                    "Cần đặt đúng 4 mảnh Hủy Diệt cùng loại\n(Áo, Quần, Giày, Găng hoặc Nhẫn)", "Đóng");
+                    "Cần đặt đúng 4 mảnh Hủy Diệt cùng loại\n(Áo, Quần, Giày, Găng hoặc Nhẫn)\n"
+                    + getAllDropSourceGuides(), "Đóng");
             return;
         }
 
@@ -215,6 +230,7 @@ public class GhepManhHuyDiet {
         String resultName = ItemService.gI().getTemplate((short) recipes[recipeIdx][4]).name;
         String npcSay = "|2|Ghép 4 mảnh " + SET_NAMES[recipeIdx] + " Hủy Diệt thành\n"
                 + resultName + "\n"
+                + "|6|" + getDropSourceGuide(recipeIdx) + "\n"
                 + "|2|Tỉ lệ thành công: " + successRate + "%\n"
                 + "|2|Cần: " + Util.numberToMoney(goldCost) + " vàng\n"
                 + "|2|Cần: " + gemCost + " ngọc\n"

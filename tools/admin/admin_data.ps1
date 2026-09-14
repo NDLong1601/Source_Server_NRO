@@ -4965,7 +4965,10 @@ function Save-Notification {
         throw "Tên hoặc nội dung thông báo không được chứa chuỗi <>."
     }
 
-    $existingId = [int](Get-MySqlScalar "SELECT id FROM notify WHERE name=$(SqlString $title) ORDER BY id ASC LIMIT 1;" "0")
+    # notify.name is legacy utf8 while this administrative script uses utf8mb4.
+    # Convert the stored value before comparison so Unicode titles can be saved
+    # without a collation conflict, while keeping the title protected by SqlString.
+    $existingId = [int](Get-MySqlScalar "SELECT id FROM notify WHERE CONVERT(name USING utf8mb4)=$(SqlString $title) ORDER BY id ASC LIMIT 1;" "0")
     if ($existingId -gt 0) {
         Invoke-MySql "UPDATE notify SET text=$(SqlString $body) WHERE id=$existingId;" | Out-Null
         "OK`tĐã cập nhật thông báo #$existingId. Restart server để người chơi nhận dữ liệu mới."
@@ -6455,7 +6458,11 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "giftcode" $where))
         }
         "deletegiftcode" { $snapshots.Add((New-DbAuditSnapshot "giftcode" "id=$(SqlInt $Id)")) }
-        "savenotification" { $snapshots.Add((New-DbAuditSnapshot "notify" "name=$(SqlString $Name.Trim())")) }
+        "savenotification" {
+            # Match the same UTF-8 conversion used by Save-Notification. The audit
+            # snapshot must succeed before an update is allowed to proceed.
+            $snapshots.Add((New-DbAuditSnapshot "notify" "CONVERT(name USING utf8mb4)=$(SqlString $Name.Trim())"))
+        }
         "savegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
         "deletegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
         { $_ -in @("saveradarcard", "deleteradarcard") } { $snapshots.Add((New-DbAuditSnapshot "radar" "id=$(SqlInt $Id)")) }

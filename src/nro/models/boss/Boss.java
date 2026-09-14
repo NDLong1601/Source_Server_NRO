@@ -46,14 +46,18 @@ import static nro.models.consts.BossType.TRUNGTHU_EVENT;
 import static nro.models.consts.BossType.YARDART;
 import nro.models.network.Message;
 import java.util.List;
+import nro.models.clan.ClanProgressionService;
+import nro.models.item.Item;
 import nro.models.map.Zone;
 import nro.models.mob.Mob;
 import nro.models.player.Pet;
 import nro.models.player.Player;
+import nro.models.reward.BossLootBalance;
 import nro.models.skill.Skill;
 import nro.models.server.ServerNotify;
 import nro.models.map.service.MapService;
 import nro.models.services.PlayerService;
+import nro.models.services.ItemService;
 import nro.models.services.Service;
 import nro.models.services.SkillService;
 import nro.models.services.TaskService;
@@ -70,6 +74,13 @@ import nro.models.activity.ActivityType;
 public class Boss extends Player implements IBoss {
 
     private static final AtomicLong NEXT_ACTIVITY_SPAWN_ID = new AtomicLong(System.currentTimeMillis());
+
+    private static final int[][] LEVEL_10_TO_12_EQUIPMENT_BY_GENDER = {
+        {231, 243, 255, 267, 232, 244, 256, 268, 233, 245, 257, 269},
+        {235, 247, 259, 271, 236, 248, 260, 272, 237, 249, 261, 273},
+        {239, 251, 263, 275, 240, 252, 264, 276, 241, 253, 265, 277}
+    };
+    private static final int[] LEVEL_10_TO_12_RADAR_IDS = {279, 280, 281};
 
     public int currentLevel = -1;
     public final BossData[] data;
@@ -671,6 +682,7 @@ public class Boss extends Player implements IBoss {
         }
         if (plKill != null && this.zone != null) {
             int dropY = this.zone.map.yPhysicInTop(this.location.x, this.location.y);
+            addBalancedBossDrops(plKill, this.location.x, dropY);
             for (nro.models.map.ItemMap item : AdminSpawnConfigService.gI().createServerBossDrops(
                     (int) this.id, this.zone, plKill.id, this.location.x, dropY)) {
                 Service.gI().dropItemMap(this.zone, item);
@@ -684,6 +696,145 @@ public class Boss extends Player implements IBoss {
         // have their own completion hook so timeout cleanup cannot be counted.
         ActivityService.gI().awardUnique(plKill, ActivityType.BOSS_KILL,
                 "boss:" + activitySpawnId);
+    }
+
+    /**
+     * Applies the common 2/3-star dragon-ball table and the named world-boss
+     * tables. Existing event/configured boss drops remain independent.
+     */
+    private void addBalancedBossDrops(Player player, int x, int y) {
+        if (player == null || this.zone == null) {
+            return;
+        }
+
+        if (Util.isTrue(BossLootBalance.BOSS_DRAGON_BALL_3_STAR_RATE, 100)) {
+            dropBossItem(player, 15, 1, x, y);
+        }
+        if (Util.isTrue(BossLootBalance.BOSS_DRAGON_BALL_2_STAR_RATE, 100)) {
+            dropBossItem(player, 14, 1, x, y);
+        }
+
+        int luckPercent = getBossLootLuckPercent(player);
+        switch (BossLootBalance.regionForBoss((int) this.id)) {
+            case FIDE -> addFideBossDrops(player, x, y, luckPercent);
+            case FUTURE -> addFutureBossDrops(player, x, y, luckPercent);
+            case COLD -> addColdBossDrops(player, x, y, luckPercent);
+            case NONE -> {
+                // Common boss dragon-ball rolls above are the only configured rewards.
+            }
+        }
+    }
+
+    private void addFideBossDrops(Player player, int x, int y, int luckPercent) {
+        if (Util.isTrue(BossLootBalance.FIDE_HEAVEN_STONE_RATE, 100)) {
+            dropBossStone(player, 2054, Util.nextInt(2, 5), x, y, luckPercent);
+        }
+    }
+
+    private void addFutureBossDrops(Player player, int x, int y, int luckPercent) {
+        if (Util.isTrue(BossLootBalance.FUTURE_FLIGHT_STONE_RATE, 100)) {
+            dropBossStone(player, 2055, Util.nextInt(2, 5), x, y, luckPercent);
+        }
+        if (Util.isTrue(BossLootBalance.FUTURE_GOLDEN_STONE_RATE, 100)) {
+            dropBossStone(player, 2026, 1, x, y, luckPercent);
+        }
+        if (Util.isTrue(BossLootBalance.FUTURE_LEVEL_10_TO_12_EQUIPMENT_RATE, 100)) {
+            dropLevel10To12Equipment(player, x, y);
+        }
+        if (Util.isTrue(BossLootBalance.FUTURE_DIVINE_EQUIPMENT_RATE, 100)) {
+            dropDivineEquipment(player, x, y);
+        }
+        if (Util.isTrue(BossLootBalance.FUTURE_DESTROY_FRAGMENT_RATE, 100)) {
+            dropBossItem(player,
+                    BossLootBalance.FUTURE_DESTROY_FRAGMENT_IDS[Util.nextInt(BossLootBalance.FUTURE_DESTROY_FRAGMENT_IDS.length)],
+                    1, x, y);
+        }
+    }
+
+    private void addColdBossDrops(Player player, int x, int y, int luckPercent) {
+        if (Util.isTrue(BossLootBalance.COLD_COSTUME_STONE_RATE, 100)) {
+            dropBossStone(player, 2052, Util.nextInt(2, 5), x, y, luckPercent);
+        }
+        if (Util.isTrue(BossLootBalance.COLD_PET_STONE_RATE, 100)) {
+            dropBossStone(player, 2053, Util.nextInt(2, 5), x, y, luckPercent);
+        }
+        if (Util.isTrue(BossLootBalance.COLD_GOLDEN_STONE_RATE, 100)) {
+            dropBossStone(player, 2026, 1, x, y, luckPercent);
+        }
+        if (Util.isTrue(BossLootBalance.COLD_LEVEL_10_TO_12_EQUIPMENT_RATE, 100)) {
+            dropLevel10To12Equipment(player, x, y);
+        }
+        if (Util.isTrue(BossLootBalance.COLD_DIVINE_EQUIPMENT_RATE, 100)) {
+            dropDivineEquipment(player, x, y);
+        }
+        if (Util.isTrue(BossLootBalance.COLD_DESTROY_FRAGMENT_RATE, 100)) {
+            dropBossItem(player,
+                    BossLootBalance.COLD_DESTROY_FRAGMENT_IDS[Util.nextInt(BossLootBalance.COLD_DESTROY_FRAGMENT_IDS.length)],
+                    1, x, y);
+        }
+    }
+
+    private void dropBossStone(Player player, int itemId, int quantity, int x, int y, int luckPercent) {
+        int finalQuantity = BossLootBalance.applyBossStoneLuck(quantity, luckPercent);
+        dropBossItem(player, itemId, finalQuantity, x, y);
+        if (BossLootBalance.hasMaximumLuck(luckPercent)) {
+            String itemName = ItemService.gI().getTemplate((short) itemId).name;
+            Service.gI().sendThongBao(player, "May mắn đạt 100%: nhận x2 " + itemName
+                    + " (" + finalQuantity + ") từ boss.");
+        }
+    }
+
+    private void dropLevel10To12Equipment(Player player, int x, int y) {
+        int itemId;
+        if (Util.isTrue(1, 5)) {
+            itemId = LEVEL_10_TO_12_RADAR_IDS[Util.nextInt(LEVEL_10_TO_12_RADAR_IDS.length)];
+        } else {
+            int gender = Math.max(0, Math.min(LEVEL_10_TO_12_EQUIPMENT_BY_GENDER.length - 1, player.gender));
+            int[] eligibleItems = LEVEL_10_TO_12_EQUIPMENT_BY_GENDER[gender];
+            itemId = eligibleItems[Util.nextInt(eligibleItems.length)];
+        }
+        nro.models.map.ItemMap itemMap = new nro.models.map.ItemMap(this.zone, itemId, 1,
+                x + Util.nextInt(-15, 15), y, player.id);
+        itemMap.options.addAll(ItemService.gI().getListOptionItemShop((short) itemId));
+        itemMap.options.add(new Item.ItemOption(107, Util.nextInt(0, 5)));
+        Service.gI().dropItemMap(this.zone, itemMap);
+    }
+
+    private void dropDivineEquipment(Player player, int x, int y) {
+        nro.models.map.ItemMap itemMap = ItemService.gI().randDoTLBoss(this.zone, 1,
+                x + Util.nextInt(-15, 15), y, player.id, player.gender);
+        if (itemMap == null) {
+            return;
+        }
+        itemMap.options.add(new Item.ItemOption(107, Util.nextInt(0, 5)));
+        Service.gI().dropItemMap(this.zone, itemMap);
+    }
+
+    private void dropBossItem(Player player, int itemId, int quantity, int x, int y) {
+        Service.gI().dropItemMap(this.zone, new nro.models.map.ItemMap(this.zone, itemId, quantity,
+                x + Util.nextInt(-15, 15), y, player.id));
+    }
+
+    private int getBossLootLuckPercent(Player player) {
+        if (player == null || player.inventory == null || player.inventory.itemsBody == null) {
+            return 0;
+        }
+        int total = 0;
+        for (Item item : player.inventory.itemsBody) {
+            if (item == null || item.itemOptions == null) {
+                continue;
+            }
+            for (Item.ItemOption option : item.itemOptions) {
+                if (option != null && option.optionTemplate != null && option.optionTemplate.id == 236) {
+                    total += Math.max(0, option.param);
+                }
+            }
+        }
+        if (player.setClothes != null && player.setClothes.gohan >= 5) {
+            total += 150;
+        }
+        total += ClanProgressionService.gI().luckPercent(player);
+        return Math.min(total, 10_000);
     }
 
     @Override

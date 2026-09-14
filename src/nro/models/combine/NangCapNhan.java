@@ -27,6 +27,12 @@ public final class NangCapNhan {
     private NangCapNhan() {
     }
 
+    /** Explains the live boss source for the material consumed by this feature. */
+    public static String getGoldenStoneSourceGuide() {
+        return "Đá hoàng kim rơi từ Boss Hành Tinh Tương Lai hoặc Hành Tinh Lạnh "
+                + "(5% mỗi nơi, x1; May mắn từ 100% sẽ x2 số đá).";
+    }
+
     public static boolean isRing(Item item) {
         return item != null && item.isNotNullItem() && isRingTemplate(item.template.id);
     }
@@ -91,6 +97,9 @@ public final class NangCapNhan {
         text.append("|2|Sau nâng cấp: ")
                 .append(ItemService.gI().getTemplate((short) (ring.template.id + 1)).name)
                 .append(" [Cấp ").append(level + 1).append("]\n");
+        if (stoneEnabled) {
+            text.append("|6|").append(getGoldenStoneSourceGuide()).append("\n");
+        }
         text.append("|2|Tỉ lệ thành công: ").append(successRate).append("%\n");
         boolean hasResourceLine = false;
         if (stoneEnabled) {

@@ -38,8 +38,17 @@ import nro.models.skill.Skill;
 import nro.models.task.BadgesTaskService;
 import nro.models.utils.TimeUtil;
 import nro.models.event.EventManager;
+import nro.models.reward.BossLootBalance;
 
 public class Mob {
+
+    // Package-visible so the economy contract can be regression-tested.
+    static final int DRAGON_BALL_TRAIN_DROP_BASIS_POINTS = BossLootBalance.TRAIN_DRAGON_BALL_5_TO_7_RATE;
+    static final int DRAGON_BALL_TRAIN_DROP_DENOMINATOR = 100;
+    static final int DRAGON_BALL_GENERAL_DROP_BASIS_POINTS = BossLootBalance.DUNGEON_DRAGON_BALL_4_STAR_RATE;
+    static final int DRAGON_BALL_GENERAL_DROP_DENOMINATOR = 100;
+    static final int CRYSTAL_STAR_DETECTOR_DROP_BASIS_POINTS = 100;
+    static final int CRYSTAL_STAR_DETECTOR_DROP_DENOMINATOR = 10_000;
 
     public int id;
     public Zone zone;
@@ -959,36 +968,10 @@ public class Mob {
             }
         }
 
-        if (MapService.gI().isMapCold(mapid)) {
-            if (Util.isTrue(20, 100)) {
-                int rand = Util.nextInt(0, 4);
-                ItemMap it = new ItemMap(zone, 220 + rand, 1, x, yEnd, player.id);
-                it.options.add(new Item.ItemOption(71 - rand, 0));
-                list.add(it);
-            }
-        }
-
-        if (MapService.gI().isMapDoanhTrai(mapid) && (Util.isTrue(10, 100))) {
-            ItemMap it = new ItemMap(zone, 225, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(74, 0));
-            list.add(it);
-        }
-
-        if (MapService.gI().isMap3Planets(mapid) && (Util.isTrue(10, 100))) {
-            ItemMap it = new ItemMap(zone, 225, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(74, 0));
-            list.add(it);
-        }
-
         if (MapService.gI().isMap3Planets(mapid) || MapService.gI().isMapNappa(mapid) || MapService.gI().isMapTuongLai(mapid) || MapService.gI().isMapCold(mapid)) {
-            int dropRate = 10;
-            if (player.itemTime.isUseCoBonLa) {
-                dropRate = (int) (dropRate * 1.15);
-            }
-
-            if (Util.isTrue(dropRate, 70) || (player.isActive() && Util.isTrue(1, 100))) {
-                int rand = Util.nextInt(0, 1);
-                ItemMap it = new ItemMap(zone, 19 + rand, 1, x, yEnd, player.id);
+            // One independent 5% roll, equally selecting a 5-, 6-, or 7-star ball.
+            if (Util.isTrue(DRAGON_BALL_TRAIN_DROP_BASIS_POINTS, DRAGON_BALL_TRAIN_DROP_DENOMINATOR)) {
+                ItemMap it = new ItemMap(zone, Util.nextInt(18, 20), 1, x, yEnd, player.id);
                 list.add(it);
             }
         }
@@ -1005,21 +988,34 @@ public class Mob {
             list.add(new ItemMap(zone, Util.nextInt(541, 542), 1, x, yEnd, player.id));
         }
 
-        if (this.zone.map.mapId >= 0) {
-            int dropRate = 1;
-            if (player.itemTime.isUseCoBonLa) {
-                dropRate = (int) (dropRate * 1.15);
+        if (MapService.gI().isMapPhoBan(mapid)) {
+            // A 4-star dragon ball is a dungeon-only, independent 5% roll.
+            if (Util.isTrue(DRAGON_BALL_GENERAL_DROP_BASIS_POINTS, DRAGON_BALL_GENERAL_DROP_DENOMINATOR)) {
+                list.add(new ItemMap(zone, 17, 1, x, yEnd, player.id));
             }
+        }
 
-            if (Util.isTrue(dropRate, 100)) { // nro
-                list.add(new ItemMap(zone, Util.nextInt(17, 20), 1, x, this.location.y, player.id));
+        if (mapid >= 0) {
+            // The 7% upgrade-stone roll selects exactly one of five stones;
+            // it is not a separate 7% roll for each stone.
+            if (Util.isTrue(BossLootBalance.UPGRADE_STONE_RATE, 100)) {
+                int stoneIndex = Util.nextInt(0, 4);
+                ItemMap stone = new ItemMap(zone, 220 + stoneIndex, 1, x, yEnd, player.id);
+                stone.options.add(new Item.ItemOption(71 - stoneIndex, 0));
+                list.add(stone);
+            }
+            if (Util.isTrue(BossLootBalance.STONE_FRAGMENT_RATE, 100)) {
+                ItemMap fragment = new ItemMap(zone, 225, 1, x, yEnd, player.id);
+                fragment.options.add(new Item.ItemOption(74, 0));
+                list.add(fragment);
             }
         }
 
         if (this.zone.map.mapId >= 0 && player.nPoint != null
-                && player.nPoint.isDoSPL && Util.isTrue(30, 100)) {
+                && player.nPoint.isDoSPL
+                && Util.isTrue(CRYSTAL_STAR_DETECTOR_DROP_BASIS_POINTS, CRYSTAL_STAR_DETECTOR_DROP_DENOMINATOR)) {
             // Option 110: crystal stars can drop only while the killer wears
-            // the detector equipment.  The former global 10% drop is removed.
+            // the detector equipment, at 1% overall (evenly across 7 colors).
             list.add(new ItemMap(Util.spl(zone, Util.nextInt(441, 447), 1, x, this.location.y, player.id)));
         }
 
