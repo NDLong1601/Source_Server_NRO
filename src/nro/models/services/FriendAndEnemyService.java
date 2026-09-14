@@ -249,6 +249,10 @@ public class FriendAndEnemyService {
     }
 
     public void chatPrivate(Player player, Message msg) {
+        if (SocialV2ServerFacade.gI().isEnabledFor(player)) {
+            SocialV2ServerFacade.gI().handlePrivateChat(player, msg);
+            return;
+        }
         if (Util.canDoWithTime(player.idMark.getLastTimeChatPrivate(), 5000)) {
             player.idMark.setLastTimeChatPrivate(System.currentTimeMillis());
             try {

@@ -1791,45 +1791,48 @@ public class Service {
     }
 
     public void chatPrivate(Player plChat, Player plReceive, String text) {
-        if (Functions.isSpam(plChat, text)) {
-            return;
+        tryChatPrivate(plChat, plReceive, text);
+    }
+
+    /**
+     * Sends the legacy private-chat event unchanged and reports whether a
+     * server echo was actually emitted. Social V2 uses this acknowledgement to
+     * avoid creating a local sent message on filtered or failed delivery.
+     */
+    public boolean tryChatPrivate(Player plChat, Player plReceive, String text) {
+        if (plChat == null || plReceive == null || text == null) {
+            return false;
         }
-        Message msg = null;
+        if (Functions.isSpam(plChat, text)) {
+            return false;
+        }
         try {
-            msg = new Message(92);
-            msg.writer().writeUTF(plChat.name);
-            msg.writer().writeUTF("|5|" + text);
-            msg.writer().writeInt((int) plChat.id);
-            msg.writer().writeShort(plChat.getHead());
-            if (plChat.getSession().version > 214) {
-                msg.writer().writeShort(-1);
-            }
-            msg.writer().writeShort(plChat.getBody());
-            msg.writer().writeShort(plChat.getFlagBag());
-            msg.writer().writeShort(plChat.getLeg());
-            msg.writer().writeByte(1);
-            plChat.sendMessage(msg);
-            // Receive
-            msg = new Message(92);
-            msg.writer().writeUTF(plChat.name);
-            msg.writer().writeUTF("|5|" + text);
-            msg.writer().writeInt((int) plChat.id);
-            msg.writer().writeShort(plChat.getHead());
-            if (plReceive.getSession().version > 214) {
-                msg.writer().writeShort(-1);
-            }
-            msg.writer().writeShort(plChat.getBody());
-            msg.writer().writeShort(plChat.getFlagBag());
-            msg.writer().writeShort(plChat.getLeg());
-            msg.writer().writeByte(1);
-            plReceive.sendMessage(msg);
+            sendPrivateChatEvent(plChat, plChat, text);
+            sendPrivateChatEvent(plReceive, plChat, text);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        }
+    }
 
-        } finally {
-            if (msg != null) {
-                msg.cleanup();
+    private void sendPrivateChatEvent(Player recipient, Player sender, String text) throws IOException {
+        Message message = new Message(92);
+        try {
+            message.writer().writeUTF(sender.name);
+            message.writer().writeUTF("|5|" + text);
+            message.writer().writeInt((int) sender.id);
+            message.writer().writeShort(sender.getHead());
+            if (recipient.getSession() != null && recipient.getSession().version > 214) {
+                message.writer().writeShort(-1);
             }
+            message.writer().writeShort(sender.getBody());
+            message.writer().writeShort(sender.getFlagBag());
+            message.writer().writeShort(sender.getLeg());
+            message.writer().writeByte(1);
+            recipient.sendMessage(message);
+        } finally {
+            message.cleanup();
         }
     }
 

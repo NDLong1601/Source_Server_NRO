@@ -259,7 +259,7 @@ Trước khi code phải khóa:
 | 1 | Baseline, contract, feature flag và test RED | `COMPLETE` | 0 |
 | 2 | Schema, migration và repository persistence | `COMPLETE` | 1 |
 | 3 | Search, request, friendship và inbox server | `COMPLETE` | 2 |
-| 4 | Presence, profile, chat policy và location server | `PLANNED` | 3 |
+| 4 | Presence, profile, chat policy và location server | `COMPLETE` | 3 |
 | 5 | Asset pipeline, client models và protocol parser | `PLANNED` | 1, 4 |
 | 6 | Panel trái Bạn bè/Tìm kiếm/Hộp thư | `PLANNED` | 3, 5 |
 | 7 | Panel phải Chat, composer và offline state | `PLANNED` | 4, 5, 6 |
@@ -418,12 +418,12 @@ Tiêu chí thoát:
 
 #### Nhật ký triển khai Giai đoạn 4
 
-- Trạng thái: `NOT STARTED`
-- Bắt đầu/kết thúc: —
-- Nội dung đã làm: —
-- File thay đổi: —
-- Test/evidence/race cases: —
-- Sai lệch/rủi ro: —
+- Trạng thái: `COMPLETE`
+- Bắt đầu/kết thúc: `2026-09-14` / `2026-09-14`
+- Nội dung đã làm: thêm presence index chỉ giữ player online và reverse edge friend-online; publish sau khi login hoàn tất, unpublish trước detach/logout và dùng cùng interaction lock với chat/location. Profile action `9` xác thực friendship trước, đọc online từ Player hoặc offline bằng JDBC projection tối thiểu; action `10/11` chỉ nhận friend ID, lấy map/khu/x/y từ server và gửi event typed cho cả sender/receiver. Private chat V2 giữ nguyên wire `-72`/`92` cũ nhưng enforce mutual friendship, online state, 1–80 Unicode, control character, token bucket 3 tin/giây và server echo; remove friendship chặn ngay chat/location tiếp theo.
+- File thay đổi: bổ sung `SocialPresenceService`, `SocialProfileService`/repository JDBC, `SocialChatRateLimiter`, `SocialLocationCooldown`; cập nhật policy, relationship query, `SocialV2ServerFacade`, lifecycle `MySession`/`Client`, routing chat và sender event; cập nhật protocol contract và test/runner Phase 4.
+- Test/evidence/race cases: `Test-SocialV2Phase4.ps1` PASS (full Java 17 source compile; persistence/protocol/search regressions; policy, token bucket, repeated login/reconnect/unpublish, profile wire, server-derived location, filtered chat, remove-while-chatting). `Test-Gate5RegressionSuite.ps1` PASS. Packet profile/location đều được decode đầy đủ trong wire test và vẫn dưới giới hạn 65,535 byte. `SocialProfileDatabaseIntegrationTest`/runner disposable đã thêm nhưng chưa chạy vì environment hiện không có `SOCIAL_V2_TEST_JDBC_URL` và `SOCIAL_V2_TEST_DB_USER`.
+- Sai lệch/rủi ro: không apply migration/database production, không build/restart/thay `20.jar`, không chạy protocol probe hay manual A→B; đây là scope Giai đoạn 9. Feature flag vẫn mặc định tắt. Rollout multi-process vẫn cần thay local limiter/presence index bằng shared state trước khi bật Social V2.
 
 ### Giai đoạn 5 — Asset pipeline, client models và protocol parser
 

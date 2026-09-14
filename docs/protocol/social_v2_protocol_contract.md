@@ -75,6 +75,29 @@ Actions `3` through `12` are social-v2 only:
 
 Every page response echoes the request token, emits an opaque next cursor, and has `count <= 20`. Search results are ordered exact numeric ID, exact name, name prefix, then name contains; server-side SQL must escape `%` and `_`.
 
+## Phase-4 profile, presence, chat, and location behavior
+
+Action `9` returns the normal error envelope on rejection. A successful profile response is:
+
+```text
+u8 action=9, u8 result=0, i32 friendId, i16 head, utf name, utf clanName,
+utf activityLabel, i64 rawPower, utf formattedPower, bool online
+```
+
+The server checks the normalized friendship before looking up a profile. An online target is projected from its published `Player`; an offline target is read with a narrow `player`/`clan`/logout-time projection. Account credentials, account identifiers, email, IP, inventory, and chat history are never selected or serialized. Activity labels are server policy: online = `Đang online`; last activity at most 7 days = `Thường xuyên`; 8–30 days = `Gần đây`; otherwise = `Ít hoạt động`.
+
+Presence action `3` is emitted only to online, current friends that support Social V2. Publication happens after the session/player login lifecycle is complete. Session teardown removes the player from the social online index before emitting `online=false`; chat and location take the same interaction lock, so a delivery beginning after unpublish cannot reach the closed player.
+
+For a Social-V2 sender, `-72` is accepted only for a current mutual friendship whose target remains in the online index. Text is trimmed, must contain 1–80 Unicode code points, and rejects ISO control characters. A bounded token bucket permits three messages per second per sender. On success the legacy packet `92` is still emitted to sender and recipient in its existing order; no server log or persistence contains message text. An offline race produces a best-effort action-3 `online=false` correction and no sender echo.
+
+Action `10` accepts only `friendId`; map, zone, x, and y never arrive from the client. The server rechecks friendship and online state, applies a two-minute sender cooldown after a successful delivery, snapshots the current server-side location, then emits action `11` to both sender and recipient:
+
+```text
+u8 action=11, i32 senderId, i16 mapId, i16 zoneId, i16 x, i16 y
+```
+
+This lets the sender render the same server-authoritative location event as the recipient. A malformed or unavailable server location fails without emitting coordinates.
+
 ## Phase-3 anti-abuse policy
 
 - Search is limited per authenticated player ID to **30 accepted actions in a rolling 60-second window**.

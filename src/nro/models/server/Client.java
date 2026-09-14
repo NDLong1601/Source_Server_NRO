@@ -13,6 +13,7 @@ import nro.models.services.Service;
 import nro.models.map.service.ChangeMapService;
 import nro.models.services.shenron.SummonDragon;
 import nro.models.services_func.TransactionService;
+import nro.models.social.SocialV2ServerFacade;
 import nro.models.services_dungeon.NgocRongNamecService;
 import nro.models.utils.Functions;
 import nro.models.utils.Logger;
@@ -179,6 +180,9 @@ public class Client implements Runnable {
     }
 
     private void removeFromRegistriesAndTeardown(Player player) {
+        // Covers non-session removals as well. Session teardown already did this
+        // before detaching; the social operation is intentionally idempotent.
+        SocialV2ServerFacade.gI().onPlayerUnpublishing(player);
         removeFromMemory(player);
         Player replacement = getPlayer(player.id);
         if (replacement == null) {

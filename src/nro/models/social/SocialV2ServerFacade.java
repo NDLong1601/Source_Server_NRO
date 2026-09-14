@@ -16,16 +16,30 @@ import nro.models.utils.Util;
  */
 public final class SocialV2ServerFacade {
 
-    private static final SocialV2ServerFacade INSTANCE = new SocialV2ServerFacade(
-            new SocialRelationshipService(new JdbcSocialRelationshipRepository(), new SocialFriendPolicy()),
-            new SocialDirectoryService(new JdbcSocialDirectoryRepository(),
-                    playerId -> Client.gI().getPlayer(playerId) != null),
-            SocialV2FeatureFlags.gI(), new SocialActionRateLimiter());
+    private static final SocialV2ServerFacade INSTANCE = createDefault();
 
     private final SocialRelationshipService relationships;
     private final SocialDirectoryService directory;
     private final SocialV2FeatureFlags flags;
     private final SocialActionRateLimiter rateLimiter;
+    private final SocialFriendPolicy policy;
+    private final SocialPresenceService presence;
+    private final SocialProfileService profiles;
+    private final SocialChatRateLimiter chatRateLimiter;
+    private final SocialLocationCooldown locationCooldown;
+    /** Serializes relationship changes against realtime chat/location delivery and logout unpublish. */
+    private final Object interactionLock = new Object();
+
+    private static SocialV2ServerFacade createDefault() {
+        SocialFriendPolicy defaultPolicy = new SocialFriendPolicy();
+        return new SocialV2ServerFacade(
+                new SocialRelationshipService(new JdbcSocialRelationshipRepository(), defaultPolicy),
+                new SocialDirectoryService(new JdbcSocialDirectoryRepository(),
+                        playerId -> Client.gI().getPlayer(playerId) != null),
+                SocialV2FeatureFlags.gI(), new SocialActionRateLimiter(), defaultPolicy,
+                SocialPresenceService.gI(), new SocialProfileService(new JdbcSocialProfileRepository()),
+                new SocialChatRateLimiter(), new SocialLocationCooldown());
+    }
 
     public static SocialV2ServerFacade gI() {
         return INSTANCE;
@@ -38,18 +52,120 @@ public final class SocialV2ServerFacade {
 
     SocialV2ServerFacade(SocialRelationshipService relationships, SocialDirectoryService directory,
             SocialV2FeatureFlags flags, SocialActionRateLimiter rateLimiter) {
+        this(relationships, directory, flags, rateLimiter, new SocialFriendPolicy(), SocialPresenceService.gI(),
+                new SocialProfileService(new JdbcSocialProfileRepository()), new SocialChatRateLimiter(),
+                new SocialLocationCooldown());
+    }
+
+    SocialV2ServerFacade(SocialRelationshipService relationships, SocialDirectoryService directory,
+            SocialV2FeatureFlags flags, SocialActionRateLimiter rateLimiter, SocialFriendPolicy policy,
+            SocialPresenceService presence, SocialProfileService profiles, SocialChatRateLimiter chatRateLimiter,
+            SocialLocationCooldown locationCooldown) {
         if (relationships == null || directory == null || flags == null || rateLimiter == null) {
             throw new IllegalArgumentException("Social v2 dependencies are required");
+        }
+        if (policy == null || presence == null || profiles == null || chatRateLimiter == null
+                || locationCooldown == null) {
+            throw new IllegalArgumentException("Social v2 phase-4 dependencies are required");
         }
         this.relationships = relationships;
         this.directory = directory;
         this.flags = flags;
         this.rateLimiter = rateLimiter;
+        this.policy = policy;
+        this.presence = presence;
+        this.profiles = profiles;
+        this.chatRateLimiter = chatRateLimiter;
+        this.locationCooldown = locationCooldown;
     }
 
     public boolean isEnabledFor(Player player) {
         return player != null && player.getSession() != null
                 && flags.allowsClientVersion(player.getSession().version);
+    }
+
+    /** Called only after login made the Player, session and map publication complete. */
+    public void onPlayerPublished(Player player) {
+        if (player == null || !flags.isEnabled()) {
+            return;
+        }
+        try {
+            synchronized (interactionLock) {
+                presence.publish(player);
+            }
+        } catch (SQLException databaseError) {
+            Logger.logException(SocialV2ServerFacade.class, databaseError);
+        }
+    }
+
+    /**
+     * Called before session detachment. Acquiring the same lock as chat/location
+     * makes every later delivery observe this player as offline.
+     */
+    public void onPlayerUnpublishing(Player player) {
+        if (player == null || !flags.isEnabled()) {
+            return;
+        }
+        synchronized (interactionLock) {
+            presence.unpublish(player);
+        }
+    }
+
+    /** Enforces the v2 private-chat policy while retaining legacy -72/92 wire order. */
+    public void handlePrivateChat(Player player, Message request) {
+        if (player == null || request == null) {
+            return;
+        }
+        try {
+            int targetPlayerId = request.reader().readInt();
+            String submittedText = request.reader().readUTF();
+            requireNoTrailingRequestData(request);
+            handlePrivateChat(player, targetPlayerId, submittedText, Instant.now());
+        } catch (IOException | IllegalArgumentException malformed) {
+            notifySuccess(player, "Tin nhắn không hợp lệ");
+        }
+    }
+
+    void handlePrivateChat(Player player, int targetPlayerId, String submittedText, Instant now) {
+        if (!isEnabledFor(player) || now == null) {
+            return;
+        }
+        SocialFriendPolicy.Authorization authorization;
+        try {
+            synchronized (interactionLock) {
+                if (targetPlayerId <= 0) {
+                    authorization = SocialFriendPolicy.Authorization.NOT_FRIENDS;
+                } else if (targetPlayerId == player.id) {
+                    authorization = SocialFriendPolicy.Authorization.NOT_FRIENDS;
+                } else {
+                    boolean mutualFriends = relationships.areFriends(player.id, targetPlayerId);
+                    boolean targetOnline = presence.isOnline(targetPlayerId);
+                    authorization = policy.authorizeChat(mutualFriends, targetOnline, submittedText);
+                }
+                if (authorization == SocialFriendPolicy.Authorization.ALLOWED) {
+                    String approvedText = policy.normalizeChatText(submittedText);
+                    if (!chatRateLimiter.tryConsume(player.id, now)) {
+                        authorization = SocialFriendPolicy.Authorization.RATE_LIMITED;
+                    } else {
+                        boolean[] echoed = { false };
+                        boolean targetStillOnline = presence.withOnlineTarget(player, targetPlayerId,
+                                (sender, target) -> echoed[0] = Service.gI()
+                                        .tryChatPrivate(sender, target, approvedText));
+                        if (!targetStillOnline) {
+                            authorization = SocialFriendPolicy.Authorization.OFFLINE;
+                        } else if (!echoed[0]) {
+                            authorization = SocialFriendPolicy.Authorization.INVALID_TEXT;
+                        }
+                    }
+                }
+            }
+        } catch (Exception unexpected) {
+            // Never log text or targets here; a failed delivery is indistinguishable from offline to the client.
+            authorization = SocialFriendPolicy.Authorization.OFFLINE;
+        }
+        if (authorization != SocialFriendPolicy.Authorization.ALLOWED) {
+            notifyChatRejection(player, targetPlayerId, authorization);
+        }
     }
 
     /** Handles only actions 3..12 after FriendAndEnemyService consumed their action byte. */
@@ -98,6 +214,8 @@ public final class SocialV2ServerFacade {
                 }
                 case SocialV2Protocol.ACCEPT_REQUEST -> acceptRequest(player, readRequestId(request));
                 case SocialV2Protocol.REJECT_REQUEST -> rejectRequest(player, readRequestId(request));
+                case SocialV2Protocol.PROFILE -> sendProfile(player, readTargetPlayerId(request));
+                case SocialV2Protocol.SHARE_LOCATION -> shareLocation(player, readTargetPlayerId(request));
                 default -> sendError(player, action, SocialV2Protocol.ErrorCode.UNSUPPORTED_ACTION);
             }
         } catch (IllegalArgumentException | IOException malformed) {
@@ -142,7 +260,13 @@ public final class SocialV2ServerFacade {
                     ? SocialV2Protocol.ErrorCode.CLIENT_TOO_OLD : SocialV2Protocol.ErrorCode.FEATURE_DISABLED);
             return;
         }
-        SocialRelationshipService.Result result = relationships.removeFriendship(player.id, friendId);
+        SocialRelationshipService.Result result;
+        synchronized (interactionLock) {
+            result = relationships.removeFriendship(player.id, friendId);
+            if (result.status() == SocialRelationshipService.Status.FRIENDSHIP_REMOVED) {
+                presence.unlinkFriendship(player.id, result.affectedPlayerId());
+            }
+        }
         if (result.status() != SocialRelationshipService.Status.FRIENDSHIP_REMOVED) {
             sendRelationshipError(player, SocialV2Protocol.REMOVE_FRIEND, result, friendId);
             return;
@@ -160,7 +284,13 @@ public final class SocialV2ServerFacade {
     }
 
     private void sendRequest(Player player, int targetPlayerId) {
-        SocialRelationshipService.Result result = relationships.sendRequest(player.id, targetPlayerId, Instant.now());
+        SocialRelationshipService.Result result;
+        synchronized (interactionLock) {
+            result = relationships.sendRequest(player.id, targetPlayerId, Instant.now());
+            if (result.status() == SocialRelationshipService.Status.AUTO_ACCEPTED) {
+                presence.linkFriendship(player.id, result.affectedPlayerId());
+            }
+        }
         if (result.status() == SocialRelationshipService.Status.ALREADY_PENDING
                 || result.status() == SocialRelationshipService.Status.ALREADY_FRIENDS) {
             sendError(player, SocialV2Protocol.SEND_REQUEST, SocialV2Protocol.ErrorCode.DUPLICATE);
@@ -192,7 +322,13 @@ public final class SocialV2ServerFacade {
     }
 
     private void acceptRequest(Player player, long requestId) {
-        SocialRelationshipService.Result result = relationships.acceptRequest(player.id, requestId, Instant.now());
+        SocialRelationshipService.Result result;
+        synchronized (interactionLock) {
+            result = relationships.acceptRequest(player.id, requestId, Instant.now());
+            if (result.status() == SocialRelationshipService.Status.REQUEST_ACCEPTED) {
+                presence.linkFriendship(player.id, result.affectedPlayerId());
+            }
+        }
         if (result.status() == SocialRelationshipService.Status.REQUEST_ACCEPTED
                 || result.status() == SocialRelationshipService.Status.ALREADY_FRIENDS) {
             sendSuccess(player, SocialV2Protocol.ACCEPT_REQUEST);
@@ -217,6 +353,101 @@ public final class SocialV2ServerFacade {
             return;
         }
         sendRelationshipError(player, SocialV2Protocol.REJECT_REQUEST, result, -1L);
+    }
+
+    private void sendProfile(Player player, int targetPlayerId) {
+        if (targetPlayerId <= 0) {
+            sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.MALFORMED);
+            return;
+        }
+        if (targetPlayerId == player.id) {
+            sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.SELF_TARGET);
+            return;
+        }
+        try {
+            SocialProfileService.Profile profile;
+            synchronized (interactionLock) {
+                if (!relationships.areFriends(player.id, targetPlayerId)) {
+                    sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.NOT_FRIENDS);
+                    return;
+                }
+                Player online = presence.onlinePlayer(targetPlayerId);
+                profile = online != null ? profiles.fromOnline(online)
+                        : profiles.loadOffline(targetPlayerId, Instant.now());
+            }
+            if (profile == null) {
+                sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.NOT_FOUND);
+                return;
+            }
+            Message response = new Message(SocialV2Protocol.COMMAND_SOCIAL);
+            response.writer().writeByte(SocialV2Protocol.PROFILE);
+            response.writer().writeByte(SocialV2Protocol.RESULT_OK);
+            response.writer().writeInt(asWirePlayerId(profile.playerId()));
+            response.writer().writeShort(profile.head());
+            response.writer().writeUTF(profile.name());
+            response.writer().writeUTF(profile.clanName());
+            response.writer().writeUTF(profile.activityLabel());
+            response.writer().writeLong(profile.rawPower());
+            response.writer().writeUTF(profile.formattedPower());
+            response.writer().writeBoolean(profile.online());
+            deliver(player, response);
+        } catch (SQLException databaseError) {
+            Logger.logException(SocialV2ServerFacade.class, databaseError);
+            sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.NOT_FOUND);
+        } catch (IOException | IllegalArgumentException packetError) {
+            sendError(player, SocialV2Protocol.PROFILE, SocialV2Protocol.ErrorCode.PACKET_TOO_LARGE);
+        }
+    }
+
+    private void shareLocation(Player player, int targetPlayerId) {
+        if (targetPlayerId <= 0) {
+            sendError(player, SocialV2Protocol.SHARE_LOCATION, SocialV2Protocol.ErrorCode.MALFORMED);
+            return;
+        }
+        if (targetPlayerId == player.id) {
+            sendError(player, SocialV2Protocol.SHARE_LOCATION, SocialV2Protocol.ErrorCode.SELF_TARGET);
+            return;
+        }
+        SocialFriendPolicy.Authorization authorization;
+        Instant now = Instant.now();
+        try {
+            synchronized (interactionLock) {
+                boolean mutualFriends = relationships.areFriends(player.id, targetPlayerId);
+                boolean targetOnline = presence.isOnline(targetPlayerId);
+                authorization = policy.authorizeLocation(mutualFriends, targetOnline,
+                        locationCooldown.lastSharedAt(player.id, now), now);
+                if (authorization == SocialFriendPolicy.Authorization.ALLOWED) {
+                    if (!presence.withOnlineTarget(player, targetPlayerId, (sender, target) -> {
+                        LocationSnapshot location = LocationSnapshot.from(sender);
+                        sendLocationEvent(sender, sender.id, location);
+                        sendLocationEvent(target, sender.id, location);
+                    })) {
+                        authorization = SocialFriendPolicy.Authorization.OFFLINE;
+                    } else {
+                        locationCooldown.markDelivered(player.id, now);
+                    }
+                }
+            }
+        } catch (Exception unavailable) {
+            authorization = SocialFriendPolicy.Authorization.OFFLINE;
+        }
+        if (authorization == SocialFriendPolicy.Authorization.ALLOWED) {
+            sendSuccess(player, SocialV2Protocol.SHARE_LOCATION);
+        } else {
+            sendLocationRejection(player, authorization);
+        }
+    }
+
+    private static void sendLocationEvent(Player recipient, long senderId, LocationSnapshot location)
+            throws IOException {
+        Message event = new Message(SocialV2Protocol.COMMAND_SOCIAL);
+        event.writer().writeByte(SocialV2Protocol.LOCATION_EVENT);
+        event.writer().writeInt(asWirePlayerId(senderId));
+        event.writer().writeShort(location.mapId());
+        event.writer().writeShort(location.zoneId());
+        event.writer().writeShort(location.x());
+        event.writer().writeShort(location.y());
+        deliver(recipient, event);
     }
 
     private void sendSearchPage(Player player,
@@ -320,6 +551,51 @@ public final class SocialV2ServerFacade {
         notifySuccess(player, "Thao tác quá nhanh, vui lòng thử lại sau");
     }
 
+    private void notifyChatRejection(Player player, int targetPlayerId,
+            SocialFriendPolicy.Authorization authorization) {
+        switch (authorization) {
+            case OFFLINE -> {
+                sendPresenceOffline(player, targetPlayerId);
+                notifySuccess(player, "Bạn bè hiện đang offline");
+            }
+            case NOT_FRIENDS -> notifySuccess(player, "Bạn chỉ có thể nhắn tin cho bạn bè");
+            case INVALID_TEXT -> notifySuccess(player, "Tin nhắn không hợp lệ");
+            case RATE_LIMITED -> notifySuccess(player, "Bạn gửi tin nhắn quá nhanh, vui lòng thử lại sau");
+            default -> notifySuccess(player, "Không thể gửi tin nhắn");
+        }
+    }
+
+    private void sendLocationRejection(Player player, SocialFriendPolicy.Authorization authorization) {
+        SocialV2Protocol.ErrorCode errorCode = switch (authorization) {
+            case NOT_FRIENDS -> SocialV2Protocol.ErrorCode.NOT_FRIENDS;
+            case OFFLINE -> SocialV2Protocol.ErrorCode.OFFLINE;
+            case COOLDOWN -> SocialV2Protocol.ErrorCode.LOCATION_COOLDOWN;
+            default -> SocialV2Protocol.ErrorCode.MALFORMED;
+        };
+        sendError(player, SocialV2Protocol.SHARE_LOCATION, errorCode);
+        notifySuccess(player, switch (authorization) {
+            case NOT_FRIENDS -> "Bạn chỉ có thể chia sẻ vị trí cho bạn bè";
+            case OFFLINE -> "Bạn bè hiện đang offline";
+            case COOLDOWN -> "Vui lòng chờ trước khi chia sẻ vị trí tiếp theo";
+            default -> "Không thể chia sẻ vị trí";
+        });
+    }
+
+    private void sendPresenceOffline(Player player, int targetPlayerId) {
+        if (player == null || targetPlayerId <= 0 || !isEnabledFor(player)) {
+            return;
+        }
+        try {
+            Message event = new Message(SocialV2Protocol.COMMAND_SOCIAL);
+            event.writer().writeByte(SocialV2Protocol.PRESENCE);
+            event.writer().writeInt(targetPlayerId);
+            event.writer().writeBoolean(false);
+            deliver(player, event);
+        } catch (IOException | IllegalArgumentException ignored) {
+            // A fixed-size best-effort presence correction must not affect chat handling.
+        }
+    }
+
     private void sendSuccess(Player player, int action) {
         try {
             Message response = new Message(SocialV2Protocol.COMMAND_SOCIAL);
@@ -403,6 +679,24 @@ public final class SocialV2ServerFacade {
     private static void requireNoTrailingRequestData(Message request) throws IOException {
         if (request.reader().available() != 0) {
             throw new IllegalArgumentException("Social-v2 request has trailing data");
+        }
+    }
+
+    private record LocationSnapshot(short mapId, short zoneId, short x, short y) {
+        private static LocationSnapshot from(Player player) {
+            if (player == null || player.zone == null || player.zone.map == null || player.location == null) {
+                throw new IllegalArgumentException("Player location is unavailable");
+            }
+            return new LocationSnapshot(asWireShort(player.zone.map.mapId, "map"),
+                    asWireShort(player.zone.zoneId, "zone"), asWireShort(player.location.x, "x"),
+                    asWireShort(player.location.y, "y"));
+        }
+
+        private static short asWireShort(int value, String field) {
+            if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
+                throw new IllegalArgumentException("Location " + field + " is outside i16 wire range");
+            }
+            return (short) value;
         }
     }
 }

@@ -35,7 +35,8 @@ public final class SocialFriendPolicy {
         NOT_FRIENDS,
         OFFLINE,
         INVALID_TEXT,
-        COOLDOWN
+        COOLDOWN,
+        RATE_LIMITED
     }
 
     public FriendshipPair normalizePair(long firstPlayerId, long secondPlayerId) {
@@ -105,16 +106,57 @@ public final class SocialFriendPolicy {
     }
 
     public Authorization authorizeChat(boolean mutualFriends, boolean targetOnline, String text) {
-        throw unavailable("chat authorization requires phase-4 presence service");
+        if (!mutualFriends) {
+            return Authorization.NOT_FRIENDS;
+        }
+        if (!targetOnline) {
+            return Authorization.OFFLINE;
+        }
+        try {
+            normalizeChatText(text);
+            return Authorization.ALLOWED;
+        } catch (IllegalArgumentException invalidText) {
+            return Authorization.INVALID_TEXT;
+        }
     }
 
     public Authorization authorizeLocation(boolean mutualFriends, boolean targetOnline,
             Instant lastSharedAt, Instant now) {
-        throw unavailable("location authorization requires phase-4 presence service");
+        if (!mutualFriends) {
+            return Authorization.NOT_FRIENDS;
+        }
+        if (!targetOnline) {
+            return Authorization.OFFLINE;
+        }
+        if (now == null) {
+            throw new IllegalArgumentException("Current time is required");
+        }
+        if (lastSharedAt != null
+                && lastSharedAt.plusMillis(SocialV2Protocol.LOCATION_COOLDOWN_MILLIS).isAfter(now)) {
+            return Authorization.COOLDOWN;
+        }
+        return Authorization.ALLOWED;
     }
 
-    private UnsupportedOperationException unavailable(String detail) {
-        return new UnsupportedOperationException("Social V2 behavior is not implemented: " + detail);
+    /**
+     * Returns the only server-approved chat representation. It deliberately
+     * rejects controls so packet readers, logs, and the legacy renderer never
+     * receive invisible line or terminal controls.
+     */
+    public String normalizeChatText(String text) {
+        if (text == null) {
+            throw new IllegalArgumentException("Chat text is required");
+        }
+        String normalized = text.strip();
+        if (!SocialV2Protocol.fitsModifiedUtf(normalized, SocialV2Protocol.MAX_CHAT_CODE_POINTS)
+                || normalized.isEmpty()) {
+            throw new IllegalArgumentException("Chat text must contain 1.."
+                    + SocialV2Protocol.MAX_CHAT_CODE_POINTS + " code points");
+        }
+        if (normalized.codePoints().anyMatch(Character::isISOControl)) {
+            throw new IllegalArgumentException("Chat text contains a control character");
+        }
+        return normalized;
     }
 
     private static Long positiveNumericId(String value) {

@@ -18,6 +18,7 @@ import nro.models.server.Maintenance;
 import nro.models.server.GameRuntime;
 import nro.models.player_system.AntiLogin;
 import nro.models.services.Service;
+import nro.models.social.SocialV2ServerFacade;
 import nro.models.utils.Logger;
 import nro.models.utils.TimeUtil;
 import java.util.List;
@@ -326,6 +327,10 @@ public class MySession extends Session {
                     })) {
                         return;
                     }
+                    if (!runPlayerLifecycleStepIfOwned(loginPlayer,
+                            () -> SocialV2ServerFacade.gI().onPlayerPublished(loginPlayer))) {
+                        return;
+                    }
                 }
             } catch (Exception e) {
                 Logger.logException(MySession.class, e, "Login finalization failed");
@@ -348,6 +353,7 @@ public class MySession extends Session {
                     this.playerTeardownDeferred = true;
                     return;
                 }
+                SocialV2ServerFacade.gI().onPlayerUnpublishing(this.player);
                 teardown = detachPlayerLocked();
             }
             completePlayerTeardown(teardown);

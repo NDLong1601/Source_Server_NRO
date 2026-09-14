@@ -183,6 +183,23 @@ public final class SocialRelationshipService {
         }
     }
 
+    /**
+     * Authenticates a current mutual friendship from the normalized source of
+     * truth. No client-side friend list is accepted as evidence.
+     */
+    public boolean areFriends(long firstPlayerId, long secondPlayerId) {
+        SocialFriendPolicy.FriendshipPair pair = pairOrNull(firstPlayerId, secondPlayerId);
+        if (pair == null) {
+            return false;
+        }
+        try {
+            return repository.inTransaction(transaction -> transaction.lockExistingPlayers(pair)
+                    && transaction.hasFriendship(pair));
+        } catch (SQLException error) {
+            return false;
+        }
+    }
+
     public int expireRequests(Instant now) {
         if (now == null) {
             return 0;
