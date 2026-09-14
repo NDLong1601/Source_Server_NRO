@@ -20,6 +20,9 @@ public final class ConfigPaths {
             "clan_tree.properties",
             "clan_value.properties"
     );
+    private static final Set<String> SOCIAL_FILES = Set.of(
+            "social_features.properties"
+    );
 
     private ConfigPaths() {
     }
@@ -37,5 +40,12 @@ public final class ConfigPaths {
             throw new IllegalArgumentException("Unsupported clan configuration file: " + filename);
         }
         return ROOT.resolve("clan").resolve(filename);
+    }
+
+    public static Path social(String filename) {
+        if (!SOCIAL_FILES.contains(filename)) {
+            throw new IllegalArgumentException("Unsupported social configuration file: " + filename);
+        }
+        return ROOT.resolve("social").resolve(filename);
     }
 }

@@ -1,0 +1,106 @@
+# Social V2 protocol contract — phase 1
+
+Status: `LOCKED FOR PHASES 2–4`; no handler is enabled in this phase.
+
+## Compatibility and rollout
+
+- The existing signed top-level commands remain `-80` (social), `-72` (private-chat request), and `92` (private-chat event). No new top-level command is allowed.
+- `SOCIAL_V2_CLIENT_VERSION` is **223**. A client at version 222 or below follows only the legacy payloads.
+- `config/social/social_features.properties` is fail-closed: `social_v2.enabled=false` and `social_v2.migration_enabled=false` by default.
+- A version-223-or-newer client sends a normal action-0 request first. It may send actions 3–12 only after it observes `CAPABILITY_SOCIAL_V2` in the action-0 response. A new client must treat a missing action-0 tail as capability `0`, so it is safe against an older server.
+- Before the feature flag is enabled, action 0–2, `-72`, and `92` keep their legacy behavior exactly. New social actions must return `FEATURE_DISABLED`, never fall through to a legacy action.
+
+## Primitive encoding
+
+All multi-byte primitives use Java `DataInputStream`/`DataOutputStream` big-endian order:
+
+| Token | Wire representation | Validation |
+| --- | --- | --- |
+| `u8` | one `writeByte` value 0–255 | reject values outside the documented range |
+| `i32` | `writeInt` | IDs, cursors and request tokens must be positive where stated |
+| `i64` | `writeLong` | request IDs must be positive |
+| `bool` | `writeBoolean` | exactly one byte |
+| `utf` | `writeUTF` | modified-UTF payload at most 65,535 bytes |
+
+`Message.getData()` for every social payload must be at most 65,535 bytes (outer command/frame bytes are not part of this count). Inputs are trimmed before semantic validation; a search query has 2–32 Unicode code points and chat text has 1–80.
+
+## Capability tail for action 0
+
+The legacy action-0 response prefix is byte-for-byte unchanged:
+
+```text
+command -80
+u8 action=0
+u8 friendCount
+repeat friendCount: i32 id, i16 head, i16 placeholder(-1), i16 body,
+                    i16 leg, u8 bag, utf name, bool online, utf power
+```
+
+For a version-223-or-newer client only, the phase-3 server appends this tail after that prefix:
+
+```text
+u8 protocolVersion       # 0 when disabled, otherwise 1
+i32 capabilities         # bit 0 = CAPABILITY_SOCIAL_V2
+u8 friendLimit           # 100 when capability is set, otherwise 0
+u8 onlineFriendCount
+u16 pendingRequestCount
+```
+
+No legacy client parses the tail. A client that cannot read the whole tail treats the social-v2 capability as absent.
+
+## Actions
+
+Action `0` — open/list friends. Legacy request and prefix above stay unchanged. The capability tail is the only gated extension.
+
+Action `1` — legacy make-friend request: `u8 action=1, i32 targetPlayerId`. Its current menu-driven semantics and packet shape are unchanged until the v2 client path exists.
+
+Action `2` — legacy remove friend: request `u8 action=2, i32 targetPlayerId`; legacy acknowledgement remains `u8 action=2, i32 targetPlayerId`.
+
+Actions `3` through `12` are social-v2 only:
+
+| Action | Direction | Request / event payload |
+| ---: | --- | --- |
+| `3` presence | S→C | `u8 action, i32 friendId, bool online` |
+| `4` search | C→S | `u8 action, i32 requestToken, i32 cursor, utf query` |
+| `4` search page | S→C | result envelope, then `i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, up to 20 minimal entries |
+| `5` send request | C→S | `u8 action, i32 targetPlayerId` |
+| `6` inbox | C→S | `u8 action, i32 requestToken, i32 cursor` |
+| `6` inbox page | S→C | result envelope, then `i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, up to 20 minimal entries |
+| `7` accept | C→S | `u8 action, i64 requestId` |
+| `8` reject/delete | C→S | `u8 action, i64 requestId` |
+| `9` profile | C→S | `u8 action, i32 friendId` |
+| `10` location | C→S | `u8 action, i32 friendId`; coordinates never come from the client |
+| `11` location event | S→C | `u8 action, i32 senderId, i16 mapId, i16 zoneId, i16 x, i16 y` |
+| `12` pending count | S→C | `u8 action, u16 pendingRequestCount` |
+
+Every page response echoes the request token, emits an opaque next cursor, and has `count <= 20`. Search results are ordered exact numeric ID, exact name, name prefix, then name contains; server-side SQL must escape `%` and `_`.
+
+## Error envelope
+
+For v2 request/response actions that do not have a page/event-specific payload, the response starts:
+
+```text
+u8 action
+u8 result                 # 0=OK, 1=ERROR
+if result == 1: u8 errorCode
+```
+
+| Error code | Name |
+| ---: | --- |
+| `1` | `FEATURE_DISABLED` |
+| `2` | `CLIENT_TOO_OLD` |
+| `3` | `MALFORMED` |
+| `4` | `UNSUPPORTED_ACTION` |
+| `5` | `NOT_FRIENDS` |
+| `6` | `NOT_FOUND` |
+| `7` | `SELF_TARGET` |
+| `8` | `FRIEND_LIMIT` |
+| `9` | `DUPLICATE` |
+| `10` | `EXPIRED` |
+| `11` | `OFFLINE` |
+| `12` | `RATE_LIMITED` |
+| `13` | `INVALID_TEXT` |
+| `14` | `LOCATION_COOLDOWN` |
+| `15` | `PACKET_TOO_LARGE` |
+
+`-72` and packet `92` retain their legacy payload order for old clients: request `i32 targetPlayerId, utf text`; event `utf senderName, utf decoratedText, i32 senderId, i16 head, [i16 placeholder for version >214], i16 body, i16 bag, i16 leg, u8 chatType`. V2 chat enforcement changes only server authorization in phase 4 and must not reorder this payload.
