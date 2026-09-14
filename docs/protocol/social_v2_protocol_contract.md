@@ -36,17 +36,17 @@ repeat friendCount: i32 id, i16 head, i16 placeholder(-1), i16 body,
                     i16 leg, u8 bag, utf name, bool online, utf power
 ```
 
-For a version-223-or-newer client only, the phase-3 server appends this tail after that prefix:
+When `social_v2.enabled=true`, the phase-3 server appends this tail for a version-223-or-newer client after that prefix:
 
 ```text
-u8 protocolVersion       # 0 when disabled, otherwise 1
+u8 protocolVersion       # 1
 i32 capabilities         # bit 0 = CAPABILITY_SOCIAL_V2
-u8 friendLimit           # 100 when capability is set, otherwise 0
+u8 friendLimit           # 100
 u8 onlineFriendCount
 u16 pendingRequestCount
 ```
 
-No legacy client parses the tail. A client that cannot read the whole tail treats the social-v2 capability as absent.
+When the feature is disabled, the legacy prefix is sent without this tail. No legacy client parses the tail. A client that cannot read the whole tail treats the social-v2 capability as absent.
 
 ## Actions
 
@@ -62,10 +62,10 @@ Actions `3` through `12` are social-v2 only:
 | ---: | --- | --- |
 | `3` presence | S→C | `u8 action, i32 friendId, bool online` |
 | `4` search | C→S | `u8 action, i32 requestToken, i32 cursor, utf query` |
-| `4` search page | S→C | result envelope, then `i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, up to 20 minimal entries |
+| `4` search page | S→C | `u8 action=4, u8 result=0, i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, followed by at most 20 entries: `i32 playerId, i16 head, utf name, u8 relationship` (`0=FRIEND`, `1=PENDING`, `2=CAN_ADD`) |
 | `5` send request | C→S | `u8 action, i32 targetPlayerId` |
 | `6` inbox | C→S | `u8 action, i32 requestToken, i32 cursor` |
-| `6` inbox page | S→C | result envelope, then `i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, up to 20 minimal entries |
+| `6` inbox page | S→C | `u8 action=6, u8 result=0, i32 requestToken, i32 nextCursor, bool hasMore, u8 count`, followed by at most 20 entries: `i64 requestId, i32 senderId, i16 head, utf senderName, i64 expiresAtEpochMillis` |
 | `7` accept | C→S | `u8 action, i64 requestId` |
 | `8` reject/delete | C→S | `u8 action, i64 requestId` |
 | `9` profile | C→S | `u8 action, i32 friendId` |
@@ -74,6 +74,13 @@ Actions `3` through `12` are social-v2 only:
 | `12` pending count | S→C | `u8 action, u16 pendingRequestCount` |
 
 Every page response echoes the request token, emits an opaque next cursor, and has `count <= 20`. Search results are ordered exact numeric ID, exact name, name prefix, then name contains; server-side SQL must escape `%` and `_`.
+
+## Phase-3 anti-abuse policy
+
+- Search is limited per authenticated player ID to **30 accepted actions in a rolling 60-second window**.
+- Send-request is limited per authenticated player ID to **one action every 5 seconds** and **10 accepted actions in a rolling 10-minute window**. The counter applies even when the relationship outcome is duplicate, full, expired, or not-found, so repeated invalid actions cannot bypass it.
+- A limited action returns the normal v2 error envelope with `RATE_LIMITED` and a generic user notification. The action's caller identity always comes from the session; no client-supplied ID participates in the rate-limit key.
+- The local-mode server keeps only bounded process-local state: at most 10,000 recently active player IDs, with idle entries evicted after 15 minutes. A future multi-process deployment must replace this with a shared limiter before enabling Social V2.
 
 ## Error envelope
 

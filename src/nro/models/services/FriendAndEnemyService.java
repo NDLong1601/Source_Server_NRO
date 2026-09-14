@@ -14,6 +14,8 @@ import nro.models.services.TaskService;
 import nro.models.map.service.ChangeMapService;
 import nro.models.utils.Logger;
 import nro.models.utils.Util;
+import nro.models.social.SocialV2Protocol;
+import nro.models.social.SocialV2ServerFacade;
 import java.io.IOException;
 
 public class FriendAndEnemyService {
@@ -38,15 +40,28 @@ public class FriendAndEnemyService {
     public void controllerFriend(Player player, Message msg) {
         try {
             byte action = msg.reader().readByte();
+            if (SocialV2Protocol.isV2Action(action)) {
+                SocialV2ServerFacade.gI().handleV2Action(player, action, msg);
+                return;
+            }
             switch (action) {
                 case OPEN_LIST:
-                    openListFriend(player);
+                    if (SocialV2ServerFacade.gI().isEnabledFor(player)) {
+                        SocialV2ServerFacade.gI().sendFriendList(player);
+                    } else {
+                        openListFriend(player);
+                    }
                     break;
                 case MAKE_FRIEND:
                     makeFriend(player, msg.reader().readInt());
                     break;
                 case REMOVE_FRIEND:
-                    removeFriend(player, msg.reader().readInt());
+                    int targetPlayerId = msg.reader().readInt();
+                    if (SocialV2ServerFacade.gI().isEnabledFor(player)) {
+                        SocialV2ServerFacade.gI().removeFriend(player, targetPlayerId);
+                    } else {
+                        removeFriend(player, targetPlayerId);
+                    }
                     break;
             }
         } catch (IOException ex) {

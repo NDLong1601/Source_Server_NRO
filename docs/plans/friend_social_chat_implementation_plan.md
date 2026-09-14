@@ -256,9 +256,9 @@ Trước khi code phải khóa:
 | Giai đoạn | Nội dung | Trạng thái | Phụ thuộc |
 | ---: | --- | --- | --- |
 | 0 | Khảo sát và khóa thiết kế | `COMPLETE` | — |
-| 1 | Baseline, contract, feature flag và test RED | `IN PROGRESS` | 0 |
-| 2 | Schema, migration và repository persistence | `PLANNED` | 1 |
-| 3 | Search, request, friendship và inbox server | `PLANNED` | 2 |
+| 1 | Baseline, contract, feature flag và test RED | `COMPLETE` | 0 |
+| 2 | Schema, migration và repository persistence | `COMPLETE` | 1 |
+| 3 | Search, request, friendship và inbox server | `COMPLETE` | 2 |
 | 4 | Presence, profile, chat policy và location server | `PLANNED` | 3 |
 | 5 | Asset pipeline, client models và protocol parser | `PLANNED` | 1, 4 |
 | 6 | Panel trái Bạn bè/Tìm kiếm/Hộp thư | `PLANNED` | 3, 5 |
@@ -327,12 +327,12 @@ Tiêu chí thoát:
 #### Nhật ký triển khai Giai đoạn 1
 
 - Trạng thái: `COMPLETE`
-- Bắt đầu/kết thúc: `2026-09-14` / `—`
+- Bắt đầu/kết thúc: `2026-09-14` / `2026-09-14`
 - Nội dung đã làm: ghi baseline server, khóa contract `-80`/`-72`/`92`, action 0–12, gate client version 223, giới hạn wire/UTF/error và feature flag fail-closed. Chưa nối handler, schema, migration hay database.
 - File thay đổi: `src/nro/models/social/SocialV2Protocol.java`, `SocialV2FeatureFlags.java`, `SocialFriendPolicy.java` (API placeholder có chủ đích), `src/nro/config/ConfigPaths.java`, `config/social/social_features.properties`, `docs/protocol/social_v2_protocol_contract.md`, các test/runner Social V2 dưới `tools/tests`.
-- Lệnh/test/evidence: baseline `20.jar` SHA-256 `EFFDDB61C6C7C6A84A19FE9DD9421D0288DAA5E971E667117239609BE20396B6`; Java/Javac `17.0.20.1`, Lombok `1.18.36`; server PID `31516` đang listen cổng `14445`. `Test-SocialV2Phase1.ps1 -Mode Contract` PASS; `-Mode Red` xác nhận 8 specification nghiệp vụ còn RED vì chưa có persistence/search/presence ở các giai đoạn 2–4.
-- Sai lệch so với kế hoạch: không kiểm tra hoặc sửa `client-nro-unity`/Game1/Game2 vì ràng buộc repository local-mode cấm mở phạm vi client; xác nhận type 30 và capability parser thuộc giai đoạn client khi có phạm vi rõ ràng.
-- Việc còn lại/rủi ro: cần xác nhận action/type `30` không trùng ở Game1/Game2 trong một task đã được mở phạm vi client. `SocialFriendPolicy` chỉ là boundary để test RED, không được gọi từ runtime. Giai đoạn 2 phải thay các placeholder bằng policy/repository thực, chuyển các test tương ứng GREEN và giữ gate mặc định tắt cho tới rollout cuối.
+- Lệnh/test/evidence: baseline và hash cuối `20.jar` SHA-256 `EFFDDB61C6C7C6A84A19FE9DD9421D0288DAA5E971E667117239609BE20396B6`; Java/Javac `17.0.20.1`, Lombok `1.18.36`. `Test-SocialV2Phase1.ps1 -Mode Contract` PASS với protocol và compatibility contract. Sau khi người dùng mở phạm vi kiểm tra read-only, scan Game1/Game2 xác nhận không có khai báo `TYPE_FRIEND_CHAT = 30`, `setType(30)`, so sánh/gán type 30, hoặc `case 30` trong các surface Panel/GameCanvas/GameScr/Service/Controller; command `-80` và `-72` cũ vẫn tồn tại độc lập.
+- Sai lệch so với kế hoạch: không sửa, build hoặc thay đổi file trong `client-nro-unity`; kiểm tra collision action/type 30 chỉ đọc mã và đã đủ điều kiện đóng Giai đoạn 1.
+- Việc còn lại/rủi ro: không còn công việc Giai đoạn 1. Feature và migration flag vẫn mặc định tắt, chỉ được bật trong rollout được kiểm soát ở các giai đoạn sau.
 
 ### Giai đoạn 2 — Schema, migration và repository persistence
 
@@ -356,13 +356,13 @@ Tiêu chí thoát:
 
 #### Nhật ký triển khai Giai đoạn 2
 
-- Trạng thái: `NOT STARTED`
-- Bắt đầu/kết thúc: —
-- Nội dung đã làm: —
-- File/schema thay đổi: —
-- Dry-run/apply/evidence: —
-- Rollback/backup: —
-- Sai lệch/rủi ro: —
+- Trạng thái: `COMPLETE`
+- Bắt đầu/kết thúc: `2026-09-14` / `2026-09-14`
+- Nội dung đã làm: bổ sung repository JDBC dùng prepared statement và transaction rollback toàn phần; chuẩn hóa cặp `low/high`, khóa hai hàng `player` theo đúng thứ tự, xử lý idempotent request/cross-request auto-accept/accept/reject/expire/remove. Limit 100 của cả hai phía được kiểm tra trong cùng transaction trước khi tạo friendship.
+- File/schema thay đổi: thêm migration additive `sql/migrations/20260914_add_social_v2_friendship.sql` cho `player_friendship` và `friend_request`; `expires_at` dùng `DATETIME` để tương thích MariaDB 10.4 strict mode. Thêm service/repository social và `LegacyFriendBackfill`. Legacy `player.friends` không bị sửa, drop hoặc thay loader.
+- Dry-run/apply/evidence: `LegacyFriendBackfill` mặc định dry-run, hợp nhất quan hệ legacy JSON theo union, bỏ qua input malformed/self/missing và cho phép chạy lại không tạo duplicate. `--apply` production bị chặn trừ khi đồng thời bật social v2 và migration flag. `Test-SocialV2Phase2.ps1` PASS: persistence regression, schema contract và protocol contract đều PASS; chỉ còn đúng ba RED dành cho Giai đoạn 3–4 (search, chat authorization, location authorization). `Test-SocialV2Phase2Database.ps1` PASS trên MariaDB `10.4.25`, dùng schema local có prefix ngẫu nhiên, chạy đúng file migration, test JDBC concurrency/limit/expiry và backfill dry-run/apply/re-run, sau đó tự xóa schema.
+- Rollback/backup: migration không có lệnh destructive. Schema test đã tự xóa và không có database ứng dụng nào bị áp migration. Khi rollout staging/production phải tạo backup đã xác minh trước, chạy dry-run, review count rồi mới apply; rollback là restore backup và tắt feature/migration flag.
+- Sai lệch/rủi ro: handler runtime, search/inbox, presence/chat/location và client parser/UI vẫn thuộc Giai đoạn 3–7. Không build/restart/release JAR ở Giai đoạn 2; hash `20.jar` giữ nguyên.
 
 ### Giai đoạn 3 — Search, request, friendship và inbox server
 
@@ -387,12 +387,13 @@ Tiêu chí thoát:
 
 #### Nhật ký triển khai Giai đoạn 3
 
-- Trạng thái: `NOT STARTED`
-- Bắt đầu/kết thúc: —
-- Nội dung đã làm: —
-- File thay đổi: —
-- Test/evidence/packet size: —
-- Sai lệch/rủi ro: —
+- Trạng thái: `COMPLETE`
+- Bắt đầu/kết thúc: `2026-09-14` / `2026-09-14`
+- Nội dung đã làm: thêm biên đọc `SocialDirectoryRepository` và JDBC projection tối thiểu; tìm exact ID/tên, prefix, contains, escape literal `%`/`_`, loại self, trạng thái `FRIEND`/`PENDING`/`CAN_ADD`, phân trang 20. Thêm inbox, tổng pending/online và facade protocol cho action `0`, `2`, `4`–`8`, `12`; action legacy `1` và toàn bộ enemy flow không đổi. Các transition thành công mang theo peer ID được khóa từ database để action `0`/`12` chỉ push snapshot/badge cho peer online v2 liên quan. Không có nhánh v2 nào trừ ngọc.
+- Chống abuse/message: áp dụng 30 search/phút; lời mời có cooldown 5 giây và tối đa 10/10 phút theo player ID từ session. Limiter synchronized, bounded 10,000 entry và tự dọn entry idle 15 phút; `RATE_LIMITED` và `DUPLICATE` trả envelope chuẩn cùng generic user message. Đầu vào packet bị kiểm tra hết dữ liệu dư; SQL chỉ dùng prepared statement và projection `id/name/head`, không truy vấn account/inventory.
+- File thay đổi: `FriendAndEnemyService.java`; `SocialDirectoryRepository.java`, `JdbcSocialDirectoryRepository.java`, `SocialDirectoryService.java`, `SocialActionRateLimiter.java`, `SocialV2ServerFacade.java`, cập nhật `SocialRelationshipService.java`, `SocialFriendPolicy.java`; protocol contract và các test/runner Giai đoạn 3 dưới `tools/tests`.
+- Test/evidence/packet size: `Test-SocialV2Phase3.ps1` PASS, compile toàn bộ source Java 17 và chạy persistence/schema/protocol/search/paging/inbox/rate-limit/wire facade. Chỉ còn đúng hai RED có chủ đích của Giai đoạn 4 (chat authorization và location). `Test-SocialV2Phase3Database.ps1` PASS trên MariaDB local cổng 3307 với schema tên ngẫu nhiên, disposable: xác nhận query JDBC, escape wildcard literal, thứ tự search, pages không duplicate, relationship/pending/expired/inbox/friend summary; schema tự xóa sau test. Wire test xác nhận envelope/page/action-0 tail; 20 tên Unicode tối đa hợp lệ vẫn dưới packet cap. Bound action-0 với 100 tên `VARCHAR(20)` Unicode và power format cực đại là 16,311 bytes, dưới 65,535 bytes.
+- Sai lệch/rủi ro còn lại: limiter chỉ dành cho local single-process mode; rollout multi-process phải dùng shared limiter trước khi bật Social V2. Không build/restart/release JAR, không apply migration production và feature flag vẫn tắt; các bước này thuộc rollout/release sau. Presence/profile/chat/location và client parser/UI vẫn thuộc Giai đoạn 4–7.
 
 ### Giai đoạn 4 — Presence, profile, chat policy và location server
 
