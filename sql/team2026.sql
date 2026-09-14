@@ -6403,7 +6403,7 @@ INSERT INTO `item_template` (`id`, `TYPE`, `gender`, `NAME`, `description`, `lev
 (1535, 27, 3, 'Thỏi vàng', 'VPSK', 0, 4028, -1, 0, 0, 0, 0, -1, -1, -1),
 (1536, 29, 3, 'Đệ Black Goku', 'Vật phẩm sự kiện', 0, 14334, 0, 1, 0, 0, 0, -1, -1, -1),
 (1537, 29, 3, 'Hộp thần linh', 'Vật phẩm sự kiện', 0, 14520, 0, 0, 0, 0, 0, -1, -1, -1),
-(1538, 27, 3, 'Hộp quà Set kích hoạt 5 sao', 'VPSK', 0, 11201, -1, 0, 0, 0, 0, -1, -1, -1),
+(1538, 27, 3, 'Hộp quà Set kích hoạt 5 sao', 'VPSK', 0, 11201, -1, 1, 0, 0, 0, -1, -1, -1),
 (1539, 11, 3, 'Bụi tre', 'VPSK', 0, 12843, 112, 0, 0, 0, 0, -1, -1, -1),
 (1540, 27, 3, 'Rađa phóng xạ', 'VPSK', 0, 12834, -1, 0, 0, 0, 0, -1, -1, -1),
 (1541, 23, 3, 'Môtô Bun ma', 'VPSK', 0, 12864, 31, 0, 0, 0, 0, -1, -1, -1),
@@ -11885,6 +11885,33 @@ WHERE NOT EXISTS (
   WHERE `name` = 'Bang hội - Cập nhật tính năng'
 );
 
+-- Hướng dẫn người chơi về bộ trang bị, set kích hoạt và set ấn.
+INSERT INTO `notify` (`name`, `text`)
+SELECT
+  'Bộ Trang Bị',
+  CONCAT(
+    'BỘ TRANG BỊ', CHAR(10), CHAR(10),
+    'Mặc đủ áo, quần, găng, giày và rada cùng một bộ để kích hoạt hiệu ứng.', CHAR(10), CHAR(10),
+    '1. SET KÍCH HOẠT', CHAR(10),
+    'Tỉ lệ cơ bản: 2/9999 mỗi quái; May Mắn và Cỏ bốn lá giúp tăng tỉ lệ.', CHAR(10),
+    'Phạm vi train:', CHAR(10),
+    '- Map thường Trái Đất, Namếc, Xayda và Fide: có tỉ lệ rơi Set Kích Hoạt.', CHAR(10),
+    '- Map lạnh gồm Cánh đồng tuyết, Rừng tuyết, Núi tuyết, Dòng sông băng, Rừng băng, Hang băng và Vùng đất băng giá: có tỉ lệ rơi Set Kích Hoạt.', CHAR(10),
+    'Hiệu ứng đủ 5 món:', CHAR(10),
+    '- Trái Đất: Songoku +100% Kamejoko; Thiên Xin Hăng x2 thời gian chói mắt; Kirin +100% Quả Cầu Kênh Khí.', CHAR(10),
+    '- Namếc: Picolo +100% Masenkosappo; Ốc Tiêu +100% Liên Hoàn; Pikkoro Daimao +100% sức đánh và bất tử cho đệ tử Đẻ Trứng.', CHAR(10),
+    '- Xayda: Kakarot +100% Galick; Ca Đíc x5 thời gian hóa khỉ; Nappa +80% HP.', CHAR(10),
+    'Set đặc biệt: Gohan +150% May Mắn, +30% vàng quái; Nail tăng chí mạng và Masenko theo mốc 2/4/5 món; Cađic M tăng HP, phạm vi và sát thương Phát Nổ; Thần Vũ Trụ Kaio tăng chí mạng, giảm hao HP/KI và tăng sát thương Kaioken theo mốc 2/4/5 món.', CHAR(10), CHAR(10),
+    '2. SET ẤN', CHAR(10),
+    'Cần đủ 5 trang bị mang cùng một loại Ấn để kích hoạt: Tinh Ấn +15% sát thương; Nguyệt Ấn +15% KI; Nhật Ấn +15% HP.', CHAR(10),
+    'Tại map lạnh, mỗi lần rơi Set Kích Hoạt có thêm 30% cơ hội kèm một Ấn ngẫu nhiên.', CHAR(10),
+    'Map thường chỉ rơi Set Kích Hoạt, không có Ấn đi kèm.'
+  )
+WHERE NOT EXISTS (
+  SELECT 1 FROM `notify`
+  WHERE `name` = 'Bộ Trang Bị'
+);
+
 --
 -- AUTO_INCREMENT cho bảng `payments`
 --
@@ -12438,7 +12465,8 @@ INSERT INTO `item_template`
 (2271,29,3,'Giảm 24 giờ nâng Cây bang','Giảm 24 giờ khi Cây bang đang nâng cấp.',1,26662,-1,1,0,0,0,-1,-1,-1),
 (2272,29,3,'Vé đổi tên bang','Chủ bang dùng để đổi tên bang hội.',1,26663,-1,1,0,0,0,-1,-1,-1),
 (2273,29,3,'Hộp quà bang','Nhận khi thu hoạch Cây bang; mở nhận ngẫu nhiên vật phẩm hỗ trợ buff bang.',1,26664,-1,1,0,0,0,-1,-1,-1),
-(2274,29,3,'Phiếu quà bang','Nhận khi điểm danh bang; tiêu hao khi tặng quà cho một thành viên khác.',1,26665,-1,1,0,0,0,-1,-1,-1)
+(2274,29,3,'Phiếu quà bang','Nhận khi điểm danh bang; tiêu hao khi tặng quà cho một thành viên khác.',1,26665,-1,1,0,0,0,-1,-1,-1),
+(2275,29,3,'Hộp Set Kích Hoạt Đặc Biệt','Mở ra nhận trọn bộ set kích hoạt cùng cấp 1 đến 12, kèm ấn ngẫu nhiên.',1,19028,-1,1,0,0,0,-1,-1,-1)
 ON DUPLICATE KEY UPDATE `TYPE`=VALUES(`TYPE`),`gender`=VALUES(`gender`),`NAME`=VALUES(`NAME`),`description`=VALUES(`description`),`level`=VALUES(`level`),`icon_id`=VALUES(`icon_id`),`part`=VALUES(`part`),`is_up_to_up`=VALUES(`is_up_to_up`),`power_require`=VALUES(`power_require`),`gold`=VALUES(`gold`),`gem`=VALUES(`gem`),`head`=VALUES(`head`),`body`=VALUES(`body`),`leg`=VALUES(`leg`);
 
 CREATE TABLE IF NOT EXISTS clan_item_storage (

@@ -806,6 +806,9 @@ public class InventoryService {
     }
 
     public void sendItemBags(Player player) {
+        if (consolidateActivationSetBoxStacks(player.inventory.itemsBag)) {
+            player.getPersistenceState().markDirty(nro.models.player.PlayerPersistenceComponent.INVENTORY);
+        }
         sortItems(player.inventory.itemsBag);
         DataGame.preloadPlayerBagIcons(player);
         Message msg;
@@ -937,6 +940,48 @@ public class InventoryService {
             msg.cleanup();
         } catch (Exception e) {
         }
+    }
+
+    /**
+     * Converts the existing one-per-slot activation boxes into stackable
+     * entries after their item-template flag has been enabled. This migration
+     * intentionally targets only the two activation-set boxes.
+     */
+    private boolean consolidateActivationSetBoxStacks(List<Item> items) {
+        boolean changed = false;
+        for (int firstIndex = 0; firstIndex < items.size(); firstIndex++) {
+            Item first = items.get(firstIndex);
+            if (!isStackableActivationSetBox(first)) {
+                continue;
+            }
+            for (int nextIndex = firstIndex + 1; nextIndex < items.size() && first.quantity < 99_999; nextIndex++) {
+                Item next = items.get(nextIndex);
+                if (!isSameStackableActivationSetBox(first, next)) {
+                    continue;
+                }
+                int moved = Math.min(99_999 - first.quantity, next.quantity);
+                if (moved <= 0) {
+                    continue;
+                }
+                first.quantity += moved;
+                next.quantity -= moved;
+                changed = true;
+                if (next.quantity == 0) {
+                    items.set(nextIndex, ItemService.gI().createItemNull());
+                }
+            }
+        }
+        return changed;
+    }
+
+    private boolean isStackableActivationSetBox(Item item) {
+        return item != null && item.isNotNullItem() && item.template != null
+                && item.template.isUpToUp && ItemService.isStackableActivationSetBox(item.template.id);
+    }
+
+    private boolean isSameStackableActivationSetBox(Item first, Item next) {
+        return isStackableActivationSetBox(next) && first.template.id == next.template.id
+                && checkListsEqual(first.itemOptions, next.itemOptions);
     }
 
     public void openBox(Player player) {

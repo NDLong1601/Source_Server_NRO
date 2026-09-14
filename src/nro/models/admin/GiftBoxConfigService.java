@@ -54,8 +54,8 @@ public final class GiftBoxConfigService {
             loadRows(connection);
             if (configs.isEmpty()) {
                 seedBuiltIns(connection);
-                loadRows(connection);
             }
+            loadRows(connection);
             Logger.success(Logger.PURPLE + "Successfully loaded gift box configs (" + configs.size() + ")\n");
         } catch (Exception e) {
             // Reuse the caller's startup connection so a single-connection pool cannot deadlock.
@@ -376,15 +376,19 @@ public final class GiftBoxConfigService {
 
     private void seedBuiltIns(Connection connection) throws SQLException {
         for (GiftBoxConfig config : builtIns()) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT IGNORE INTO gift_box_config (box_template_id, enabled, min_empty_slots, consume_quantity, draw_count, config_json) VALUES (?,1,?,?,?,?)")) {
-                ps.setInt(1, config.boxTemplateId);
-                ps.setInt(2, config.minEmptySlots);
-                ps.setInt(3, config.consumeQuantity);
-                ps.setInt(4, config.drawCount);
-                ps.setString(5, GSON.toJson(config));
-                ps.executeUpdate();
-            }
+            seedBuiltIn(connection, config);
+        }
+    }
+
+    private void seedBuiltIn(Connection connection, GiftBoxConfig config) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "INSERT IGNORE INTO gift_box_config (box_template_id, enabled, min_empty_slots, consume_quantity, draw_count, config_json) VALUES (?,1,?,?,?,?)")) {
+            ps.setInt(1, config.boxTemplateId);
+            ps.setInt(2, config.minEmptySlots);
+            ps.setInt(3, config.consumeQuantity);
+            ps.setInt(4, config.drawCount);
+            ps.setString(5, GSON.toJson(config));
+            ps.executeUpdate();
         }
     }
 

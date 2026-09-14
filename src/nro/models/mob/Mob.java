@@ -1099,22 +1099,19 @@ public class Mob {
     }
 
     /**
-     * Option 236 increases the existing equipment-activation drop roll. The
-     * roll remains available in its original maps; wearing at least one luck
-     * option extends that same roll to every map.
+     * Standard planet/Fide maps drop activation equipment. Cold maps use the
+     * same drop roll and independently add a seal 30% of the time.
      */
     private void addActivationDrop(Player player, int mapId, int x, int yEnd, List<ItemMap> drops) {
-        int luckPercent = getEquippedOptionPercent(player, 236)
-                + ClanProgressionService.gI().luckPercent(player);
-        boolean originalDropMap = MapService.gI().isMapRiengTu(mapId) || MapService.gI().isMapUpSKH(mapId);
-        if (!originalDropMap && luckPercent == 0) {
+        if (!MapService.gI().isMapActivationEquipmentDrop(mapId)) {
             return;
         }
-
+        int luckPercent = getEquippedOptionPercent(player, 236)
+                + ClanProgressionService.gI().luckPercent(player);
         double dropRate = 2.0d;
         if (luckPercent > 0) {
-            // Preserve the original balance curve: a total of 100% luck gives
-            // a 20% relative bonus to the base activation-drop chance.
+            // Preserve the existing luck curve: 100% luck raises the base
+            // activation-equipment roll by 20% relatively.
             double luckBonusPercent = Math.pow(luckPercent / 100.0d, 1.5d) * 20.0d;
             dropRate *= 1.0d + luckBonusPercent / 100.0d;
         }
@@ -1125,13 +1122,15 @@ public class Mob {
             return;
         }
 
+        boolean coldMap = this.zone != null && MapService.gI().isMapCold(this.zone.map);
+        boolean hasSealOption = coldMap && ItemService.hasSealOptionForRoll(Util.nextInt(100));
         short itemTemplateId = (short) ItemService.gI().randTempItemKichHoat(player.gender);
         ItemMap item = new ItemMap(zone, itemTemplateId, 1, x, yEnd, player.id);
         List<Item.ItemOption> options = ItemService.gI().getListOptionItemShop(itemTemplateId);
         if (!options.isEmpty()) {
             item.options = options;
         }
-        for (int optionId : ItemService.gI().randOptionItemKichHoat(player.gender)) {
+        for (int optionId : ItemService.gI().randomSealEquipmentDropOptionIds(coldMap, player.gender, hasSealOption)) {
             if (optionId > 0) {
                 item.options.add(new Item.ItemOption(optionId, 0));
             }

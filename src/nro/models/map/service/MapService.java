@@ -589,6 +589,18 @@ public class MapService {
         return mapId >= 63 && mapId <= 83;
     }
 
+    /**
+     * Standard planet maps and the Fide area can drop activation equipment.
+     * Cold maps are included separately because they additionally roll a seal.
+     */
+    public boolean isMapActivationEquipmentDrop(int mapId) {
+        return isMap3Planets(mapId)
+                || (mapId >= 39 && mapId <= 47)
+                || isMapNappa(mapId)
+                || isMapCold(mapId)
+                || mapId == 152;
+    }
+
     public boolean isMapStar(int mapId) {
         return mapId >= 63 && mapId <= 83;
     }

@@ -94,6 +94,8 @@ public class UseItem {
     private static final int BILL_DISCIPLE_EGG_ITEM_ID = 2016;
     private static final int MAIN_QUEST_SKIP_TICKET_ITEM_ID = 2249;
     private static final int AUTO_QUEST_DELEGATION_ITEM_ID = 2250;
+    private static final int FIVE_STAR_ACTIVATION_SET_BOX_ID = 1538;
+    private static final int SPECIAL_ACTIVATION_SET_BOX_ID = 2275;
     private static final int VE_DOANH_TRAI_ITEM_ID = ConstItem.VE_DOANH_TRAI;
     private static final short FISHING_ROD_CRUDE_ITEM_ID = FishingItems.ROD_CRUDE;
     private static final int KHI_NGUYEN_TRAM_BOOK_LEVEL_1 = 2219;
@@ -326,6 +328,18 @@ public class UseItem {
                     Service.gI().sendThongBao(pl, "Hãy chờ đến ngày mai");
                 } else {
                     openRuongGo(pl);
+                }
+                return;
+            }
+            if (item.template.id == FIVE_STAR_ACTIVATION_SET_BOX_ID
+                    || item.template.id == SPECIAL_ACTIVATION_SET_BOX_ID) {
+                boolean opened = item.template.id == FIVE_STAR_ACTIVATION_SET_BOX_ID
+                        ? ItemService.gI().openFiveStarActivationSetBox(pl, item)
+                        : ItemService.gI().openSpecialActivationSetBox(pl, item);
+                if (opened) {
+                    TaskService.gI().checkDoneTaskUseItem(pl, item);
+                    consumeRemainingUse(pl, item);
+                    InventoryService.gI().sendItemBags(pl);
                 }
                 return;
             }

@@ -4937,6 +4937,46 @@ ORDER BY id DESC;
 "@
 }
 
+function List-Notifications {
+    $where = ""
+    if (-not [string]::IsNullOrWhiteSpace($Search)) {
+        $safeSearch = $Search.Replace("\\", "\\\\").Replace("'", "''")
+        $where = "WHERE name LIKE '%$safeSearch%'"
+    }
+    Invoke-MySql @"
+SELECT
+  id,
+  REPLACE(REPLACE(REPLACE(name, CHAR(13), ' '), CHAR(10), ' '), CHAR(9), ' ') AS name,
+  REPLACE(REPLACE(REPLACE(text, CHAR(13), ''), CHAR(10), '\\n'), CHAR(9), ' ') AS text
+FROM notify
+$where
+ORDER BY id DESC;
+"@
+}
+
+function Save-Notification {
+    $title = $Name.Trim()
+    $body = $Description.Trim()
+    if ([string]::IsNullOrWhiteSpace($title)) { throw "Tên thông báo không được để trống." }
+    if ([string]::IsNullOrWhiteSpace($body)) { throw "Nội dung thông báo không được để trống." }
+    if ($title.Length -gt 120) { throw "Tên thông báo không được dài quá 120 ký tự." }
+    if ($body.Length -gt 6000) { throw "Nội dung thông báo không được dài quá 6000 ký tự." }
+    if ($title.Contains('<>') -or $body.Contains('<>')) {
+        throw "Tên hoặc nội dung thông báo không được chứa chuỗi <>."
+    }
+
+    $existingId = [int](Get-MySqlScalar "SELECT id FROM notify WHERE name=$(SqlString $title) ORDER BY id ASC LIMIT 1;" "0")
+    if ($existingId -gt 0) {
+        Invoke-MySql "UPDATE notify SET text=$(SqlString $body) WHERE id=$existingId;" | Out-Null
+        "OK`tĐã cập nhật thông báo #$existingId. Restart server để người chơi nhận dữ liệu mới."
+        return
+    }
+
+    Invoke-MySql "INSERT INTO notify (name, text) VALUES ($(SqlString $title), $(SqlString $body));" | Out-Null
+    $savedId = Get-MySqlScalar "SELECT id FROM notify WHERE name=$(SqlString $title) ORDER BY id DESC LIMIT 1;" "0"
+    "OK`tĐã tạo thông báo #$savedId. Restart server để người chơi nhận dữ liệu mới."
+}
+
 function Ensure-GiftBoxSchema {
     Invoke-MySql @"
 CREATE TABLE IF NOT EXISTS gift_box_config (
@@ -6276,6 +6316,7 @@ function Get-AuditSummary {
         "saveitemdefaultoptionsbulk" { "Lưu option mặc định cho $(Get-JsonArrayCount $PayloadJson) vật phẩm" }
         "savegiftcode" { "Lưu Giftcode $GiftCode, lượt $CountLeft, $(Get-JsonArrayCount $GiftDetail) phần quà" }
         "deletegiftcode" { "Xóa Giftcode ID $Id" }
+        "savenotification" { "Lưu thông báo $Name" }
         "savegiftbox" { "Lưu cấu hình Hộp quà ID $Id" }
         "deletegiftbox" { "Khóa cấu hình Hộp quà ID $Id" }
         "saveradarcard" { "Lưu thẻ sưu tầm ID $Id - $Name, $(Get-JsonArrayCount $OptionsJson) option" }
@@ -6414,6 +6455,7 @@ function Get-AuditContext {
             $snapshots.Add((New-DbAuditSnapshot "giftcode" $where))
         }
         "deletegiftcode" { $snapshots.Add((New-DbAuditSnapshot "giftcode" "id=$(SqlInt $Id)")) }
+        "savenotification" { $snapshots.Add((New-DbAuditSnapshot "notify" "name=$(SqlString $Name.Trim())")) }
         "savegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
         "deletegiftbox" { Ensure-GiftBoxSchema; $snapshots.Add((New-DbAuditSnapshot "gift_box_config" "box_template_id=$(SqlInt $Id)")) }
         { $_ -in @("saveradarcard", "deleteradarcard") } { $snapshots.Add((New-DbAuditSnapshot "radar" "id=$(SqlInt $Id)")) }
@@ -6639,7 +6681,7 @@ $actionLower = $Action.ToLowerInvariant()
 $activityMutationActions = @("saveactivitydraft", "publishactivityconfig", "rollbackactivityconfig", "disableactivityemergency", "adjustactivityplayer", "resetactivityplayer", "setactivityclaim")
 $mutationActions = @(
     "saveitem", "installauraitems", "saveauraitem", "saveshop", "savetab", "deletetab", "saveshopitem", "saveshopitems", "deleteshopitem",
-    "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savegiftbox", "deletegiftbox",
+    "saveshopoption", "saveshopoptions", "deleteshopoption", "saveitemdefaultoptions", "saveitemdefaultoptionsbulk", "savegiftcode", "deletegiftcode", "savenotification", "savegiftbox", "deletegiftbox",
     "saveradarcard", "deleteradarcard", "saveradarmobdrops", "saveradarbossdrops",
     "savecostumecollectionachievement", "deletecostumecollectionachievement", "savefishbookentry",
     "savebossoverride", "deletebossoverride", "saveadminboss", "deleteadminboss",
@@ -6736,6 +6778,8 @@ try {
         "listgiftitems" { List-GiftItems }
         "savegiftcode" { Save-GiftCode }
         "deletegiftcode" { Delete-GiftCode }
+        "listnotifications" { List-Notifications }
+        "savenotification" { Save-Notification }
         "listgiftboxes" { List-GiftBoxes }
         "getgiftbox" { Get-GiftBox }
         "savegiftbox" { Save-GiftBox }

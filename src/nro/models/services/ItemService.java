@@ -21,6 +21,27 @@ public class ItemService {
     private static final int ACTIVITY_ACTIVATION_RATE = 10;
     private static final int BONUS_PLACEHOLDER_OPTION_ID = 41;
     private static final Set<Integer> HIDDEN_BONUS_OPTION_IDS = Set.of(42, 43, 44, 45, 46, 161);
+    private static final int FIVE_STAR_ACTIVATION_SET_BOX_ID = 1538;
+    private static final int SPECIAL_ACTIVATION_SET_BOX_ID = 2275;
+    private static final int SEAL_OPTION_CHANCE_PERCENT = 30;
+    private static final int COMMON_EQUIPMENT_TEMPLATE_MAX_ID = 281;
+    private static final int[] SPECIAL_ACTIVATION_SET_LEVELS = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    private static final int[][][] FIVE_STAR_ACTIVATION_TEMPLATE_IDS = {
+        {{0, 6, 27, 21, 12}, {33, 35, 30, 24, 57}},
+        {{1, 7, 28, 22, 12}, {41, 43, 47, 46, 57}},
+        {{2, 8, 29, 23, 12}, {49, 51, 55, 53, 57}}
+    };
+    private static final int[][][] ACTIVATION_SET_OPTION_PAIRS = {
+        {{129, 141}, {127, 139}, {128, 140}},
+        {{131, 143}, {132, 144}, {130, 142}},
+        {{135, 138}, {133, 136}, {134, 137}}
+    };
+    private static final int[][][] SPECIAL_ACTIVATION_SET_OPTION_GROUPS = {
+        {{129, 141}, {127, 139}, {128, 140}, {233, 234}, {245, 246, 247, 248}},
+        {{131, 143}, {132, 144}, {130, 142}, {233, 234}, {237, 238, 239, 240}},
+        {{135, 138}, {133, 136}, {134, 137}, {233, 234}, {241, 242, 243, 244}}
+    };
+    private static final int[] SEAL_OPTION_IDS = {34, 35, 36};
 
     private static ItemService i;
 
@@ -504,6 +525,250 @@ public class ItemService {
         return item;
     }
 
+    public boolean openFiveStarActivationSetBox(Player player, Item source) {
+        return openActivationSetBox(player, source, false);
+    }
+
+    public boolean openSpecialActivationSetBox(Player player, Item source) {
+        return openActivationSetBox(player, source, true);
+    }
+
+    private boolean openActivationSetBox(Player player, Item source, boolean specialBox) {
+        if (player == null || player.inventory == null || source == null || source.template == null
+                || (specialBox ? !isSpecialActivationSetBox(source.template.id)
+                        : !isFiveStarActivationSetBox(source.template.id))) {
+            return false;
+        }
+
+        synchronized (player) {
+            if (!player.inventory.itemsBag.contains(source) || source.quantity < 1) {
+                Service.gI().sendThongBao(player, "Bạn không có đủ vật phẩm để mở hộp.");
+                return false;
+            }
+            if (InventoryService.gI().getCountEmptyBag(player) < 5) {
+                Service.gI().sendThongBao(player, "Cần ít nhất 5 ô trống trong hành trang.");
+                return false;
+            }
+
+            int gender = activationGenderIndex(player.gender);
+            int[] templates = specialBox
+                    ? randomSpecialActivationSetTemplateIds(gender)
+                    : fiveStarActivationSetTemplateIds(gender, Util.nextInt(2));
+            if (templates == null) {
+                Service.gI().sendThongBao(player, "Không tìm được đủ trang bị cùng cấp cho bộ set.");
+                return false;
+            }
+            int[] setOptions = specialBox
+                    ? specialActivationSetOptionGroup(gender,
+                            Util.nextInt(SPECIAL_ACTIVATION_SET_OPTION_GROUPS[gender].length))
+                    : activationSetOptionPair(gender, Util.nextInt(3));
+            List<Item> generated = new ArrayList<>();
+            for (int templateId : templates) {
+                int sealOptionId = specialBox ? randomSealOptionId() : -1;
+                Item reward = createActivationSetItem(templateId, setOptions, specialBox ? 0 : 5, sealOptionId);
+                if (reward == null) {
+                    Service.gI().sendThongBao(player, "Không thể tạo bộ set kích hoạt.");
+                    return false;
+                }
+                generated.add(reward);
+            }
+            return addActivationSetRewards(player, source, generated,
+                    specialBox ? "Bạn nhận được trọn bộ set kích hoạt đặc biệt có ấn."
+                            : "Bạn nhận được trọn bộ set kích hoạt 5 món.");
+        }
+    }
+
+    private boolean addActivationSetRewards(Player player, Item source, List<Item> generated, String successMessage) {
+        List<Item> added = new ArrayList<>();
+        for (Item reward : generated) {
+            Item rollbackSnapshot = copyItem(reward);
+            if (!InventoryService.gI().addItemBag(player, reward)) {
+                for (Item rollback : added) {
+                    rollbackBagAddition(player, rollback);
+                }
+                Service.gI().sendThongBao(player, "Hành trang không đủ chỗ cho trọn bộ set kích hoạt.");
+                return false;
+            }
+            added.add(rollbackSnapshot);
+        }
+        InventoryService.gI().subQuantityItemsBag(player, source, 1);
+        Service.gI().sendThongBao(player, successMessage);
+        return true;
+    }
+
+    private Item createActivationSetItem(int templateId, int[] setOptions, int starCount, int sealOptionId) {
+        Item item = createItemSetKichHoat(templateId, 1);
+        if (item == null || !item.isNotNullItem()) {
+            return null;
+        }
+        item.itemOptions.addAll(getListOptionItemShop((short) templateId));
+        for (int optionId : setOptions) {
+            item.itemOptions.add(new Item.ItemOption(optionId, 1));
+        }
+        if (starCount > 0) {
+            item.itemOptions.add(new Item.ItemOption(107, starCount));
+        }
+        if (sealOptionId >= 0) {
+            item.itemOptions.add(new Item.ItemOption(sealOptionId, 0));
+        }
+        item.itemOptions.add(new Item.ItemOption(30, 0));
+        item.content = item.getContent();
+        item.info = item.getInfo();
+        return item;
+    }
+
+    private int[] randomSpecialActivationSetTemplateIds(int gender) {
+        List<Integer> availableLevels = new ArrayList<>();
+        for (int level : SPECIAL_ACTIVATION_SET_LEVELS) {
+            if (hasCommonEquipmentForEverySlot(gender, level)) {
+                availableLevels.add(level);
+            }
+        }
+        if (availableLevels.isEmpty()) {
+            return null;
+        }
+        int level = availableLevels.get(Util.nextInt(availableLevels.size()));
+        int[] templates = new int[5];
+        for (int type = 0; type < templates.length; type++) {
+            templates[type] = randomCommonEquipmentTemplateId(gender, level, type);
+            if (templates[type] < 0) {
+                return null;
+            }
+        }
+        return templates;
+    }
+
+    private boolean hasCommonEquipmentForEverySlot(int gender, int level) {
+        for (int type = 0; type < 5; type++) {
+            if (randomCommonEquipmentTemplateId(gender, level, type) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int randomCommonEquipmentTemplateId(int gender, int level, int type) {
+        int normalizedGender = activationGenderIndex(gender);
+        int selection = -1;
+        int candidateCount = 0;
+        int upperBound = Math.min(COMMON_EQUIPMENT_TEMPLATE_MAX_ID,
+                GameRuntime.gI().templates().itemTemplates().size() - 1);
+        for (int itemId = 0; itemId <= upperBound; itemId++) {
+            Template.ItemTemplate template = GameRuntime.gI().templates().itemTemplates().get(itemId);
+            if (template == null || template.type != type || template.level != level
+                    || (template.gender != normalizedGender && template.gender != 3)) {
+                continue;
+            }
+            candidateCount++;
+            if (Util.nextInt(candidateCount) == 0) {
+                selection = template.id;
+            }
+        }
+        return selection;
+    }
+
+    private void rollbackBagAddition(Player player, Item rollback) {
+        for (Item current : player.inventory.itemsBag) {
+            if (current != null && current.isNotNullItem() && current.template.id == rollback.template.id
+                    && sameItemOptions(current, rollback)) {
+                InventoryService.gI().subQuantityItemsBag(player, current, rollback.quantity);
+                return;
+            }
+        }
+    }
+
+    private boolean sameItemOptions(Item first, Item second) {
+        if (first.itemOptions.size() != second.itemOptions.size()) {
+            return false;
+        }
+        for (int index = 0; index < first.itemOptions.size(); index++) {
+            Item.ItemOption left = first.itemOptions.get(index);
+            Item.ItemOption right = second.itemOptions.get(index);
+            if (left == null || right == null || left.optionTemplate == null || right.optionTemplate == null
+                    || left.optionTemplate.id != right.optionTemplate.id || left.param != right.param) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static boolean isFiveStarActivationSetBox(int templateId) {
+        return templateId == FIVE_STAR_ACTIVATION_SET_BOX_ID;
+    }
+
+    static boolean isSpecialActivationSetBox(int templateId) {
+        return templateId == SPECIAL_ACTIVATION_SET_BOX_ID;
+    }
+
+    static boolean isStackableActivationSetBox(int templateId) {
+        return isFiveStarActivationSetBox(templateId) || isSpecialActivationSetBox(templateId);
+    }
+
+    static int[] specialActivationSetLevels() {
+        return Arrays.copyOf(SPECIAL_ACTIVATION_SET_LEVELS, SPECIAL_ACTIVATION_SET_LEVELS.length);
+    }
+
+    static int[] fiveStarActivationSetTemplateIds(int gender, int tier) {
+        if (tier < 0 || tier >= 2) {
+            throw new IllegalArgumentException("Activation-set equipment tier must be 0 or 1");
+        }
+        return Arrays.copyOf(FIVE_STAR_ACTIVATION_TEMPLATE_IDS[activationGenderIndex(gender)][tier], 5);
+    }
+
+    static int[] activationSetOptionPair(int gender, int setIndex) {
+        if (setIndex < 0 || setIndex >= 3) {
+            throw new IllegalArgumentException("Activation-set option index must be between 0 and 2");
+        }
+        return Arrays.copyOf(ACTIVATION_SET_OPTION_PAIRS[activationGenderIndex(gender)][setIndex], 2);
+    }
+
+    static int[] specialActivationSetOptionGroup(int gender, int setIndex) {
+        int normalizedGender = activationGenderIndex(gender);
+        if (setIndex < 0 || setIndex >= SPECIAL_ACTIVATION_SET_OPTION_GROUPS[normalizedGender].length) {
+            throw new IllegalArgumentException("Special activation-set option index is out of range");
+        }
+        int[] group = SPECIAL_ACTIVATION_SET_OPTION_GROUPS[normalizedGender][setIndex];
+        return Arrays.copyOf(group, group.length);
+    }
+
+    /**
+     * Every qualifying map drops activation equipment. Cold-map drops roll a
+     * seal independently, while ordinary-map drops keep only their activation
+     * pair.
+     */
+    static int[] sealEquipmentDropOptionIds(boolean coldMap, int gender, int setIndex, int sealIndex,
+            boolean hasSealOption) {
+        if (sealIndex < 0 || sealIndex >= SEAL_OPTION_IDS.length) {
+            throw new IllegalArgumentException("Seal option index must be between 0 and 2");
+        }
+        int[] setPair = activationSetOptionPair(gender, setIndex);
+        if (!coldMap || !hasSealOption) {
+            return setPair;
+        }
+        int sealOptionId = SEAL_OPTION_IDS[sealIndex];
+        return new int[]{setPair[0], setPair[1], sealOptionId};
+    }
+
+    public static boolean hasSealOptionForRoll(int roll) {
+        if (roll < 0 || roll >= 100) {
+            throw new IllegalArgumentException("Seal roll must be between 0 and 99");
+        }
+        return roll < SEAL_OPTION_CHANCE_PERCENT;
+    }
+
+    public int[] randomSealEquipmentDropOptionIds(boolean coldMap, int gender, boolean hasSealOption) {
+        return sealEquipmentDropOptionIds(coldMap, gender, Util.nextInt(3), Util.nextInt(SEAL_OPTION_IDS.length),
+                hasSealOption);
+    }
+
+    private int randomSealOptionId() {
+        return SEAL_OPTION_IDS[Util.nextInt(SEAL_OPTION_IDS.length)];
+    }
+
+    private static int activationGenderIndex(int gender) {
+        return gender == 0 ? 0 : gender == 1 ? 1 : 2;
+    }
+
     public int optionItemSKH(int typeItem) {
         switch (typeItem) {
             case 0:
@@ -535,9 +800,9 @@ public class ItemService {
     public int[] getOptionIdsBySKH(int skhId) {
         switch (skhId) {
             case 127:
-                return new int[]{140};
-            case 128:
                 return new int[]{139};
+            case 128:
+                return new int[]{140};
             case 129:
                 return new int[]{141};
             case 130:
@@ -1049,21 +1314,31 @@ public class ItemService {
 
     public int randTempItemKichHoat(int gender) {
         int[][][] items = {{{0, 33}, {1, 41}, {2, 49}}, {{6, 35}, {7, 43}, {8, 51}}, {{27, 30}, {28, 47}, {29, 55}}, {{21, 24}, {22, 46}, {23, 53}}, {{12, 57}, {12, 57}, {12, 57}}};
+        int type = activationEquipmentTypeForRoll(Util.nextInt(100));
+        return items[type][activationGenderIndex(gender)][Util.nextInt(2)];
+    }
 
-        int type;
-        if (Util.isTrue(10, 100)) {
-            type = 4; // rada
-        } else if (Util.isTrue(23, 100)) {
-            type = 3; // gang
-        } else if (Util.isTrue(23, 100)) {
-            type = 1; // quan
-        } else if (Util.isTrue(23, 100)) {
-            type = 0; // ao
-        } else {
-            type = 2; // giay
+    /**
+     * Maps one 0..99 roll to the activation-equipment category. This is kept
+     * deterministic so every drop route uses the same 10/22/23/22/23 split.
+     */
+    static int activationEquipmentTypeForRoll(int roll) {
+        if (roll < 0 || roll >= 100) {
+            throw new IllegalArgumentException("Activation equipment roll must be between 0 and 99");
         }
-
-        return items[type][gender][Util.nextInt(2)];
+        if (roll < 10) {
+            return 4; // rada: 10%
+        }
+        if (roll < 32) {
+            return 0; // áo: 22%
+        }
+        if (roll < 55) {
+            return 1; // quần: 23%
+        }
+        if (roll < 77) {
+            return 2; // giày: 22%
+        }
+        return 3; // găng: 23%
     }
 
     public int randDoSao(int gender) {
@@ -1075,100 +1350,8 @@ public class ItemService {
             {{12, 57}, {12, 57}, {12, 57}}
         };
 
-        int rand = Util.nextInt(100);
-
-        int type;
-        if (rand < 10) {
-            type = 4; // rada (10%)
-        } else if (rand < 32) {
-            type = 0; // ao (22.5%)
-        } else if (rand < 55) {
-            type = 1; // quan (22.5%)
-        } else if (rand < 77) {
-            type = 2; // giày (22.5%)
-        } else {
-            type = 3; // găng (22.5%)
-        }
-
-        return items[type][gender][Util.nextInt(2)];
-    }
-
-    public int[] randOptionItemKichHoat(int gender) {
-        int op1 = -1;
-        int op2 = -1;
-        int op3 = -1;
-        int op4 = -1;
-        if (Util.isTrue(30, 100)) {
-            switch (gender) {
-                case 0 -> { // td
-                    op1 = 245;
-                    op2 = 246;
-                    op3 = 247;
-                    op4 = 248;
-                }
-                case 1 -> { // nm
-                    op1 = 237;
-                    op2 = 238;
-                    op3 = 239;
-                    op4 = 240;
-                }
-                default -> { // xd
-                    op1 = 241;
-                    op2 = 242;
-                    op3 = 243;
-                    op4 = 244;
-                }
-            }
-        } else {
-            switch (gender) {
-                case 0 -> { // td
-                    if (Util.isTrue(50, 100)) {
-                        op1 = 128;
-                        op2 = 140;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 127;
-                        op2 = 139;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 233;
-                        op2 = 234;
-                    } else {
-                        op1 = 129;
-                        op2 = 141;
-                    }
-                }
-                case 1 -> { // nm
-                    if (Util.isTrue(50, 100)) {
-                        op1 = 130;
-                        op2 = 142;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 131;
-                        op2 = 143;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 233;
-                        op2 = 234;
-                    } else {
-                        op1 = 132;
-                        op2 = 144;
-                    }
-                }
-                default -> { // xd
-                    if (Util.isTrue(50, 100)) {
-                        op1 = 134;
-                        op2 = 137;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 135;
-                        op2 = 138;
-                    } else if (Util.isTrue(50, 100)) {
-                        op1 = 233;
-                        op2 = 234;
-                    } else {
-                        op1 = 133;
-                        op2 = 136;
-                    }
-                }
-            }
-        }
-        return new int[]{op1, op2, op3, op4};
+        int type = activationEquipmentTypeForRoll(Util.nextInt(100));
+        return items[type][activationGenderIndex(gender)][Util.nextInt(2)];
     }
 
     public ItemMap randDoTL(Zone zone, int quantity, int x, int y, long id, int gender) {
