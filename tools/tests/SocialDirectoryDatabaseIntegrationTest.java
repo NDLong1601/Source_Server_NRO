@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Exercises the Phase-3 JDBC projection in an isolated, disposable local schema. */
+/** Exercises the directory JDBC projection in an isolated, disposable local schema. */
 public final class SocialDirectoryDatabaseIntegrationTest {
 
     private static final Pattern LOCAL_MYSQL_URL = Pattern.compile(
@@ -34,7 +34,7 @@ public final class SocialDirectoryDatabaseIntegrationTest {
         }
         String password = System.getenv().getOrDefault("SOCIAL_V2_TEST_DB_PASSWORD", "");
         Class.forName("com.mysql.jdbc.Driver");
-        String databaseName = "codex_social_v2_phase3_" + UUID.randomUUID().toString().replace("-", "");
+        String databaseName = "social_v2_directory_test_" + UUID.randomUUID().toString().replace("-", "");
         boolean created = false;
         try (Connection admin = open(baseUrl, user, password)) {
             try (Statement statement = admin.createStatement()) {
@@ -176,7 +176,7 @@ public final class SocialDirectoryDatabaseIntegrationTest {
 
     private static void dropGeneratedDatabase(String baseUrl, String user, String password, String databaseName)
             throws SQLException {
-        if (!databaseName.matches("codex_social_v2_phase3_[0-9a-f]{32}")) {
+        if (!databaseName.matches("social_v2_directory_test_[0-9a-f]{32}")) {
             throw new IllegalStateException("Refusing to drop an unrecognized test database");
         }
         try (Connection admin = open(baseUrl, user, password); Statement statement = admin.createStatement()) {

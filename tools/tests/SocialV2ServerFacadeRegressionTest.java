@@ -13,7 +13,7 @@ import nro.models.network.Message;
 import nro.models.network.MySession;
 import nro.models.player.Player;
 
-/** Wire-level Phase-3 checks through the server facade, without a live server. */
+/** Wire-level checks through the server facade, without a live server. */
 public final class SocialV2ServerFacadeRegressionTest {
 
     private SocialV2ServerFacadeRegressionTest() {
@@ -25,6 +25,8 @@ public final class SocialV2ServerFacadeRegressionTest {
             verifyFeatureGateAndActionZeroCapabilityTail();
             verifyRateLimitWireErrorAndGenericMessage();
             verifyDuplicateRequestUsesDuplicateErrorAndGenericMessage();
+            verifyLegacyEntryCreatesNormalizedRequestAfterRemoval();
+            verifyChatThrottlePrecedesFriendshipLookup();
             verifyWorstCasePagePacketBudget();
             System.out.println("SocialV2ServerFacadeRegressionTest: PASS");
         } catch (Throwable failure) {
@@ -196,6 +198,39 @@ public final class SocialV2ServerFacadeRegressionTest {
                     wire.readUnsignedByte());
         }
         assertTrue("duplicate player receives generic notification", player.hasCommand(-25));
+    }
+
+    private static void verifyLegacyEntryCreatesNormalizedRequestAfterRemoval() throws Exception {
+        CapturingPlayer player = v2Player();
+        RequestCaptureRepository repository = new RequestCaptureRepository();
+        SocialV2ServerFacade facade = facade(new FakeDirectory(), true,
+                new SocialRelationshipService(repository, new SocialFriendPolicy()),
+                new SocialActionRateLimiter());
+
+        facade.requestFriendFromLegacyFlow(player, 2);
+
+        assertTrue("legacy entry must insert into normalized pending requests", repository.requestInserted);
+        try (DataInputStream wire = wire(player.onlySocialMessage())) {
+            assertEquals("legacy entry action", SocialV2Protocol.SEND_REQUEST, wire.readUnsignedByte());
+            assertEquals("legacy entry result", SocialV2Protocol.RESULT_OK, wire.readUnsignedByte());
+            assertEquals("legacy entry payload fully consumed", 0, wire.available());
+        }
+    }
+
+    private static void verifyChatThrottlePrecedesFriendshipLookup() {
+        CountingNonFriendRepository repository = new CountingNonFriendRepository();
+        SocialV2ServerFacade facade = facade(new FakeDirectory(), true,
+                new SocialRelationshipService(repository, new SocialFriendPolicy()),
+                new SocialActionRateLimiter());
+        CapturingPlayer player = v2Player();
+        Instant now = Instant.parse("2026-09-15T00:00:00Z");
+
+        for (int attempt = 0; attempt < 4; attempt++) {
+            facade.handlePrivateChat(player, 2, "probe", now);
+        }
+
+        assertEquals("fourth chat attempt must be throttled before friendship lookup",
+                3, repository.friendshipChecks);
     }
 
     private static SocialV2ServerFacade enabledFacade(FakeDirectory directory) {
@@ -411,6 +446,148 @@ public final class SocialV2ServerFacadeRegressionTest {
                 @Override
                 public int deleteExpired(Instant now) {
                     throw new AssertionError("not used");
+                }
+            });
+        }
+    }
+
+    private static final class RequestCaptureRepository implements SocialRelationshipRepository {
+        private boolean requestInserted;
+
+        @Override
+        public <T> T inTransaction(TransactionWork<T> work) throws SQLException {
+            return work.execute(new Transaction() {
+                @Override
+                public boolean lockExistingPlayers(SocialFriendPolicy.FriendshipPair pair) {
+                    return true;
+                }
+
+                @Override
+                public boolean hasFriendship(SocialFriendPolicy.FriendshipPair pair) {
+                    return false;
+                }
+
+                @Override
+                public int friendshipCount(long playerId) {
+                    return 0;
+                }
+
+                @Override
+                public void addFriendship(SocialFriendPolicy.FriendshipPair pair, Instant createdAt) {
+                    throw new AssertionError("a one-way legacy request must stay pending");
+                }
+
+                @Override
+                public boolean removeFriendship(SocialFriendPolicy.FriendshipPair pair) {
+                    throw new AssertionError("not used");
+                }
+
+                @Override
+                public PendingFriendRequest findPendingByPairForUpdate(SocialFriendPolicy.FriendshipPair pair) {
+                    return null;
+                }
+
+                @Override
+                public PendingFriendRequest findPendingById(long requestId) {
+                    throw new AssertionError("not used");
+                }
+
+                @Override
+                public PendingFriendRequest findPendingByIdForUpdate(long requestId) {
+                    throw new AssertionError("not used");
+                }
+
+                @Override
+                public long insertPending(SocialFriendPolicy.FriendshipPair pair, long senderId, long receiverId,
+                        Instant createdAt, Instant expiresAt) {
+                    requestInserted = senderId == 1L && receiverId == 2L;
+                    return 77L;
+                }
+
+                @Override
+                public boolean deletePending(long requestId) {
+                    throw new AssertionError("not used");
+                }
+
+                @Override
+                public int deleteExpiredForPair(SocialFriendPolicy.FriendshipPair pair, Instant now) {
+                    return 0;
+                }
+
+                @Override
+                public int deleteExpired(Instant now) {
+                    throw new AssertionError("not used");
+                }
+            });
+        }
+    }
+
+    private static final class CountingNonFriendRepository implements SocialRelationshipRepository {
+        private int friendshipChecks;
+
+        @Override
+        public <T> T inTransaction(TransactionWork<T> work) throws SQLException {
+            return work.execute(new Transaction() {
+                @Override
+                public boolean lockExistingPlayers(SocialFriendPolicy.FriendshipPair pair) {
+                    return true;
+                }
+
+                @Override
+                public boolean hasFriendship(SocialFriendPolicy.FriendshipPair pair) {
+                    friendshipChecks++;
+                    return false;
+                }
+
+                @Override
+                public int friendshipCount(long playerId) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public void addFriendship(SocialFriendPolicy.FriendshipPair pair, Instant createdAt) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public boolean removeFriendship(SocialFriendPolicy.FriendshipPair pair) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public PendingFriendRequest findPendingByPairForUpdate(SocialFriendPolicy.FriendshipPair pair) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public PendingFriendRequest findPendingById(long requestId) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public PendingFriendRequest findPendingByIdForUpdate(long requestId) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public long insertPending(SocialFriendPolicy.FriendshipPair pair, long senderId, long receiverId,
+                        Instant createdAt, Instant expiresAt) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public boolean deletePending(long requestId) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public int deleteExpiredForPair(SocialFriendPolicy.FriendshipPair pair, Instant now) {
+                    throw new AssertionError("not used by chat authorization");
+                }
+
+                @Override
+                public int deleteExpired(Instant now) {
+                    throw new AssertionError("not used by chat authorization");
                 }
             });
         }

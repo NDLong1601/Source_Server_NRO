@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Pure social rules. Pair/request rules are implemented in phase 2; search
- * ranking is implemented in phase 3; chat and location remain phase 4.
- */
+/** Pure friendship, search, chat, and location policy rules. */
 public final class SocialFriendPolicy {
 
     public record FriendshipPair(long lowPlayerId, long highPlayerId) {
@@ -90,7 +87,7 @@ public final class SocialFriendPolicy {
         return ordered.stream().map(RankedCandidate::candidate).toList();
     }
 
-    /** Trims and validates the only free-text input admitted by phase-3 search. */
+    /** Trims and validates the only free-text input admitted by social search. */
     public String normalizeSearchQuery(String query) {
         if (query == null) {
             throw new IllegalArgumentException("Search query is required");

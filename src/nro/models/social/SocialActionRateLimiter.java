@@ -27,7 +27,7 @@ public final class SocialActionRateLimiter {
             }
         }
 
-        public static Policy phase3Defaults() {
+        public static Policy defaults() {
             return new Policy(30, Duration.ofMinutes(1L), 10, Duration.ofMinutes(10L),
                     Duration.ofSeconds(5L), 10_000, Duration.ofMinutes(15L));
         }
@@ -37,7 +37,7 @@ public final class SocialActionRateLimiter {
     private final LinkedHashMap<Long, PlayerWindow> windows = new LinkedHashMap<>(16, 0.75F, true);
 
     public SocialActionRateLimiter() {
-        this(Policy.phase3Defaults());
+        this(Policy.defaults());
     }
 
     public SocialActionRateLimiter(Policy policy) {

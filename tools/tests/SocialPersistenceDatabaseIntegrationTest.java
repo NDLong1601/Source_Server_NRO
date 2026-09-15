@@ -19,7 +19,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 /**
- * Runs the actual Phase 2 DDL and JDBC repository against an isolated local
+ * Runs the Social V2 DDL and JDBC repository against an isolated local
  * MySQL/MariaDB schema. The generated schema name is never user-controlled and
  * is dropped in finally, so this test never reads or writes the running game
  * database.
@@ -42,7 +42,7 @@ public final class SocialPersistenceDatabaseIntegrationTest {
         String password = System.getenv().getOrDefault("SOCIAL_V2_TEST_DB_PASSWORD", "");
         // The legacy Connector/J bundled in 20.jar predates JDBC service loading.
         Class.forName("com.mysql.jdbc.Driver");
-        String databaseName = "codex_social_v2_phase2_" + UUID.randomUUID().toString().replace("-", "");
+        String databaseName = "social_v2_persistence_test_" + UUID.randomUUID().toString().replace("-", "");
         boolean created = false;
         try (Connection admin = open(baseUrl, user, password)) {
             try (Statement statement = admin.createStatement()) {
@@ -299,7 +299,7 @@ public final class SocialPersistenceDatabaseIntegrationTest {
 
     private static void dropGeneratedDatabase(String baseUrl, String user, String password, String databaseName)
             throws SQLException {
-        if (!databaseName.matches("codex_social_v2_phase2_[0-9a-f]{32}")) {
+        if (!databaseName.matches("social_v2_persistence_test_[0-9a-f]{32}")) {
             throw new IllegalStateException("Refusing to drop an unrecognized test database");
         }
         try (Connection admin = open(baseUrl, user, password); Statement statement = admin.createStatement()) {

@@ -22,6 +22,7 @@
 /backups/activity_phase1_*/
 /backups/activity_phase2_*/
 /backups/sec03_trade_ledger_*/
+/backups/social_v2_*.sql
 
 # Costume tool scratch output
 /tools/costumes/backups/

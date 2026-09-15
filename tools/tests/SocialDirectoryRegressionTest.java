@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Small, deterministic Phase-3 checks for search, paging, inbox and list summaries. */
+/** Small, deterministic checks for search, paging, inbox, and list summaries. */
 public final class SocialDirectoryRegressionTest {
 
     private static final Instant NOW = Instant.parse("2026-09-14T00:00:00Z");

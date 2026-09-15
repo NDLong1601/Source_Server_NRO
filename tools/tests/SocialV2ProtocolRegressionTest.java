@@ -3,7 +3,7 @@ package nro.models.social;
 import java.nio.file.Path;
 import java.util.Properties;
 
-/** Pure, green regression checks for the phase-1 social-v2 boundary. */
+/** Pure regression checks for the Social V2 protocol boundary. */
 public final class SocialV2ProtocolRegressionTest {
 
     private SocialV2ProtocolRegressionTest() {
@@ -12,7 +12,7 @@ public final class SocialV2ProtocolRegressionTest {
     public static void main(String[] args) {
         verifyCommandAndActionTable();
         verifyVersionAndFeatureGate();
-        verifyConfiguredFailClosedDefaults();
+        verifyConfigurationSafety();
         verifyModifiedUtfAndPacketBounds();
         System.out.println("SocialV2ProtocolRegressionTest: PASS");
     }
@@ -52,15 +52,15 @@ public final class SocialV2ProtocolRegressionTest {
         check(flags.allowsClientVersion(223), "enabled v2 client must receive v2");
     }
 
-    private static void verifyConfiguredFailClosedDefaults() {
+    private static void verifyConfigurationSafety() {
         SocialV2FeatureFlags defaults = SocialV2FeatureFlags.from(new Properties());
         check(!defaults.isEnabled(), "missing config must disable social v2");
         check(!defaults.isMigrationEnabled(), "missing config must disable migration");
 
         SocialV2FeatureFlags deployed = SocialV2FeatureFlags.load(
                 Path.of("config", "social", "social_features.properties"));
-        check(!deployed.isEnabled(), "deployed social v2 flag must start disabled");
-        check(!deployed.isMigrationEnabled(), "deployed migration switch must start disabled");
+        check(deployed.isEnabled(), "deployed social v2 flag must remain enabled after rollout");
+        check(!deployed.isMigrationEnabled(), "deployed migration switch must remain disabled");
 
         Properties migrationOnly = new Properties();
         migrationOnly.setProperty(SocialV2FeatureFlags.MIGRATION_ENABLED_KEY, "true");

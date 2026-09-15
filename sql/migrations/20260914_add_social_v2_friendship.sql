@@ -1,4 +1,4 @@
--- Social V2 phase 2: additive, normalized friendship and pending-request persistence.
+-- Additive, normalized friendship and pending-request persistence for Social V2.
 -- Do not apply to production until a database backup and a successful LegacyFriendBackfill --dry-run
 -- report have been recorded. This migration intentionally does not modify player.friends JSON.
 

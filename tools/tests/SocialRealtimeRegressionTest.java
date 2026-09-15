@@ -8,21 +8,23 @@ import java.util.Map;
 import nro.models.player.Player;
 
 /**
- * Phase-4 regression specification for the server-only social realtime boundary.
- * It deliberately uses in-memory collaborators: no production database, network,
- * client project, or server process is needed to prove these rules.
+ * Regression coverage for the server-only social realtime boundary. It uses
+ * in-memory collaborators and does not touch a production database or server.
  */
-public final class SocialV2Phase4RegressionTest {
+public final class SocialRealtimeRegressionTest {
 
-    private SocialV2Phase4RegressionTest() {
+    private static final int MAX_REMOVED_FRIENDSHIP_TOMBSTONES = 10_000;
+
+    private SocialRealtimeRegressionTest() {
     }
 
     public static void main(String[] args) throws Exception {
         verifyChatAndLocationPolicy();
         verifyChatTokenBucket();
         verifyPresenceUsesOnlyOnlineFriendsAndUnpublishesBeforeDelivery();
+        verifyRemovedFriendshipTombstonesRemainBounded();
         verifyOfflineProfileIsMinimalAndHasStableActivityLabels();
-        System.out.println("SocialV2Phase4RegressionTest: PASS");
+        System.out.println("SocialRealtimeRegressionTest: PASS");
         // Player construction initializes legacy non-daemon runtime workers.
         // This isolated regression process must not keep the suite alive.
         System.exit(0);
@@ -114,6 +116,16 @@ public final class SocialV2Phase4RegressionTest {
         assertEquals("raw power remains numeric", 123_456L, profile.rawPower());
         assertTrue("formatted power is present", !profile.formattedPower().isBlank());
         assertEquals("unknown profile stays absent", null, profiles.loadOffline(10L, now));
+    }
+
+    private static void verifyRemovedFriendshipTombstonesRemainBounded() {
+        SocialPresenceService presence = new SocialPresenceService(playerId -> List.of(),
+                (recipient, friendId, online) -> { });
+        for (long playerId = 1L; playerId <= MAX_REMOVED_FRIENDSHIP_TOMBSTONES + 1L; playerId++) {
+            presence.unlinkFriendship(playerId, playerId + MAX_REMOVED_FRIENDSHIP_TOMBSTONES + 1L);
+        }
+        assertTrue("removed-friendship tombstones must not grow without bound",
+                presence.removedFriendshipTombstoneCount() <= MAX_REMOVED_FRIENDSHIP_TOMBSTONES);
     }
 
     private static Player player(long id, String name) {

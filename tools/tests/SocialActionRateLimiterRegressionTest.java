@@ -3,7 +3,7 @@ package nro.models.social;
 import java.time.Duration;
 import java.time.Instant;
 
-/** Specifies the bounded per-player anti-enumeration and anti-spam policy for Phase 3. */
+/** Specifies the bounded per-player anti-enumeration and anti-spam policy. */
 public final class SocialActionRateLimiterRegressionTest {
 
     private static final Instant START = Instant.parse("2026-09-14T00:00:00Z");
@@ -51,7 +51,7 @@ public final class SocialActionRateLimiterRegressionTest {
     }
 
     private static SocialActionRateLimiter.Policy policy() {
-        return SocialActionRateLimiter.Policy.phase3Defaults();
+        return SocialActionRateLimiter.Policy.defaults();
     }
 
     private static void check(boolean condition, String message) {

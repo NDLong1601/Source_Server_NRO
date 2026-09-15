@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Exercises the phase-4 offline profile projection in a disposable local schema. */
+/** Exercises the offline profile projection in a disposable local schema. */
 public final class SocialProfileDatabaseIntegrationTest {
 
     private static final Pattern LOCAL_MYSQL_URL = Pattern.compile(
@@ -27,7 +27,7 @@ public final class SocialProfileDatabaseIntegrationTest {
         }
         String password = System.getenv().getOrDefault("SOCIAL_V2_TEST_DB_PASSWORD", "");
         Class.forName("com.mysql.jdbc.Driver");
-        String databaseName = "codex_social_v2_phase4_" + UUID.randomUUID().toString().replace("-", "");
+        String databaseName = "social_v2_profile_test_" + UUID.randomUUID().toString().replace("-", "");
         boolean created = false;
         try (Connection admin = open(baseUrl, user, password)) {
             try (Statement statement = admin.createStatement()) {
@@ -106,7 +106,7 @@ public final class SocialProfileDatabaseIntegrationTest {
 
     private static void dropGeneratedDatabase(String baseUrl, String user, String password, String databaseName)
             throws SQLException {
-        if (!databaseName.matches("codex_social_v2_phase4_[0-9a-f]{32}")) {
+        if (!databaseName.matches("social_v2_profile_test_[0-9a-f]{32}")) {
             throw new IllegalStateException("Refusing to drop an unrecognized test database");
         }
         try (Connection admin = open(baseUrl, user, password); Statement statement = admin.createStatement()) {

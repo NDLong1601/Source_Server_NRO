@@ -14,10 +14,10 @@ import nro.models.network.MySession;
 import nro.models.player.Location;
 import nro.models.player.Player;
 
-/** Wire and authorization checks for phase-4 facade integration without a live server. */
-public final class SocialV2Phase4FacadeRegressionTest {
+/** Wire and authorization checks for realtime facade integration without a live server. */
+public final class SocialRealtimeFacadeRegressionTest {
 
-    private SocialV2Phase4FacadeRegressionTest() {
+    private SocialRealtimeFacadeRegressionTest() {
     }
 
     public static void main(String[] args) throws Exception {
@@ -38,7 +38,7 @@ public final class SocialV2Phase4FacadeRegressionTest {
         configureAuthoritativeLocation(sender);
         verifyLocationWireUsesServerCoordinates(facade, sender, target);
         verifyPrivateChatAndRemoveRace(facade, friendships, sender, target);
-        System.out.println("SocialV2Phase4FacadeRegressionTest: PASS");
+        System.out.println("SocialRealtimeFacadeRegressionTest: PASS");
         // Player/Map construction starts legacy non-daemon workers in this server.
         System.exit(0);
     }

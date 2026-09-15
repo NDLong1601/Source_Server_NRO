@@ -196,11 +196,14 @@ public class FriendAndEnemyService {
 
     private void makeFriend(Player player, int playerId) {
         boolean madeFriend = false;
-        for (Friend friend : player.friends) {
-            if (friend.id == playerId) {
-                Service.gI().sendThongBao(player, "Đã có trong danh sách bạn bè");
-                madeFriend = true;
-                break;
+        boolean socialV2 = SocialV2ServerFacade.gI().isEnabledFor(player);
+        if (!socialV2) {
+            for (Friend friend : player.friends) {
+                if (friend.id == playerId) {
+                    Service.gI().sendThongBao(player, "Đã có trong danh sách bạn bè");
+                    madeFriend = true;
+                    break;
+                }
             }
         }
         if (!madeFriend) {
@@ -268,6 +271,10 @@ public class FriendAndEnemyService {
     }
 
     public void acceptMakeFriend(Player player, int playerId) {
+        if (SocialV2ServerFacade.gI().isEnabledFor(player)) {
+            SocialV2ServerFacade.gI().requestFriendFromLegacyFlow(player, playerId);
+            return;
+        }
         Player pl = Client.gI().getPlayer(playerId);
         if (pl != null) {
             Friend friend = new Friend();

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,8 @@ import nro.models.player.Player;
  * at publication time and never scans all players or account records.
  */
 public final class SocialPresenceService {
+
+    private static final int MAX_REMOVED_FRIENDSHIP_TOMBSTONES = 10_000;
 
     @FunctionalInterface
     public interface FriendLookup {
@@ -43,8 +46,8 @@ public final class SocialPresenceService {
     private final Map<Long, Player> onlinePlayers = new HashMap<>();
     /** friend id -> online friend ids that currently receive that friend's presence. */
     private final Map<Long, Set<Long>> followersByFriendId = new HashMap<>();
-    /** Guards against a publish that races a committed friendship removal. */
-    private final Set<FriendshipKey> removedFriendships = new HashSet<>();
+    /** Bounded LRU tombstones guard recent publish results racing a committed friendship removal. */
+    private final LinkedHashMap<FriendshipKey, Boolean> removedFriendships = new LinkedHashMap<>(16, 0.75F, true);
 
     public static SocialPresenceService gI() {
         return INSTANCE;
@@ -79,7 +82,7 @@ public final class SocialPresenceService {
             }
             for (Long friendId : friendIds) {
                 if (friendId == null || friendId <= 0L || friendId == player.id
-                        || removedFriendships.contains(FriendshipKey.of(player.id, friendId))) {
+                        || removedFriendships.get(FriendshipKey.of(player.id, friendId)) != null) {
                     continue;
                 }
                 Player friend = onlinePlayers.get(friendId);
@@ -176,9 +179,24 @@ public final class SocialPresenceService {
     public void unlinkFriendship(long firstPlayerId, long secondPlayerId) {
         FriendshipKey key = FriendshipKey.of(firstPlayerId, secondPlayerId);
         synchronized (lock) {
-            removedFriendships.add(key);
+            removedFriendships.put(key, Boolean.TRUE);
+            while (removedFriendships.size() > MAX_REMOVED_FRIENDSHIP_TOMBSTONES) {
+                java.util.Iterator<FriendshipKey> entries = removedFriendships.keySet().iterator();
+                if (!entries.hasNext()) {
+                    break;
+                }
+                entries.next();
+                entries.remove();
+            }
             unfollow(firstPlayerId, secondPlayerId);
             unfollow(secondPlayerId, firstPlayerId);
+        }
+    }
+
+    /** Exposes only the bounded aggregate count for package-level diagnostics. */
+    int removedFriendshipTombstoneCount() {
+        synchronized (lock) {
+            return removedFriendships.size();
         }
     }
 

@@ -46,7 +46,7 @@ public final class SocialPersistenceSchemaContractTest {
     private static String read(Path root, String relative) throws Exception {
         Path path = root.resolve(relative);
         if (!Files.isRegularFile(path)) {
-            throw new AssertionError("Missing required phase-2 file: " + path);
+            throw new AssertionError("Missing required Social V2 file: " + path);
         }
         return Files.readString(path, StandardCharsets.UTF_8);
     }

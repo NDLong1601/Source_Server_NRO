@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import nro.models.data.LocalManager;
 
-/** JDBC projection for Phase-3 social reads; no account or inventory column is selected. */
+/** Narrow JDBC projection for social reads; no account or inventory column is selected. */
 public final class JdbcSocialDirectoryRepository implements SocialDirectoryRepository {
 
     private final JdbcSocialRelationshipRepository.ConnectionFactory connections;

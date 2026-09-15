@@ -1,12 +1,12 @@
-# Social V2 protocol contract — phase 1
+# Social V2 protocol contract
 
-Status: `LOCKED FOR PHASES 2–4`; no handler is enabled in this phase.
+Status: `STABLE`; protocol version `1` is deployed.
 
 ## Compatibility and rollout
 
 - The existing signed top-level commands remain `-80` (social), `-72` (private-chat request), and `92` (private-chat event). No new top-level command is allowed.
 - `SOCIAL_V2_CLIENT_VERSION` is **223**. A client at version 222 or below follows only the legacy payloads.
-- `config/social/social_features.properties` is fail-closed: `social_v2.enabled=false` and `social_v2.migration_enabled=false` by default.
+- The deployed configuration has `social_v2.enabled=true` and keeps the one-shot migration gate `social_v2.migration_enabled=false`. Missing or invalid values still fail closed in `SocialV2FeatureFlags`.
 - A version-223-or-newer client sends a normal action-0 request first. It may send actions 3–12 only after it observes `CAPABILITY_SOCIAL_V2` in the action-0 response. A new client must treat a missing action-0 tail as capability `0`, so it is safe against an older server.
 - Before the feature flag is enabled, action 0–2, `-72`, and `92` keep their legacy behavior exactly. New social actions must return `FEATURE_DISABLED`, never fall through to a legacy action.
 
@@ -36,7 +36,7 @@ repeat friendCount: i32 id, i16 head, i16 placeholder(-1), i16 body,
                     i16 leg, u8 bag, utf name, bool online, utf power
 ```
 
-When `social_v2.enabled=true`, the phase-3 server appends this tail for a version-223-or-newer client after that prefix:
+When `social_v2.enabled=true`, the server appends this tail for a version-223-or-newer client after that prefix:
 
 ```text
 u8 protocolVersion       # 1
@@ -52,7 +52,7 @@ When the feature is disabled, the legacy prefix is sent without this tail. No le
 
 Action `0` — open/list friends. Legacy request and prefix above stay unchanged. The capability tail is the only gated extension.
 
-Action `1` — legacy make-friend request: `u8 action=1, i32 targetPlayerId`. Its current menu-driven semantics and packet shape are unchanged until the v2 client path exists.
+Action `1` — legacy make-friend request: `u8 action=1, i32 targetPlayerId`. For a Social V2 client, the confirmed legacy menu action enters the normalized pending-request state machine. A normal success keeps the two-byte envelope; when the target is online, an additive pending-target tail may follow: `i32 targetPlayerId, i16 head, utf name`.
 
 Action `2` — legacy remove friend: request `u8 action=2, i32 targetPlayerId`; legacy acknowledgement remains `u8 action=2, i32 targetPlayerId`.
 
@@ -75,7 +75,7 @@ Actions `3` through `12` are social-v2 only:
 
 Every page response echoes the request token, emits an opaque next cursor, and has `count <= 20`. Search results are ordered exact numeric ID, exact name, name prefix, then name contains; server-side SQL must escape `%` and `_`.
 
-## Phase-4 profile, presence, chat, and location behavior
+## Profile, presence, chat, and location behavior
 
 Action `9` returns the normal error envelope on rejection. A successful profile response is:
 
@@ -98,7 +98,7 @@ u8 action=11, i32 senderId, i16 mapId, i16 zoneId, i16 x, i16 y
 
 This lets the sender render the same server-authoritative location event as the recipient. A malformed or unavailable server location fails without emitting coordinates.
 
-## Phase-3 anti-abuse policy
+## Anti-abuse policy
 
 - Search is limited per authenticated player ID to **30 accepted actions in a rolling 60-second window**.
 - Send-request is limited per authenticated player ID to **one action every 5 seconds** and **10 accepted actions in a rolling 10-minute window**. The counter applies even when the relationship outcome is duplicate, full, expired, or not-found, so repeated invalid actions cannot bypass it.
@@ -133,4 +133,4 @@ if result == 1: u8 errorCode
 | `14` | `LOCATION_COOLDOWN` |
 | `15` | `PACKET_TOO_LARGE` |
 
-`-72` and packet `92` retain their legacy payload order for old clients: request `i32 targetPlayerId, utf text`; event `utf senderName, utf decoratedText, i32 senderId, i16 head, [i16 placeholder for version >214], i16 body, i16 bag, i16 leg, u8 chatType`. V2 chat enforcement changes only server authorization in phase 4 and must not reorder this payload.
+`-72` and packet `92` retain their legacy payload order for old clients: request `i32 targetPlayerId, utf text`; event `utf senderName, utf decoratedText, i32 senderId, i16 head, [i16 placeholder for version >214], i16 body, i16 bag, i16 leg, u8 chatType`. V2 chat enforcement changes only server authorization and must not reorder this payload.

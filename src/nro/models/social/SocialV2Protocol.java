@@ -4,10 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Immutable social-v2 wire and limit contract. No command handler is wired in
- * phase 1; later phases must use these values instead of re-declaring them.
- */
+/** Immutable Social V2 wire and limit contract. */
 public final class SocialV2Protocol {
 
     public static final int COMMAND_SOCIAL = -80;

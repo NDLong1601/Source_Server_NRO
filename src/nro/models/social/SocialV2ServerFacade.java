@@ -11,8 +11,8 @@ import nro.models.utils.Logger;
 import nro.models.utils.Util;
 
 /**
- * Phase-3 protocol facade. It is the only social-v2 class with Player/Message
- * dependencies; persistence and policy stay independently testable.
+ * Social V2 protocol facade. It owns Player/Message integration while keeping
+ * persistence and policy independently testable.
  */
 public final class SocialV2ServerFacade {
 
@@ -66,7 +66,7 @@ public final class SocialV2ServerFacade {
         }
         if (policy == null || presence == null || profiles == null || chatRateLimiter == null
                 || locationCooldown == null) {
-            throw new IllegalArgumentException("Social v2 phase-4 dependencies are required");
+            throw new IllegalArgumentException("Social v2 realtime dependencies are required");
         }
         this.relationships = relationships;
         this.directory = directory;
@@ -130,31 +130,31 @@ public final class SocialV2ServerFacade {
         if (!isEnabledFor(player) || now == null) {
             return;
         }
-        SocialFriendPolicy.Authorization authorization;
+        SocialFriendPolicy.Authorization authorization = SocialFriendPolicy.Authorization.INVALID_TEXT;
         try {
-            synchronized (interactionLock) {
-                if (targetPlayerId <= 0) {
-                    authorization = SocialFriendPolicy.Authorization.NOT_FRIENDS;
-                } else if (targetPlayerId == player.id) {
-                    authorization = SocialFriendPolicy.Authorization.NOT_FRIENDS;
+            if (player.id <= 0L || targetPlayerId <= 0 || targetPlayerId == player.id) {
+                authorization = SocialFriendPolicy.Authorization.NOT_FRIENDS;
+            } else {
+                String approvedText = policy.normalizeChatText(submittedText);
+                // Consume a token before JDBC friendship lookup so valid spam to arbitrary
+                // targets cannot turn this authorization boundary into an unbounded query path.
+                if (!chatRateLimiter.tryConsume(player.id, now)) {
+                    authorization = SocialFriendPolicy.Authorization.RATE_LIMITED;
                 } else {
-                    boolean mutualFriends = relationships.areFriends(player.id, targetPlayerId);
-                    boolean targetOnline = presence.isOnline(targetPlayerId);
-                    authorization = policy.authorizeChat(mutualFriends, targetOnline, submittedText);
-                }
-                if (authorization == SocialFriendPolicy.Authorization.ALLOWED) {
-                    String approvedText = policy.normalizeChatText(submittedText);
-                    if (!chatRateLimiter.tryConsume(player.id, now)) {
-                        authorization = SocialFriendPolicy.Authorization.RATE_LIMITED;
-                    } else {
-                        boolean[] echoed = { false };
-                        boolean targetStillOnline = presence.withOnlineTarget(player, targetPlayerId,
-                                (sender, target) -> echoed[0] = Service.gI()
-                                        .tryChatPrivate(sender, target, approvedText));
-                        if (!targetStillOnline) {
-                            authorization = SocialFriendPolicy.Authorization.OFFLINE;
-                        } else if (!echoed[0]) {
-                            authorization = SocialFriendPolicy.Authorization.INVALID_TEXT;
+                    synchronized (interactionLock) {
+                        boolean mutualFriends = relationships.areFriends(player.id, targetPlayerId);
+                        boolean targetOnline = presence.isOnline(targetPlayerId);
+                        authorization = policy.authorizeChat(mutualFriends, targetOnline, approvedText);
+                        if (authorization == SocialFriendPolicy.Authorization.ALLOWED) {
+                            boolean[] echoed = { false };
+                            boolean targetStillOnline = presence.withOnlineTarget(player, targetPlayerId,
+                                    (sender, target) -> echoed[0] = Service.gI()
+                                            .tryChatPrivate(sender, target, approvedText));
+                            if (!targetStillOnline) {
+                                authorization = SocialFriendPolicy.Authorization.OFFLINE;
+                            } else if (!echoed[0]) {
+                                authorization = SocialFriendPolicy.Authorization.INVALID_TEXT;
+                            }
                         }
                     }
                 }
@@ -204,7 +204,7 @@ public final class SocialV2ServerFacade {
                         sendRateLimited(player, SocialV2Protocol.SEND_REQUEST);
                         return;
                     }
-                    sendRequest(player, targetPlayerId);
+                    sendRequest(player, targetPlayerId, null);
                 }
                 case SocialV2Protocol.INBOX -> {
                     int requestToken = request.reader().readInt();
@@ -283,7 +283,19 @@ public final class SocialV2ServerFacade {
         }
     }
 
-    private void sendRequest(Player player, int targetPlayerId) {
+    /** Bridges the confirmed legacy player-menu action into the normalized request state machine. */
+    public void requestFriendFromLegacyFlow(Player player, int targetPlayerId) {
+        if (!isEnabledFor(player)) {
+            return;
+        }
+        if (!rateLimiter.allowFriendRequest(player.id, Instant.now())) {
+            sendRateLimited(player, SocialV2Protocol.SEND_REQUEST);
+            return;
+        }
+        sendRequest(player, targetPlayerId, LegacyPendingTarget.from(Client.gI().getPlayer(targetPlayerId)));
+    }
+
+    private void sendRequest(Player player, int targetPlayerId, LegacyPendingTarget legacyPendingTarget) {
         SocialRelationshipService.Result result;
         synchronized (interactionLock) {
             result = relationships.sendRequest(player.id, targetPlayerId, Instant.now());
@@ -300,7 +312,11 @@ public final class SocialV2ServerFacade {
         }
         if (result.status() == SocialRelationshipService.Status.REQUEST_SENT
                 || result.status() == SocialRelationshipService.Status.AUTO_ACCEPTED) {
-            sendSuccess(player, SocialV2Protocol.SEND_REQUEST);
+            if (result.status() == SocialRelationshipService.Status.REQUEST_SENT && legacyPendingTarget != null) {
+                sendRequestSuccessWithLegacyPendingTarget(player, legacyPendingTarget);
+            } else {
+                sendSuccess(player, SocialV2Protocol.SEND_REQUEST);
+            }
             notifySuccess(player, switch (result.status()) {
                 case REQUEST_SENT -> "Đã gửi lời mời kết bạn";
                 case AUTO_ACCEPTED -> "Đã trở thành bạn bè";
@@ -607,6 +623,25 @@ public final class SocialV2ServerFacade {
         }
     }
 
+    /**
+     * The legacy player-menu flow has no client-side search row to mark as pending.
+     * Its additive target tail lets new clients render that pending row, while older
+     * clients continue to consume the standard two-byte success envelope.
+     */
+    private void sendRequestSuccessWithLegacyPendingTarget(Player player, LegacyPendingTarget target) {
+        try {
+            Message response = new Message(SocialV2Protocol.COMMAND_SOCIAL);
+            response.writer().writeByte(SocialV2Protocol.SEND_REQUEST);
+            response.writer().writeByte(SocialV2Protocol.RESULT_OK);
+            response.writer().writeInt(target.playerId());
+            response.writer().writeShort(target.head());
+            response.writer().writeUTF(target.name());
+            deliver(player, response);
+        } catch (IOException | IllegalArgumentException packetError) {
+            sendError(player, SocialV2Protocol.SEND_REQUEST, SocialV2Protocol.ErrorCode.PACKET_TOO_LARGE);
+        }
+    }
+
     private void sendError(Player player, int action, SocialV2Protocol.ErrorCode errorCode) {
         if (player == null) {
             return;
@@ -697,6 +732,17 @@ public final class SocialV2ServerFacade {
                 throw new IllegalArgumentException("Location " + field + " is outside i16 wire range");
             }
             return (short) value;
+        }
+    }
+
+    private record LegacyPendingTarget(int playerId, short head, String name) {
+        private static LegacyPendingTarget from(Player player) {
+            if (player == null || player.id <= 0L || player.id > Integer.MAX_VALUE
+                    || player.name == null || player.name.isBlank()
+                    || !SocialV2Protocol.fitsModifiedUtf(player.name, SocialV2Protocol.SEARCH_MAX_CODE_POINTS)) {
+                return null;
+            }
+            return new LegacyPendingTarget((int) player.id, player.getHead(), player.name);
         }
     }
 }

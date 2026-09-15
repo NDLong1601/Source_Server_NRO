@@ -27,7 +27,7 @@ public final class SocialChatRateLimiter {
             }
         }
 
-        public static Policy phase4Defaults() {
+        public static Policy defaults() {
             return new Policy(3, Duration.ofSeconds(1L), 10_000, Duration.ofMinutes(15L));
         }
     }
@@ -38,7 +38,7 @@ public final class SocialChatRateLimiter {
     private final LinkedHashMap<Long, Bucket> buckets = new LinkedHashMap<>(16, 0.75F, true);
 
     public SocialChatRateLimiter() {
-        this(Policy.phase4Defaults());
+        this(Policy.defaults());
     }
 
     public SocialChatRateLimiter(Policy policy) {
@@ -60,7 +60,7 @@ public final class SocialChatRateLimiter {
         Instant effectiveNow = now.isBefore(bucket.lastSeenAt) ? bucket.lastSeenAt : now;
         long elapsedNanos = safeElapsedNanos(bucket.lastRefillAt, effectiveNow);
         // The bucket holds `capacity` tokens and fully refills during one
-        // configured period, i.e. the phase-4 policy is three messages/sec.
+        // configured period; the default policy is three messages per second.
         bucket.creditNanos = Math.min(this.maximumCreditNanos,
                 saturatedAdd(bucket.creditNanos, saturatedMultiply(elapsedNanos, policy.capacity())));
         bucket.lastRefillAt = effectiveNow;
